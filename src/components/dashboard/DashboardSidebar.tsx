@@ -114,12 +114,12 @@ export default function DashboardSidebar() {
       className="shrink-0 border-r border-[var(--border)] flex flex-col bg-[var(--charcoal)]/50 overflow-hidden"
     >
       <div className="h-14 flex items-center gap-2 px-4 border-b border-[var(--border)]" style={branding ? { borderBottomColor: `${branding.primaryColor}33` } : {}}>
-        {/* Netcare Logo */}
+        {/* Netcare Logo — shown on dark sidebar bg */}
         <img
           src="/images/netcare-logo.png"
           alt="Netcare"
           className="h-5 shrink-0"
-          style={{ filter: "brightness(0) invert(1)" }}
+          style={{ filter: "brightness(10) saturate(0)" }}
         />
         <AnimatePresence>
           {!collapsed && (
