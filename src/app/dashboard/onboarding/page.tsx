@@ -1,196 +1,245 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Check, Building2, Palette, Users, CalendarCheck, MessageSquare, UserPlus, ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
+import {
+  Building2, BarChart3, Receipt, MessageSquare, Shield, Users,
+  ArrowRight, CheckCircle2, Zap, TrendingUp, Bot, Phone,
+  Boxes, FileText, Pill, Heart, Ambulance, Target, Eye,
+  Rocket, Clock, Globe,
+} from "lucide-react";
 
-interface Steps {
-  practice_setup: boolean;
-  branding: boolean;
-  first_patient: boolean;
-  first_booking: boolean;
-  whatsapp_config: boolean;
-  team_invite: boolean;
-}
-
-const STEP_INFO = [
+const TOUR_STEPS = [
   {
-    key: "practice_setup",
-    icon: Building2,
-    title: "Set Up Your Practice",
-    description: "Add your practice name, address, hours, and type. This is what your patients will see.",
-    action: "/dashboard/settings",
-    actionLabel: "Go to Settings",
+    title: "Network Financial Command Center",
+    desc: "Your real-time divisional P&L. Revenue by region, EBITDA tracking, debtor aging, claims analytics, and medical scheme performance — all in one view. This replaces your Excel-based reporting across 568 practitioners.",
+    href: "/dashboard/network",
+    icon: BarChart3,
+    color: "#3DA9D1",
+    saves: "R840K/month in manual reconciliation",
   },
   {
-    key: "branding",
-    icon: Palette,
-    title: "Customise Your Branding",
-    description: "Upload your logo, pick your colours, set your tagline. Make the platform yours.",
-    action: "/dashboard/settings?tab=branding",
-    actionLabel: "Set Up Branding",
+    title: "Your Custom-Built Suite",
+    desc: "See all 10 AI modules VisioHealth OS built for Netcare — claims intelligence, WhatsApp router, eRA reconciliation, capitation analytics, and more. Plus the full value chain integration map.",
+    href: "/dashboard/suite",
+    icon: Boxes,
+    color: "#E3964C",
+    saves: "R8.4M/month total addressable savings",
   },
   {
-    key: "first_patient",
+    title: "AI Claims Intelligence",
+    desc: "View invoices with ICD-10-ZA codes, claims status (submitted, partial, rejected, paid), and medical aid claim references. See exactly where money is being lost to rejections.",
+    href: "/dashboard/billing",
+    icon: Receipt,
+    color: "#3DA9D1",
+    saves: "R1.8M/month in recovered claims",
+  },
+  {
+    title: "Patient Management",
+    desc: "Unified patient records across Medicross clinics — Discovery, GEMS, Bonitas, Momentum, Medihelp, Polmed patients with medical history, allergies, medications, and POPIA consent.",
+    href: "/dashboard/patients",
     icon: Users,
-    title: "Add Your First Patient",
-    description: "Add a patient manually, or they'll be created automatically when they book via WhatsApp.",
-    action: "/dashboard/patients",
-    actionLabel: "Add a Patient",
+    color: "#8B5CF6",
+    saves: "Cross-site patient visibility",
   },
   {
-    key: "first_booking",
-    icon: CalendarCheck,
-    title: "Create Your First Booking",
-    description: "Book an appointment from the calendar or let a patient book via WhatsApp. Try it now.",
-    action: "/dashboard/calendar",
-    actionLabel: "Open Calendar",
+    title: "Daily Operations",
+    desc: "Your Financial Director daily checklist — claims rejections review, revenue dashboard check, Prime Cure capitation reports, tariff reconciliations, EBITDA variance reports.",
+    href: "/dashboard/daily",
+    icon: CheckCircle2,
+    color: "#10B981",
+    saves: "Structured FD workflow",
   },
   {
-    key: "whatsapp_config",
+    title: "WhatsApp Conversations",
+    desc: "See how the WhatsApp Patient Router handles patient inquiries — booking requests, service queries, emergency routing. AI suggests responses, your team approves.",
+    href: "/dashboard/conversations",
     icon: MessageSquare,
-    title: "Connect WhatsApp",
-    description: "Link your Twilio WhatsApp number so patients can message your AI assistant directly.",
-    action: "/dashboard/settings?tab=notifications",
-    actionLabel: "Configure WhatsApp",
+    color: "#25D366",
+    saves: "24/7 patient access",
   },
   {
-    key: "team_invite",
-    icon: UserPlus,
-    title: "Invite Your Team",
-    description: "Add your receptionist, nurses, and doctors. Each role gets their own dashboard view.",
-    action: "/dashboard/settings",
-    actionLabel: "Manage Team",
+    title: "POPIA Compliance",
+    desc: "Consent tracking dashboard across all patients — treatment consent, data processing consent, marketing opt-outs. POPIA s18-s72 and HPCSA Booklet 10 aligned.",
+    href: "/dashboard/settings",
+    icon: Shield,
+    color: "#1D3443",
+    saves: "100% audit-ready across 8 provinces",
+  },
+  {
+    title: "Practice Analytics",
+    desc: "Top services, booking trends, review scores, recall due items, conversation volumes, medical record counts. High-level operational health of the network.",
+    href: "/dashboard/analytics",
+    icon: TrendingUp,
+    color: "#E3964C",
+    saves: "Data-driven decision making",
+  },
+];
+
+const COMING_SOON = [
+  {
+    name: "Placeo Health — Patient Marketplace",
+    desc: "A patient-facing marketplace where Netcare patients can discover and book across your entire network — GP, dental, pharmacy, optometry, specialists. Think 'Uber for healthcare appointments' with ratings, availability, and medical aid benefit checking. Netcare becomes the platform, not just the provider.",
+    icon: Globe,
+    color: "#3DA9D1",
+    netcareValue: "Turn 3.5M patients into a marketplace revenue stream. Each booking = transaction fee.",
+  },
+  {
+    name: "Visio Integrator — Enterprise Middleware",
+    desc: "Connects CareOn, SAP, Healthbridge, GoodX, Altron SwitchOn, and MediSwitch into one unified data layer. Real-time sync between hospital EMR and primary care PMS. No more fragmented data silos.",
+    icon: Target,
+    color: "#8B5CF6",
+    netcareValue: "The missing integration layer between CareOn (hospitals) and Medicross (clinics).",
+  },
+  {
+    name: "Visio Waiting Room — Digital Check-in",
+    desc: "Patients check in via WhatsApp when they arrive. Real-time queue visibility for staff. Estimated wait times sent to patients. Walk-in management with priority routing.",
+    icon: Clock,
+    color: "#E3964C",
+    netcareValue: "Solve the queue problem at busy Medicross clinics — especially Soweto, Fourways, and CBD.",
+  },
+  {
+    name: "VisioMed AI — Clinical Co-Pilot",
+    desc: "AI clinical decision support for GPs and dentists. Drug interaction checking (augments IBM Watson Micromedex), ICD-10-ZA coding assistance, treatment protocol suggestions, clinical note generation.",
+    icon: Bot,
+    color: "#10B981",
+    netcareValue: "Extend Micromedex drug safety to primary care. Reduce ICD-10 coding errors at source.",
+  },
+  {
+    name: "Payer Connect — Scheme Coordination",
+    desc: "Live coordination layer between Netcare and medical schemes. Real-time benefit checking, pre-authorization, gap cover integration, and claims status tracking. Discovery, GEMS, Bonitas, Momentum — all connected.",
+    icon: Heart,
+    color: "#EF4444",
+    netcareValue: "Turn 21-day GEMS payment cycles into 7-day cycles. Pre-auth before the patient sits down.",
+  },
+  {
+    name: "Pharmacy Intelligence — NAPPI Sync",
+    desc: "AI-powered inventory management for 37 Clicks-operated pharmacies. NAPPI code sync with scheme formularies. CDL (Chronic Disease List) medication monitoring. Dead stock detection and demand forecasting.",
+    icon: Pill,
+    color: "#F59E0B",
+    netcareValue: "R1.4M freed working capital from dead stock elimination across 37 pharmacies.",
   },
 ];
 
 export default function OnboardingPage() {
-  const [steps, setSteps] = useState<Steps | null>(null);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [totalSteps, setTotalSteps] = useState(6);
-  const [completed, setCompleted] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/onboarding").then(r => r.json()).then(d => {
-      setSteps(d.steps || null);
-      setCurrentStep(d.currentStep || 0);
-      setTotalSteps(d.totalSteps || 6);
-      setCompleted(d.completed || false);
-    });
-  }, []);
-
-  if (!steps) return null;
-
-  const completedCount = Object.values(steps).filter(Boolean).length;
-  const progress = Math.round((completedCount / totalSteps) * 100);
-
-  if (completed) {
-    return (
-      <div className="p-6 max-w-2xl mx-auto mt-20 text-center space-y-6">
-        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring" }}>
-          <Sparkles className="w-16 h-16 mx-auto text-[#3DA9D1]" />
-        </motion.div>
-        <h1 className="text-2xl font-bold text-gray-900">You&apos;re All Set!</h1>
-        <p className="text-gray-500">Your practice is fully configured and ready to go.</p>
-        <Link href="/dashboard" className="inline-block px-8 py-3 bg-[#3DA9D1] text-white rounded-lg text-sm font-semibold hover:bg-[#1D3443] transition-colors">
-          Go to Dashboard
-        </Link>
-      </div>
-    );
-  }
-
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-8">
-      {/* Header */}
-      <div className="text-center space-y-3">
-        <motion.h1 initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-bold text-gray-900">
-          Welcome to Netcare Health OS Ops
-        </motion.h1>
-        <p className="text-gray-500 text-sm">Let&apos;s get your practice set up. Follow these steps and you&apos;ll be running in minutes.</p>
-      </div>
-
-      {/* Progress bar */}
-      <div className="space-y-2">
-        <div className="flex justify-between text-[12px]">
-          <span className="text-gray-400">{completedCount} of {totalSteps} completed</span>
-          <span className="text-[#3DA9D1] font-medium">{progress}%</span>
+    <div className="p-6 space-y-8 max-w-[1200px] mx-auto">
+      {/* Welcome Header */}
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+        <div className="flex items-center gap-3 mb-2">
+          <img src="/images/netcare-logo.png" alt="Netcare" className="h-5" />
+          <span className="text-[11px] text-gray-400 uppercase tracking-widest font-semibold">x</span>
+          <span className="text-[13px] font-bold text-[#1D3443]" style={{ fontFamily: 'Montserrat, sans-serif' }}>VisioHealth OS</span>
         </div>
-        <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.8 }}
-            className="h-full rounded-full bg-gradient-to-r from-[#3DA9D1] to-teal-500"
-          />
-        </div>
-      </div>
+        <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+          Welcome, Thirushen
+        </h1>
+        <p className="text-[14px] text-gray-500 mt-1 max-w-2xl">
+          This platform was purpose-built for Netcare Primary Healthcare by VisioHealth OS.
+          Here&apos;s a guided tour of what&apos;s been built for you — and where you&apos;ll save the most money.
+        </p>
+      </motion.div>
 
-      {/* Steps */}
-      <div className="space-y-3">
-        {STEP_INFO.map((step, i) => {
-          const isDone = steps[step.key as keyof Steps];
-          const isNext = !isDone && Object.values(steps).filter(Boolean).length === i;
-
-          return (
+      {/* Tour Steps */}
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+          <Rocket className="w-5 h-5 inline mr-2 text-[#E3964C]" />
+          Your Platform Tour — 8 Key Areas
+        </h2>
+        <div className="space-y-3">
+          {TOUR_STEPS.map((step, i) => (
             <motion.div
-              key={step.key}
-              initial={{ opacity: 0, x: -20 }}
+              key={step.title}
+              initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.08 }}
-              className={`rounded-xl border p-5 transition-all ${
-                isNext ? "border-[#3DA9D1] bg-[#3DA9D1]/50 shadow-sm" : "border-gray-200 bg-white"
-              } ${isDone ? "opacity-60" : ""}`}
+              transition={{ delay: i * 0.05 }}
             >
-              <div className="flex items-start gap-4">
-                {/* Step indicator */}
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                  isDone ? "bg-[#3DA9D1]" : isNext ? "bg-[#3DA9D1]" : "bg-gray-50"
-                }`}>
-                  {isDone ? (
-                    <Check className="w-5 h-5 text-[#3DA9D1]" />
-                  ) : (
-                    <step.icon className={`w-5 h-5 ${isNext ? "text-[#3DA9D1]" : "text-gray-400"}`} />
-                  )}
+              <Link
+                href={step.href}
+                className="flex items-center gap-4 p-4 rounded-xl border border-gray-200 bg-white hover:border-[#3DA9D1]/30 hover:shadow-sm transition-all group"
+              >
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-400 font-bold text-[13px] shrink-0 group-hover:bg-[#3DA9D1]/10 group-hover:text-[#3DA9D1] transition-colors">
+                  {i + 1}
                 </div>
-
-                {/* Content */}
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${step.color}12` }}>
+                  <step.icon className="w-5 h-5" style={{ color: step.color }} />
+                </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className={`text-[14px] font-semibold ${isDone ? "text-gray-400 line-through" : "text-gray-900"}`}>
-                      {step.title}
-                    </h3>
-                    {isDone && <span className="text-[10px] text-[#3DA9D1] font-medium">Done</span>}
-                    {isNext && <span className="text-[10px] text-[#3DA9D1] font-medium animate-pulse">Next</span>}
-                  </div>
-                  <p className="text-[12px] text-gray-500 leading-relaxed">{step.description}</p>
+                  <div className="text-[14px] font-semibold text-gray-900 group-hover:text-[#1D3443]">{step.title}</div>
+                  <div className="text-[12px] text-gray-500 mt-0.5">{step.desc}</div>
                 </div>
+                <div className="shrink-0 text-right">
+                  <span className="inline-block text-[10px] font-semibold text-[#E3964C] bg-[#E3964C]/10 px-2 py-0.5 rounded-full">
+                    {step.saves}
+                  </span>
+                </div>
+                <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-[#3DA9D1] shrink-0 transition-colors" />
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+      </div>
 
-                {/* Action button */}
-                {!isDone && (
-                  <Link
-                    href={step.action}
-                    className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-lg text-[12px] font-medium transition-all ${
-                      isNext
-                        ? "bg-[#3DA9D1] text-white hover:bg-[#1D3443]"
-                        : "border border-gray-200 text-gray-500 hover:text-gray-900 hover:border-gray-300"
-                    }`}
-                  >
-                    {step.actionLabel}
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
-                )}
+      {/* Coming Soon Tools */}
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+          <Zap className="w-5 h-5 inline mr-2 text-[#E3964C]" />
+          Coming Soon — Expansion Modules
+        </h2>
+        <p className="text-[13px] text-gray-500 mb-4">
+          These additional products are being developed by VisioHealth OS specifically for the Netcare ecosystem.
+          Each can be licensed to your network of 568 independent practitioners as an additional revenue stream.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {COMING_SOON.map((tool, i) => (
+            <motion.div
+              key={tool.name}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 + i * 0.05 }}
+              className="p-5 rounded-xl border border-dashed border-gray-300 bg-gray-50/50 hover:border-[#3DA9D1]/30 hover:bg-white transition-all"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${tool.color}12` }}>
+                  <tool.icon className="w-4.5 h-4.5" style={{ color: tool.color }} />
+                </div>
+                <div>
+                  <h3 className="text-[13px] font-semibold text-gray-900">{tool.name}</h3>
+                  <span className="text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded font-semibold">COMING SOON</span>
+                </div>
+              </div>
+              <p className="text-[12px] text-gray-500 leading-relaxed mb-3">{tool.desc}</p>
+              <div className="p-2.5 rounded-lg bg-[#1D3443]/5 border border-[#1D3443]/10">
+                <div className="text-[10px] text-[#3DA9D1] font-semibold uppercase mb-0.5">Value for Netcare</div>
+                <div className="text-[12px] text-[#1D3443] font-medium">{tool.netcareValue}</div>
               </div>
             </motion.div>
-          );
-        })}
+          ))}
+        </div>
+
+        {/* Licensing Note */}
+        <div className="mt-4 p-4 rounded-xl border border-[#E3964C]/20 bg-[#E3964C]/5">
+          <div className="flex items-center gap-2 mb-1">
+            <FileText className="w-4 h-4 text-[#E3964C]" />
+            <span className="text-[13px] font-semibold text-gray-900">Licensing Opportunity</span>
+          </div>
+          <p className="text-[12px] text-gray-600">
+            Each module above can be white-labeled and resold to Netcare&apos;s network of 568 independent practitioners,
+            49 hospital groups, and 200+ corporate occupational health clients — creating a recurring SaaS revenue stream
+            for Netcare Primary Healthcare. Contact VisioHealth OS for enterprise licensing terms.
+          </p>
+        </div>
       </div>
 
-      {/* Skip */}
-      <div className="text-center">
-        <Link href="/dashboard" className="text-[12px] text-gray-400 hover:text-gray-900 transition-colors">
-          Skip for now — I&apos;ll set up later
-        </Link>
+      {/* For More */}
+      <div className="p-4 rounded-xl bg-[#1D3443] text-center">
+        <p className="text-[13px] text-white/70">
+          For full pricing, enterprise licensing, and custom module development —{" "}
+          <span className="text-[#3DA9D1] font-semibold">contact VisioHealth OS</span>
+        </p>
+        <p className="text-[11px] text-white/40 mt-1">
+          Powered by Visio Research Labs &middot; 120+ peer-reviewed citations &middot; VRL-001 Healthcare Routing Research
+        </p>
       </div>
     </div>
   );
