@@ -1,162 +1,97 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
-import { blurPlaceholders } from "@/lib/blur-placeholders";
 
-const testimonials = [
+const impactCards = [
   {
-    name: "Dr. Sarah M.",
-    role: "Dental Practice Owner, Sandton",
-    text: "Netcare Health OS cut our no-show rate by 40% in the first month. The WhatsApp bot handles 80% of enquiries before my team even sees them.",
-    stat: "40%",
-    statLabel: "fewer no-shows",
-    stars: 5,
-    image: "/images/portrait-sarah.png",
+    stat: "R95M+",
+    label: "Annual savings addressable",
+    detail: "Across claims recovery, debtor management, eRA reconciliation, capitation analytics, compliance, and pharmacy optimisation.",
+    color: "#E3964C",
   },
   {
-    name: "Dr. Thabo K.",
-    role: "Radiologist, Centurion",
-    text: "The referral intake router alone saved us 3 hours a day. We process referrals in minutes instead of chasing emails.",
-    stat: "3hrs",
-    statLabel: "saved daily",
-    stars: 5,
-    image: "/images/portrait-thabo.png",
+    stat: "15% → <5%",
+    label: "Claims rejection rate",
+    detail: "AI pre-validates ICD-10-ZA codes, NAPPI codes, and PMB benefits before claims hit Altron SwitchOn. 75% of rejections prevented.",
+    color: "#3DA9D1",
   },
   {
-    name: "Lisa V.",
-    role: "Wellness Spa Manager, Rosebank",
-    text: "Rebooking reminders brought back clients we hadn't seen in months. Our revenue is up 25% without spending more on ads.",
-    stat: "25%",
-    statLabel: "revenue increase",
-    stars: 5,
-    image: "/images/portrait-lisa.png",
+    stat: "42 → 28",
+    label: "Debtor days reduction",
+    detail: "Automated follow-up sequences and scheme-specific collection strategies. GEMS 21-day, Medihelp 24-day payment cycles targeted.",
+    color: "#10B981",
+  },
+  {
+    stat: "88",
+    label: "Clinics unified",
+    detail: "One command center for all Medicross clinics, day theatres, and pharmacies. Regional data isolation with group-level consolidation.",
+    color: "#1D3443",
+  },
+  {
+    stat: "3.5M",
+    label: "Patients served annually",
+    detail: "WhatsApp patient routing connects patients to the nearest Medicross — GP, dental, optometry, pharmacy — 24/7.",
+    color: "#8B5CF6",
+  },
+  {
+    stat: "8 weeks",
+    label: "Pilot to prove ROI",
+    detail: "Start with one region, measure results, generate board-ready report. Zero capital risk. 3.2X average ROI within 14 months globally.",
+    color: "#E3964C",
   },
 ];
 
-const containerVariants = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.12,
-    },
-  },
-};
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 40 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
-  },
-};
-
-const quoteVariants = {
-  hidden: { opacity: 0, scale: 0.5 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: { duration: 0.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
-  },
-};
-
-function StarRating({ count }: { count: number }) {
-  return (
-    <div className="flex items-center gap-0.5">
-      {Array.from({ length: count }).map((_, i) => (
-        <svg
-          key={i}
-          className="w-4 h-4 text-[#3DA9D1]"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-        </svg>
-      ))}
-    </div>
-  );
-}
-
 export default function Testimonials() {
   return (
-    <section className="relative w-full bg-gray-50/50 py-32 md:py-40 px-6 md:px-12 lg:px-24 overflow-hidden">
-      {/* Subtle background accent */}
-      <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-[#E0F2FE] rounded-full blur-[350px] opacity-30 pointer-events-none" />
-
+    <section className="w-full bg-white py-32 md:py-40 px-6 md:px-12 lg:px-24">
       <div className="max-w-6xl mx-auto">
-        {/* Section header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="mb-20 md:mb-24"
+          className="text-center mb-16"
         >
-          <span className="text-xs tracking-[0.3em] uppercase text-[#1D8AB5] font-mono mb-5 block">
-            Testimonials
+          <span className="uppercase tracking-[0.3em] text-xs text-[#3DA9D1] font-semibold mb-6 block">
+            Impact at Scale
           </span>
-          <h2 className="text-4xl md:text-5xl font-light tracking-[-0.03em] text-gray-900 max-w-lg">
-            What our clients say.
+          <h2 className="text-4xl md:text-5xl font-light tracking-[-0.03em] text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+            The numbers that matter.
           </h2>
+          <p className="text-[15px] text-gray-400 mt-4 max-w-xl mx-auto">
+            Every metric below is backed by our research and modelled on Netcare Primary Healthcare&apos;s actual divisional data.
+          </p>
         </motion.div>
 
-        {/* Divider */}
-        <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mb-16" />
-
-        {/* Testimonial cards */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-5"
-        >
-          {testimonials.map((t) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {impactCards.map((card, i) => (
             <motion.div
-              key={t.name}
-              variants={cardVariants}
-              className="group relative bg-white border border-gray-100 rounded-2xl p-8 shadow-sm hover:shadow-lg hover:shadow-[#E0F2FE]/40 hover:-translate-y-0.5 transition-all duration-500"
+              key={card.label}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className="p-6 rounded-2xl border border-gray-100 bg-white hover:border-gray-200 hover:shadow-lg hover:shadow-gray-100/50 transition-all duration-300"
             >
-              {/* Decorative quote mark */}
-              <motion.span
-                variants={quoteVariants}
-                className="absolute top-6 right-8 text-[#E0F2FE] text-8xl font-serif leading-none pointer-events-none select-none"
-              >
-                &ldquo;
-              </motion.span>
-
-              {/* Portrait */}
-              <div className="relative w-16 h-16 rounded-full overflow-hidden mb-6 ring-2 ring-[#E0F2FE] ring-offset-2">
-                <Image
-                  src={t.image}
-                  alt={t.name}
-                  fill
-                  className="object-cover"
-                  placeholder="blur"
-                  blurDataURL={blurPlaceholders[t.image.replace("/images/", "").replace(".png", "")]}
-                />
+              <div className="text-3xl font-bold mb-2" style={{ color: card.color, fontFamily: 'Montserrat, sans-serif' }}>
+                {card.stat}
               </div>
-
-              {/* Star rating */}
-              <div className="mb-4">
-                <StarRating count={t.stars} />
-              </div>
-
-              {/* Quote */}
-              <p className="relative z-10 text-gray-600 text-base font-light leading-relaxed italic mb-10">
-                &ldquo;{t.text}&rdquo;
-              </p>
-
-              {/* Attribution */}
-              <div className="relative z-10 pt-6 border-t border-gray-100">
-                <div className="text-gray-900 font-medium text-sm">{t.name}</div>
-                <div className="text-gray-400 text-xs font-mono tracking-wide mt-1">
-                  {t.role}
-                </div>
-              </div>
+              <div className="text-[14px] font-semibold text-gray-900 mb-2">{card.label}</div>
+              <p className="text-[12px] text-gray-500 leading-relaxed">{card.detail}</p>
             </motion.div>
           ))}
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="mt-12 text-center"
+        >
+          <p className="text-[12px] text-gray-300">
+            Powered by <span className="text-[#1D3443] font-semibold">VisioHealth OS</span> &middot;
+            Visio Research Labs &middot; 120+ peer-reviewed citations &middot;
+            African-native, built in Johannesburg
+          </p>
         </motion.div>
       </div>
     </section>

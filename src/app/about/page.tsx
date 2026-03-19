@@ -33,34 +33,34 @@ const values = [
 
 const aiCapabilities = [
   {
-    title: "Signal Lead Gen Agent",
+    title: "AI Claims Intelligence",
     description:
-      "Scans the market to identify high-intent prospects who need healthcare services in your area.",
+      "Pre-validates ICD-10-ZA codes, NAPPI codes, and PMB benefit limits before claims hit the switch. Catches 75% of rejectable claims.",
   },
   {
-    title: "Outreach Automation Agent",
+    title: "WhatsApp Patient Router",
     description:
-      "Multi-channel outreach via WhatsApp, SMS, and automated calls — personalized messages at scale.",
+      "One WhatsApp number for all 88 clinics. AI routes patients to the nearest Medicross based on location, service, and availability.",
   },
   {
-    title: "Booking & Calendar Agent",
+    title: "Network Financial Dashboard",
     description:
-      "Manages your entire calendar — instant booking, conflict prevention, and slot optimization.",
+      "Real-time divisional P&L across 88 clinics. Revenue by region, EBITDA tracking, debtor aging, claims analytics.",
   },
   {
-    title: "Reminder & Callback Agent",
+    title: "eRA Auto-Reconciliation",
     description:
-      "Automated reminders, confirmations, and callback sequences that reduce no-shows by up to 60%.",
+      "Automated electronic Remittance Advice matching across 568 practitioners — replacing manual Excel reconciliation.",
   },
   {
-    title: "Newsletter Agent",
+    title: "Capitation Analytics",
     description:
-      "Sends automated newsletters, health tips, seasonal campaigns, and recall reminders to keep patients engaged.",
+      "Real-time monitoring of Prime Cure per-member-per-month spend vs capitation rates. Flags overspend early.",
   },
   {
-    title: "Intake & Triage Agent",
+    title: "POPIA Compliance Engine",
     description:
-      "Pre-appointment data collection, urgency assessment, and 24/7 patient inquiry handling.",
+      "Automated consent tracking, HPCSA Booklet 10 alignment, audit logging, and breach detection across all clinics.",
   },
 ];
 
@@ -98,25 +98,24 @@ const clinicalFeatures = [
 
 const timeline = [
   {
-    phase: "Research",
-    title: "Deep market research across Gauteng healthcare verticals.",
+    phase: "2025 Q3",
+    title: "Research phase — 120+ peer-reviewed citations, SA healthcare market analysis, Netcare ecosystem mapping.",
   },
   {
-    phase: "Build",
-    title: "Core platform: WhatsApp AI, booking automation, patient records.",
+    phase: "2025 Q4",
+    title: "Core platform built — Claims intelligence, financial dashboards, patient management, POPIA compliance engine.",
   },
   {
-    phase: "AI Agents",
-    title:
-      "Deployed triage, intake, follow-up agents. ElevenLabs voice integration.",
+    phase: "2026 Q1",
+    title: "AI integration — WhatsApp patient router, Jess AI guide, chatbot, ElevenLabs voice, network analytics.",
   },
   {
-    phase: "Launch",
-    title: "First 50 practices onboarded with the Full Suite.",
+    phase: "2026 Q2",
+    title: "Netcare pilot — Regional deployment across selected Medicross clinics. 8-week ROI measurement.",
   },
   {
-    phase: "Scale",
-    title: "Multi-location support, hospital features, radiology ops.",
+    phase: "2026 H2",
+    title: "Network-wide rollout — All 88 clinics, 41 pharmacies, 12 day theatres. Placeo Health marketplace launch.",
   },
 ];
 

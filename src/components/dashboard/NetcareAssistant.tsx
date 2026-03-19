@@ -101,9 +101,9 @@ export default function NetcareAssistant() {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 z-[9990] w-14 h-14 rounded-full bg-[#1D3443] text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center"
+          className="fixed bottom-6 right-6 z-[9990] w-12 h-12 rounded-full bg-gradient-to-br from-[#1D3443] to-[#3DA9D1] text-white shadow-lg shadow-[#1D3443]/20 hover:shadow-xl hover:shadow-[#3DA9D1]/30 hover:scale-105 transition-all flex items-center justify-center"
         >
-          <Bot className="w-6 h-6" />
+          <Bot className="w-5 h-5" />
           <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-[#3DA9D1] animate-pulse" />
         </motion.button>
       )}
@@ -115,7 +115,7 @@ export default function NetcareAssistant() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             className={`fixed z-[9990] glass-chatbot rounded-2xl shadow-2xl border border-gray-200/50 flex flex-col overflow-hidden ${
-              expanded ? "bottom-4 right-4 left-4 top-4" : "bottom-6 right-6 w-[420px] h-[560px]"
+              expanded ? "bottom-4 right-4 left-[30%] top-4" : "bottom-20 right-6 w-[380px] h-[480px]"
             }`}
           >
             <div className="px-4 py-3 bg-[#1D3443] flex items-center justify-between shrink-0">
