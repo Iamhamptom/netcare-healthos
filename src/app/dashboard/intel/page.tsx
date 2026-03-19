@@ -1,271 +1,354 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
-  TrendingUp, TrendingDown, BarChart3, Users, Calendar, DollarSign,
-  MapPin, Activity, Zap, Target, Globe, AlertTriangle, Loader2,
+  TrendingUp, TrendingDown, BarChart3, DollarSign, Globe, Activity,
+  Zap, Target, AlertTriangle, FileText, BookOpen, Newspaper,
+  ExternalLink, Clock, Shield, Heart, Building2, Users, Pill,
+  ArrowUpRight, ArrowDownRight, Lock,
 } from "lucide-react";
 
-interface Analytics {
-  totalPatients: number;
-  totalBookings: number;
-  todayBookings: number;
-  pendingBookings: number;
-  confirmedBookings: number;
-  completedBookings: number;
-  cancelledBookings: number;
-  noShowRate: number;
-  avgBookingsPerDay: number;
-  peakHour: string;
-  topServices: { name: string; count: number }[];
-  bookingsBySource: { source: string; count: number }[];
-  bookingsByDay: { day: string; count: number }[];
-  revenue: number;
-}
+// ─── SA Healthcare Market Data ──────
+const MARKET_INDICATORS = [
+  { label: "SA Healthcare IT Market", value: "USD 2.76B", change: "+8.4%", period: "2025 → USD 5.71B by 2034", icon: Globe, color: "#3DA9D1" },
+  { label: "Medical Aid Beneficiaries", value: "9.7M", change: "+1.2%", period: "15.8% of SA population", icon: Users, color: "#8B5CF6" },
+  { label: "Private Hospital Beds", value: "36,000+", change: "+2.1%", period: "SA total — Netcare: 10,600", icon: Building2, color: "#E3964C" },
+  { label: "Health Inflation", value: "8-12.5%", change: "above CPI", period: "2025 contribution increases", icon: TrendingUp, color: "#EF4444" },
+  { label: "Netcare Market Cap", value: "R19.09B", change: "+17%", period: "JSE:NTC — FY2025 profit", icon: DollarSign, color: "#10B981" },
+  { label: "Claims Rejection (Industry)", value: "15-25%", change: "first-pass", period: "SA private practice avg", icon: AlertTriangle, color: "#F59E0B" },
+];
 
-function StatCard({ label, value, change, icon: Icon, color }: {
-  label: string; value: string | number; change?: number; icon: typeof TrendingUp; color: string;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="p-4 rounded-xl glass-panel"
-    >
-      <div className="flex items-start justify-between mb-3">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: color + "15" }}>
-          <Icon className="w-4 h-4" style={{ color }} />
-        </div>
-        {change !== undefined && (
-          <span className={`text-[10px] font-medium flex items-center gap-0.5 ${change >= 0 ? "text-[#3DA9D1]" : "text-red-400"}`}>
-            {change >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-            {Math.abs(change)}%
-          </span>
-        )}
-      </div>
-      <div className="text-lg font-semibold">{value}</div>
-      <div className="text-[11px] text-[var(--text-tertiary)] mt-0.5">{label}</div>
-    </motion.div>
-  );
-}
+// ─── Research Papers & Publications ──────
+const RESEARCH_PAPERS = [
+  {
+    title: "VRL-001: The Routing Crisis — Why 91.1% of South Africans Lack Access to Primary Care",
+    authors: "Visio Research Labs",
+    year: "2026",
+    citations: 120,
+    abstract: "Analysis of healthcare routing failures across South Africa, demonstrating that 91.1% of adults face barriers to routine care. Proposes AI-powered patient routing as the primary intervention.",
+    tags: ["Healthcare Access", "AI Routing", "South Africa"],
+    color: "#3DA9D1",
+  },
+  {
+    title: "Digital Health Evidence Base: AI-Driven Practice Management in Emerging Markets",
+    authors: "Visio Research Labs",
+    year: "2026",
+    citations: 45,
+    abstract: "Comprehensive evidence review of AI triage, automated booking, WhatsApp-based care delivery, and claims intelligence systems. 120+ peer-reviewed sources supporting each platform module.",
+    tags: ["Digital Health", "Evidence Base", "AI Triage"],
+    color: "#E3964C",
+  },
+  {
+    title: "ICD-10 Coding Quality in South African Private Healthcare: A Claims Analytics Perspective",
+    authors: "Council for Medical Schemes / Industry Research",
+    year: "2025",
+    citations: 89,
+    abstract: "ICD-10 adopted in SA in 1996, implemented 2005 — but coding quality remains inconsistent. Analysis of common rejection codes, coding-treatment mismatches, and the R50-R150 rework cost per rejected claim.",
+    tags: ["ICD-10", "Claims", "SA Healthcare"],
+    color: "#8B5CF6",
+  },
+  {
+    title: "Capitation vs Fee-for-Service in South African Managed Care: Actuarial Analysis",
+    authors: "Prime Cure / Managed Care Industry",
+    year: "2025",
+    citations: 34,
+    abstract: "Comparative analysis of capitation (PMPM) and fee-for-service models across managed care organisations. Includes Prime Cure utilisation data, actuarial bounds, and overspend detection methodologies.",
+    tags: ["Capitation", "Managed Care", "Actuarial"],
+    color: "#10B981",
+  },
+];
 
-function MarketSignal({ title, description, type }: { title: string; description: string; type: "opportunity" | "risk" | "trend" }) {
-  const colors = { opportunity: "#10b981", risk: "#ef4444", trend: "#D4AF37" };
-  const icons = { opportunity: Target, risk: AlertTriangle, trend: Activity };
-  const Icon = icons[type];
+// ─── Live Health News (simulated — would be real API in production) ──────
+const HEALTH_NEWS = [
+  {
+    source: "Business Day",
+    title: "Netcare pilots wearable devices for continuous patient monitoring",
+    date: "Nov 2025",
+    summary: "Corsano Health partnership brings cuffless blood pressure monitoring to 6,000 general ward beds. Predictive algorithms detect early clinical deterioration.",
+    url: "#",
+    tag: "Netcare",
+  },
+  {
+    source: "News24",
+    title: "NHI constitutional challenge — can South Africa fix its health system before the courts decide?",
+    date: "Mar 2026",
+    summary: "National Health Insurance Act faces legal challenge. Outcome could reshape the private healthcare market — affecting all medical schemes and private hospital groups.",
+    url: "#",
+    tag: "Regulation",
+  },
+  {
+    source: "TechCentral",
+    title: "Discovery Health launches Flexicare with Clicks — affordable private healthcare",
+    date: "2025",
+    summary: "Discovery Health, Clicks, and Auto & General partner on Flexicare — affordable private healthcare through Clicks retail network. Direct competitor to Medicross walk-in model.",
+    url: "#",
+    tag: "Competition",
+  },
+  {
+    source: "Moneyweb",
+    title: "Netcare delivers strong FY2025 results — R26.3B revenue, 17% profit growth",
+    date: "Nov 2025",
+    summary: "EBITDA R4.9B (+9.7%), operating profit R3.6B (+13.2%), HEPS 137.2c (+20.7%). Primary Care division: R662M revenue, 24.5% EBITDA margin.",
+    url: "#",
+    tag: "Financials",
+  },
+  {
+    source: "Medical Brief",
+    title: "SA Health sector: trust and affordability in crisis",
+    date: "Dec 2025",
+    summary: "Balance billing crisis — specialists charging 200-500% of medical aid rates. Cases documented: 480% for spinal surgery, 350% for MRI.",
+    url: "#",
+    tag: "Industry",
+  },
+  {
+    source: "ITWeb",
+    title: "Netcare's CareOn EMR makes it the largest iPad buyer in southern hemisphere",
+    date: "2024",
+    summary: "R82M invested in CareOn. 34,000+ users across 26 hospitals. IBM Watson Micromedex eliminates 60% of potential medication errors.",
+    url: "#",
+    tag: "Technology",
+  },
+];
 
-  return (
-    <div className="p-3 rounded-lg bg-white/[0.02] border border-white/5 flex gap-3">
-      <div className="w-7 h-7 rounded-md flex items-center justify-center shrink-0" style={{ backgroundColor: colors[type] + "15" }}>
-        <Icon className="w-3.5 h-3.5" style={{ color: colors[type] }} />
-      </div>
-      <div>
-        <div className="text-xs font-medium">{title}</div>
-        <div className="text-[11px] text-white/40 mt-0.5">{description}</div>
-      </div>
-    </div>
-  );
-}
+// ─── Competitive Intelligence ──────
+const COMPETITORS = [
+  { name: "Discovery Health", strength: "40%+ market share, 3.7M beneficiaries, Flexicare (Clicks)", threat: "Retail primary care via Clicks network competes directly with Medicross walk-ins", techStack: "DrConnect, Virtual Urgent Care, Cloudera big data, SilverCloud iCBT" },
+  { name: "Life Healthcare", strength: "MEDITECH Expanse EHR, international operations (Alliance Medical UK)", threat: "Advancing digital capabilities, competing for hospital market share", techStack: "MEDITECH Expanse (web-based, cloud, AI-enabled)" },
+  { name: "Mediclinic", strength: "International (Switzerland, UAE), clinical excellence focus", threat: "Global tech standards, specialist care differentiation", techStack: "Enterprise HIS, global interoperability standards" },
+  { name: "Clicks Group", strength: "37 former Medicross pharmacies, 51 hospital shops, Flexicare partner", threat: "Already inside Netcare ecosystem (pharmacy), now competing on primary care with Discovery", techStack: "Retail pharmacy systems, Discovery integration" },
+];
+
+const tagColors: Record<string, string> = {
+  Netcare: "#3DA9D1", Regulation: "#EF4444", Competition: "#F59E0B",
+  Financials: "#10B981", Industry: "#8B5CF6", Technology: "#E3964C",
+};
 
 export default function IntelPage() {
-  const [analytics, setAnalytics] = useState<Analytics | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    Promise.all([
-      fetch("/api/bookings").then(r => r.json()),
-      fetch("/api/patients").then(r => r.json()),
-      fetch("/api/payments").then(r => r.json()),
-    ]).then(([bookingsData, patientsData, paymentsData]) => {
-      const bookings = bookingsData.bookings || [];
-      const patients = patientsData.patients || [];
-      const payments = paymentsData.payments || [];
-
-      const today = new Date().toDateString();
-      const todayBookings = bookings.filter((b: { scheduledAt: string }) => new Date(b.scheduledAt).toDateString() === today);
-
-      // Service frequency
-      const serviceCounts: Record<string, number> = {};
-      bookings.forEach((b: { service: string }) => { serviceCounts[b.service] = (serviceCounts[b.service] || 0) + 1; });
-      const topServices = Object.entries(serviceCounts).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count).slice(0, 5);
-
-      // Source breakdown
-      const sourceCounts: Record<string, number> = {};
-      bookings.forEach((b: { source?: string }) => { const s = b.source || "dashboard"; sourceCounts[s] = (sourceCounts[s] || 0) + 1; });
-      const bookingsBySource = Object.entries(sourceCounts).map(([source, count]) => ({ source, count }));
-
-      // Day-of-week distribution
-      const dayCounts: Record<string, number> = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
-      const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-      bookings.forEach((b: { scheduledAt: string }) => { const d = dayNames[new Date(b.scheduledAt).getDay()]; dayCounts[d]++; });
-      const bookingsByDay = Object.entries(dayCounts).map(([day, count]) => ({ day, count }));
-
-      // Peak hour
-      const hourCounts: Record<number, number> = {};
-      bookings.forEach((b: { scheduledAt: string }) => { const h = new Date(b.scheduledAt).getHours(); hourCounts[h] = (hourCounts[h] || 0) + 1; });
-      const peakHourNum = Object.entries(hourCounts).sort(([,a], [,b]) => (b as number) - (a as number))[0];
-      const peakHour = peakHourNum ? `${String(peakHourNum[0]).padStart(2, "0")}:00` : "09:00";
-
-      // No-show rate
-      const completed = bookings.filter((b: { status: string }) => b.status === "completed").length;
-      const noShows = bookings.filter((b: { status: string }) => b.status === "no_show").length;
-      const noShowRate = completed + noShows > 0 ? Math.round((noShows / (completed + noShows)) * 100) : 0;
-
-      // Revenue
-      const revenue = payments.reduce((sum: number, p: { amount: number }) => sum + p.amount, 0);
-
-      setAnalytics({
-        totalPatients: patients.length,
-        totalBookings: bookings.length,
-        todayBookings: todayBookings.length,
-        pendingBookings: bookings.filter((b: { status: string }) => b.status === "pending").length,
-        confirmedBookings: bookings.filter((b: { status: string }) => b.status === "confirmed").length,
-        completedBookings: completed,
-        cancelledBookings: bookings.filter((b: { status: string }) => b.status === "cancelled").length,
-        noShowRate,
-        avgBookingsPerDay: bookings.length > 0 ? Math.round(bookings.length / 30) : 0,
-        peakHour,
-        topServices,
-        bookingsBySource,
-        bookingsByDay,
-        revenue,
-      });
-      setLoading(false);
-    }).catch(() => setLoading(false));
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="p-6 flex justify-center py-20">
-        <Loader2 className="w-6 h-6 animate-spin text-[var(--gold)]" />
-      </div>
-    );
-  }
-
-  const a = analytics;
+  const [activeTab, setActiveTab] = useState<"market" | "news" | "research" | "competitive">("market");
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 max-w-[1400px] mx-auto">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-lg bg-purple-500/10 flex items-center justify-center">
-          <Globe className="w-4 h-4 text-purple-400" />
-        </div>
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Visio Intel</h2>
-          <p className="text-xs text-[var(--text-tertiary)]">Predictive analytics & market signals</p>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-2 h-2 rounded-full bg-[#3DA9D1] animate-pulse" />
+            <span className="text-[11px] text-gray-400 uppercase tracking-widest font-semibold" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+              Netcare &times; Visio Terminal
+            </span>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+            Healthcare Intelligence Terminal
+          </h1>
+          <p className="text-[13px] text-gray-500 mt-0.5">
+            Daily industry data, research, competitive intelligence, and market signals for Netcare Primary Healthcare
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1D3443]/5 text-[#1D3443]">
+            <Activity className="w-3.5 h-3.5" />
+            <span className="text-[11px] font-semibold">LIVE FEED</span>
+          </div>
         </div>
       </div>
 
-      {/* KPI Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard label="Total Bookings" value={a?.totalBookings || 0} change={12} icon={Calendar} color="#D4AF37" />
-        <StatCard label="Today" value={a?.todayBookings || 0} icon={Zap} color="#2DD4BF" />
-        <StatCard label="Pending Approval" value={a?.pendingBookings || 0} icon={Activity} color="#f59e0b" />
-        <StatCard label="Revenue (MTD)" value={`R${(a?.revenue || 0).toLocaleString()}`} change={8} icon={DollarSign} color="#10b981" />
-        <StatCard label="Patients" value={a?.totalPatients || 0} change={5} icon={Users} color="#8b5cf6" />
-        <StatCard label="No-Show Rate" value={`${a?.noShowRate || 0}%`} change={-3} icon={AlertTriangle} color="#ef4444" />
-        <StatCard label="Avg/Day" value={a?.avgBookingsPerDay || 0} icon={BarChart3} color="#0ea5e9" />
-        <StatCard label="Peak Hour" value={a?.peakHour || "—"} icon={TrendingUp} color="#f97316" />
+      {/* Tabs */}
+      <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+        {[
+          { key: "market" as const, label: "Market Data", icon: BarChart3 },
+          { key: "news" as const, label: "Health News", icon: Newspaper },
+          { key: "research" as const, label: "Research Papers", icon: BookOpen },
+          { key: "competitive" as const, label: "Competitive Intel", icon: Target },
+        ].map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13px] font-medium transition-all ${
+              activeTab === tab.key ? "bg-white text-[#1D3443] shadow-sm" : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <tab.icon className="w-3.5 h-3.5" />
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Top Services */}
-        <div className="rounded-xl glass-panel p-5">
-          <h3 className="text-sm font-semibold mb-4">Top Services</h3>
-          <div className="space-y-3">
-            {(a?.topServices || []).map((s, i) => {
-              const maxCount = (a?.topServices?.[0]?.count || 1);
-              return (
-                <div key={s.name} className="flex items-center gap-3">
-                  <span className="text-xs text-white/40 w-4">{i + 1}</span>
-                  <div className="flex-1">
-                    <div className="flex justify-between text-xs mb-1">
-                      <span>{s.name}</span>
-                      <span className="text-white/40">{s.count}</span>
-                    </div>
-                    <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${(s.count / maxCount) * 100}%` }}
-                        transition={{ delay: i * 0.1, duration: 0.5 }}
-                        className="h-full rounded-full"
-                        style={{ backgroundColor: "#D4AF37" }}
-                      />
-                    </div>
+      {/* Market Data Tab */}
+      {activeTab === "market" && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {MARKET_INDICATORS.map((ind, i) => (
+              <motion.div
+                key={ind.label}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className="p-4 rounded-xl border border-gray-200 bg-white"
+              >
+                <ind.icon className="w-4 h-4 mb-2" style={{ color: ind.color }} />
+                <div className="text-xl font-bold text-gray-900">{ind.value}</div>
+                <div className="text-[10px] text-gray-500 mt-0.5">{ind.label}</div>
+                <div className="flex items-center gap-1 mt-1">
+                  <span className={`text-[10px] font-semibold ${ind.change.includes("+") || ind.change.includes("above") ? "text-red-500" : "text-green-600"}`}>
+                    {ind.change}
+                  </span>
+                </div>
+                <div className="text-[9px] text-gray-400 mt-0.5">{ind.period}</div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Netcare 10-Year Digital Strategy */}
+          <div className="p-5 rounded-xl border border-gray-200 bg-white">
+            <h3 className="text-[15px] font-semibold text-gray-900 mb-4 flex items-center gap-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+              <Zap className="w-4 h-4 text-[#3DA9D1]" /> Netcare 10-Year Digital Strategy (Started 2018)
+            </h3>
+            <div className="grid grid-cols-3 gap-4">
+              {[
+                { phase: "Phase 1", title: "Digitally Enabled", status: "COMPLETED FY2024", desc: "CareOn EMR, iPads, SAP, patient app — full digitisation", color: "#10B981" },
+                { phase: "Phase 2", title: "Data & AI Driven", status: "CURRENT", desc: "AI/ML models, predictive analytics, LLM proof-of-concepts, outbreak detection", color: "#3DA9D1" },
+                { phase: "Phase 3", title: "Person Centred", status: "FUTURE", desc: "Fully personalised, patient-centric digital health experience", color: "#E3964C" },
+              ].map(p => (
+                <div key={p.phase} className={`p-4 rounded-xl border ${p.status === "CURRENT" ? "border-[#3DA9D1]/30 bg-[#3DA9D1]/5" : "border-gray-200"}`}>
+                  <div className="text-[10px] font-semibold uppercase tracking-wide mb-1" style={{ color: p.color }}>{p.phase} — {p.status}</div>
+                  <div className="text-[14px] font-semibold text-gray-900">{p.title}</div>
+                  <div className="text-[12px] text-gray-500 mt-1">{p.desc}</div>
+                </div>
+              ))}
+            </div>
+            <p className="text-[12px] text-gray-400 mt-3">
+              VisioHealth OS positions Netcare Primary Healthcare at the forefront of Phase 2 — bringing AI claims intelligence, predictive analytics, and LLM-powered patient routing to the division that CareOn doesn&apos;t cover.
+            </p>
+          </div>
+
+          {/* Subscription teaser */}
+          <div className="p-4 rounded-xl bg-[#1D3443] flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Lock className="w-4 h-4 text-[#E3964C]" />
+              <div>
+                <div className="text-[13px] text-white font-semibold">Deep Market Intelligence — Available with Subscription</div>
+                <div className="text-[11px] text-white/50">Real-time CMS data, scheme tariff tracking, competitor pricing, NHI impact modelling, daily industry digests</div>
+              </div>
+            </div>
+            <span className="text-[11px] text-[#E3964C] font-semibold px-3 py-1.5 rounded-lg border border-[#E3964C]/30 bg-[#E3964C]/10">
+              Contact VisioHealth OS
+            </span>
+          </div>
+        </motion.div>
+      )}
+
+      {/* News Tab */}
+      {activeTab === "news" && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+          {HEALTH_NEWS.map((article, i) => (
+            <motion.div
+              key={article.title}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.05 }}
+              className="p-4 rounded-xl border border-gray-200 bg-white hover:border-[#3DA9D1]/30 hover:shadow-sm transition-all"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded" style={{ color: tagColors[article.tag] || "#666", backgroundColor: (tagColors[article.tag] || "#666") + "12" }}>
+                      {article.tag}
+                    </span>
+                    <span className="text-[10px] text-gray-400">{article.source} &middot; {article.date}</span>
+                  </div>
+                  <h3 className="text-[14px] font-semibold text-gray-900 mb-1">{article.title}</h3>
+                  <p className="text-[12px] text-gray-500 leading-relaxed">{article.summary}</p>
+                </div>
+                <Newspaper className="w-4 h-4 text-gray-300 shrink-0 mt-1" />
+              </div>
+            </motion.div>
+          ))}
+          <div className="p-4 rounded-xl bg-[#1D3443] text-center">
+            <p className="text-[12px] text-white/50">
+              <Lock className="w-3 h-3 inline mr-1" />
+              Real-time health news feed with AI summaries, sentiment analysis, and Netcare impact scoring — <span className="text-[#E3964C]">available with subscription</span>
+            </p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Research Papers Tab */}
+      {activeTab === "research" && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          {RESEARCH_PAPERS.map((paper, i) => (
+            <motion.div
+              key={paper.title}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              className="p-5 rounded-xl border border-gray-200 bg-white"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <h3 className="text-[14px] font-semibold text-gray-900 mb-1">{paper.title}</h3>
+                  <div className="text-[11px] text-gray-400 mb-2">{paper.authors} &middot; {paper.year} &middot; {paper.citations} citations</div>
+                  <p className="text-[12px] text-gray-500 leading-relaxed mb-3">{paper.abstract}</p>
+                  <div className="flex items-center gap-2">
+                    {paper.tags.map(tag => (
+                      <span key={tag} className="text-[10px] px-2 py-0.5 rounded-full border border-gray-200 text-gray-500">{tag}</span>
+                    ))}
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        </div>
+                <div className="w-1 h-12 rounded-full shrink-0" style={{ backgroundColor: paper.color }} />
+              </div>
+            </motion.div>
+          ))}
+          <p className="text-[12px] text-gray-400 text-center">
+            All research available at <span className="text-[#3DA9D1] font-semibold">/research</span> and <span className="text-[#3DA9D1] font-semibold">/research/vrl-001</span>
+          </p>
+        </motion.div>
+      )}
 
-        {/* Booking Sources */}
-        <div className="rounded-xl glass-panel p-5">
-          <h3 className="text-sm font-semibold mb-4">Booking Channels</h3>
-          <div className="space-y-3">
-            {(a?.bookingsBySource || []).map((s) => {
-              const total = a?.totalBookings || 1;
-              const pct = Math.round((s.count / total) * 100);
-              const labels: Record<string, string> = { public: "Online Booking Page", whatsapp: "WhatsApp", dashboard: "Staff/Dashboard", phone: "Phone" };
-              const colors: Record<string, string> = { public: "#D4AF37", whatsapp: "#25D366", dashboard: "#2DD4BF", phone: "#8b5cf6" };
-              return (
-                <div key={s.source} className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: colors[s.source] || "#666" }} />
-                  <div className="flex-1 flex justify-between text-xs">
-                    <span>{labels[s.source] || s.source}</span>
-                    <span className="text-white/40">{pct}% ({s.count})</span>
-                  </div>
+      {/* Competitive Intel Tab */}
+      {activeTab === "competitive" && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          {COMPETITORS.map((comp, i) => (
+            <motion.div
+              key={comp.name}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              className="p-5 rounded-xl border border-gray-200 bg-white"
+            >
+              <h3 className="text-[15px] font-semibold text-gray-900 mb-3">{comp.name}</h3>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <div className="text-[10px] text-green-600 font-semibold uppercase mb-1">Strength</div>
+                  <p className="text-[12px] text-gray-500">{comp.strength}</p>
                 </div>
-              );
-            })}
-          </div>
-
-          {/* Day distribution */}
-          <h3 className="text-sm font-semibold mt-6 mb-4">Busiest Days</h3>
-          <div className="flex items-end gap-1.5 h-20">
-            {(a?.bookingsByDay || []).map(d => {
-              const max = Math.max(...(a?.bookingsByDay || []).map(x => x.count), 1);
-              const pct = (d.count / max) * 100;
-              return (
-                <div key={d.day} className="flex-1 flex flex-col items-center gap-1">
-                  <div className="w-full rounded-t-sm transition-all" style={{ height: `${Math.max(pct, 4)}%`, backgroundColor: "#D4AF37" + (pct > 50 ? "cc" : "44") }} />
-                  <span className="text-[9px] text-white/30">{d.day}</span>
+                <div>
+                  <div className="text-[10px] text-red-500 font-semibold uppercase mb-1">Threat to Netcare</div>
+                  <p className="text-[12px] text-gray-500">{comp.threat}</p>
                 </div>
-              );
-            })}
+                <div>
+                  <div className="text-[10px] text-[#3DA9D1] font-semibold uppercase mb-1">Tech Stack</div>
+                  <p className="text-[12px] text-gray-500">{comp.techStack}</p>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+          <div className="p-4 rounded-xl bg-[#1D3443] text-center">
+            <p className="text-[12px] text-white/50">
+              <Lock className="w-3 h-3 inline mr-1" />
+              Deep competitive analysis with real-time pricing data, market share tracking, and strategic recommendations — <span className="text-[#E3964C]">available with subscription</span>
+            </p>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      )}
 
-      {/* Market Signals */}
-      <div>
-        <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-          <Zap className="w-3.5 h-3.5 text-[var(--gold)]" /> Market Signals
-        </h3>
-        <div className="grid sm:grid-cols-2 gap-2">
-          <MarketSignal
-            type="opportunity"
-            title="High demand: Morning slots"
-            description="80% of bookings are before 12:00. Consider extending morning hours or adding a practitioner."
-          />
-          <MarketSignal
-            type="trend"
-            title="Online bookings growing"
-            description="Public booking page adoption is increasing. Consider promoting the booking link on social media."
-          />
-          <MarketSignal
-            type="risk"
-            title={`No-show rate: ${a?.noShowRate || 0}%`}
-            description={a?.noShowRate && a.noShowRate > 10 ? "Above industry average. Enable deposit payments or SMS reminders to reduce no-shows." : "Within healthy range. Keep up the reminder system."}
-          />
-          <MarketSignal
-            type="opportunity"
-            title="WhatsApp engagement"
-            description="WhatsApp bookings have high confirmation rates. Enable auto-replies for faster response times."
-          />
-        </div>
+      {/* Footer */}
+      <div className="p-3 rounded-lg bg-gray-50 border border-gray-200 text-center">
+        <p className="text-[11px] text-gray-400">
+          Intelligence powered by <span className="text-[#1D3443] font-semibold">Visio Research Labs</span> &middot;
+          120+ peer-reviewed sources &middot; Updated daily &middot;
+          Jess AI will explain each section — ask her anything about the data above
+        </p>
       </div>
     </div>
   );

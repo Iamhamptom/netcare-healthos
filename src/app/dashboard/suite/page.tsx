@@ -133,11 +133,11 @@ const VALUE_CHAIN = [
 
 // ─── Resell Opportunity ──────
 const RESELL_TARGETS = [
-  { name: "Independent GPs in Medicross", count: "568", desc: "Each practitioner can subscribe to VisioHealth OS modules individually" },
-  { name: "Netcare Hospital Groups", count: "49", desc: "Hospital-grade analytics for acute care facilities" },
-  { name: "Corporate Occupational Health", count: "200+", desc: "Employer wellness packages with Prime Cure integration" },
-  { name: "Medical Scheme Partners", count: "20+", desc: "Claims intelligence for Discovery, GEMS, Bonitas, Momentum" },
-  { name: "Netcare Education Graduates", count: "2,000+/yr", desc: "Training new healthcare workers on AI-powered systems" },
+  { name: "Independent GPs in Medicross", count: "568", desc: "Deploy to each practitioner under the Netcare umbrella — one license, network-wide access" },
+  { name: "49 Netcare Hospitals", count: "49", desc: "Deploy to every hospital branch — doctors use under the Netcare umbrella, branded as Netcare's own system" },
+  { name: "Corporate Occ Health Clients", count: "200+", desc: "White-label for corporate clients — mining, auto, finance, govt wellness contracts" },
+  { name: "Medical Scheme Partners", count: "20+", desc: "Claims intelligence modules for Discovery, GEMS, Bonitas, Momentum — sold as Netcare tools" },
+  { name: "Netcare Education Graduates", count: "2,000+/yr", desc: "Train new nurses and paramedics on AI-powered systems from day one" },
 ];
 
 export default function SuitePage() {
@@ -272,6 +272,25 @@ export default function SuitePage() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Branch Deployment & Ecosystem */}
+      <div className="p-5 rounded-xl border border-[#3DA9D1]/20 bg-[#3DA9D1]/5">
+        <h3 className="text-[15px] font-semibold text-gray-900 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+          Branch Deployment &amp; Doctor Umbrella Licensing
+        </h3>
+        <p className="text-[12px] text-gray-600 mb-2">
+          Deploy VisioHealth OS to every Netcare branch — 49 hospitals, 55 Medicross clinics, 15 day theatres.
+          Each doctor uses the platform under the <span className="font-semibold">Netcare umbrella</span> — branded as Netcare&apos;s own AI system.
+          All data routes back to the main command center, giving you full visibility across the network.
+        </p>
+        <p className="text-[12px] text-gray-600 mb-2">
+          <span className="font-semibold">Netcare becomes the ecosystem.</span> Existing systems (CareOn, SAP, Healthbridge, GoodX)
+          integrate through our middleware layer. Need a custom integration? Request it — we build connectors to any system in your stack.
+        </p>
+        <p className="text-[12px] text-gray-500">
+          Enterprise umbrella license: one agreement covers all 568 practitioners. No individual subscriptions needed.
+        </p>
       </div>
 
       {/* Visio Research Labs badge */}

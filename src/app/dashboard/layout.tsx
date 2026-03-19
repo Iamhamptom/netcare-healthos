@@ -2,6 +2,7 @@ import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import CommandAssistant from "@/components/dashboard/CommandAssistant";
 import VoiceAgentFloat from "@/components/voice-agent/VoiceAgentFloat";
+import FeatureGuide from "@/components/dashboard/FeatureGuide";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -27,6 +28,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
       <CommandAssistant />
       <VoiceAgentFloat />
+      <FeatureGuide />
     </div>
   );
 }
