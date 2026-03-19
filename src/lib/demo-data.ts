@@ -249,9 +249,9 @@ export const demoConversations = [
     createdAt: new Date(now.getTime() - 2 * day),
     updatedAt: new Date(now.getTime() - 120000),
     messages: [
-      { id: "m1", conversationId: "c1", role: "patient", content: "Hi, I'd like to reschedule my cleaning appointment from Thursday to next week.", approved: true, createdAt: new Date(now.getTime() - 3600000) },
-      { id: "m2", conversationId: "c1", role: "practice", content: "Hi Maria! Of course, we can reschedule. Would Monday or Wednesday next week work for you? We have slots at 9:00 and 14:00 on both days.", approved: true, createdAt: new Date(now.getTime() - 3000000) },
-      { id: "m3", conversationId: "c1", role: "patient", content: "Wednesday at 14:00 would be perfect, thank you!", approved: true, createdAt: new Date(now.getTime() - 2400000) },
+      { id: "m1", conversationId: "c1", role: "patient", content: "Hi, I need to reschedule my chronic disease management appointment at Medicross Sandton.", approved: true, createdAt: new Date(now.getTime() - 3600000) },
+      { id: "m2", conversationId: "c1", role: "practice", content: "Hi Thandi! Of course. We have availability at Medicross Sandton on Monday at 9:00 or Wednesday at 14:00. Which works for you?", approved: true, createdAt: new Date(now.getTime() - 3000000) },
+      { id: "m3", conversationId: "c1", role: "patient", content: "Wednesday at 14:00 please. Will Dr Govender be available for my HbA1c review?", approved: true, createdAt: new Date(now.getTime() - 2400000) },
     ],
   },
   {
@@ -263,8 +263,8 @@ export const demoConversations = [
     createdAt: new Date(now.getTime() - day),
     updatedAt: new Date(now.getTime() - 480000),
     messages: [
-      { id: "m4", conversationId: "c2", role: "patient", content: "What are your prices for teeth whitening?", approved: true, createdAt: new Date(now.getTime() - 600000) },
-      { id: "m5", conversationId: "c2", role: "ai_suggestion", content: "Hi James! Great question. Our teeth whitening treatments start from R2,500 for in-office whitening, which gives you results in about an hour. We also offer take-home kits from R1,200. Would you like to book a consultation to discuss which option would work best for you?", approved: false, createdAt: new Date(now.getTime() - 540000) },
+      { id: "m4", conversationId: "c2", role: "patient", content: "I need a GP consultation near Fourways. Do you have same-day availability?", approved: true, createdAt: new Date(now.getTime() - 600000) },
+      { id: "m5", conversationId: "c2", role: "ai_suggestion", content: "Hi Johan! Medicross Fourways has a GP slot today at 14:30. Consultation fee is R650 (medical aid covers most of this). Shall I book you in? Your GEMS benefits are still available.", approved: false, createdAt: new Date(now.getTime() - 540000) },
     ],
   },
   {
@@ -276,8 +276,8 @@ export const demoConversations = [
     createdAt: new Date(now.getTime() - 3600000),
     updatedAt: new Date(now.getTime() - 300000),
     messages: [
-      { id: "m6", conversationId: "c3", role: "patient", content: "I need an emergency appointment please. I have severe pain in my back tooth.", approved: true, createdAt: new Date(now.getTime() - 900000) },
-      { id: "m7", conversationId: "c3", role: "ai_suggestion", content: "Hi Lerato, I'm sorry to hear you're in pain. We always prioritise emergency cases. Can you come in today? We have an opening at 15:30. If the pain is severe, please take an anti-inflammatory in the meantime. If it worsens, please call us directly at +27 11 783 4500.", approved: false, createdAt: new Date(now.getTime() - 840000) },
+      { id: "m6", conversationId: "c3", role: "patient", content: "My blood pressure medication is running out. Can I get a repeat script from Medicross?", approved: true, createdAt: new Date(now.getTime() - 900000) },
+      { id: "m7", conversationId: "c3", role: "ai_suggestion", content: "Hi Sipho! I can see your Amlodipine 10mg + Perindopril 8mg script is on file. The nearest Clicks pharmacy at Medicross Sandton has stock. Shall I send the repeat script there, or would you prefer a different Medicross location?", approved: false, createdAt: new Date(now.getTime() - 840000) },
     ],
   },
 ];
@@ -290,20 +290,20 @@ function bizDate(daysOffset: number, hour: number, minute = 0): Date {
 }
 
 export const demoBookings = [
-  { id: "b1", patientName: "Maria Santos", patientPhone: "+27 82 345 6789", patientEmail: "maria@example.com", service: "Cleaning", scheduledAt: bizDate(2, 10, 0), status: "confirmed", source: "public", notes: "", depositAmount: 0, depositPaid: false, paymentRef: "", confirmedAt: new Date(now.getTime() - day / 2), confirmedBy: "demo-user", rejectedAt: null, rejectionReason: "", reminderSentAt: null, followupSentAt: null, checkinSentAt: null, practiceId: "demo-practice", createdAt: new Date(now.getTime() - day) },
-  { id: "b2", patientName: "James Khumalo", patientPhone: "+27 83 456 7890", patientEmail: "", service: "Whitening Consultation", scheduledAt: bizDate(3, 14, 30), status: "pending", source: "public", notes: "", depositAmount: 200, depositPaid: false, paymentRef: "", confirmedAt: null, confirmedBy: "", rejectedAt: null, rejectionReason: "", reminderSentAt: null, followupSentAt: null, checkinSentAt: null, practiceId: "demo-practice", createdAt: new Date(now.getTime() - day) },
-  { id: "b3", patientName: "Thandi Mokoena", patientPhone: "+27 84 567 8901", patientEmail: "thandi@example.com", service: "Check-up", scheduledAt: bizDate(1, 9, 0), status: "confirmed", source: "whatsapp", notes: "", depositAmount: 0, depositPaid: false, paymentRef: "", confirmedAt: new Date(now.getTime() - 2 * day), confirmedBy: "demo-user", rejectedAt: null, rejectionReason: "", reminderSentAt: null, followupSentAt: null, checkinSentAt: null, practiceId: "demo-practice", createdAt: new Date(now.getTime() - 2 * day) },
-  { id: "b4", patientName: "David Robinson", patientPhone: "+27 85 678 9012", patientEmail: "", service: "Filling", scheduledAt: bizDate(5, 11, 30), status: "pending", source: "phone", notes: "Nervous patient — needs extra care", depositAmount: 0, depositPaid: false, paymentRef: "", confirmedAt: null, confirmedBy: "", rejectedAt: null, rejectionReason: "", reminderSentAt: null, followupSentAt: null, checkinSentAt: null, practiceId: "demo-practice", createdAt: new Date(now.getTime() - day) },
-  { id: "b5", patientName: "Lerato Phiri", patientPhone: "+27 86 789 0123", patientEmail: "lerato@example.com", service: "Emergency — Toothache", scheduledAt: bizDate(0, 15, 0), status: "confirmed", source: "dashboard", notes: "", depositAmount: 0, depositPaid: false, paymentRef: "", confirmedAt: now, confirmedBy: "demo-user", rejectedAt: null, rejectionReason: "", reminderSentAt: null, followupSentAt: null, checkinSentAt: null, practiceId: "demo-practice", createdAt: now },
-  { id: "b6", patientName: "Sipho Ndlovu", patientPhone: "+27 71 234 5678", patientEmail: "", service: "Dental Consultation", scheduledAt: bizDate(4, 8, 30), status: "pending", source: "public", notes: "First visit", depositAmount: 100, depositPaid: false, paymentRef: "", confirmedAt: null, confirmedBy: "", rejectedAt: null, rejectionReason: "", reminderSentAt: null, followupSentAt: null, checkinSentAt: null, practiceId: "demo-practice", createdAt: new Date(now.getTime() - 3600000) },
-  { id: "b7", patientName: "Naledi Mogale", patientPhone: "+27 72 345 6789", patientEmail: "naledi@email.co.za", service: "Tooth Extraction", scheduledAt: bizDate(6, 13, 0), status: "pending", source: "whatsapp", notes: "Referred by Dr. Patel", depositAmount: 0, depositPaid: false, paymentRef: "", confirmedAt: null, confirmedBy: "", rejectedAt: null, rejectionReason: "", reminderSentAt: null, followupSentAt: null, checkinSentAt: null, practiceId: "demo-practice", createdAt: new Date(now.getTime() - 7200000) },
+  { id: "b1", patientName: "Maria Santos", patientPhone: "+27 82 345 6789", patientEmail: "maria@example.com", service: "GP Consultation", scheduledAt: bizDate(2, 10, 0), status: "confirmed", source: "public", notes: "", depositAmount: 0, depositPaid: false, paymentRef: "", confirmedAt: new Date(now.getTime() - day / 2), confirmedBy: "demo-user", rejectedAt: null, rejectionReason: "", reminderSentAt: null, followupSentAt: null, checkinSentAt: null, practiceId: "demo-practice", createdAt: new Date(now.getTime() - day) },
+  { id: "b2", patientName: "James Khumalo", patientPhone: "+27 83 456 7890", patientEmail: "", service: "GP Consultation", scheduledAt: bizDate(3, 14, 30), status: "pending", source: "public", notes: "", depositAmount: 200, depositPaid: false, paymentRef: "", confirmedAt: null, confirmedBy: "", rejectedAt: null, rejectionReason: "", reminderSentAt: null, followupSentAt: null, checkinSentAt: null, practiceId: "demo-practice", createdAt: new Date(now.getTime() - day) },
+  { id: "b3", patientName: "Thandi Mokoena", patientPhone: "+27 84 567 8901", patientEmail: "thandi@example.com", service: "Follow-up Visit", scheduledAt: bizDate(1, 9, 0), status: "confirmed", source: "whatsapp", notes: "", depositAmount: 0, depositPaid: false, paymentRef: "", confirmedAt: new Date(now.getTime() - 2 * day), confirmedBy: "demo-user", rejectedAt: null, rejectionReason: "", reminderSentAt: null, followupSentAt: null, checkinSentAt: null, practiceId: "demo-practice", createdAt: new Date(now.getTime() - 2 * day) },
+  { id: "b4", patientName: "David Robinson", patientPhone: "+27 85 678 9012", patientEmail: "", service: "Executive Wellness Screen", scheduledAt: bizDate(5, 11, 30), status: "pending", source: "phone", notes: "Nervous patient — needs extra care", depositAmount: 0, depositPaid: false, paymentRef: "", confirmedAt: null, confirmedBy: "", rejectedAt: null, rejectionReason: "", reminderSentAt: null, followupSentAt: null, checkinSentAt: null, practiceId: "demo-practice", createdAt: new Date(now.getTime() - day) },
+  { id: "b5", patientName: "Lerato Phiri", patientPhone: "+27 86 789 0123", patientEmail: "lerato@example.com", service: "Urgent GP — Chest Pain", scheduledAt: bizDate(0, 15, 0), status: "confirmed", source: "dashboard", notes: "", depositAmount: 0, depositPaid: false, paymentRef: "", confirmedAt: now, confirmedBy: "demo-user", rejectedAt: null, rejectionReason: "", reminderSentAt: null, followupSentAt: null, checkinSentAt: null, practiceId: "demo-practice", createdAt: now },
+  { id: "b6", patientName: "Sipho Ndlovu", patientPhone: "+27 71 234 5678", patientEmail: "", service: "Chronic Disease Review", scheduledAt: bizDate(4, 8, 30), status: "pending", source: "public", notes: "First visit", depositAmount: 100, depositPaid: false, paymentRef: "", confirmedAt: null, confirmedBy: "", rejectedAt: null, rejectionReason: "", reminderSentAt: null, followupSentAt: null, checkinSentAt: null, practiceId: "demo-practice", createdAt: new Date(now.getTime() - 3600000) },
+  { id: "b7", patientName: "Naledi Mogale", patientPhone: "+27 72 345 6789", patientEmail: "naledi@email.co.za", service: "Occupational Health Assessment", scheduledAt: bizDate(6, 13, 0), status: "pending", source: "whatsapp", notes: "Referred by Dr. Patel", depositAmount: 0, depositPaid: false, paymentRef: "", confirmedAt: null, confirmedBy: "", rejectedAt: null, rejectionReason: "", reminderSentAt: null, followupSentAt: null, checkinSentAt: null, practiceId: "demo-practice", createdAt: new Date(now.getTime() - 7200000) },
 ];
 
 export const demoReviews = [
-  { id: "r1", rating: 5, comment: "Dr. Govender is amazing! Painless filling and the staff were so friendly.", source: "google", authorName: "James K.", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 3 * day) },
-  { id: "r2", rating: 5, comment: "Best dental experience I've had. Modern clinic and great communication via WhatsApp.", source: "google", authorName: "Thandi M.", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 7 * day) },
-  { id: "r3", rating: 4, comment: "Good service overall. Waiting time was a bit long but treatment was excellent.", source: "facebook", authorName: "David R.", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 10 * day) },
-  { id: "r4", rating: 5, comment: "Love the appointment reminders! Never miss a check-up anymore.", source: "whatsapp", authorName: "Maria S.", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 14 * day) },
+  { id: "r1", rating: 5, comment: "Excellent service at Medicross Sandton. Dr Govender managed my chronic care review efficiently.", source: "google", authorName: "James K.", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 3 * day) },
+  { id: "r2", rating: 5, comment: "Best primary care experience I've had. Modern clinic and great communication via WhatsApp.", source: "google", authorName: "Thandi M.", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 7 * day) },
+  { id: "r3", rating: 4, comment: "Good service overall. Efficient service. The WhatsApp booking made it seamless..", source: "facebook", authorName: "David R.", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 10 * day) },
+  { id: "r4", rating: 5, comment: "The reminder system is brilliant — I never miss my chronic medication reviews now.", source: "whatsapp", authorName: "Maria S.", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 14 * day) },
 ];
 
 export const demoRecallItems = [
@@ -574,7 +574,7 @@ export const demoStore = {
   simulatePatient: () => {
     const messages = [
       "Hi, I'd like to reschedule my appointment for next week",
-      "What are your prices for teeth whitening?",
+      "I need a GP consultation near Fourways. Do you have same-day availability?",
       "Do you have availability this Thursday afternoon?",
       "I have a toothache, can I come in today?",
       "Do you accept medical aid?",
@@ -839,13 +839,13 @@ function generateMockAIReply(patientMessage: string, patientName: string): strin
     return `Hi ${firstName}! Of course, we can help with that. We have availability on Monday at 10:00, Wednesday at 14:00, and Friday at 9:00. Which works best for you?`;
   }
   if (lower.includes("price") || lower.includes("cost") || lower.includes("whitening")) {
-    return `Hi ${firstName}! Great question. Our teeth whitening starts from R2,500 for in-office treatment (1 hour) or R1,200 for take-home kits. Would you like to book a free consultation?`;
+    return `Hi ${firstName}! Great question. Our Medicross Fourways has same-day GP slots at 14:00 and 15:30. Consultation is R650. Discovery/GEMS/Bonitas cover most of this. Shall I book you in?`;
   }
   if (lower.includes("availability") || lower.includes("thursday") || lower.includes("book")) {
     return `Hi ${firstName}! Let me check our schedule. We have openings at 14:00 and 15:30. Shall I book one of those for you?`;
   }
   if (lower.includes("pain") || lower.includes("emergency") || lower.includes("toothache")) {
-    return `Hi ${firstName}, I'm sorry to hear that. We prioritise emergencies — can you come in today at 15:30? Please take an anti-inflammatory in the meantime. If pain worsens, call us at +27 11 783 4500.`;
+    return `Hi ${firstName}, I'm sorry to hear that. We prioritise emergencies — can you come in today at 15:30? Please take an anti-inflammatory in the meantime. If pain worsens, call us at 082 911 (Netcare 911).`;
   }
   if (lower.includes("medical aid") || lower.includes("insurance")) {
     return `Hi ${firstName}! Yes, we accept all major medical aids including Discovery, Bonitas, Momentum, and Medihelp. We can also do a benefits check before your appointment.`;

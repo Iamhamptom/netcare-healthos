@@ -114,7 +114,7 @@ export default function NetcareAssistant() {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className={`fixed z-[9990] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden ${
+            className={`fixed z-[9990] glass-chatbot rounded-2xl shadow-2xl border border-gray-200/50 flex flex-col overflow-hidden ${
               expanded ? "bottom-4 right-4 left-4 top-4" : "bottom-6 right-6 w-[420px] h-[560px]"
             }`}
           >

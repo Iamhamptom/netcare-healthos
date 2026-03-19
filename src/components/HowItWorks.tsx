@@ -7,37 +7,37 @@ import { blurPlaceholders } from "@/lib/blur-placeholders";
 const steps = [
   {
     number: "01",
-    title: "We Find Your Patients",
+    title: "WhatsApp Patient Router",
     description:
-      "Our Signal Lead Gen system identifies people in your area who need healthcare services. AI analyzes demographics, search patterns, and health signals.",
+      "Patients message one WhatsApp number. AI identifies the service needed, finds the nearest Medicross with availability, and routes them — GP, dental, optometry, pharmacy.",
     image: "/images/step-whatsapp.png",
   },
   {
     number: "02",
-    title: "AI Reaches Out",
+    title: "AI Claims Pre-Validation",
     description:
-      "Automated, personalized outreach via WhatsApp, SMS, and calls. Each message is crafted by AI to convert prospects into bookings.",
+      "Before every claim hits Altron SwitchOn, our AI validates ICD-10-ZA codes, NAPPI codes, and PMB benefit limits. 75% of rejectable claims caught before submission.",
     image: "/images/step-ai-chat.png",
   },
   {
     number: "03",
-    title: "Patients Book Instantly",
+    title: "Smart Booking Engine",
     description:
-      "Our smart booking engine lets patients choose a time, confirm, and get added to your calendar — all without your team lifting a finger.",
+      "AI manages calendars across 568 practitioners. Patients book via WhatsApp or online. No-show prediction with automated reminders reduces missed appointments by 40%.",
     image: "/images/step-booking.png",
   },
   {
     number: "04",
-    title: "Nobody Misses Appointments",
+    title: "Network Financial Dashboard",
     description:
-      "Automated reminders, confirmations, and callback sequences ensure patients show up. No-shows drop dramatically.",
+      "Real-time divisional P&L across 88 clinics. Revenue by region, EBITDA tracking, debtor aging, claims analytics — replacing fragmented Excel reporting.",
     image: "/images/step-followup.png",
   },
   {
     number: "05",
-    title: "Ongoing Engagement",
+    title: "Compliance Automation",
     description:
-      "After the visit, our AI sends follow-ups, recall reminders, newsletters, and health tips. Patients come back, and they refer friends.",
+      "POPIA consent tracking, HPCSA Booklet 10 alignment, audit logging, and breach detection — automated across all 88 clinics in 8 provinces.",
     image: "/images/step-followup.png",
   },
 ];
@@ -88,11 +88,10 @@ export default function HowItWorks() {
             How It Works
           </span>
           <h2 className="text-4xl md:text-5xl font-light tracking-[-0.03em] text-gray-900 max-w-lg mb-6">
-            From stranger to loyal patient.
+            From fragmented to unified.
           </h2>
           <p className="text-gray-500 text-sm font-light leading-relaxed max-w-md">
-            Five steps that transform how your practice grows — from finding new
-            patients to keeping them for life.
+            Five AI modules that transform Netcare Primary Healthcare operations — from claims to compliance.
           </p>
         </motion.div>
 
