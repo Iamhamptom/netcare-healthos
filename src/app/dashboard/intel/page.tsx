@@ -125,7 +125,7 @@ const tagColors: Record<string, string> = {
 };
 
 export default function IntelPage() {
-  const [activeTab, setActiveTab] = useState<"market" | "news" | "research" | "competitive">("market");
+  const [activeTab, setActiveTab] = useState<"market" | "news" | "research" | "competitive" | "global">("market");
 
   return (
     <div className="p-6 space-y-6 max-w-[1400px] mx-auto">
@@ -159,7 +159,8 @@ export default function IntelPage() {
           { key: "market" as const, label: "Market Data", icon: BarChart3 },
           { key: "news" as const, label: "Health News", icon: Newspaper },
           { key: "research" as const, label: "Research Papers", icon: BookOpen },
-          { key: "competitive" as const, label: "Competitive Intel", icon: Target },
+          { key: "competitive" as const, label: "SA Competitors", icon: Target },
+          { key: "global" as const, label: "Global Landscape", icon: Globe },
         ].map(tab => (
           <button
             key={tab.key}
@@ -338,6 +339,102 @@ export default function IntelPage() {
               <Lock className="w-3 h-3 inline mr-1" />
               Deep competitive analysis with real-time pricing data, market share tracking, and strategic recommendations — <span className="text-[#E3964C]">available with subscription</span>
             </p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Global Landscape Tab */}
+      {activeTab === "global" && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+          {/* Global Market Size */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { label: "Global Healthcare IT", value: "$866B", sub: "2025 → $3.7T by 2035", color: "#3DA9D1" },
+              { label: "AI in Healthcare", value: "$21.7B", sub: "2025 → $110.6B by 2030 (38.6% CAGR)", color: "#E3964C" },
+              { label: "Digital Health Funding", value: "$14.2B", sub: "2025 — AI companies take 54%", color: "#10B981" },
+              { label: "African Digital Health", value: "$3.8B", sub: "Growing to $9.3B by 2030", color: "#8B5CF6" },
+            ].map((m, i) => (
+              <motion.div key={m.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="p-4 rounded-xl border border-gray-200 bg-white">
+                <div className="text-xl font-bold text-gray-900">{m.value}</div>
+                <div className="text-[11px] text-gray-500 font-medium">{m.label}</div>
+                <div className="text-[10px] mt-1" style={{ color: m.color }}>{m.sub}</div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Top Global Players */}
+          <div className="rounded-xl border border-gray-200 overflow-hidden">
+            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
+              <h3 className="text-[14px] font-semibold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>What the World&apos;s Best Hospital Groups Are Doing</h3>
+              <p className="text-[11px] text-gray-500">Global leaders Netcare should benchmark against</p>
+            </div>
+            <div className="divide-y divide-gray-100">
+              {[
+                { name: "HCA Healthcare (USA)", scale: "191 hospitals", innovation: "Largest ambient AI deployment globally — 83% reduction in charge entry time, 85%+ autonomous coding via Commure partnership", relevance: "Netcare has 49 hospitals. HCA is 4x the size and going all-in on AI billing automation." },
+                { name: "Epic Systems (USA)", scale: "$5.7B revenue, 42.3% market share", innovation: "325M patient records. Winning 70% of new hospital contracts. AI-native EHR with clinical decision support", relevance: "CareOn is Netcare's answer — but only covers hospitals. Primary care needs its own AI layer." },
+                { name: "Mayo Clinic (USA)", scale: "#1 ranked hospital", innovation: "20M digital pathology images, NVIDIA partnership, licensing AI models to other health systems", relevance: "Mayo monetises its AI — Netcare could license VisioHealth OS modules to other SA hospital groups." },
+                { name: "Cleveland Clinic (USA)", scale: "4,000+ clinicians", innovation: "Ambient AI saving 14 min/day per clinician. Palantir virtual command center for operations", relevance: "Real-time command center concept = exactly what Network Financial Dashboard does for Netcare." },
+                { name: "NHS England", scale: "National health system", innovation: "GBP 10B digital investment by 2028/29. Mandatory Federated Data Platform across all trusts", relevance: "Government-scale digital transformation. NHI could push SA in same direction — Netcare must be ready." },
+                { name: "Ramsay Health Care (Australia)", scale: "Global hospital group", innovation: "10-year digital strategy with Google Cloud data hub. Enterprise analytics across all facilities", relevance: "Closest comparable to Netcare's multi-facility model. 10-year horizon = Phase 2-3 of Netcare's strategy." },
+              ].map((item, i) => (
+                <div key={item.name} className={`p-4 ${i % 2 === 0 ? "bg-white" : "bg-gray-50/30"}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-[13px] font-semibold text-gray-900">{item.name}</h4>
+                    <span className="text-[10px] text-gray-400">{item.scale}</span>
+                  </div>
+                  <p className="text-[12px] text-gray-600 mb-2">{item.innovation}</p>
+                  <p className="text-[11px] text-[#3DA9D1] font-medium">{item.relevance}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Key Innovations */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-5 rounded-xl border border-gray-200 bg-white">
+              <h4 className="text-[13px] font-semibold text-gray-900 mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>AI Claims Validation — Global Results</h4>
+              <div className="space-y-2 text-[12px] text-gray-600">
+                <p>Athenahealth achieves <span className="font-semibold text-green-600">99% clean claim rates</span> with AI pre-validation — vs 54% of providers reporting increasing claim errors.</p>
+                <p>HCA Healthcare: <span className="font-semibold text-green-600">85%+ autonomous coding</span> — AI processes claims without human review.</p>
+                <p className="text-[11px] text-[#E3964C] font-medium mt-2">For Netcare: Moving from 15% rejection to &lt;5% = R21.6M/year recovered.</p>
+              </div>
+            </div>
+            <div className="p-5 rounded-xl border border-gray-200 bg-white">
+              <h4 className="text-[13px] font-semibold text-gray-900 mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>Predictive Analytics — Proven ROI</h4>
+              <div className="space-y-2 text-[12px] text-gray-600">
+                <p>Johns Hopkins: <span className="font-semibold text-green-600">$700K saved</span> on ICU staffing alone with predictive models.</p>
+                <p>Industry average: <span className="font-semibold text-green-600">3.2X ROI in 14 months</span> on healthcare predictive analytics investments.</p>
+                <p className="text-[11px] text-[#E3964C] font-medium mt-2">For Netcare: R8.4M/month savings = R100M/year. Investment pays back in &lt;3 months.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Cautionary Tale */}
+          <div className="p-4 rounded-xl border border-red-200 bg-red-50/30">
+            <h4 className="text-[13px] font-semibold text-red-700 mb-1">Cautionary Tale: Babylon Health</h4>
+            <p className="text-[12px] text-gray-600">
+              Babylon Health peaked at <span className="font-semibold">$4.2B valuation</span> with AI triage — then collapsed to a GBP 500K asset sale.
+              Why? Overhyped AI without operational integration. VisioHealth OS avoids this by integrating directly with your existing CareOn, SAP, and SwitchOn systems — not replacing them.
+            </p>
+          </div>
+
+          {/* Africa Context */}
+          <div className="p-4 rounded-xl bg-[#1D3443]">
+            <h4 className="text-[13px] font-semibold text-white mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>African Healthcare Tech Landscape</h4>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { name: "mPharma (Ghana)", raised: "$80M+", focus: "Pharmacy supply chain" },
+                { name: "Helium Health (Nigeria)", raised: "$30M", focus: "Hospital management" },
+                { name: "VisioHealth OS (SA)", raised: "Bootstrapped", focus: "Primary care AI operations — the only platform built for SA-scale networks" },
+              ].map(c => (
+                <div key={c.name} className="p-3 rounded-lg bg-white/5 border border-white/10">
+                  <div className="text-[12px] text-white font-semibold">{c.name}</div>
+                  <div className="text-[10px] text-[#3DA9D1] font-medium">{c.raised}</div>
+                  <div className="text-[10px] text-white/40 mt-1">{c.focus}</div>
+                </div>
+              ))}
+            </div>
+            <p className="text-[10px] text-white/30 mt-3">Combined African healthtech funding is less than a single US mega-round. First-mover advantage is real.</p>
           </div>
         </motion.div>
       )}
