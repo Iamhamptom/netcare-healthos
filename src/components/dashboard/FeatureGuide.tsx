@@ -285,7 +285,7 @@ function JessBar({ context, onClose, onNavigate }: { context: string; onClose: (
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: -60, opacity: 0 }}
       transition={{ type: "spring", damping: 25, stiffness: 200 }}
-      className="fixed top-[56px] left-[240px] right-0 z-[9995] bg-[#1D3443] border-b border-[#3DA9D1]/20 shadow-lg"
+      className="fixed top-[56px] left-[240px] right-0 z-[50] bg-[#1D3443]/95 backdrop-blur-sm border-b border-[#3DA9D1]/20"
     >
       <div className="px-5 py-3 flex items-center gap-3">
         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#3DA9D1] to-[#E3964C] flex items-center justify-center shrink-0">
@@ -378,7 +378,7 @@ export default function FeatureGuide() {
 
       {ndaAccepted && welcomeDone && (
         <button onClick={toggleJess}
-          className="fixed top-[18px] right-[220px] z-[9997] flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#3DA9D1]/10 to-[#E3964C]/10 border border-[#3DA9D1]/20 text-[11px] font-semibold text-[#1D3443] hover:border-[#3DA9D1]/40 transition-colors">
+          className="fixed top-[18px] right-[280px] z-[50] flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#3DA9D1]/10 to-[#E3964C]/10 border border-[#3DA9D1]/20 text-[11px] font-semibold text-[#1D3443] hover:border-[#3DA9D1]/40 transition-colors">
           <Sparkles className="w-3 h-3 text-[#E3964C]" />
           {jessOpen ? "Jess: On" : "Jess: Off"}
         </button>

@@ -68,9 +68,9 @@ export default function DashboardHeader() {
         )}
       </div>
       <div className="flex items-center gap-3">
-        {user?.name && (
+        {user?.name && user.name.trim() !== "" && (
           <span className="text-[12px] text-gray-600 font-medium">
-            Welcome, <span style={{ color: primaryColor || "#111827" }} className="font-semibold">{user.name.split(" ")[0]}</span>
+            <span style={{ color: primaryColor || "#111827" }} className="font-semibold">{user.name.split(" ")[0]}</span>
           </span>
         )}
         <div className="relative">
