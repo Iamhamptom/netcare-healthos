@@ -41,13 +41,14 @@ export const demoPractice = {
   bookingWelcomeMsg: "Welcome to Netcare Primary Healthcare. As South Africa's largest private primary care network (88 Medicross clinics, 37 pharmacies), we offer comprehensive GP, dental, pharmacy, and occupational health services.",
   bookingConfirmMsg: "Your Netcare Medicross appointment has been confirmed. Please bring your medical aid card and ID.",
   googlePlaceId: "",
-  // Netcare-specific metadata
+  // Netcare real tech stack (from research)
   integrations: JSON.stringify({
-    emr: "HEAL Platform (Netcare Digital + A2D24)",
-    erp: "SAP for Healthcare (IS-H)",
-    claims: "EDI via MediSwitch — ICD-10 + NAPPI codes",
-    cloud: "AWS Serverless (via A2D24)",
-    hospital_emr: "CareOn (Deutsche Telekom + Apple iOS)",
+    hospital_emr: "CareOn EMR (34,000+ users, 7 provinces, International Quality Award winner)",
+    clinic_pms: "Healthbridge / GoodX (varied across 568 practitioners — key integration gap)",
+    claims_switch: "Altron SwitchOn + MediSwitch EDI (eRA processing, ICD-10-ZA, NAPPI)",
+    drug_safety: "IBM Watson Health Micromedex (eliminates 60% potential medication errors)",
+    icu_prediction: "Early Clinical Deterioration Algorithm (live across all Netcare ICUs from May 2025)",
+    erp: "Group ERP (integrated with CMS regulatory reporting)",
   }),
   createdAt: new Date(now.getTime() - 30 * day),
 };

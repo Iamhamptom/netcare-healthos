@@ -9,15 +9,17 @@ import {
 } from "lucide-react";
 
 // ─── Netcare Primary Healthcare Division — Financial Command Center ──────
-// Data modeled on real Netcare divisional reporting structure
+// FY2025: Division Revenue R662M, EBITDA R162M (24.5% margin)
+// Group: R26.3B revenue, R4.9B EBITDA, CEO Dr Richard Friedland
+// Primary Care = 2.5% of group but high-margin (24.5%) — tech leverage is disproportionately valuable
 
 const DIVISION_KPIs = [
-  { label: "MTD Revenue", value: "R47.2M", target: "R55M", pct: 85.8, trend: "+12.3%", icon: DollarSign, color: "#3DA9D1", status: "on_track" },
-  { label: "Claims Submitted", value: "34,892", target: "38,000", pct: 91.8, trend: "+8.1%", icon: Receipt, color: "#E3964C", status: "on_track" },
-  { label: "Claims Rejected", value: "2,417", target: "<2,000", pct: 120.9, trend: "-3.2%", icon: FileWarning, color: "#EF4444", status: "attention" },
+  { label: "Division Revenue (MTD)", value: "R55.2M", target: "R55.2M", pct: 100, trend: "+2.8%", icon: DollarSign, color: "#3DA9D1", status: "on_track" },
+  { label: "Claims via MediSwitch", value: "34,892", target: "38,000", pct: 91.8, trend: "+8.1%", icon: Receipt, color: "#E3964C", status: "on_track" },
+  { label: "First-Pass Rejections", value: "5,234", target: "<3,800", pct: 137.7, trend: "-3.2%", icon: FileWarning, color: "#EF4444", status: "attention" },
   { label: "Collection Ratio", value: "91.3%", target: "95%", pct: 96.1, trend: "+1.8%", icon: TrendingUp, color: "#10B981", status: "improving" },
-  { label: "EBITDA Margin", value: "18.2%", target: "20%", pct: 91.0, trend: "+0.6%", icon: BarChart3, color: "#8B5CF6", status: "on_track" },
-  { label: "Outstanding Debtors", value: "R8.9M", target: "<R7M", pct: 127.1, trend: "-5.4%", icon: Clock, color: "#F59E0B", status: "attention" },
+  { label: "EBITDA Margin", value: "24.5%", target: "25%", pct: 98.0, trend: "+1.5%", icon: BarChart3, color: "#8B5CF6", status: "on_track" },
+  { label: "Debtors >60 Days", value: "R8.9M", target: "<R7M", pct: 127.1, trend: "-5.4%", icon: Clock, color: "#F59E0B", status: "attention" },
 ];
 
 const CLINIC_PERFORMANCE = [
@@ -40,22 +42,25 @@ const TOP_REJECTION_CODES = [
 ];
 
 const COST_SAVINGS = [
-  { area: "Claims Pre-validation AI", current: "R2.4M/month rejected", savings: "R1.8M/month recoverable", pct: 75, desc: "AI validates ICD-10, NAPPI, and benefit checks before submission — catching 75% of rejectable claims before they're sent." },
-  { area: "Automated Tariff Reconciliation", current: "12 FTEs doing manual recon", savings: "R840K/month in labour", pct: 60, desc: "Automated matching of medical scheme payments to tariff schedules — replacing manual reconciliation across 88 clinics." },
-  { area: "Real-time Debtor Tracking", current: "R8.9M outstanding > 60 days", savings: "R3.2M recoverable", pct: 36, desc: "AI-powered aging analysis with automated follow-up sequences — SMS, WhatsApp, and escalation workflows." },
-  { area: "Capitation Utilisation Alerts", current: "Prime Cure over-cap: R1.1M", savings: "R660K/month flagged early", pct: 60, desc: "Real-time monitoring of per-member-per-month spend against capitation rates — alerting when clinics exceed thresholds." },
-  { area: "POPIA Compliance Automation", current: "2 FTEs per region for audits", savings: "R480K/month in compliance labour", pct: 50, desc: "Automated consent tracking, audit logging, and breach detection across all 88 clinics — replacing manual compliance checks." },
-  { area: "Pharmacy Stock Optimisation", current: "R2.1M dead stock across 37 pharmacies", savings: "R1.4M freed working capital", pct: 67, desc: "AI demand forecasting for pharmacy inventory — reducing overstocking while preventing stockouts of essential medications." },
+  { area: "ICD-10-ZA + NAPPI Pre-validation", current: "15-25% first-pass rejection rate", savings: "R1.8M/month recoverable", pct: 75, desc: "AI validates ICD-10-ZA codes, NAPPI codes, and PMB benefit checks before claims hit the switch — catching 75% of rejectable claims. At R50-R150 rework cost per rejected claim, this eliminates thousands of hours of manual correction." },
+  { area: "eRA Auto-Reconciliation", current: "568 practitioners × manual eRA matching", savings: "R840K/month in labour", pct: 60, desc: "Automated electronic Remittance Advice (eRA) matching across all 568 practitioners — replacing the Excel-based reconciliation that each clinic runs independently. Single dashboard shows scheme tariff vs provider charge gaps." },
+  { area: "Debtor Aging Intelligence", current: "R8.9M outstanding > 60 days", savings: "R3.2M recoverable", pct: 36, desc: "AI-powered aging analysis with automated follow-up — SMS, WhatsApp, escalation. Targets GEMS (21-day avg payment) and Medihelp (24-day avg) where payment cycles exceed industry norms." },
+  { area: "Capitation vs Fee-for-Service Analytics", current: "Prime Cure PMPM overspend: R1.1M", savings: "R660K/month flagged early", pct: 60, desc: "Real-time monitoring of per-member-per-month spend against Prime Cure capitation rates (R287 PMPM). Alerts when clinics exceed thresholds — critical after the lost occupational health contract reduced diversification." },
+  { area: "POPIA + HPCSA Compliance Engine", current: "Manual audits across 8 provinces", savings: "R480K/month in compliance labour", pct: 50, desc: "Automated consent tracking (s18-s72 POPIA), HPCSA Booklet 10 alignment, audit logging, and breach detection across all 88 clinics. Replaces regional FTE-based compliance checks." },
+  { area: "Pharmacy Inventory (41 Pharmacies)", current: "R2.1M dead stock, NAPPI mismatches", savings: "R1.4M freed working capital", pct: 67, desc: "AI demand forecasting for pharmacy inventory across 41 Netcare pharmacies — reducing overstocking while syncing NAPPI codes with scheme formularies to prevent dispensing rejections." },
 ];
 
+// SA has ~9.7M medical aid beneficiaries (15.8% of population)
+// Discovery has 40%+ market share, GEMS is largest single scheme
 const MEDICAL_SCHEMES = [
-  { name: "Discovery Health", lives: 89000, claimsVolume: "R18.2M", rejectionRate: 4.8, avgDays: 14 },
-  { name: "GEMS", lives: 42000, claimsVolume: "R8.6M", rejectionRate: 5.2, avgDays: 21 },
+  { name: "Discovery Health (DSP network)", lives: 89000, claimsVolume: "R18.2M", rejectionRate: 4.8, avgDays: 14 },
+  { name: "GEMS (Government Employees)", lives: 42000, claimsVolume: "R8.6M", rejectionRate: 5.2, avgDays: 21 },
   { name: "Bonitas", lives: 31000, claimsVolume: "R6.1M", rejectionRate: 6.1, avgDays: 18 },
   { name: "Momentum Health", lives: 24000, claimsVolume: "R4.8M", rejectionRate: 5.5, avgDays: 16 },
   { name: "Medihelp", lives: 18000, claimsVolume: "R3.4M", rejectionRate: 7.3, avgDays: 24 },
-  { name: "Prime Cure (capitated)", lives: 254000, claimsVolume: "R12.8M", rejectionRate: 2.0, avgDays: 7 },
-  { name: "NetcarePlus (prepaid)", lives: 35000, claimsVolume: "R2.1M", rejectionRate: 0, avgDays: 0 },
+  { name: "Polmed (SAPS)", lives: 12000, claimsVolume: "R2.2M", rejectionRate: 4.9, avgDays: 19 },
+  { name: "Prime Cure (capitated managed care)", lives: 254000, claimsVolume: "R12.8M", rejectionRate: 2.0, avgDays: 7 },
+  { name: "NetcarePlus (prepaid/uninsured)", lives: 35000, claimsVolume: "R2.1M", rejectionRate: 0, avgDays: 0 },
 ];
 
 function formatRand(n: number) {
@@ -92,7 +97,7 @@ export default function NetworkFinancialPage() {
             Network Financial Overview
           </h1>
           <p className="text-[13px] text-gray-500 mt-0.5">
-            88 Medicross clinics &middot; 37 pharmacies &middot; 568 practitioners &middot; 254,000 capitated lives
+            88 clinics (55 Medicross) &middot; 41 pharmacies &middot; 12 day theatres &middot; 568 practitioners &middot; 3.5M patients/year
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -219,16 +224,16 @@ export default function NetworkFinancialPage() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="p-3 rounded-lg bg-white border border-amber-200">
-                <div className="text-[11px] text-amber-600 font-semibold uppercase">Claims Rejection Spike</div>
-                <div className="text-[13px] text-gray-700 mt-1">Medicross Soweto: <span className="font-bold text-red-600">10% rejection rate</span> — double network average. ICD-10 coding errors on chronic scripts.</div>
+                <div className="text-[11px] text-amber-600 font-semibold uppercase">First-Pass Rejection Spike</div>
+                <div className="text-[13px] text-gray-700 mt-1">Medicross Soweto: <span className="font-bold text-red-600">10% first-pass rejection</span> via SwitchOn — double network avg. Root cause: ICD-10-ZA coding errors on chronic CDL scripts. Est. rework cost: R78K (at R50-R150/claim).</div>
               </div>
               <div className="p-3 rounded-lg bg-white border border-amber-200">
-                <div className="text-[11px] text-amber-600 font-semibold uppercase">Capitation Overspend</div>
-                <div className="text-gray-700 text-[13px] mt-1">Prime Cure capitated patients exceeding R287 PMPM cap by <span className="font-bold text-red-600">R1.1M this month</span>. Actuarial review needed.</div>
+                <div className="text-[11px] text-amber-600 font-semibold uppercase">Capitation PMPM Overspend</div>
+                <div className="text-gray-700 text-[13px] mt-1">Prime Cure capitated lives exceeding R287 PMPM cap by <span className="font-bold text-red-600">R1.1M this month</span>. Post-contract loss (May 2025), remaining capitated book must stay within actuarial bounds.</div>
               </div>
               <div className="p-3 rounded-lg bg-white border border-amber-200">
-                <div className="text-[11px] text-amber-600 font-semibold uppercase">Debtor Aging</div>
-                <div className="text-gray-700 text-[13px] mt-1"><span className="font-bold text-red-600">R3.2M</span> in claims outstanding &gt;90 days. Top debtor: GEMS (R890K, 21-day avg).</div>
+                <div className="text-[11px] text-amber-600 font-semibold uppercase">GEMS eRA Reconciliation Backlog</div>
+                <div className="text-gray-700 text-[13px] mt-1"><span className="font-bold text-red-600">R890K</span> in GEMS claims with unmatched eRAs — avg 21-day payment cycle. Manual reconciliation across 568 practitioners creating bottleneck.</div>
               </div>
             </div>
           </div>
@@ -431,12 +436,13 @@ export default function NetworkFinancialPage() {
         </div>
         <div className="flex flex-wrap gap-3">
           {[
-            "HEAL Platform (EMR)",
-            "SAP IS-H (ERP)",
-            "MediSwitch EDI (Claims)",
-            "CareOn (Hospital EMR)",
-            "A2D24 AWS (Cloud)",
+            "CareOn EMR (Hospital Division)",
+            "Healthbridge / GoodX (Clinic PMS)",
+            "Altron SwitchOn (Claims Switch)",
+            "MediSwitch EDI (eRA Processing)",
+            "IBM Watson Micromedex (Drug Interactions)",
             "POPIA Compliance Engine",
+            "ICD-10-ZA + NAPPI Validation",
           ].map(sys => (
             <span key={sys} className="text-[11px] px-2.5 py-1 rounded-full bg-white border border-gray-200 text-gray-600 font-medium flex items-center gap-1">
               <CheckCircle2 className="w-3 h-3 text-green-500" /> {sys}
