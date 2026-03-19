@@ -96,6 +96,32 @@ function getResponse(query: string): string {
     return `${bold("Pricing")}\n\nVisioHealth OS uses a SaaS (Software as a Service) model:\n\n- ${bold("Per-clinic monthly subscription")} — scales with your rollout\n- ${bold("Enterprise umbrella license")} available for network-wide deployment\n- ${bold("No upfront capital expenditure")} — operational expense only\n- ${bold("8-week pilot included")} — no commitment beyond pilot\n\nPricing details are shared during the demo walkthrough. Contact David Hampton directly at davidhampton@visiocorp.co for a customised proposal.\n\nThe ROI typically exceeds the subscription cost within 3-4 months.`;
   }
 
+
+  // Sara Nayager specific
+  if (q.includes("sara") || q.includes("managing director") || q.includes("md") || q.includes("my role") || q.includes("my job")) {
+    return `${bold("Built for Your Role, Sara")}\\n\\nAs MD of Primary Care, you need:\\n\\n1. ${bold("Real-time visibility across 88 clinics")} — patient flow, wait times, practitioner utilisation, revenue per site. Walk the floors digitally.\\n\\n2. ${bold("Revenue recovery tools")} — the division dropped 7% to R662M after the lost occ health contract. AI claims recovery adds R21.6M/year.\\n\\n3. ${bold("Practitioner management")} — 568 independent GPs and dentists you cannot directly control. This platform gives you data-driven conversations with them.\\n\\n4. ${bold("Competitive defence")} — Discovery Flexicare grew 77% last year and deliberately excludes Medicross. VisioHealth OS gives you the technology moat.\\n\\n5. ${bold("Board-ready reporting")} — one-click quarterly pack for Dr Friedland and Keith Gibson.\\n\\nThis platform was built for exactly your situation.`;
+  }
+
+  // Discovery Flexicare threat
+  if (q.includes("flexicare") || q.includes("discovery") && q.includes("threat") || q.includes("clicks") && q.includes("compet")) {
+    return `${bold("The Flexicare Threat — And Your Defence")}\\n\\n${bold("What is happening:")} Discovery Health launched Flexicare in partnership with Clicks and Auto & General. Affordable private primary care through 800+ Clicks stores. It grew 77% in its first period.\\n\\n${bold("The danger:")} Flexicare deliberately EXCLUDES Medicross from its network. They are building a parallel primary care infrastructure that competes directly with your 88 clinics.\\n\\n${bold("Your technology defence:")}\\n\\n1. ${bold("WhatsApp Patient Router")} — patients can book Medicross 24/7 via WhatsApp. Flexicare does not offer this.\\n2. ${bold("AI Claims Intelligence")} — faster, cheaper billing = lower cost to serve = ability to compete on price\\n3. ${bold("Network Effect")} — 88 clinics connected intelligently beats 800 disconnected Clicks stores\\n4. ${bold("Data Advantage")} — real-time analytics across the network lets you optimise in ways Flexicare cannot\\n\\nVisioHealth OS makes Medicross the smarter choice, not just the bigger network.`;
+  }
+
+  // Walk the floors / visibility
+  if (q.includes("visib") || q.includes("walk") || q.includes("floor") || q.includes("real-time") || q.includes("monitor") || q.includes("see every")) {
+    return `${bold("Digital Floor Walk — See Every Clinic in Real Time")}\\n\\nImagine opening one screen and seeing:\\n\\n- ${bold("Patient flow")} — how many patients at each of 88 clinics right now\\n- ${bold("Wait times")} — which clinics have queues, which have empty slots\\n- ${bold("Practitioner utilisation")} — which doctors are booked solid, which have gaps\\n- ${bold("Revenue per site")} — today's collections per clinic, compared to target\\n- ${bold("NPS/satisfaction")} — patient ratings per clinic, flagging drops\\n- ${bold("Compliance status")} — POPIA consent tracking per facility\\n\\nThat is what the ${bold("Network Financial Command Center")} gives you. Click on any clinic for deep detail. The board pack writes itself from this data.\\n\\nYou walked Parklane and Rand Hospital floors for 11 years. Now you can walk all 88 clinic floors from Sandton.`;
+  }
+
+  // Practitioner management
+  if (q.includes("practitioner") || q.includes("doctor") || q.includes("568") || q.includes("independent") || q.includes("gp") && q.includes("manage")) {
+    return `${bold("Managing 568 Independent Practitioners")}\\n\\nThe challenge: They are independent — you cannot tell them what to do. But you CAN give them data that changes behaviour.\\n\\n${bold("What VisioHealth OS provides:")}\\n\\n1. ${bold("Revenue per practitioner dashboard")} — shows each doctor their billing performance vs peers (anonymised)\\n2. ${bold("Claims rejection rate per practitioner")} — identify who is coding badly and offer training\\n3. ${bold("Patient volume trends")} — show practitioners when their slots are underutilised\\n4. ${bold("Automated booking")} — fill their empty slots via WhatsApp without them lifting a finger\\n5. ${bold("Compliance tracking")} — ensure every practitioner is POPIA compliant\\n\\nYou do not control them. But you make them more successful — and that keeps them in the Medicross network.`;
+  }
+
+  // Board / Friedland / Gibson
+  if (q.includes("board") || q.includes("friedland") || q.includes("gibson") || q.includes("report") || q.includes("quarterly") || q.includes("present")) {
+    return `${bold("Board Reporting — One Click")}\\n\\nWhat Dr Friedland (Group CEO) and Keith Gibson (Group CFO) expect from you each quarter:\\n\\n1. Divisional revenue vs target (R662M FY2025)\\n2. EBITDA margin (24.5% — the highlight)\\n3. Cash conversion and debtor days\\n4. New business pipeline (post contract loss)\\n5. Digital transformation progress\\n6. Competitive response to Flexicare\\n\\nThe ${bold("Board Pack")} page generates this entire presentation from live data. One click. No more spending 3 weeks compiling spreadsheets.\\n\\nThe ${bold("Scenario Modelling")} section gives you Conservative, Base, and Aggressive projections — exactly what Gibson wants to see.`;
+  }
+
   // Default
   return `I can help you with anything about VisioHealth OS and how it works for Netcare. Try asking about:\n\n- ${bold("How do you fix admin time going to billing instead of patient care?")}\n- ${bold("How does AI claims validation work?")}\n- ${bold("How do patients not fall through cracks between facilities?")}\n- ${bold("What are the 5 AI agents?")}\n- ${bold("How do you integrate with CareOn, SAP, and SwitchOn?")}\n- ${bold("What is the ROI / cost savings?")}\n- ${bold("How do we start a pilot?")}\n- ${bold("Is it POPIA compliant?")}\n- ${bold("How fast can a new facility go live?")}\n- ${bold("Who is VisioHealth OS?")}\n\nOr ask me anything else — I know the Netcare ecosystem inside and out.`;
 }
@@ -219,7 +245,7 @@ export default function NetcareAssistant() {
                 </button>
               </div>
               <div className="flex gap-2 mt-2 overflow-x-auto">
-                {["How do you fix billing?", "5 AI agents", "Integration with CareOn", "Cost savings", "Start a pilot", "POPIA compliance"].map(s => (
+                {["How does this fix admin hours?", "The 5 AI agents", "Flexicare defence", "Walk all 88 floors", "How do we start?", "Cost savings"].map(s => (
                   <button
                     key={s}
                     onClick={() => setInput(s)}
