@@ -109,6 +109,26 @@ const PAGE_GUIDES: Record<string, { title: string; sections: { heading: string; 
     ],
     value: "Every KPI here is one Keith Gibson will ask about. This dashboard generates your quarterly board pack automatically.",
   },
+  "/dashboard/pilot": {
+    title: "Start Your Regional Pilot",
+    sections: [
+      { heading: "How It Works", text: "Select a region (Gauteng North, South, East, Western Cape, KZN, or National Occ Health). Pick specific clinics. Launch an 8-week pilot. Data is isolated to your pilot region." },
+      { heading: "8-Week Timeline", text: "Weeks 1-2: Setup and integration with your PMS. Weeks 3-6: Live AI claims validation, WhatsApp routing, financial dashboards. Weeks 7-8: Measure results, generate board-ready ROI report." },
+      { heading: "Why Regional First", text: "Prove the ROI in a controlled environment. No risk to the broader network. The pilot report becomes your business case for Keith Gibson to approve network-wide rollout." },
+      { heading: "Global Benchmark", text: "HCA Healthcare, Mayo Clinic, and Cleveland Clinic all started with regional pilots before enterprise deployment. 3.2X average ROI within 14 months." },
+    ],
+    value: "Zero capital risk. Proven results in 8 weeks. The pilot report IS your board presentation. Start small, prove it, scale.",
+  },
+  "/dashboard/board-pack": {
+    title: "Your Board Presentation Pack",
+    sections: [
+      { heading: "CEO Quick View", text: "A one-slide summary for Dr Richard Friedland: R100M+ savings, 8-week pilot, <5% claims rejection target, 88-clinic scalability." },
+      { heading: "Full Business Case", text: "6 sections covering executive summary, financial impact (R100M+), strategic alignment (Phase 2 digital strategy), implementation approach, risk mitigation, and competitive positioning." },
+      { heading: "Scenario Modelling", text: "Conservative (R105M 3-year), Base Case (R220M), Aggressive (R295M) — three scenarios for Keith Gibson to evaluate." },
+      { heading: "Your Role", text: "YOU are the person bringing this to the board. The FD who identified R100M+ in savings, aligned it with the digital strategy, and proposed a zero-risk pilot. This makes you the innovation champion." },
+    ],
+    value: "This is your weapon for the next Finance and Investment Committee meeting. Every number is defensible, every claim is backed by research.",
+  },
   "/dashboard/onboarding": {
     title: "Your Platform Tour",
     sections: [
