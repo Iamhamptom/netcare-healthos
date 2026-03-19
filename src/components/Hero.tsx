@@ -174,7 +174,7 @@ export default function Hero() {
           {"88 clinics.".split(" ").map((word, i) => (
             <motion.span
               key={i}
-              className="inline-block mr-[0.3em]"
+              className="inline-block mr-[0.35em]"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 + i * 0.12, ease: [0.16, 1, 0.3, 1] }}
