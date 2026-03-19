@@ -99,6 +99,16 @@ const PAGE_GUIDES: Record<string, { title: string; sections: { heading: string; 
     ],
     value: "R8.4M/month = R100M+/year in addressable savings. Plus recurring SaaS revenue from licensing to your ecosystem.",
   },
+  "/dashboard/kpi": {
+    title: "Financial Director KPI Dashboard",
+    sections: [
+      { heading: "Your KPI Framework", text: "30+ KPIs across 5 categories — Revenue, Profitability, Working Capital, Managed Care (Prime Cure), and Occupational Health. Each mapped to your actual divisional reporting requirements." },
+      { heading: "Traffic Light System", text: "Green (on track), Amber (watch), Red (attention required). At a glance, see which metrics need your focus today." },
+      { heading: "Where AI Moves the Needle", text: "For each underperforming KPI, VisioHealth OS shows the specific module that fixes it and the Rand impact. Claims rejection 15% to <5% = R21.6M/year. Debtor days 42 to 28 = R14M freed cash flow." },
+      { heading: "Group CFO Alignment", text: "This dashboard maps directly to what Keith Gibson expects in your quarterly divisional pack: EBITDA margin, cash conversion, working capital discipline, digital transformation ROI." },
+    ],
+    value: "Every KPI here is one Keith Gibson will ask about. This dashboard generates your quarterly board pack automatically.",
+  },
   "/dashboard/onboarding": {
     title: "Your Platform Tour",
     sections: [
