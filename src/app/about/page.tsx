@@ -183,7 +183,7 @@ export default function AboutPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="text-4xl md:text-6xl font-light tracking-[-0.03em] text-white mb-6 leading-tight"
-            style={{ fontFamily: 'Montserrat, sans-serif' }}
+           
           >
             AI-Powered Operations
             <br />
@@ -270,7 +270,7 @@ export default function AboutPage() {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <h2 className="text-4xl md:text-5xl font-light tracking-[-0.03em] text-gray-900 mb-8" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+              <h2 className="text-4xl md:text-5xl font-light tracking-[-0.03em] text-gray-900 mb-8">
                 88 clinics deserve
                 <br />
                 smarter operations

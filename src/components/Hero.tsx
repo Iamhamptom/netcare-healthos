@@ -160,7 +160,7 @@ export default function Hero() {
             alt="Netcare"
             className="h-8 mx-auto mb-4"
           />
-          <span className="uppercase tracking-[0.3em] text-xs text-white/25 font-semibold" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+          <span className="uppercase tracking-[0.3em] text-xs text-white/25 font-semibold">
             Primary Healthcare Operations
           </span>
         </motion.div>
@@ -169,7 +169,7 @@ export default function Hero() {
         <motion.h1
           variants={fadeUp}
           className="text-5xl md:text-7xl font-light tracking-[-0.04em] text-white mb-8"
-          style={{ fontFamily: 'Montserrat, sans-serif' }}
+         
         >
           {"88 clinics.".split(" ").map((word, i) => (
             <motion.span
@@ -297,7 +297,7 @@ export default function Hero() {
             { value: "50%", label: "Faster Processing" },
           ].map((stat) => (
             <div key={stat.label} className="text-center">
-              <div className="text-2xl md:text-3xl font-extralight text-white mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>{stat.value}</div>
+              <div className="text-2xl md:text-3xl font-extralight text-white mb-1">{stat.value}</div>
               <div className="text-[11px] text-white/25 font-semibold uppercase tracking-wider">{stat.label}</div>
             </div>
           ))}

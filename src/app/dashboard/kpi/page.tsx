@@ -65,7 +65,7 @@ function KPITable({ title, icon: Icon, kpis, color }: { title: string; icon: typ
     <div className="rounded-xl border border-gray-200 overflow-hidden">
       <div className="px-5 py-3 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
         <Icon className="w-4 h-4" style={{ color }} />
-        <h3 className="text-[14px] font-semibold text-gray-900" style={{ fontFamily: "Montserrat, sans-serif" }}>{title}</h3>
+        <h3 className="text-[14px] font-semibold text-gray-900">{title}</h3>
       </div>
       <table className="w-full text-[13px]">
         <thead>
@@ -83,7 +83,7 @@ function KPITable({ title, icon: Icon, kpis, color }: { title: string; icon: typ
             return (
               <tr key={kpi.label} className={`border-b border-gray-50 ${i % 2 === 0 ? "bg-white" : "bg-gray-50/30"} hover:bg-gray-50`}>
                 <td className="p-3 font-medium text-gray-900">{kpi.label}</td>
-                <td className="p-3 text-right font-bold text-gray-900">{kpi.value}</td>
+                <td className="p-3 text-right font-bold text-gray-900 font-metric">{kpi.value}</td>
                 <td className="p-3 text-right text-gray-400">{kpi.target}</td>
                 <td className={`p-3 text-right font-semibold ${s.text}`}>{kpi.variance}</td>
                 <td className="p-3 text-[11px] text-gray-500">{kpi.note}</td>
@@ -112,7 +112,7 @@ export default function KPIDashboard() {
             <img src="/images/netcare-logo.png" alt="Netcare" className="h-4" />
             <span className="text-[11px] text-gray-400 uppercase tracking-widest font-semibold">Financial Director KPIs</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: "Montserrat, sans-serif" }}>
+          <h1 className="text-2xl font-bold text-gray-900">
             Division Performance Dashboard
           </h1>
           <p className="text-[13px] text-gray-500 mt-0.5">
@@ -160,7 +160,7 @@ export default function KPIDashboard() {
 
       {/* What AI Fixes */}
       <div className="p-5 rounded-xl border border-[#3DA9D1]/20 bg-[#3DA9D1]/5">
-        <h3 className="text-[15px] font-semibold text-gray-900 mb-3" style={{ fontFamily: "Montserrat, sans-serif" }}>
+        <h3 className="text-[15px] font-semibold text-gray-900 mb-3">
           <Zap className="w-4 h-4 inline mr-2 text-[#E3964C]" />
           Where VisioHealth OS Moves These KPIs
         </h3>

@@ -102,7 +102,7 @@ export default function Features() {
           <span className="inline-block uppercase tracking-[0.3em] text-xs text-[#3DA9D1] font-semibold mb-6">
             Built for Netcare by VisioHealth OS
           </span>
-          <h2 className="text-4xl md:text-5xl font-light tracking-[-0.03em] text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+          <h2 className="text-4xl md:text-5xl font-light tracking-[-0.03em] text-gray-900">
             Your AI operations{" "}
             <span className="text-[#1D3443]">suite.</span>
           </h2>
@@ -129,7 +129,7 @@ export default function Features() {
               <div className="w-10 h-10 rounded-xl bg-[#1D3443]/5 flex items-center justify-center text-[#3DA9D1] mb-4">
                 {feature.icon}
               </div>
-              <h3 className="text-gray-900 font-medium text-base mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+              <h3 className="text-gray-900 font-medium text-base mb-3">
                 {feature.title}
               </h3>
               <p className="text-gray-500 text-sm leading-relaxed font-light mb-3">

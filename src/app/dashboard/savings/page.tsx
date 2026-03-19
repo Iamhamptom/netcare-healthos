@@ -68,7 +68,7 @@ export default function SavingsPage() {
         <div className="text-[11px] text-white/40 uppercase tracking-widest font-semibold mb-2">
           Cumulative Savings Since Implementation
         </div>
-        <div className="text-5xl md:text-7xl font-bold text-white mb-2" style={{ fontFamily: "Montserrat, sans-serif" }}>
+        <div className="text-5xl md:text-7xl font-bold text-white mb-2 font-metric">
           R{animatedTotal.toLocaleString()}
         </div>
         <div className="text-[13px] text-white/50">
@@ -93,7 +93,7 @@ export default function SavingsPage() {
               <cat.icon className="w-4 h-4" style={{ color: cat.color }} />
               <span className="text-[13px] font-semibold text-gray-900">{cat.label}</span>
             </div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">{formatR(cat.total)}</div>
+            <div className="text-2xl font-bold text-gray-900 mb-1 font-metric">{formatR(cat.total)}</div>
             <div className="text-[11px] text-gray-500 mb-3">{cat.desc}</div>
             <div className="flex items-end gap-0.5 h-10">
               {MONTHLY_SAVINGS.map((m, j) => {
@@ -108,7 +108,7 @@ export default function SavingsPage() {
       </div>
 
       <div className="p-5 rounded-xl bg-[#E3964C]/5 border border-[#E3964C]/20">
-        <h3 className="text-[14px] font-semibold text-gray-900 mb-2" style={{ fontFamily: "Montserrat, sans-serif" }}>
+        <h3 className="text-[14px] font-semibold text-gray-900 mb-2">
           <Zap className="w-4 h-4 inline mr-2 text-[#E3964C]" />Insights for Your Board
         </h3>
         <div className="grid grid-cols-2 gap-4 text-[13px]">

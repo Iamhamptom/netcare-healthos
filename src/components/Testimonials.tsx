@@ -54,7 +54,7 @@ export default function Testimonials() {
           <span className="uppercase tracking-[0.3em] text-xs text-[#3DA9D1] font-semibold mb-6 block">
             Impact at Scale
           </span>
-          <h2 className="text-4xl md:text-5xl font-light tracking-[-0.03em] text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+          <h2 className="text-4xl md:text-5xl font-light tracking-[-0.03em] text-gray-900">
             The numbers that matter.
           </h2>
           <p className="text-[15px] text-gray-400 mt-4 max-w-xl mx-auto">

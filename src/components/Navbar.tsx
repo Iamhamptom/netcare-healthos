@@ -50,7 +50,7 @@ export default function Navbar() {
               alt="Netcare"
               className="h-6"
             />
-            <span className="text-[11px] text-white/30 font-semibold uppercase tracking-widest" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+            <span className="text-[11px] text-white/30 font-semibold uppercase tracking-widest">
               Health OS
             </span>
           </Link>
@@ -131,7 +131,7 @@ export default function Navbar() {
                     href={link.href}
                     onClick={() => setMenuOpen(false)}
                     className="text-2xl font-light text-white/40 hover:text-white transition-colors duration-300"
-                    style={{ fontFamily: 'Montserrat, sans-serif' }}
+                   
                   >
                     {link.label}
                   </Link>

@@ -134,11 +134,11 @@ export default function IntelPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <div className="w-2 h-2 rounded-full bg-[#3DA9D1] animate-pulse" />
-            <span className="text-[11px] text-gray-400 uppercase tracking-widest font-semibold" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+            <span className="text-[11px] text-gray-400 uppercase tracking-widest font-semibold">
               Netcare &times; Visio Terminal
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+          <h1 className="text-2xl font-bold text-gray-900">
             Healthcare Intelligence Terminal
           </h1>
           <p className="text-[13px] text-gray-500 mt-0.5">
@@ -202,7 +202,7 @@ export default function IntelPage() {
 
           {/* Netcare 10-Year Digital Strategy */}
           <div className="p-5 rounded-xl border border-gray-200 bg-white">
-            <h3 className="text-[15px] font-semibold text-gray-900 mb-4 flex items-center gap-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+            <h3 className="text-[15px] font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <Zap className="w-4 h-4 text-[#3DA9D1]" /> Netcare 10-Year Digital Strategy (Started 2018)
             </h3>
             <div className="grid grid-cols-3 gap-4">
@@ -365,7 +365,7 @@ export default function IntelPage() {
           {/* Top Global Players */}
           <div className="rounded-xl border border-gray-200 overflow-hidden">
             <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
-              <h3 className="text-[14px] font-semibold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>What the World&apos;s Best Hospital Groups Are Doing</h3>
+              <h3 className="text-[14px] font-semibold text-gray-900">What the World&apos;s Best Hospital Groups Are Doing</h3>
               <p className="text-[11px] text-gray-500">Global leaders Netcare should benchmark against</p>
             </div>
             <div className="divide-y divide-gray-100">
@@ -392,7 +392,7 @@ export default function IntelPage() {
           {/* Key Innovations */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-5 rounded-xl border border-gray-200 bg-white">
-              <h4 className="text-[13px] font-semibold text-gray-900 mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>AI Claims Validation — Global Results</h4>
+              <h4 className="text-[13px] font-semibold text-gray-900 mb-3">AI Claims Validation — Global Results</h4>
               <div className="space-y-2 text-[12px] text-gray-600">
                 <p>Athenahealth achieves <span className="font-semibold text-green-600">99% clean claim rates</span> with AI pre-validation — vs 54% of providers reporting increasing claim errors.</p>
                 <p>HCA Healthcare: <span className="font-semibold text-green-600">85%+ autonomous coding</span> — AI processes claims without human review.</p>
@@ -400,7 +400,7 @@ export default function IntelPage() {
               </div>
             </div>
             <div className="p-5 rounded-xl border border-gray-200 bg-white">
-              <h4 className="text-[13px] font-semibold text-gray-900 mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>Predictive Analytics — Proven ROI</h4>
+              <h4 className="text-[13px] font-semibold text-gray-900 mb-3">Predictive Analytics — Proven ROI</h4>
               <div className="space-y-2 text-[12px] text-gray-600">
                 <p>Johns Hopkins: <span className="font-semibold text-green-600">R13M saved</span> on ICU staffing alone with predictive models.</p>
                 <p>Industry average: <span className="font-semibold text-green-600">3.2X ROI in 14 months</span> on healthcare predictive analytics investments.</p>
@@ -420,7 +420,7 @@ export default function IntelPage() {
 
           {/* Africa Context */}
           <div className="p-4 rounded-xl bg-[#1D3443]">
-            <h4 className="text-[13px] font-semibold text-white mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>African Healthcare Tech Landscape</h4>
+            <h4 className="text-[13px] font-semibold text-white mb-2">African Healthcare Tech Landscape</h4>
             <div className="grid grid-cols-3 gap-3">
               {[
                 { name: "mPharma (Ghana)", raised: "R1.5B+", focus: "Pharmacy supply chain" },

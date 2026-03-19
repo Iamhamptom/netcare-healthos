@@ -91,9 +91,9 @@ export default function NetworkFinancialPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <img src="/images/netcare-logo.png" alt="Netcare" className="h-5" />
-            <span className="text-[11px] text-gray-400 uppercase tracking-widest font-semibold" style={{ fontFamily: 'Montserrat, sans-serif' }}>Financial Command Center</span>
+            <span className="text-[11px] text-gray-400 uppercase tracking-widest font-semibold">Financial Command Center</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+          <h1 className="text-2xl font-bold text-gray-900">
             Network Financial Overview
           </h1>
           <p className="text-[13px] text-gray-500 mt-0.5">
@@ -151,7 +151,7 @@ export default function NetworkFinancialPage() {
                     {kpi.trend}
                   </span>
                 </div>
-                <div className="text-xl font-bold text-gray-900">{kpi.value}</div>
+                <div className="text-xl font-bold text-gray-900 font-metric">{kpi.value}</div>
                 <div className="text-[10px] text-gray-500 mt-0.5">{kpi.label}</div>
                 <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                   <div
@@ -356,10 +356,10 @@ export default function NetworkFinancialPage() {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
           <div className="p-5 rounded-xl border border-[#E3964C]/20 bg-gradient-to-br from-[#E3964C]/5 to-[#3DA9D1]/5">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-bold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>Total Addressable Savings</h3>
+              <h3 className="text-lg font-bold text-gray-900">Total Addressable Savings</h3>
               <span className="text-[11px] text-gray-500 uppercase font-semibold">Monthly Potential</span>
             </div>
-            <div className="text-4xl font-bold text-[#E3964C]" style={{ fontFamily: 'Montserrat, sans-serif' }}>{formatRand(totalSavings)}<span className="text-lg text-gray-400 font-normal">/month</span></div>
+            <div className="text-4xl font-bold text-[#E3964C]">{formatRand(totalSavings)}<span className="text-lg text-gray-400 font-normal">/month</span></div>
             <p className="text-[13px] text-gray-500 mt-1">= {formatRand(totalSavings * 12)}/year across claims, labour, compliance, and working capital</p>
           </div>
 

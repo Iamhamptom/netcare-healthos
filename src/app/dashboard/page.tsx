@@ -90,7 +90,7 @@ export default function DashboardPage() {
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900" style={{ fontFamily: "Montserrat, sans-serif" }}>
+            <h1 className="text-2xl font-semibold text-gray-900">
               Welcome back, {firstName}
             </h1>
             <p className="text-[13px] text-gray-500 mt-0.5">
@@ -120,7 +120,7 @@ export default function DashboardPage() {
               transition={{ delay: 0.15 + i * 0.05 }}
               className="bg-white/5 rounded-lg p-3">
               <item.icon className="w-4 h-4 text-[#3DA9D1] mb-1.5" />
-              <div className="text-xl font-bold text-white">{item.value}</div>
+              <div className="text-xl font-bold text-white font-metric">{item.value}</div>
               <div className="text-[10px] text-white/40 font-medium mt-0.5">{item.label}</div>
               <div className="text-[9px] text-[#E3964C] mt-0.5">{item.trend}</div>
             </motion.div>
@@ -143,7 +143,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between mb-2">
               <item.icon className="w-4 h-4" style={{ color: item.color }} />
             </div>
-            <div className="text-xl font-bold text-gray-900">{item.value}</div>
+            <div className="text-xl font-bold text-gray-900 font-metric">{item.value}</div>
             <div className="text-[11px] text-gray-500 mt-0.5">{item.label}</div>
           </motion.div>
         ))}
@@ -163,7 +163,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between mb-2">
               <item.icon className="w-4 h-4" style={{ color: item.color }} />
             </div>
-            <div className="text-xl font-bold text-gray-900">{item.value}</div>
+            <div className="text-xl font-bold text-gray-900 font-metric">{item.value}</div>
             <div className="text-[11px] text-gray-500 mt-0.5">{item.label}</div>
           </motion.div>
         ))}

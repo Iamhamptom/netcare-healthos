@@ -63,7 +63,7 @@ export default function Mission() {
         <motion.h2
           variants={fadeUp}
           className="text-3xl md:text-5xl font-light tracking-[-0.03em] text-gray-900 mt-8 leading-[1.2]"
-          style={{ fontFamily: 'Montserrat, sans-serif' }}
+         
         >
           South Africa&apos;s largest{" "}
           <span className="text-[#3DA9D1]">primary care network</span>

@@ -148,9 +148,9 @@ export default function SuitePage() {
         <div className="flex items-center gap-3 mb-2">
           <img src="/images/netcare-logo.png" alt="Netcare" className="h-5" />
           <ArrowLeftRight className="w-4 h-4 text-gray-300" />
-          <span className="text-[13px] font-bold text-[#1D3443]" style={{ fontFamily: 'Montserrat, sans-serif' }}>VisioHealth OS</span>
+          <span className="text-[13px] font-bold text-[#1D3443]">VisioHealth OS</span>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+        <h1 className="text-2xl font-bold text-gray-900">
           Your Custom-Built Suite
         </h1>
         <p className="text-[14px] text-gray-500 mt-1 max-w-2xl">
@@ -161,7 +161,7 @@ export default function SuitePage() {
 
       {/* Suite Modules */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
           10 AI Modules — Built for Netcare
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -200,7 +200,7 @@ export default function SuitePage() {
 
       {/* Value Chain Integration */}
       <div className="space-y-6">
-        <h2 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+        <h2 className="text-lg font-semibold text-gray-900">
           How We Connect Across Your Value Chain
         </h2>
         {VALUE_CHAIN.map((section) => (
@@ -228,7 +228,7 @@ export default function SuitePage() {
             <MessageSquare className="w-6 h-6 text-[#25D366]" />
           </div>
           <div>
-            <h3 className="text-lg font-bold" style={{ fontFamily: 'Montserrat, sans-serif' }}>WhatsApp Patient Router</h3>
+            <h3 className="text-lg font-bold">WhatsApp Patient Router</h3>
             <p className="text-[12px] text-white/50">One number for all 88 clinics — AI routes patients to the right branch</p>
           </div>
         </div>
@@ -257,7 +257,7 @@ export default function SuitePage() {
 
       {/* Resell Opportunity */}
       <div className="p-6 rounded-xl border border-[#E3964C]/20 bg-[#E3964C]/5">
-        <h3 className="text-lg font-semibold text-gray-900 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+        <h3 className="text-lg font-semibold text-gray-900 mb-1">
           Resell Opportunity — Extend to Your Ecosystem
         </h3>
         <p className="text-[13px] text-gray-500 mb-4">
@@ -276,7 +276,7 @@ export default function SuitePage() {
 
       {/* Branch Deployment & Ecosystem */}
       <div className="p-5 rounded-xl border border-[#3DA9D1]/20 bg-[#3DA9D1]/5">
-        <h3 className="text-[15px] font-semibold text-gray-900 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+        <h3 className="text-[15px] font-semibold text-gray-900 mb-2">
           Branch Deployment &amp; Doctor Umbrella Licensing
         </h3>
         <p className="text-[12px] text-gray-600 mb-2">

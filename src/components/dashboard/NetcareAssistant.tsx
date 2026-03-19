@@ -124,7 +124,7 @@ export default function NetcareAssistant() {
                   <Sparkles className="w-4 h-4 text-[#E3964C]" />
                 </div>
                 <div>
-                  <div className="text-[13px] text-white font-semibold" style={{ fontFamily: "Montserrat, sans-serif" }}>Netcare AI Assistant</div>
+                  <div className="text-[13px] text-white font-semibold">Netcare AI Assistant</div>
                   <div className="text-[10px] text-white/40">Powered by VisioHealth OS</div>
                 </div>
               </div>

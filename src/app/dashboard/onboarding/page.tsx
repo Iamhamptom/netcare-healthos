@@ -129,10 +129,10 @@ export default function OnboardingPage() {
         <div className="flex items-center gap-3 mb-2">
           <img src="/images/netcare-logo.png" alt="Netcare" className="h-5" />
           <span className="text-[11px] text-gray-400 uppercase tracking-widest font-semibold">x</span>
-          <span className="text-[13px] font-bold text-[#1D3443]" style={{ fontFamily: 'Montserrat, sans-serif' }}>VisioHealth OS</span>
+          <span className="text-[13px] font-bold text-[#1D3443]">VisioHealth OS</span>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-          Welcome, Thirushen
+        <h1 className="text-2xl font-bold text-gray-900">
+          Welcome to Your Platform
         </h1>
         <p className="text-[14px] text-gray-500 mt-1 max-w-2xl">
           This platform was purpose-built for Netcare Primary Healthcare by VisioHealth OS.
@@ -142,7 +142,7 @@ export default function OnboardingPage() {
 
       {/* Tour Steps */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
           <Rocket className="w-5 h-5 inline mr-2 text-[#E3964C]" />
           Your Platform Tour — 8 Key Areas
         </h2>
@@ -182,7 +182,7 @@ export default function OnboardingPage() {
 
       {/* Coming Soon Tools */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+        <h2 className="text-lg font-semibold text-gray-900 mb-1">
           <Zap className="w-5 h-5 inline mr-2 text-[#E3964C]" />
           Coming Soon — Expansion Modules
         </h2>

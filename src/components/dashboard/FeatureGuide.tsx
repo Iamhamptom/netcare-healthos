@@ -111,7 +111,7 @@ function NDAPopup({ onAccept }: { onAccept: () => void }) {
             <Shield className="w-5 h-5 text-[#1D3443]" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-gray-900" style={{ fontFamily: "Montserrat, sans-serif" }}>Confidentiality Agreement</h2>
+            <h2 className="text-lg font-bold text-gray-900">Confidentiality Agreement</h2>
             <p className="text-[11px] text-gray-400">VisioHealth OS x Netcare Primary Healthcare</p>
           </div>
         </div>
@@ -120,7 +120,7 @@ function NDAPopup({ onAccept }: { onAccept: () => void }) {
           <p>By accessing, you agree to: keep all features, data, and technology confidential; not share with third parties; use solely for evaluating a Netcare-VisioHealth OS partnership.</p>
           <p className="text-[11px] text-gray-400">Governed by SA law. High Court of Gauteng, Johannesburg.</p>
         </div>
-        <button onClick={onAccept} className="w-full mt-5 py-3 bg-[#1D3443] text-white font-semibold text-[13px] rounded-xl hover:bg-[#152736] transition-colors" style={{ fontFamily: "Montserrat, sans-serif" }}>
+        <button onClick={onAccept} className="w-full mt-5 py-3 bg-[#1D3443] text-white font-semibold text-[13px] rounded-xl hover:bg-[#152736] transition-colors">
           I Agree — Enter Platform
         </button>
       </motion.div>
@@ -164,7 +164,7 @@ function JessWelcome({ onComplete }: { onComplete: () => void }) {
             <Sparkles className="w-6 h-6 text-white" />
           </div>
           <div>
-            <div className="text-white font-semibold text-[15px]" style={{ fontFamily: "Montserrat, sans-serif" }}>Jess</div>
+            <div className="text-white font-semibold text-[15px]">Jess</div>
             <div className="text-white/30 text-[11px]">Your AI Operations Guide • VisioHealth OS</div>
           </div>
         </motion.div>
@@ -262,7 +262,7 @@ function JessWelcome({ onComplete }: { onComplete: () => void }) {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           className="w-full py-3 mt-4 rounded-xl bg-gradient-to-r from-[#3DA9D1] to-[#E3964C] text-white font-semibold text-[14px] flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-          style={{ fontFamily: "Montserrat, sans-serif" }}
+         
         >
           {!showSavings ? "Show Me the Savings" : !showIntegrations ? "Show Integrations" : !showGaps ? "Show Market Gaps" : !showFuture ? "Show the Future" : "Enter the Platform"}
           <ArrowRight className="w-4 h-4" />

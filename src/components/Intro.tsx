@@ -183,7 +183,7 @@ export default function Intro({ onEnter }: IntroProps) {
           transition={{ duration: 0.8, delay: 0.5 }}
           className="mb-4"
         >
-          <h1 className="text-5xl md:text-6xl lg:text-7xl tracking-[-0.04em] text-white font-light leading-none" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+          <h1 className="text-5xl md:text-6xl lg:text-7xl tracking-[-0.04em] text-white font-light leading-none">
             Health<span style={{
               textShadow: "0 0 30px rgba(61,169,209,0.6), 0 0 80px rgba(61,169,209,0.25)",
               color: "#3DA9D1",
@@ -198,7 +198,7 @@ export default function Intro({ onEnter }: IntroProps) {
           transition={{ duration: 0.8, delay: 1.0 }}
           className="mb-4"
         >
-          <p className="text-sm text-white/40 font-medium tracking-[0.3em] uppercase" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+          <p className="text-sm text-white/40 font-medium tracking-[0.3em] uppercase">
             Primary Healthcare Operations
           </p>
         </motion.div>
@@ -274,7 +274,7 @@ export default function Intro({ onEnter }: IntroProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 2 }}
-        style={{ fontFamily: 'Montserrat, sans-serif' }}
+       
       >
         V1.0
       </motion.div>
@@ -283,7 +283,7 @@ export default function Intro({ onEnter }: IntroProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 2.2 }}
-        style={{ fontFamily: 'Montserrat, sans-serif' }}
+       
       >
         NETCARE PRIMARY HEALTHCARE
       </motion.div>

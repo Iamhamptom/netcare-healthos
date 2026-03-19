@@ -82,7 +82,7 @@ export default function PilotPage() {
           <Rocket className="w-4 h-4 text-[#E3964C]" />
           <span className="text-[11px] text-gray-400 uppercase tracking-widest font-semibold">Regional Pilot Program</span>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: "Montserrat, sans-serif" }}>
+        <h1 className="text-2xl font-bold text-gray-900">
           Start Your Pilot
         </h1>
         <p className="text-[14px] text-gray-500 mt-1 max-w-2xl">
@@ -113,7 +113,7 @@ export default function PilotPage() {
         <>
           {/* Step 1: Select Region */}
           <div>
-            <h2 className="text-[15px] font-semibold text-gray-900 mb-3" style={{ fontFamily: "Montserrat, sans-serif" }}>
+            <h2 className="text-[15px] font-semibold text-gray-900 mb-3">
               Step 1: Select Your Pilot Region
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -146,7 +146,7 @@ export default function PilotPage() {
           <AnimatePresence>
             {region && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                <h2 className="text-[15px] font-semibold text-gray-900 mb-3" style={{ fontFamily: "Montserrat, sans-serif" }}>
+                <h2 className="text-[15px] font-semibold text-gray-900 mb-3">
                   Step 2: Select Clinics in {region.name}
                 </h2>
                 <div className="space-y-2">
@@ -200,7 +200,7 @@ export default function PilotPage() {
                   <button
                     onClick={() => setPilotStarted(true)}
                     className="w-full py-3 bg-[#1D3443] text-white font-semibold text-[14px] rounded-xl hover:bg-[#152736] transition-colors flex items-center justify-center gap-2"
-                    style={{ fontFamily: "Montserrat, sans-serif" }}
+                   
                   >
                     <Rocket className="w-4 h-4" />
                     Start 8-Week Pilot in {region.name}
@@ -219,7 +219,7 @@ export default function PilotPage() {
           <div className="w-16 h-16 rounded-full bg-[#10B981]/10 flex items-center justify-center mx-auto mb-4">
             <CheckCircle2 className="w-8 h-8 text-[#10B981]" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2" style={{ fontFamily: "Montserrat, sans-serif" }}>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">
             Pilot Request Submitted
           </h2>
           <p className="text-[14px] text-gray-500 max-w-md mx-auto mb-6">
@@ -229,7 +229,7 @@ export default function PilotPage() {
 
           {/* 8-Week Timeline */}
           <div className="max-w-2xl mx-auto text-left">
-            <h3 className="text-[14px] font-semibold text-gray-900 mb-4" style={{ fontFamily: "Montserrat, sans-serif" }}>Your 8-Week Pilot Roadmap</h3>
+            <h3 className="text-[14px] font-semibold text-gray-900 mb-4">Your 8-Week Pilot Roadmap</h3>
             <div className="space-y-4">
               {PILOT_PHASES.map((phase, i) => (
                 <motion.div

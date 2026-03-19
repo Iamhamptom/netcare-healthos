@@ -134,7 +134,7 @@ export default function DashboardSidebar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="font-semibold text-[12px] whitespace-nowrap tracking-wide text-[var(--ivory)] leading-tight"
-              style={{ fontFamily: 'Montserrat, sans-serif' }}
+             
             >
               NETCARE
             </motion.span>

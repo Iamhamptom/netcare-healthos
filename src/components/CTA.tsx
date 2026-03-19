@@ -38,7 +38,7 @@ export default function CTA() {
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         className="relative z-10 max-w-3xl mx-auto text-center"
       >
-        <h2 className="text-4xl md:text-6xl font-light tracking-tight text-white leading-[1.1]" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+        <h2 className="text-4xl md:text-6xl font-light tracking-tight text-white leading-[1.1]">
           {ctaWords.map((word, i) => (
             <motion.span
               key={i}

@@ -60,7 +60,7 @@ export default function LoginPage() {
         </div>
 
         <div className="relative z-10 space-y-6">
-          <h2 className="text-2xl font-semibold text-white leading-snug" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+          <h2 className="text-2xl font-semibold text-white leading-snug">
             88 clinics.<br />One command center.
           </h2>
           <p className="text-[#3DA9D1]/60 text-sm leading-relaxed max-w-xs">
@@ -113,7 +113,7 @@ export default function LoginPage() {
           </div>
 
           <div className="mb-10">
-            <h1 className="text-2xl font-semibold text-gray-900 tracking-tight mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>Welcome back</h1>
+            <h1 className="text-2xl font-semibold text-gray-900 tracking-tight mb-2">Welcome back</h1>
             <p className="text-sm text-gray-500">Sign in to your Netcare operations dashboard</p>
           </div>
 

@@ -1,5 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
+
+/* Geist fonts loaded via next/font in layout.tsx */
 
 :root {
   /* ─── Dark palette (sidebar, landing) ─── */
@@ -222,22 +223,29 @@ html { scroll-behavior: smooth; }
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 /* ─── Typography utilities ─── */
 .font-display {
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--font-geist-sans), sans-serif;
 }
 
 .font-mono {
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--font-geist-mono), monospace;
 }
 
 .font-body {
-  font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
+/* Mono for all financial numbers */
+.font-metric {
+  font-family: var(--font-geist-mono), monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
 .text-muted {

@@ -104,7 +104,7 @@ export default function BoardPackPage() {
             <img src="/images/netcare-logo.png" alt="Netcare" className="h-4" />
             <span className="text-[11px] text-gray-400 uppercase tracking-widest font-semibold">Board Presentation Pack</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: "Montserrat, sans-serif" }}>
+          <h1 className="text-2xl font-bold text-gray-900">
             Your Business Case for the Board
           </h1>
           <p className="text-[13px] text-gray-500 mt-0.5">
@@ -150,7 +150,7 @@ export default function BoardPackPage() {
           >
             <div className="px-5 py-3 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
               <section.icon className="w-4 h-4" style={{ color: section.color }} />
-              <h3 className="text-[14px] font-semibold text-gray-900" style={{ fontFamily: "Montserrat, sans-serif" }}>
+              <h3 className="text-[14px] font-semibold text-gray-900">
                 {i + 1}. {section.title}
               </h3>
             </div>
@@ -171,7 +171,7 @@ export default function BoardPackPage() {
       {/* Scenario Modelling */}
       <div className="rounded-xl border border-gray-200 overflow-hidden">
         <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
-          <h3 className="text-[14px] font-semibold text-gray-900" style={{ fontFamily: "Montserrat, sans-serif" }}>
+          <h3 className="text-[14px] font-semibold text-gray-900">
             7. Scenario Modelling — 3-Year ROI
           </h3>
         </div>
@@ -213,7 +213,7 @@ export default function BoardPackPage() {
 
       {/* Call to Action */}
       <div className="p-5 rounded-xl bg-gradient-to-r from-[#1D3443] to-[#3DA9D1] text-center">
-        <h3 className="text-lg font-bold text-white mb-2" style={{ fontFamily: "Montserrat, sans-serif" }}>
+        <h3 className="text-lg font-bold text-white mb-2">
           Recommendation: Start 8-Week Regional Pilot
         </h3>
         <p className="text-[13px] text-white/60 max-w-lg mx-auto mb-4">
