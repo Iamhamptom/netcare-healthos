@@ -46,7 +46,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
             <img
-              src="https://www.netcare.co.za/Portals/_default/skins/netcare-core/images/logos/Netcare.png"
+              src="/images/netcare-logo.png"
               alt="Netcare"
               className="h-6"
             />

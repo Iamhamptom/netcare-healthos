@@ -52,7 +52,7 @@ export default function LoginPage() {
         <div className="relative z-10">
           {/* Netcare Logo */}
           <img
-            src="https://www.netcare.co.za/Portals/_default/skins/netcare-core/images/logos/Netcare.png"
+            src="/images/netcare-logo.png"
             alt="Netcare"
             className="h-8 mb-2"
           />
@@ -106,7 +106,7 @@ export default function LoginPage() {
           {/* Mobile logo */}
           <div className="text-center mb-10 lg:hidden">
             <img
-              src="https://www.netcare.co.za/Portals/_default/skins/netcare-core/images/logos/Netcare.png"
+              src="/images/netcare-logo.png"
               alt="Netcare"
               className="h-7 mx-auto mb-2"
             />

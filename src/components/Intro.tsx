@@ -170,7 +170,7 @@ export default function Intro({ onEnter }: IntroProps) {
           className="mb-6"
         >
           <img
-            src="https://www.netcare.co.za/Portals/_default/skins/netcare-core/images/logos/Netcare.png"
+            src="/images/netcare-logo.png"
             alt="Netcare"
             className="h-12 md:h-16 mx-auto"
           />

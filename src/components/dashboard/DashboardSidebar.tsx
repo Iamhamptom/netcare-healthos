@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
+  Building2,
   MessageSquare,
   CalendarCheck,
   Star,
@@ -34,6 +35,7 @@ import {
 // All possible nav items
 const allNavItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", roles: ["admin", "doctor", "receptionist", "nurse"] },
+  { href: "/dashboard/network", icon: Building2, label: "Network Finance", roles: ["admin", "platform_admin"] },
   { href: "/dashboard/onboarding", icon: Rocket, label: "Get Started", roles: ["admin"] },
   { href: "/dashboard/daily", icon: ClipboardList, label: "Daily Tasks", roles: ["admin", "receptionist", "nurse"] },
   { href: "/dashboard/checkin", icon: UserCheck, label: "Check-In", roles: ["admin", "receptionist", "nurse"] },
@@ -112,7 +114,7 @@ export default function DashboardSidebar() {
       <div className="h-14 flex items-center gap-2 px-4 border-b border-[var(--border)]" style={branding ? { borderBottomColor: `${branding.primaryColor}33` } : {}}>
         {/* Netcare Logo */}
         <img
-          src="https://www.netcare.co.za/Portals/_default/skins/netcare-core/images/logos/Netcare.png"
+          src="/images/netcare-logo.png"
           alt="Netcare"
           className="h-5 shrink-0"
           style={{ filter: "brightness(0) invert(1)" }}

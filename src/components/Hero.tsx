@@ -156,7 +156,7 @@ export default function Hero() {
         {/* Netcare logo top */}
         <motion.div variants={fadeUp} className="mb-8">
           <img
-            src="https://www.netcare.co.za/Portals/_default/skins/netcare-core/images/logos/Netcare.png"
+            src="/images/netcare-logo.png"
             alt="Netcare"
             className="h-8 mx-auto mb-4"
           />
