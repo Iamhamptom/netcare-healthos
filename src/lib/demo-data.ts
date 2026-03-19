@@ -61,10 +61,34 @@ export const demoUser = {
   practice: demoPractice,
 };
 
+export const demoUsers: Record<string, { id: string; name: string; email: string; role: string; practice: typeof demoPractice }> = {
+  "thirushen.pillay@netcare.co.za": {
+    id: "demo-user-thirushen",
+    name: "Thirushen Pillay",
+    email: "thirushen.pillay@netcare.co.za",
+    role: "admin",
+    practice: demoPractice,
+  },
+  "sara.nayager@netcare.co.za": {
+    id: "demo-user-sara",
+    name: "Sara Nayager",
+    email: "sara.nayager@netcare.co.za",
+    role: "admin",
+    practice: demoPractice,
+  },
+  "chris.mathew@netcare.co.za": {
+    id: "demo-user-chris",
+    name: "Dr Chris Mathew",
+    email: "chris.mathew@netcare.co.za",
+    role: "admin",
+    practice: demoPractice,
+  },
+};
+
 export const demoPlatformAdmin = {
   id: "platform-admin",
-  name: "Thirushen Pillay",
-  email: "thirushen.pillay@netcare.co.za",
+  name: "Sara Nayager",
+  email: "sara.nayager@netcare.co.za",
   role: "platform_admin",
   practice: demoPractice,
 };

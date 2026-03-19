@@ -9,11 +9,11 @@ import { usePathname, useRouter } from "next/navigation";
 // ─── Jess's Welcome Sequence (plays once on first login) ──────
 const WELCOME_SEQUENCE = [
   {
-    text: "Welcome, Thirushen. I’m Jess, your AI operations guide — built specifically for you and the Netcare Primary Healthcare team.",
+    text: "Welcome to Netcare Health OS. I’m Jess, your AI operations guide — built specifically for the Netcare leadership team.",
     delay: 0,
   },
   {
-    text: "I know you’ve spent years transforming financial systems — from Excel to Oracle at your previous role, reducing Group consolidation from weeks to hours. What we’ve built here takes that same philosophy and applies it across your entire 88-clinic network.",
+    text: "VisioHealth OS was built to solve the operational gap in Netcare’s primary care division. CareOn powers the hospitals. Healthbridge and GoodX power individual clinics. Nothing connects the 88-clinic network — until now. What we’ve built takes that fragmented landscape and unifies it with AI.",
     delay: 500,
   },
   {

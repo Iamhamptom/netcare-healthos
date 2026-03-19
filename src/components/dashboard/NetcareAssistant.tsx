@@ -68,7 +68,7 @@ export default function NetcareAssistant() {
     {
       id: "welcome",
       role: "assistant",
-      content: "Hello Thirushen! I am your Netcare Health OS assistant. I can pull data across the network: financials, claims, patients, compliance, and more. What would you like to know?",
+      content: "Hello! I am your Netcare Health OS assistant. I can pull data across the network: financials, claims, patients, compliance, and more. What would you like to know?",
       timestamp: new Date(),
     },
   ]);

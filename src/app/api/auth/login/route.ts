@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
 import { rateLimitByIp } from "@/lib/rate-limit";
 import { isDemoMode } from "@/lib/is-demo";
-import { demoUser } from "@/lib/demo-data";
+import { demoUsers, demoUser } from "@/lib/demo-data";
 import { db } from "@/lib/db";
 
 export async function POST(request: Request) {
-  // Rate limit login attempts — 10 per minute per IP
   const rl = rateLimitByIp(request, "auth/login", { limit: 10 });
   if (!rl.allowed) return NextResponse.json({ error: "Too many login attempts. Try again later." }, { status: 429 });
 
@@ -15,18 +14,23 @@ export async function POST(request: Request) {
     if (typeof email !== "string" || typeof password !== "string") return NextResponse.json({ error: "Invalid input" }, { status: 400 });
     if (password.length < 6) return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
 
-    // Demo mode — accept Netcare demo credentials
+    // Demo mode — accept Netcare demo credentials (multiple users)
     if (isDemoMode) {
       const validDemoLogins = [
         { email: "thirushen.pillay@netcare.co.za", password: "Netcare2026!" },
-        { email: "demo@smiledental.co.za", password: "demo1234" },
+        { email: "sara.nayager@netcare.co.za", password: "Netcare2026!" },
+        { email: "chris.mathew@netcare.co.za", password: "Netcare2026!" },
+        { email: "demo@netcare.co.za", password: "Netcare2026!" },
       ];
       const match = validDemoLogins.find(d => d.email === email.toLowerCase() && d.password === password);
       if (!match) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
 
+      // Look up the specific demo user or fall back to default
+      const matchedUser = demoUsers[email.toLowerCase()] || demoUser;
+
       const { createSession } = await import("@/lib/auth");
-      await createSession(demoUser.id);
-      return NextResponse.json({ user: { id: demoUser.id, name: demoUser.name, email: demoUser.email, role: demoUser.role } });
+      await createSession(matchedUser.id);
+      return NextResponse.json({ user: { id: matchedUser.id, name: matchedUser.name, email: matchedUser.email, role: matchedUser.role } });
     }
 
     const { createSession } = await import("@/lib/auth");

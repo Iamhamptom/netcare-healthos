@@ -200,9 +200,12 @@ export default function LoginPage() {
             <Link href="/cookies" className="text-[10px] text-gray-300 hover:text-[#3DA9D1] transition-colors">Cookies</Link>
           </div>
 
-          <p className="text-center text-[11px] text-gray-300 mt-4 font-medium">
-            Demo: thirushen.pillay@netcare.co.za / Netcare2026!
-          </p>
+          <div className="mt-4 space-y-1 text-center">
+            <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Demo Accounts</p>
+            <p className="text-[11px] text-gray-300">sara.nayager@netcare.co.za</p>
+            <p className="text-[11px] text-gray-300">chris.mathew@netcare.co.za</p>
+            <p className="text-[11px] text-gray-300">Password: Netcare2026!</p>
+          </div>
         </motion.div>
       </div>
     </div>
