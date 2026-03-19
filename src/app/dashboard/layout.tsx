@@ -3,6 +3,7 @@ import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import CommandAssistant from "@/components/dashboard/CommandAssistant";
 import VoiceAgentFloat from "@/components/voice-agent/VoiceAgentFloat";
 import FeatureGuide from "@/components/dashboard/FeatureGuide";
+import NetcareAssistant from "@/components/dashboard/NetcareAssistant";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -29,6 +30,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <CommandAssistant />
       <VoiceAgentFloat />
       <FeatureGuide />
+      <NetcareAssistant />
     </div>
   );
 }
