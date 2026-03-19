@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
   Building2,
+  Boxes,
   MessageSquare,
   CalendarCheck,
   Star,
@@ -36,6 +37,7 @@ import {
 const allNavItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", roles: ["admin", "doctor", "receptionist", "nurse"] },
   { href: "/dashboard/network", icon: Building2, label: "Network Finance", roles: ["admin", "platform_admin"] },
+  { href: "/dashboard/suite", icon: Boxes, label: "Your Suite", roles: ["admin", "platform_admin"] },
   { href: "/dashboard/onboarding", icon: Rocket, label: "Get Started", roles: ["admin"] },
   { href: "/dashboard/daily", icon: ClipboardList, label: "Daily Tasks", roles: ["admin", "receptionist", "nurse"] },
   { href: "/dashboard/checkin", icon: UserCheck, label: "Check-In", roles: ["admin", "receptionist", "nurse"] },
