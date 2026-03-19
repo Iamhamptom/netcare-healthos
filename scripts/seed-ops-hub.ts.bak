@@ -1,0 +1,409 @@
+/**
+ * Seed the Operations Hub with all existing research, leads, session summaries, and strategies.
+ * Run: npx tsx scripts/seed-ops-hub.ts
+ */
+
+import { PrismaClient } from "../src/generated/prisma/client.js";
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import fs from "fs";
+import path from "path";
+
+const adapter = new PrismaBetterSqlite3({ url: "file:./dev.db" });
+const prisma = new PrismaClient({ adapter });
+
+async function main() {
+  console.log("Seeding Operations Hub...\n");
+
+  // Clear existing ops documents
+  const existing = await prisma.opsDocument.count();
+  if (existing > 0) {
+    console.log(`Clearing ${existing} existing ops documents...`);
+    await prisma.opsDocument.deleteMany();
+  }
+
+  const rootDir = process.cwd();
+
+  // Helper to read file content
+  function readFile(filename: string): string {
+    const filePath = path.join(rootDir, filename);
+    if (!fs.existsSync(filePath)) {
+      console.warn(`  WARNING: File not found: ${filePath}`);
+      return `[File not found: ${filename}]`;
+    }
+    return fs.readFileSync(filePath, "utf-8");
+  }
+
+  const documents: {
+    category: string;
+    title: string;
+    content: string;
+    tags: string[];
+    pinned: boolean;
+  }[] = [];
+
+  // ============================================================
+  // RESEARCH CATEGORY
+  // ============================================================
+
+  // Document 1: SA Healthcare Marketing Compliance Guide
+  documents.push({
+    category: "research",
+    title: "SA Healthcare Marketing Compliance Guide",
+    content: readFile("SA-Healthcare-Marketing-Compliance-Guide.md"),
+    tags: ["compliance", "hpcsa", "popia", "icd-10", "marketing", "sa-law"],
+    pinned: true,
+  });
+
+  // Document 2: SA Private Practice Economics
+  documents.push({
+    category: "research",
+    title: "SA Private Practice Economics",
+    content: readFile("SA-Private-Practice-Economics.md"),
+    tags: ["economics", "billing", "medical-aid", "roi", "pricing", "revenue"],
+    pinned: true,
+  });
+
+  // Document 3: Joburg ENT Growth Strategy
+  documents.push({
+    category: "research",
+    title: "Joburg ENT Growth Strategy",
+    content: readFile("Joburg-ENT-Growth-Strategy.md"),
+    tags: ["ent", "growth", "strategy", "joburg", "dr-lamola", "marketing"],
+    pinned: true,
+  });
+
+  // ============================================================
+  // LEADS CATEGORY
+  // ============================================================
+
+  // Document 4: ENT Referral Leads (108)
+  documents.push({
+    category: "leads",
+    title: "ENT Referral Leads (108)",
+    content: readFile("joburg-ent-referral-leads.csv"),
+    tags: ["ent", "gp", "paediatrician", "audiologist", "corporate", "joburg"],
+    pinned: true,
+  });
+
+  // Document 5: Independent Decision-Maker Practices (37)
+  documents.push({
+    category: "leads",
+    title: "Independent Decision-Maker Practices (37)",
+    content: readFile("joburg-north-owner-operated-leads.csv"),
+    tags: ["independent", "owner-operated", "decision-maker", "joburg"],
+    pinned: true,
+  });
+
+  // ============================================================
+  // SESSION CATEGORY
+  // ============================================================
+
+  // Document 6: Session Summary
+  documents.push({
+    category: "session",
+    title: "Session: March 14-16 2026 -- Dr. Lamola Investor + Platform Build",
+    content: `## What Was Done
+
+### Investor Portal (11 pages built)
+- Ecosystem overview with 6 products, AI-generated images
+- Product Map (full feature tree)
+- Compliance mapping (7 SA regulations, 45+ items)
+- Founder Letter ("I Couldn't Find a Bed")
+- Onboarding (dual-path: investor + client)
+- Notes system (API-backed, per-section)
+- Policies & T&Cs (5 legal documents)
+- NDA (mutual, 2-year, with "I Accept")
+- Service Agreement (3 tiers, credits, leads, early termination)
+- AI Courses (5 courses, RSVP system)
+- Research Portal (14 reports)
+- Lead Pipeline (108 leads, 12-month strategy, flywheel)
+
+### Dr. Mogau Lamola Setup
+- Account: mogau.lamola@visiohealth.co.za / VisioHealth2026!
+- ENT Surgeon (NOT oncologist) -- Joburg ENT, Netcare Park Lane
+- Served as Head of ENT at Nelson Mandela Children's Hospital
+- Practice seeded: 20 patients, 8 ENT services, 5 bookings, 3 invoices, 9 daily tasks
+- R3,000 credits seeded (Professional plan)
+
+### Platform Infrastructure Built
+- Credit system (CreditLedger + charge/add/balance)
+- API key system (vhk_ prefix, SHA-256 hashed)
+- GP Referral intake system (/refer/joburg-ent)
+- GP marketing funnel (/gp landing, /gp/register, /gp/dashboard)
+- Specialist directory API
+- Referral dashboard in practice view
+- ENT vertical landing page (/how-it-works/ent)
+- SEO metadata across all pages
+
+### Pricing Updated
+- Core: R15,000/mo (12-month min) + R1K credits + 50 leads
+- Professional: R35,000/mo (12-month min) + R3K credits + 100 leads
+- Enterprise: R55,000/mo (24-month min) + R8K credits + 200 leads
+
+### Research Completed
+- SA Healthcare Marketing Compliance Guide (POPIA, HPCSA, ICD-10, CPA, all 7 regulations)
+- ENT market research (380-420 specialists, R3-5B market)
+- Joburg ENT competitive landscape (25-30 specialists, all mapped)
+- Oncology market research (R12B+, 200 oncologists)
+- SA Private Practice Economics (billing, claims, ROI calculator)
+- Google foot traffic analysis (40 practices)
+
+### Lead Generation
+- 108 ENT referral leads (59 GPs, 20 paeds, 15 audiologists, 15 corporates)
+- 34 high-volume GP practices identified
+- 65 high-value specialist practices (paeds, ENT, dental, derm, ophth)
+- 40 Google foot traffic practices
+- 37 independent owner-operator practices (decision makers)
+- Top 20 hit list compiled with pitch scripts
+
+## What's Pending
+- Payment collection setup (Yoco/bank -- waiting for details)
+- Turn off DEMO_MODE on Vercel for real auth
+- WhatsApp Business API integration (Twilio/Africa's Talking)
+- Paystack plans creation at new prices
+- Share credentials with Dr. Lamola
+- Begin outreach to Top 20 hit list
+- Bryanston Blitz Day planning
+- NDA signed before sharing portal`,
+    tags: ["session", "march-2026", "investor", "dr-lamola", "platform-build"],
+    pinned: true,
+  });
+
+  // ============================================================
+  // STRATEGY CATEGORY
+  // ============================================================
+
+  // Document 7: Pricing Tiers & Unit Economics
+  documents.push({
+    category: "strategy",
+    title: "Pricing Tiers & Unit Economics",
+    content: `## Pricing
+- Core: R15,000/mo (12-month min) -- R1K credits, 50 leads
+- Professional: R35,000/mo (12-month min) -- R3K credits, 100 leads
+- Enterprise: R55,000/mo (24-month min) -- R8K credits, 200 leads
+- Setup fees: R15K / R25K / R40K
+
+## Unit Economics
+- COGS per practice: R440-R1,450/month
+- Gross margin: 97-98%
+- CAC: R13,000-R18,000 (recovered in <1 month)
+
+## ROI Pitch Numbers
+- GP: 4 extra patients/day covers R50K
+- Specialist: 1-2 extra patients/day covers R50K
+- 5% fewer rejections = R18K-R50K/month recovered
+- 20% fewer no-shows = R8K-R21K/month recovered
+- 2 hrs admin saved = R70K-R264K/month capacity unlocked
+- Combined ROI: 3-4.5x subscription cost
+
+## Credit Rates
+- AI agent: R2.00/interaction
+- WhatsApp: R0.75/message
+- SMS: R0.50/message
+- Email: R0.10/email
+- API call: R0.25/call
+
+## R1M MRR Target
+- 20 clients x R50K avg = R1,000,000/month
+- Annual: R12,000,000
+- Monthly COGS (all 20): ~R19,000
+- Monthly gross profit: ~R981,000`,
+    tags: ["pricing", "unit-economics", "roi", "r1m-mrr", "credits"],
+    pinned: true,
+  });
+
+  // Document 8: Top 20 Sales Hit List
+  documents.push({
+    category: "strategy",
+    title: "Top 20 Sales Hit List",
+    content: `## Top 20 Independent Owner-Operated Practices — Decision Makers
+
+These practices are independently owned (not chains/franchises), meaning the doctor IS the decision maker. No procurement committees, no hospital group approval needed. One conversation = one sale.
+
+### Tier 1 — Highest Priority (Owner-operated, affluent areas, strong digital presence)
+
+1. **Dr Kevin Scheepers** — GP/Functional Medicine, Bryanston
+   - Phone: 011 706 6800 | Web: drkevinscheepers.com
+   - WHY: Multiple revenue streams (GP + anti-aging + Botox + fillers + sports medicine). Solo owner. Tech-forward. Premium patients. Bryanston affluent area.
+
+2. **Execuhealth (Dr Golden / Dr Hinrichs)** — GP Multi-doctor, Mediclinic Sandton
+   - Phone: 011 706 1231 | Web: execuhealth.co.za
+   - WHY: 4-doctor practice. Executive health focus = affluent patients. Travel clinic adds revenue. Partner-owned (not chain).
+
+3. **Dr Wynand van der Merwe** — Sandton Dental Studio, Sandton
+   - Phone: 011 326 5153 | Web: sandtondental.co.za
+   - WHY: Owner-dentist. Upmarket cosmetic + general. Veneers + implants + facial aesthetics. Sandton prime location. Strong Instagram.
+
+4. **Dr Aadil Jeena** — Houghton Dental, Houghton
+   - Phone: 074 804 0271 | Web: houghtondental.co.za
+   - WHY: Founder since 2019. Advanced tech (3D scanning + laser). Houghton = ultra-affluent. Modern practice.
+
+5. **Dr Enrico Maraschin** — Paediatrician, Morningside
+   - Phone: 011 784 2729 | Web: drmaraschin.co.za
+   - WHY: 30+ years private practice. Incorporated as "Dr Enrico F. Maraschin Inc." Neonatology + allergies + immunology. Massive patient base.
+
+### Tier 2 — High Priority (Established, decision-maker confirmed)
+
+6. **Dr Graham Jones** — SPOT Care Paediatrics, Bryanston
+   - Phone: 011 706 1153 | Web: drgrahamjones.co.za
+   - WHY: Founded SPOT Care. 20+ years. Multi-disciplinary team. Bryanston affluent.
+
+7. **Dr Roshni Naicker** — Healing Kids Paediatrics, Sandton Medpark
+   - Phone: 087 133 0248 | Web: healingkids.co.za
+   - WHY: 20+ years. Emergency paediatric care. After-hours. Owner-operator.
+
+8. **Dr Sebasch Ranchod** — Designer Smiles Inc, Rosebank
+   - Phone: 011 615 9352 | Web: designersmilesinc.co.za
+   - WHY: 30+ years. Master implantologist. DSD accredited. Rosebank prime. Full-service dental.
+
+9. **Dr Danny Pincus** — Dermatology, Rosebank
+   - Phone: 011 268 1382 | Web: dannypincus.com
+   - WHY: Solo practice. Highly experienced. Rosebank business district = high foot traffic.
+
+10. **Dr Mary Rouhani** — Dermatology, Morningside + Fourways
+    - Phone: 011 875 1870 | Web: drmaryrouhani.com
+    - WHY: Award-winning. Two locations. MoleMax HD technology. High-tech practice.
+
+### Tier 3 — Strong Targets (Clear ownership, good fit)
+
+11. **Dr Vicki Schutte** — GP, Fourways
+    - Phone: 011 465 6715 | Web: drvickischutte.co.za
+    - WHY: 30+ years. Women's health + paediatrics + weight loss. Owner-operator for decades.
+
+12. **Dr Holliday & Dr Venter** — GP, Jukskei Park
+    - Phone: 011 704 1537 | Web: drhollidayandventer.co.za
+    - WHY: 37 years in practice. 4000+ families served. Independent since 1983.
+
+13. **Dr Norman Cahi** — CAHI Dental, Parktown North
+    - Phone: 011 305 9300 | Web: cahidentalpractice.co.za
+    - WHY: 35+ years. Prosthodontics specialist. Parktown North affluent. Owner-operator.
+
+14. **Dr Cerina Green** — Family Dentist, Bryanston
+    - Web: cerinagreen.co.za
+    - WHY: Owner since 2003. MSc Dent. Bryanston affluent. Solo owner-operator 20+ years.
+
+15. **Dr Neelan Pillay** — Gynaecology/Reproductive Medicine, Mediclinic Sandton
+    - Phone: 011 463 7599 | Web: drpillay.co.za
+    - WHY: Sub-specialist reproductive medicine (Cum Laude). High-value fertility patients. Solo practice.
+
+### Tier 4 — Specialist Targets (Niche, high-value)
+
+16. **Dr Darren Stoler** — Morningside Eye, Sandton
+    - Phone: 011 783 0099 | Web: morningside-eye.co.za
+    - WHY: Practice owner with own theatre on premises. Full ophthalmic surgery. High billing.
+
+17. **Dr Lipalo Mokete** — Orthopaedic Surgeon, Fourways
+    - Phone: 011 875 1855 | Web: bonesandjoints.co.za
+    - WHY: Pioneer robot-assisted joint replacement in SA. Incoming President SA Arthroplasty Society. High-value procedures.
+
+18. **Dr Lisa Burnell** — ENT, Morningside Mediclinic
+    - Phone: 011 883 3340 | Web: drlisaburnell.com
+    - WHY: Head & neck surgery fellowship (Canada). Solo practice. Independent ENT.
+
+19. **Dr Boipelo Tselapedi-Sekeitto** — ENT, Mediclinic Sandton
+    - Web: entwithdrb.co.za
+    - WHY: Modern branding "ENT with Dr B." Strong social media. Rhinoplasty + sinus + sleep apnoea. Solo.
+
+20. **Dr Tom Mokaya** — Gynaecologist, Mediclinic Sandton + Netcare Sunninghill
+    - Phone: 011 706 9620 | Web: sandtongynaecologist.co.za
+    - WHY: 20+ years. Award-winning. Two hospital locations. Fertility specialist. High-value patients.
+
+---
+
+## Pitch Approach for All 20
+
+**Opening**: "Dr [Name], I'm reaching out from VisioHealth -- we've built an AI-powered practice management platform specifically for SA private practices. We noticed your practice [specific detail about their practice] and wanted to share how we're helping similar practices recover R50K-R150K/month in lost revenue."
+
+**Key ROI points to lead with**:
+- "Our practices see a 5% reduction in claim rejections -- that's R18K-R50K/month recovered"
+- "WhatsApp reminders reduce no-shows by 20% -- that's R8K-R21K/month in recaptured slots"
+- "AI-assisted admin saves 2 hours/day -- that's 6-8 extra patients you could see"
+
+**Close**: "We're onboarding 20 founding practices in Joburg North at preferential rates. Would 15 minutes this week work for a quick demo?"`,
+    tags: ["sales", "hit-list", "top-20", "outreach", "pitch-scripts", "joburg"],
+    pinned: true,
+  });
+
+  // Document 9: Market Insights -- Competitive Edge
+  documents.push({
+    category: "strategy",
+    title: "Market Insights -- Competitive Edge",
+    content: `## 14 Market Insights: VisioHealth's Competitive Edge
+
+### 1. SA Healthcare is a R600B+ Market with Massive Digital Lag
+The SA private healthcare market exceeds R600 billion annually, yet most practices still run on paper-based systems, manual claim submissions, and phone-based booking. The digital transformation gap is enormous.
+
+### 2. Only 14.7% of SA Has Medical Aid -- But They Generate 80%+ of Private Revenue
+The ~9.7 million medical aid members drive the vast majority of private practice revenue. VisioHealth's billing AI targets this exact population with claim optimization.
+
+### 3. R40 Billion in Out-of-Pocket Payments Annually
+CMS confirmed R40B+ in out-of-pocket payments by medical aid members in 2023/2024. Much of this is from claim shortfalls, rejections, and co-payments. VisioHealth reduces this friction.
+
+### 4. 15-20% Claim Rejection Rate is Industry Standard
+Every rejected claim costs a practice 15-30 minutes of admin rework. At R12K-R18K/month admin salaries, this adds up to R5K-R15K/month in hidden costs per practice.
+
+### 5. No Single Platform Covers the Full Practice Lifecycle
+Existing tools (Healthbridge for billing, RecoMed for booking, separate EHR systems) are siloed. VisioHealth is the first to combine AI triage, booking, billing, compliance, and CRM in one platform.
+
+### 6. The HPCSA Marketing Restrictions Create a Moat
+SA healthcare marketing is severely restricted (no testimonials, no "best doctor" claims, no before/after photos). This means practices can't easily market themselves -- VisioHealth's GP referral pipeline and directory optimization fills this gap compliantly.
+
+### 7. 97-98% Gross Margins on SaaS
+COGS per practice is R440-R1,450/month (AI API calls, SMS, hosting). At R15K-R55K/month subscription prices, gross margins are extraordinary -- comparable to the best SaaS companies globally.
+
+### 8. CAC Recovery in Under 1 Month
+With estimated CAC of R13K-R18K and subscription prices of R15K-R55K/month, customer acquisition cost is recovered in the first month. This enables aggressive growth spending.
+
+### 9. Specialists Need Only 1-2 Extra Patients/Day for ROI
+At R1,500/consultation, a specialist paying R50K/month for VisioHealth breaks even with just 34 additional bookings per month -- roughly 1.5 per working day. This makes the ROI pitch extremely compelling.
+
+### 10. The GP Referral Network is the Highest-ROI Channel
+ENT, paediatrics, and other specialist practices depend on GP referrals. VisioHealth's digital referral tools (WhatsApp referral line, automated feedback loops) make GPs more likely to refer -- creating a flywheel effect.
+
+### 11. White-Label Multi-Tenancy is a Competitive Advantage
+Each practice gets their own branded portal (logo, colors, subdomain, tagline). This makes VisioHealth feel like "their" system rather than a third-party tool -- increasing stickiness and reducing churn.
+
+### 12. POPIA Compliance is a Sales Lever
+Most practices are not fully POPIA-compliant (consent tracking, audit logging, data retention policies). VisioHealth's built-in compliance dashboard is both a feature and a sales argument: "Are you POPIA-compliant? We make it automatic."
+
+### 13. The Funder Subsidy Model Could Accelerate Growth
+Medical aids save R10K-R30K/month per practice in reduced claim processing costs when providers use better billing tools. This opens the door for funder co-investment: medical aids subsidize part of the subscription to improve claim quality.
+
+### 14. First-Mover in AI-Powered SA Healthcare Practice Management
+No competitor in SA offers AI-driven triage, billing optimization, and practice management in a single platform. The first practice management platform to nail AI-assisted billing and triage in the SA market will capture significant market share before competitors can catch up.`,
+    tags: ["insights", "competitive-edge", "market-analysis", "sa-healthcare", "moat"],
+    pinned: true,
+  });
+
+  // ============================================================
+  // SEED ALL DOCUMENTS
+  // ============================================================
+
+  for (const doc of documents) {
+    await prisma.opsDocument.create({
+      data: {
+        category: doc.category,
+        title: doc.title,
+        content: doc.content,
+        tags: JSON.stringify(doc.tags),
+        pinned: doc.pinned,
+      },
+    });
+    console.log(`  [${doc.category}] ${doc.title}`);
+  }
+
+  console.log(`\n=== SEEDED ${documents.length} OPS DOCUMENTS ===`);
+  console.log("\nCategories:");
+  const cats = ["research", "leads", "session", "strategy", "pipeline"];
+  for (const cat of cats) {
+    const count = documents.filter((d) => d.category === cat).length;
+    console.log(`  ${cat}: ${count}`);
+  }
+
+  await prisma.$disconnect();
+}
+
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

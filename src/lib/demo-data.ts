@@ -1,0 +1,816 @@
+// Demo data for Vercel deployment (no persistent SQLite in serverless)
+// Used when DEMO_MODE=true or DB is unavailable
+
+const now = new Date();
+const day = 86400000;
+
+export const demoPractice = {
+  id: "demo-practice",
+  name: "Smile Dental — Sandton",
+  type: "dental",
+  address: "45 Rivonia Rd, Sandton, 2196",
+  phone: "+27 11 783 4500",
+  hours: "Mon-Fri 8:00-17:00, Sat 8:00-13:00",
+  aiPersonality: "friendly",
+  // White-label branding
+  logoUrl: "",
+  primaryColor: "#D4AF37",
+  secondaryColor: "#2DD4BF",
+  subdomain: "smiledental",
+  tagline: "Your smile, our passion",
+  // Subscription
+  plan: "professional",
+  planStatus: "active",
+  trialEndsAt: null,
+  paystackSubId: "",
+  paystackCustId: "",
+  // Booking page settings
+  bookingEnabled: true,
+  bookingRequiresApproval: true,
+  bookingDepositEnabled: true,
+  bookingDepositAmount: 200,
+  bookingServices: JSON.stringify([
+    { name: "Consultation", duration: 30, price: 450 },
+    { name: "Dental Cleaning", duration: 45, price: 650 },
+    { name: "Tooth Whitening", duration: 60, price: 2500 },
+    { name: "Check-up", duration: 30, price: 350 },
+    { name: "Filling", duration: 45, price: 1200 },
+    { name: "Tooth Extraction", duration: 60, price: 1800 },
+    { name: "Emergency", duration: 30, price: 800 },
+  ]),
+  bookingWelcomeMsg: "Book your appointment online. We'll confirm via WhatsApp within the hour.",
+  bookingConfirmMsg: "",
+  googlePlaceId: "",
+  createdAt: new Date(now.getTime() - 30 * day),
+};
+
+export const demoUser = {
+  id: "demo-user",
+  name: "Dr. Sarah Mitchell",
+  email: "demo@smiledental.co.za",
+  role: "admin",
+  practice: demoPractice,
+};
+
+export const demoPlatformAdmin = {
+  id: "platform-admin",
+  name: "Dr. Hampton",
+  email: "admin@visiohealth.co.za",
+  role: "platform_admin",
+  practice: null,
+};
+
+// All practices across the platform (for platform admin view)
+export const demoPractices = [
+  demoPractice,
+  {
+    id: "prac-2", name: "Molefe Radiology — Rosebank", type: "radiology",
+    address: "10 Tyrwhitt Ave, Rosebank, 2196", phone: "+27 11 880 2200",
+    hours: "Mon-Fri 7:00-18:00", aiPersonality: "professional",
+    logoUrl: "", primaryColor: "#0ea5e9", secondaryColor: "#8B5CF6",
+    subdomain: "moleferadiology", tagline: "Precision imaging, exceptional care",
+    plan: "professional", planStatus: "active", trialEndsAt: null,
+    paystackSubId: "SUB_rad_001", paystackCustId: "CUS_rad_001",
+    createdAt: new Date(now.getTime() - 60 * day),
+    _stats: { patients: 142, bookingsThisMonth: 89, revenue: 245000, mrr: 1799 },
+  },
+  {
+    id: "prac-3", name: "Zen Wellness Spa — Fourways", type: "wellness",
+    address: "22 Monte Casino Blvd, Fourways, 2191", phone: "+27 11 465 3300",
+    hours: "Mon-Sat 9:00-19:00, Sun 10:00-16:00", aiPersonality: "friendly",
+    logoUrl: "", primaryColor: "#10b981", secondaryColor: "#D4AF37",
+    subdomain: "zenwellness", tagline: "Relax. Restore. Renew.",
+    plan: "starter", planStatus: "active", trialEndsAt: null,
+    paystackSubId: "SUB_zen_001", paystackCustId: "CUS_zen_001",
+    createdAt: new Date(now.getTime() - 45 * day),
+    _stats: { patients: 78, bookingsThisMonth: 156, revenue: 180000, mrr: 799 },
+  },
+  {
+    id: "prac-4", name: "Dr. Nkosi General Practice — Soweto", type: "general",
+    address: "1234 Vilakazi St, Orlando West, Soweto", phone: "+27 11 936 7000",
+    hours: "Mon-Fri 7:30-17:00, Sat 8:00-12:00", aiPersonality: "empathetic",
+    logoUrl: "", primaryColor: "#ef4444", secondaryColor: "#2DD4BF",
+    subdomain: "drnkosi", tagline: "Healthcare for the community",
+    plan: "professional", planStatus: "trial", trialEndsAt: new Date(now.getTime() + 14 * day).toISOString(),
+    paystackSubId: "", paystackCustId: "CUS_nkosi_001",
+    createdAt: new Date(now.getTime() - 10 * day),
+    _stats: { patients: 312, bookingsThisMonth: 245, revenue: 98000, mrr: 0 },
+  },
+  {
+    id: "prac-5", name: "Bright Smile Dental — Pretoria", type: "dental",
+    address: "88 Church St, Pretoria CBD, 0002", phone: "+27 12 322 5500",
+    hours: "Mon-Fri 8:00-17:00", aiPersonality: "professional",
+    logoUrl: "", primaryColor: "#D4AF37", secondaryColor: "#2DD4BF",
+    subdomain: "brightsmile", tagline: "Confident smiles, gentle care",
+    plan: "enterprise", planStatus: "active", trialEndsAt: null,
+    paystackSubId: "SUB_bright_001", paystackCustId: "CUS_bright_001",
+    createdAt: new Date(now.getTime() - 90 * day),
+    _stats: { patients: 523, bookingsThisMonth: 312, revenue: 420000, mrr: 2499 },
+  },
+];
+
+export const demoPatients = [
+  {
+    id: "p1", name: "Maria Santos", phone: "+27 82 345 6789", email: "maria@email.com",
+    dateOfBirth: "1988-03-15", gender: "female", idNumber: "8803150123089", address: "12 Main Rd, Sandton",
+    medicalAid: "Discovery Health", medicalAidNo: "DH-445567", bloodType: "O+",
+    emergencyName: "Carlos Santos", emergencyPhone: "+27 82 999 1111",
+    notes: "Prefers morning appointments", status: "active",
+    lastVisit: new Date(now.getTime() - 14 * day).toISOString(), practiceId: "demo-practice",
+    createdAt: new Date(now.getTime() - 180 * day).toISOString(),
+    updatedAt: new Date(now.getTime() - 14 * day).toISOString(),
+  },
+  {
+    id: "p2", name: "James Khumalo", phone: "+27 83 456 7890", email: "james@email.com",
+    dateOfBirth: "1992-07-22", gender: "male", idNumber: "9207220098087", address: "88 Rivonia Blvd, Sandton",
+    medicalAid: "Bonitas", medicalAidNo: "BN-998844", bloodType: "A+",
+    emergencyName: "Nomsa Khumalo", emergencyPhone: "+27 83 888 2222",
+    notes: "Nervous about needles", status: "active",
+    lastVisit: new Date(now.getTime() - 30 * day).toISOString(), practiceId: "demo-practice",
+    createdAt: new Date(now.getTime() - 120 * day).toISOString(),
+    updatedAt: new Date(now.getTime() - 30 * day).toISOString(),
+  },
+  {
+    id: "p3", name: "Thandi Mokoena", phone: "+27 84 567 8901", email: "thandi@email.com",
+    dateOfBirth: "1985-11-08", gender: "female", idNumber: "8511080234082", address: "5 Grayston Dr, Sandton",
+    medicalAid: "Momentum Health", medicalAidNo: "MH-112299", bloodType: "B+",
+    emergencyName: "Sipho Mokoena", emergencyPhone: "+27 84 777 3333",
+    notes: "", status: "active",
+    lastVisit: new Date(now.getTime() - 60 * day).toISOString(), practiceId: "demo-practice",
+    createdAt: new Date(now.getTime() - 365 * day).toISOString(),
+    updatedAt: new Date(now.getTime() - 60 * day).toISOString(),
+  },
+  {
+    id: "p4", name: "David Robinson", phone: "+27 85 678 9012", email: "david@email.com",
+    dateOfBirth: "1978-01-30", gender: "male", idNumber: "7801300055088", address: "22 Alice Ln, Sandton",
+    medicalAid: "Medihelp", medicalAidNo: "MHP-667733", bloodType: "AB-",
+    emergencyName: "Susan Robinson", emergencyPhone: "+27 85 666 4444",
+    notes: "Diabetic — monitor blood glucose", status: "active",
+    lastVisit: new Date(now.getTime() - 7 * day).toISOString(), practiceId: "demo-practice",
+    createdAt: new Date(now.getTime() - 90 * day).toISOString(),
+    updatedAt: new Date(now.getTime() - 7 * day).toISOString(),
+  },
+  {
+    id: "p5", name: "Lerato Phiri", phone: "+27 86 789 0123", email: "lerato@email.com",
+    dateOfBirth: "1995-06-12", gender: "female", idNumber: "9506120188083", address: "3 West St, Sandton",
+    medicalAid: "Discovery Health", medicalAidNo: "DH-889900", bloodType: "O-",
+    emergencyName: "Tshepo Phiri", emergencyPhone: "+27 86 555 5555",
+    notes: "Pregnant — 28 weeks", status: "active",
+    lastVisit: new Date(now.getTime() - 3 * day).toISOString(), practiceId: "demo-practice",
+    createdAt: new Date(now.getTime() - 200 * day).toISOString(),
+    updatedAt: new Date(now.getTime() - 3 * day).toISOString(),
+  },
+];
+
+// Allergies per patient
+const _demoAllergies = [
+  { id: "al1", name: "Penicillin", severity: "severe", reaction: "Anaphylaxis", patientId: "p1", createdAt: new Date(now.getTime() - 180 * day).toISOString() },
+  { id: "al2", name: "Latex", severity: "moderate", reaction: "Contact dermatitis", patientId: "p1", createdAt: new Date(now.getTime() - 180 * day).toISOString() },
+  { id: "al3", name: "Ibuprofen", severity: "mild", reaction: "Stomach upset", patientId: "p2", createdAt: new Date(now.getTime() - 120 * day).toISOString() },
+  { id: "al4", name: "Codeine", severity: "severe", reaction: "Respiratory distress", patientId: "p4", createdAt: new Date(now.getTime() - 90 * day).toISOString() },
+  { id: "al5", name: "Sulfonamides", severity: "moderate", reaction: "Rash", patientId: "p5", createdAt: new Date(now.getTime() - 200 * day).toISOString() },
+];
+
+// Medications
+const _demoMedications = [
+  { id: "med1", name: "Metformin 500mg", dosage: "1 tablet", frequency: "Twice daily", prescriber: "Dr. Naidoo", startDate: new Date(now.getTime() - 365 * day).toISOString(), endDate: null, active: true, patientId: "p4", createdAt: new Date(now.getTime() - 365 * day).toISOString() },
+  { id: "med2", name: "Prenatal Vitamins", dosage: "1 tablet", frequency: "Daily", prescriber: "Dr. Mitchell", startDate: new Date(now.getTime() - 180 * day).toISOString(), endDate: null, active: true, patientId: "p5", createdAt: new Date(now.getTime() - 180 * day).toISOString() },
+  { id: "med3", name: "Amoxicillin 250mg", dosage: "1 capsule", frequency: "Three times daily", prescriber: "Dr. Mitchell", startDate: new Date(now.getTime() - 14 * day).toISOString(), endDate: new Date(now.getTime() - 7 * day).toISOString(), active: false, patientId: "p1", createdAt: new Date(now.getTime() - 14 * day).toISOString() },
+  { id: "med4", name: "Sensodyne Toothpaste", dosage: "Pea-sized amount", frequency: "Twice daily", prescriber: "Dr. Mitchell", startDate: new Date(now.getTime() - 30 * day).toISOString(), endDate: null, active: true, patientId: "p2", createdAt: new Date(now.getTime() - 30 * day).toISOString() },
+];
+
+// Medical records
+const _demoMedicalRecords = [
+  { id: "rec1", type: "consultation", title: "Routine dental check-up", description: "Patient presented for 6-month routine check-up. No complaints.", diagnosis: "Healthy dentition", treatment: "Professional cleaning performed", provider: "Dr. Mitchell", patientId: "p1", practiceId: "demo-practice", date: new Date(now.getTime() - 14 * day).toISOString(), createdAt: new Date(now.getTime() - 14 * day).toISOString() },
+  { id: "rec2", type: "procedure", title: "Composite filling — tooth #16", description: "Mesial cavity detected on X-ray. Local anaesthetic administered.", diagnosis: "Dental caries — tooth #16", treatment: "Composite restoration (Class II)", provider: "Dr. Mitchell", patientId: "p4", practiceId: "demo-practice", date: new Date(now.getTime() - 7 * day).toISOString(), createdAt: new Date(now.getTime() - 7 * day).toISOString() },
+  { id: "rec3", type: "imaging", title: "Panoramic X-ray (OPG)", description: "Full mouth panoramic radiograph taken for routine screening.", diagnosis: "", treatment: "", provider: "Radiographer Nkosi", patientId: "p3", practiceId: "demo-practice", date: new Date(now.getTime() - 60 * day).toISOString(), createdAt: new Date(now.getTime() - 60 * day).toISOString() },
+  { id: "rec4", type: "consultation", title: "Emergency — severe toothache", description: "Patient presented with acute pain in lower right molar. Periapical abscess suspected.", diagnosis: "Acute periapical abscess — tooth #46", treatment: "Antibiotics prescribed, drainage performed, root canal scheduled", provider: "Dr. Mitchell", patientId: "p5", practiceId: "demo-practice", date: new Date(now.getTime() - 3 * day).toISOString(), createdAt: new Date(now.getTime() - 3 * day).toISOString() },
+  { id: "rec5", type: "lab_result", title: "Blood glucose — pre-procedure", description: "Fasting blood glucose test before filling procedure.", diagnosis: "Elevated glucose (8.2 mmol/L)", treatment: "Proceed with caution, GP notified", provider: "Nurse Adams", patientId: "p4", practiceId: "demo-practice", date: new Date(now.getTime() - 7 * day).toISOString(), createdAt: new Date(now.getTime() - 7 * day).toISOString() },
+  { id: "rec6", type: "referral", title: "Referral to orthodontist", description: "Patient referred for assessment of crowding in anterior teeth.", diagnosis: "Dental crowding — mild", treatment: "Orthodontic assessment recommended", provider: "Dr. Mitchell", patientId: "p2", practiceId: "demo-practice", date: new Date(now.getTime() - 30 * day).toISOString(), createdAt: new Date(now.getTime() - 30 * day).toISOString() },
+];
+
+// Vitals
+const _demoVitals = [
+  { id: "v1", bloodPressureSys: 118, bloodPressureDia: 76, heartRate: 72, temperature: 36.5, weight: 65, height: 168, oxygenSat: 98, bloodGlucose: null, respiratoryRate: 16, painLevel: 0, notes: "Pre-procedure vitals", recordedBy: "Nurse Adams", patientId: "p1", recordedAt: new Date(now.getTime() - 14 * day).toISOString(), createdAt: new Date(now.getTime() - 14 * day).toISOString() },
+  { id: "v2", bloodPressureSys: 135, bloodPressureDia: 88, heartRate: 80, temperature: 36.7, weight: 92, height: 180, oxygenSat: 97, bloodGlucose: 8.2, respiratoryRate: 18, painLevel: 2, notes: "Elevated BP — monitor", recordedBy: "Nurse Adams", patientId: "p4", recordedAt: new Date(now.getTime() - 7 * day).toISOString(), createdAt: new Date(now.getTime() - 7 * day).toISOString() },
+  { id: "v3", bloodPressureSys: 110, bloodPressureDia: 70, heartRate: 88, temperature: 37.1, weight: 72, height: 162, oxygenSat: 99, bloodGlucose: null, respiratoryRate: 18, painLevel: 7, notes: "In pain from abscess", recordedBy: "Nurse Adams", patientId: "p5", recordedAt: new Date(now.getTime() - 3 * day).toISOString(), createdAt: new Date(now.getTime() - 3 * day).toISOString() },
+  { id: "v4", bloodPressureSys: 122, bloodPressureDia: 78, heartRate: 68, temperature: 36.4, weight: 78, height: 175, oxygenSat: 98, bloodGlucose: null, respiratoryRate: 14, painLevel: 0, notes: "", recordedBy: "Nurse Adams", patientId: "p2", recordedAt: new Date(now.getTime() - 30 * day).toISOString(), createdAt: new Date(now.getTime() - 30 * day).toISOString() },
+];
+
+export const demoConversations = [
+  {
+    id: "c1",
+    patientId: "p1",
+    patient: demoPatients[0],
+    practiceId: "demo-practice",
+    status: "active",
+    createdAt: new Date(now.getTime() - 2 * day),
+    updatedAt: new Date(now.getTime() - 120000),
+    messages: [
+      { id: "m1", conversationId: "c1", role: "patient", content: "Hi, I'd like to reschedule my cleaning appointment from Thursday to next week.", approved: true, createdAt: new Date(now.getTime() - 3600000) },
+      { id: "m2", conversationId: "c1", role: "practice", content: "Hi Maria! Of course, we can reschedule. Would Monday or Wednesday next week work for you? We have slots at 9:00 and 14:00 on both days.", approved: true, createdAt: new Date(now.getTime() - 3000000) },
+      { id: "m3", conversationId: "c1", role: "patient", content: "Wednesday at 14:00 would be perfect, thank you!", approved: true, createdAt: new Date(now.getTime() - 2400000) },
+    ],
+  },
+  {
+    id: "c2",
+    patientId: "p2",
+    patient: demoPatients[1],
+    practiceId: "demo-practice",
+    status: "active",
+    createdAt: new Date(now.getTime() - day),
+    updatedAt: new Date(now.getTime() - 480000),
+    messages: [
+      { id: "m4", conversationId: "c2", role: "patient", content: "What are your prices for teeth whitening?", approved: true, createdAt: new Date(now.getTime() - 600000) },
+      { id: "m5", conversationId: "c2", role: "ai_suggestion", content: "Hi James! Great question. Our teeth whitening treatments start from R2,500 for in-office whitening, which gives you results in about an hour. We also offer take-home kits from R1,200. Would you like to book a consultation to discuss which option would work best for you?", approved: false, createdAt: new Date(now.getTime() - 540000) },
+    ],
+  },
+  {
+    id: "c3",
+    patientId: "p5",
+    patient: demoPatients[4],
+    practiceId: "demo-practice",
+    status: "active",
+    createdAt: new Date(now.getTime() - 3600000),
+    updatedAt: new Date(now.getTime() - 300000),
+    messages: [
+      { id: "m6", conversationId: "c3", role: "patient", content: "I need an emergency appointment please. I have severe pain in my back tooth.", approved: true, createdAt: new Date(now.getTime() - 900000) },
+      { id: "m7", conversationId: "c3", role: "ai_suggestion", content: "Hi Lerato, I'm sorry to hear you're in pain. We always prioritise emergency cases. Can you come in today? We have an opening at 15:30. If the pain is severe, please take an anti-inflammatory in the meantime. If it worsens, please call us directly at +27 11 783 4500.", approved: false, createdAt: new Date(now.getTime() - 840000) },
+    ],
+  },
+];
+
+// Helper: create a date N days from now at a specific hour:minute (business hours)
+function bizDate(daysOffset: number, hour: number, minute = 0): Date {
+  const d = new Date(now.getTime() + daysOffset * day);
+  d.setHours(hour, minute, 0, 0);
+  return d;
+}
+
+export const demoBookings = [
+  { id: "b1", patientName: "Maria Santos", patientPhone: "+27 82 345 6789", patientEmail: "maria@example.com", service: "Cleaning", scheduledAt: bizDate(2, 10, 0), status: "confirmed", source: "public", notes: "", depositAmount: 0, depositPaid: false, paymentRef: "", confirmedAt: new Date(now.getTime() - day / 2), confirmedBy: "demo-user", rejectedAt: null, rejectionReason: "", reminderSentAt: null, followupSentAt: null, checkinSentAt: null, practiceId: "demo-practice", createdAt: new Date(now.getTime() - day) },
+  { id: "b2", patientName: "James Khumalo", patientPhone: "+27 83 456 7890", patientEmail: "", service: "Whitening Consultation", scheduledAt: bizDate(3, 14, 30), status: "pending", source: "public", notes: "", depositAmount: 200, depositPaid: false, paymentRef: "", confirmedAt: null, confirmedBy: "", rejectedAt: null, rejectionReason: "", reminderSentAt: null, followupSentAt: null, checkinSentAt: null, practiceId: "demo-practice", createdAt: new Date(now.getTime() - day) },
+  { id: "b3", patientName: "Thandi Mokoena", patientPhone: "+27 84 567 8901", patientEmail: "thandi@example.com", service: "Check-up", scheduledAt: bizDate(1, 9, 0), status: "confirmed", source: "whatsapp", notes: "", depositAmount: 0, depositPaid: false, paymentRef: "", confirmedAt: new Date(now.getTime() - 2 * day), confirmedBy: "demo-user", rejectedAt: null, rejectionReason: "", reminderSentAt: null, followupSentAt: null, checkinSentAt: null, practiceId: "demo-practice", createdAt: new Date(now.getTime() - 2 * day) },
+  { id: "b4", patientName: "David Robinson", patientPhone: "+27 85 678 9012", patientEmail: "", service: "Filling", scheduledAt: bizDate(5, 11, 30), status: "pending", source: "phone", notes: "Nervous patient — needs extra care", depositAmount: 0, depositPaid: false, paymentRef: "", confirmedAt: null, confirmedBy: "", rejectedAt: null, rejectionReason: "", reminderSentAt: null, followupSentAt: null, checkinSentAt: null, practiceId: "demo-practice", createdAt: new Date(now.getTime() - day) },
+  { id: "b5", patientName: "Lerato Phiri", patientPhone: "+27 86 789 0123", patientEmail: "lerato@example.com", service: "Emergency — Toothache", scheduledAt: bizDate(0, 15, 0), status: "confirmed", source: "dashboard", notes: "", depositAmount: 0, depositPaid: false, paymentRef: "", confirmedAt: now, confirmedBy: "demo-user", rejectedAt: null, rejectionReason: "", reminderSentAt: null, followupSentAt: null, checkinSentAt: null, practiceId: "demo-practice", createdAt: now },
+  { id: "b6", patientName: "Sipho Ndlovu", patientPhone: "+27 71 234 5678", patientEmail: "", service: "Dental Consultation", scheduledAt: bizDate(4, 8, 30), status: "pending", source: "public", notes: "First visit", depositAmount: 100, depositPaid: false, paymentRef: "", confirmedAt: null, confirmedBy: "", rejectedAt: null, rejectionReason: "", reminderSentAt: null, followupSentAt: null, checkinSentAt: null, practiceId: "demo-practice", createdAt: new Date(now.getTime() - 3600000) },
+  { id: "b7", patientName: "Naledi Mogale", patientPhone: "+27 72 345 6789", patientEmail: "naledi@email.co.za", service: "Tooth Extraction", scheduledAt: bizDate(6, 13, 0), status: "pending", source: "whatsapp", notes: "Referred by Dr. Patel", depositAmount: 0, depositPaid: false, paymentRef: "", confirmedAt: null, confirmedBy: "", rejectedAt: null, rejectionReason: "", reminderSentAt: null, followupSentAt: null, checkinSentAt: null, practiceId: "demo-practice", createdAt: new Date(now.getTime() - 7200000) },
+];
+
+export const demoReviews = [
+  { id: "r1", rating: 5, comment: "Dr. Mitchell is amazing! Painless filling and the staff were so friendly.", source: "google", authorName: "James K.", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 3 * day) },
+  { id: "r2", rating: 5, comment: "Best dental experience I've had. Modern clinic and great communication via WhatsApp.", source: "google", authorName: "Thandi M.", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 7 * day) },
+  { id: "r3", rating: 4, comment: "Good service overall. Waiting time was a bit long but treatment was excellent.", source: "facebook", authorName: "David R.", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 10 * day) },
+  { id: "r4", rating: 5, comment: "Love the appointment reminders! Never miss a check-up anymore.", source: "whatsapp", authorName: "Maria S.", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 14 * day) },
+];
+
+export const demoRecallItems = [
+  { id: "rc1", patientName: "Maria Santos", reason: "6-month check-up", dueDate: new Date(now.getTime() + 7 * day), contacted: false, phone: "+27 82 345 6789", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 5 * day) },
+  { id: "rc2", patientName: "David Robinson", reason: "Follow-up: filling", dueDate: new Date(now.getTime() - 3 * day), contacted: false, phone: "+27 85 678 9012", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 10 * day) },
+  { id: "rc3", patientName: "Thandi Mokoena", reason: "Annual X-rays due", dueDate: new Date(now.getTime() + 14 * day), contacted: false, phone: "+27 84 567 8901", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 7 * day) },
+];
+
+// === Invoices ===
+const _demoInvoices = [
+  {
+    id: "inv1", invoiceNo: "INV-2026-001", patientName: "Maria Santos", patientId: "p1",
+    lineItems: JSON.stringify([
+      { description: "Professional cleaning", icd10Code: "Z01.20", quantity: 1, unitPrice: 850, total: 850 },
+      { description: "Fluoride treatment", icd10Code: "Z29.3", quantity: 1, unitPrice: 350, total: 350 },
+    ]),
+    subtotal: 1200, tax: 180, discount: 0, total: 1380, amountPaid: 1380, balance: 0,
+    medicalAidClaim: 1000, patientPortion: 380, claimStatus: "paid", claimReference: "DH-CLM-44521",
+    status: "paid", dueDate: new Date(now.getTime() - 7 * day).toISOString(), paidAt: new Date(now.getTime() - 10 * day).toISOString(),
+    notes: "", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 14 * day).toISOString(),
+  },
+  {
+    id: "inv2", invoiceNo: "INV-2026-002", patientName: "David Robinson", patientId: "p4",
+    lineItems: JSON.stringify([
+      { description: "Composite filling — tooth #16", icd10Code: "K02.1", quantity: 1, unitPrice: 1500, total: 1500 },
+      { description: "Local anaesthetic", icd10Code: "Z51.81", quantity: 1, unitPrice: 200, total: 200 },
+      { description: "Panoramic X-ray", icd10Code: "Z01.20", quantity: 1, unitPrice: 450, total: 450 },
+    ]),
+    subtotal: 2150, tax: 322.50, discount: 0, total: 2472.50, amountPaid: 1800, balance: 672.50,
+    medicalAidClaim: 1800, patientPortion: 672.50, claimStatus: "partial", claimReference: "MHP-CLM-11234",
+    status: "partial", dueDate: new Date(now.getTime() + 14 * day).toISOString(), paidAt: null,
+    notes: "Patient to pay balance on next visit", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 7 * day).toISOString(),
+  },
+  {
+    id: "inv3", invoiceNo: "INV-2026-003", patientName: "Lerato Phiri", patientId: "p5",
+    lineItems: JSON.stringify([
+      { description: "Emergency consultation", icd10Code: "K04.0", quantity: 1, unitPrice: 650, total: 650 },
+      { description: "Periapical X-ray x2", icd10Code: "Z01.20", quantity: 2, unitPrice: 180, total: 360 },
+      { description: "Abscess drainage", icd10Code: "K04.7", quantity: 1, unitPrice: 800, total: 800 },
+    ]),
+    subtotal: 1810, tax: 271.50, discount: 0, total: 2081.50, amountPaid: 0, balance: 2081.50,
+    medicalAidClaim: 2081.50, patientPortion: 0, claimStatus: "submitted", claimReference: "",
+    status: "sent", dueDate: new Date(now.getTime() + 30 * day).toISOString(), paidAt: null,
+    notes: "Claim submitted to Discovery", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 3 * day).toISOString(),
+  },
+];
+
+// === Payments ===
+const _demoPayments = [
+  { id: "pay1", amount: 380, method: "card", reference: "YCO-TXN-8812", invoiceId: "inv1", patientName: "Maria Santos", notes: "Patient co-pay", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 14 * day).toISOString() },
+  { id: "pay2", amount: 1000, method: "medical_aid", reference: "DH-CLM-44521", invoiceId: "inv1", patientName: "Maria Santos", notes: "Discovery claim paid", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 10 * day).toISOString() },
+  { id: "pay3", amount: 1800, method: "medical_aid", reference: "MHP-CLM-11234", invoiceId: "inv2", patientName: "David Robinson", notes: "Medihelp partial payment", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 5 * day).toISOString() },
+  { id: "pay4", amount: 500, method: "cash", reference: "", invoiceId: null, patientName: "James Khumalo", notes: "Walk-in consultation (cash)", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 2 * day).toISOString() },
+];
+
+// === Check-ins (today's queue) ===
+const _demoCheckIns = [
+  { id: "ci1", patientName: "Maria Santos", patientId: "p1", status: "checked_out", arrivedAt: new Date(now.getTime() - 3 * 3600000).toISOString(), seenAt: new Date(now.getTime() - 2.5 * 3600000).toISOString(), leftAt: new Date(now.getTime() - 2 * 3600000).toISOString(), notes: "", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 3 * 3600000).toISOString() },
+  { id: "ci2", patientName: "James Khumalo", patientId: "p2", status: "in_consultation", arrivedAt: new Date(now.getTime() - 1.5 * 3600000).toISOString(), seenAt: new Date(now.getTime() - 0.5 * 3600000).toISOString(), leftAt: null, notes: "Nervous — offer water", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 1.5 * 3600000).toISOString() },
+  { id: "ci3", patientName: "Thandi Mokoena", patientId: "p3", status: "waiting", arrivedAt: new Date(now.getTime() - 0.3 * 3600000).toISOString(), seenAt: null, leftAt: null, notes: "", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 0.3 * 3600000).toISOString() },
+];
+
+// === Notifications ===
+const _demoNotifications = [
+  { id: "notif1", type: "whatsapp", recipient: "+27 82 345 6789", patientName: "Maria Santos", subject: "", message: "Hi Maria! Reminder: Your dental cleaning appointment is tomorrow at 14:00. Reply YES to confirm or RESCHEDULE to change. — Smile Dental Sandton", status: "delivered", template: "reminder_24h", practiceId: "demo-practice", sentAt: new Date(now.getTime() - day).toISOString(), createdAt: new Date(now.getTime() - day).toISOString() },
+  { id: "notif2", type: "whatsapp", recipient: "+27 83 456 7890", patientName: "James Khumalo", subject: "", message: "Hi James! Reminder: Your whitening consultation is in 2 days. We look forward to seeing you! Reply YES to confirm. — Smile Dental Sandton", status: "delivered", template: "reminder_48h", practiceId: "demo-practice", sentAt: new Date(now.getTime() - 2 * day).toISOString(), createdAt: new Date(now.getTime() - 2 * day).toISOString() },
+  { id: "notif3", type: "sms", recipient: "+27 85 678 9012", patientName: "David Robinson", subject: "", message: "Hi David, your follow-up filling appointment is overdue. Please call us at 011 783 4500 to rebook. — Smile Dental", status: "sent", template: "recall", practiceId: "demo-practice", sentAt: new Date(now.getTime() - 3 * day).toISOString(), createdAt: new Date(now.getTime() - 3 * day).toISOString() },
+  { id: "notif4", type: "whatsapp", recipient: "+27 86 789 0123", patientName: "Lerato Phiri", subject: "", message: "Hi Lerato, how are you feeling after your procedure? If you experience any swelling or pain, please contact us immediately. — Smile Dental Sandton", status: "delivered", template: "followup", practiceId: "demo-practice", sentAt: new Date(now.getTime() - 2 * day).toISOString(), createdAt: new Date(now.getTime() - 2 * day).toISOString() },
+];
+
+// === POPIA Consent Records ===
+const _demoConsents = [
+  { id: "con1", patientName: "Maria Santos", patientId: "p1", consentType: "treatment", granted: true, method: "digital", ipAddress: "192.168.1.100", notes: "", practiceId: "demo-practice", grantedAt: new Date(now.getTime() - 180 * day).toISOString(), revokedAt: null, createdAt: new Date(now.getTime() - 180 * day).toISOString() },
+  { id: "con2", patientName: "Maria Santos", patientId: "p1", consentType: "data_processing", granted: true, method: "digital", ipAddress: "192.168.1.100", notes: "POPIA consent", practiceId: "demo-practice", grantedAt: new Date(now.getTime() - 180 * day).toISOString(), revokedAt: null, createdAt: new Date(now.getTime() - 180 * day).toISOString() },
+  { id: "con3", patientName: "James Khumalo", patientId: "p2", consentType: "treatment", granted: true, method: "digital", ipAddress: "192.168.1.101", notes: "", practiceId: "demo-practice", grantedAt: new Date(now.getTime() - 120 * day).toISOString(), revokedAt: null, createdAt: new Date(now.getTime() - 120 * day).toISOString() },
+  { id: "con4", patientName: "James Khumalo", patientId: "p2", consentType: "marketing", granted: false, method: "digital", ipAddress: "192.168.1.101", notes: "Patient opted out of marketing", practiceId: "demo-practice", grantedAt: new Date(now.getTime() - 120 * day).toISOString(), revokedAt: new Date(now.getTime() - 120 * day).toISOString(), createdAt: new Date(now.getTime() - 120 * day).toISOString() },
+  { id: "con5", patientName: "David Robinson", patientId: "p4", consentType: "treatment", granted: true, method: "paper", ipAddress: "", notes: "Signed paper form on file", practiceId: "demo-practice", grantedAt: new Date(now.getTime() - 90 * day).toISOString(), revokedAt: null, createdAt: new Date(now.getTime() - 90 * day).toISOString() },
+];
+
+// === Daily Tasks (admin checklist) ===
+const todayStr = now.toISOString().split("T")[0];
+const _demoDailyTasks = [
+  { id: "dt1", title: "Open practice & disable alarm", category: "morning", completed: true, completedBy: "Reception", completedAt: new Date(`${todayStr}T06:55:00`).toISOString(), isRecurring: true, sortOrder: 1, practiceId: "demo-practice", date: now.toISOString(), createdAt: now.toISOString() },
+  { id: "dt2", title: "Print today's appointment list", category: "morning", completed: true, completedBy: "Reception", completedAt: new Date(`${todayStr}T07:05:00`).toISOString(), isRecurring: true, sortOrder: 2, practiceId: "demo-practice", date: now.toISOString(), createdAt: now.toISOString() },
+  { id: "dt3", title: "Confirm all appointments (WhatsApp/call)", category: "morning", completed: true, completedBy: "Reception", completedAt: new Date(`${todayStr}T07:30:00`).toISOString(), isRecurring: true, sortOrder: 3, practiceId: "demo-practice", date: now.toISOString(), createdAt: now.toISOString() },
+  { id: "dt4", title: "Prepare cash drawer with R500 float", category: "morning", completed: true, completedBy: "Reception", completedAt: new Date(`${todayStr}T07:45:00`).toISOString(), isRecurring: true, sortOrder: 4, practiceId: "demo-practice", date: now.toISOString(), createdAt: now.toISOString() },
+  { id: "dt5", title: "Check supply levels (gloves, masks, gauze)", category: "morning", completed: false, completedBy: "", completedAt: null, isRecurring: true, sortOrder: 5, practiceId: "demo-practice", date: now.toISOString(), createdAt: now.toISOString() },
+  { id: "dt6", title: "Follow up on rejected medical aid claims", category: "during_day", completed: false, completedBy: "", completedAt: null, isRecurring: true, sortOrder: 6, practiceId: "demo-practice", date: now.toISOString(), createdAt: now.toISOString() },
+  { id: "dt7", title: "Process outstanding patient balances", category: "during_day", completed: false, completedBy: "", completedAt: null, isRecurring: true, sortOrder: 7, practiceId: "demo-practice", date: now.toISOString(), createdAt: now.toISOString() },
+  { id: "dt8", title: "Contact recall patients due this week", category: "during_day", completed: false, completedBy: "", completedAt: null, isRecurring: true, sortOrder: 8, practiceId: "demo-practice", date: now.toISOString(), createdAt: now.toISOString() },
+  { id: "dt9", title: "Reconcile cash drawer", category: "end_of_day", completed: false, completedBy: "", completedAt: null, isRecurring: true, sortOrder: 9, practiceId: "demo-practice", date: now.toISOString(), createdAt: now.toISOString() },
+  { id: "dt10", title: "Match medical aid payments to invoices", category: "end_of_day", completed: false, completedBy: "", completedAt: null, isRecurring: true, sortOrder: 10, practiceId: "demo-practice", date: now.toISOString(), createdAt: now.toISOString() },
+  { id: "dt11", title: "Generate daily summary for practice owner", category: "end_of_day", completed: false, completedBy: "", completedAt: null, isRecurring: true, sortOrder: 11, practiceId: "demo-practice", date: now.toISOString(), createdAt: now.toISOString() },
+  { id: "dt12", title: "Lock up & enable alarm", category: "end_of_day", completed: false, completedBy: "", completedAt: null, isRecurring: true, sortOrder: 12, practiceId: "demo-practice", date: now.toISOString(), createdAt: now.toISOString() },
+];
+
+// Types for mutable stores
+type DemoPatient = Record<string, unknown>;
+type DemoAllergy = Record<string, unknown>;
+type DemoMedication = Record<string, unknown>;
+type DemoMedicalRecord = Record<string, unknown>;
+type DemoVital = Record<string, unknown>;
+type DemoInvoice = Record<string, unknown>;
+type DemoPayment = Record<string, unknown>;
+type DemoCheckIn = Record<string, unknown>;
+type DemoNotification = Record<string, unknown>;
+type DemoConsent = Record<string, unknown>;
+type DemoDailyTask = Record<string, unknown>;
+
+// In-memory mutable store for demo mode interactivity
+let _patients: DemoPatient[] = [...demoPatients];
+let _allergies: DemoAllergy[] = [..._demoAllergies];
+let _medications: DemoMedication[] = [..._demoMedications];
+let _medicalRecords: DemoMedicalRecord[] = [..._demoMedicalRecords];
+let _vitals: DemoVital[] = [..._demoVitals];
+let _invoices: DemoInvoice[] = [..._demoInvoices];
+let _payments: DemoPayment[] = [..._demoPayments];
+let _checkIns: DemoCheckIn[] = [..._demoCheckIns];
+let _notificationsList: DemoNotification[] = [..._demoNotifications];
+let _consents: DemoConsent[] = [..._demoConsents];
+let _dailyTasks: DemoDailyTask[] = [..._demoDailyTasks];
+let _conversations = [...demoConversations.map(c => ({ ...c, messages: [...c.messages] }))];
+let _bookings = [...demoBookings];
+let _reviews = [...demoReviews];
+let _recallItems = [...demoRecallItems];
+let _counter = 100;
+
+export const demoStore = {
+  // === Patients ===
+  getPatients: () => _patients.map(p => ({
+    ...p,
+    allergies: _allergies.filter(a => a.patientId === p.id),
+    medications: _medications.filter(m => m.patientId === p.id && m.active),
+  })),
+  getPatient: (id: string) => {
+    const p = _patients.find(x => x.id === id);
+    if (!p) return null;
+    return {
+      ...p,
+      allergies: _allergies.filter(a => a.patientId === id),
+      medications: _medications.filter(m => m.patientId === id),
+      medicalRecords: _medicalRecords.filter(r => r.patientId === id),
+      vitals: _vitals.filter(v => v.patientId === id),
+    };
+  },
+  addPatient: (data: Record<string, string>) => {
+    const p = {
+      id: `p${_counter++}`,
+      name: data.name || "",
+      phone: data.phone || "",
+      email: data.email || "",
+      dateOfBirth: data.dateOfBirth || "",
+      gender: data.gender || "",
+      idNumber: data.idNumber || "",
+      address: data.address || "",
+      medicalAid: data.medicalAid || "",
+      medicalAidNo: data.medicalAidNo || "",
+      bloodType: data.bloodType || "",
+      emergencyName: data.emergencyName || "",
+      emergencyPhone: data.emergencyPhone || "",
+      notes: data.notes || "",
+      status: "active",
+      lastVisit: "",
+      practiceId: "demo-practice",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    _patients.push(p);
+    return p;
+  },
+  updatePatient: (id: string, data: Record<string, unknown>) => {
+    const p = _patients.find(x => x.id === id);
+    if (!p) return null;
+    Object.assign(p, data, { updatedAt: new Date().toISOString() });
+    return p;
+  },
+  deletePatient: (id: string) => { _patients = _patients.filter(x => x.id !== id); },
+
+  // === Allergies ===
+  getAllergies: (patientId: string) => _allergies.filter(a => a.patientId === patientId),
+  addAllergy: (patientId: string, data: Record<string, string>) => {
+    const a = { id: `al${_counter++}`, name: data.name, severity: data.severity || "moderate", reaction: data.reaction || "", patientId, createdAt: new Date().toISOString() };
+    _allergies.push(a);
+    return a;
+  },
+  deleteAllergy: (id: string) => { _allergies = _allergies.filter(x => x.id !== id); },
+
+  // === Medications ===
+  getMedications: (patientId: string) => _medications.filter(m => m.patientId === patientId),
+  addMedication: (patientId: string, data: Record<string, string | boolean>) => {
+    const m = {
+      id: `med${_counter++}`, name: String(data.name), dosage: String(data.dosage || ""),
+      frequency: String(data.frequency || ""), prescriber: String(data.prescriber || ""),
+      startDate: data.startDate ? String(data.startDate) : "", endDate: "",
+      active: true, patientId, createdAt: new Date().toISOString(),
+    };
+    _medications.push(m);
+    return m;
+  },
+  updateMedication: (id: string, data: Record<string, unknown>) => {
+    const m = _medications.find(x => x.id === id);
+    if (m) {
+      if (data.active !== undefined) m.active = Boolean(data.active);
+      if (data.endDate !== undefined) m.endDate = data.endDate ? String(data.endDate) : null;
+    }
+    return m;
+  },
+
+  // === Medical Records ===
+  getMedicalRecords: (patientId: string) => _medicalRecords.filter(r => r.patientId === patientId),
+  addMedicalRecord: (patientId: string, data: Record<string, string>) => {
+    const r = {
+      id: `rec${_counter++}`, type: data.type, title: data.title,
+      description: data.description || "", diagnosis: data.diagnosis || "",
+      treatment: data.treatment || "", provider: data.provider || "",
+      patientId, practiceId: "demo-practice",
+      date: data.date || new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+    };
+    _medicalRecords.push(r);
+    return r;
+  },
+
+  // === Vitals ===
+  getVitals: (patientId: string) => _vitals.filter(v => v.patientId === patientId),
+  addVitals: (patientId: string, data: Record<string, unknown>) => {
+    const v = {
+      id: `v${_counter++}`,
+      bloodPressureSys: data.bloodPressureSys ?? null,
+      bloodPressureDia: data.bloodPressureDia ?? null,
+      heartRate: data.heartRate ?? null,
+      temperature: data.temperature ?? null,
+      weight: data.weight ?? null,
+      height: data.height ?? null,
+      oxygenSat: data.oxygenSat ?? null,
+      bloodGlucose: data.bloodGlucose ?? null,
+      respiratoryRate: data.respiratoryRate ?? null,
+      painLevel: data.painLevel ?? null,
+      notes: String(data.notes || ""),
+      recordedBy: String(data.recordedBy || ""),
+      patientId,
+      recordedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+    };
+    _vitals.push(v);
+    return v;
+  },
+
+  // === Conversations (existing) ===
+  getConversations: () => _conversations,
+  getConversation: (id: string) => _conversations.find(c => c.id === id),
+  addMessage: (convoId: string, role: string, content: string) => {
+    const convo = _conversations.find(c => c.id === convoId);
+    if (!convo) return null;
+    const msg = { id: `dm${_counter++}`, conversationId: convoId, role, content, approved: role !== "ai_suggestion", createdAt: new Date() };
+    convo.messages.push(msg);
+    convo.updatedAt = new Date();
+    return msg;
+  },
+  approveMessage: (convoId: string, msgId: string, newContent?: string) => {
+    const convo = _conversations.find(c => c.id === convoId);
+    const msg = convo?.messages.find(m => m.id === msgId);
+    if (!msg) return false;
+    if (newContent) msg.content = newContent;
+    msg.role = "practice";
+    msg.approved = true;
+    return true;
+  },
+  simulatePatient: () => {
+    const messages = [
+      "Hi, I'd like to reschedule my appointment for next week",
+      "What are your prices for teeth whitening?",
+      "Do you have availability this Thursday afternoon?",
+      "I have a toothache, can I come in today?",
+      "Do you accept medical aid?",
+      "Can I book a cleaning for my daughter too?",
+    ];
+    const patient = demoPatients[Math.floor(Math.random() * demoPatients.length)];
+    const content = messages[Math.floor(Math.random() * messages.length)];
+
+    let convo = _conversations.find(c => c.patientId === patient.id);
+    if (!convo) {
+      convo = {
+        id: `c${_counter++}`,
+        patientId: patient.id,
+        patient,
+        practiceId: "demo-practice",
+        status: "active",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        messages: [],
+      };
+      _conversations.unshift(convo);
+    }
+
+    const msg = { id: `dm${_counter++}`, conversationId: convo.id, role: "patient", content, approved: true, createdAt: new Date() };
+    convo.messages.push(msg);
+    convo.updatedAt = new Date();
+
+    const aiContent = generateMockAIReply(content, patient.name);
+    const aiMsg = { id: `dm${_counter++}`, conversationId: convo.id, role: "ai_suggestion", content: aiContent, approved: false, createdAt: new Date() };
+    convo.messages.push(aiMsg);
+
+    return { conversationId: convo.id, message: content };
+  },
+
+  // === Bookings (existing) ===
+  getBookings: () => _bookings,
+  addBooking: (data: { patientName: string; patientPhone?: string; patientEmail?: string; service: string; scheduledAt: string; notes?: string; source?: string }) => {
+    const b = { id: `b${_counter++}`, patientName: data.patientName, patientPhone: data.patientPhone || "", patientEmail: data.patientEmail || "", service: data.service, scheduledAt: new Date(data.scheduledAt), status: "pending", source: data.source || "dashboard", notes: data.notes || "", depositAmount: 0, depositPaid: false, paymentRef: "", confirmedAt: null, confirmedBy: "", rejectedAt: null, rejectionReason: "", reminderSentAt: null, followupSentAt: null, checkinSentAt: null, practiceId: "demo-practice", createdAt: new Date() };
+    _bookings.push(b);
+    return b;
+  },
+  updateBooking: (id: string, data: { status?: string }) => {
+    const b = _bookings.find(x => x.id === id);
+    if (b && data.status) b.status = data.status;
+    return b;
+  },
+  deleteBooking: (id: string) => { _bookings = _bookings.filter(x => x.id !== id); },
+
+  // === Reviews (existing) ===
+  getReviews: () => _reviews,
+  addReview: (data: { rating: number; comment?: string; source?: string; authorName?: string }) => {
+    const r = { id: `r${_counter++}`, rating: data.rating, comment: data.comment || "", source: data.source || "google", authorName: data.authorName || "", practiceId: "demo-practice", createdAt: new Date() };
+    _reviews.unshift(r);
+    return r;
+  },
+  deleteReview: (id: string) => { _reviews = _reviews.filter(x => x.id !== id); },
+
+  // === Recall (existing) ===
+  getRecallItems: () => _recallItems,
+  addRecallItem: (data: { patientName: string; reason: string; dueDate: string; phone?: string }) => {
+    const item = { id: `rc${_counter++}`, ...data, dueDate: new Date(data.dueDate), contacted: false, phone: data.phone || "", practiceId: "demo-practice", createdAt: new Date() };
+    _recallItems.push(item);
+    return item;
+  },
+  updateRecallItem: (id: string, data: { contacted?: boolean }) => {
+    const item = _recallItems.find(x => x.id === id);
+    if (item && data.contacted !== undefined) item.contacted = data.contacted;
+    return item;
+  },
+  deleteRecallItem: (id: string) => { _recallItems = _recallItems.filter(x => x.id !== id); },
+
+  // === Invoices ===
+  getInvoices: () => _invoices,
+  getInvoice: (id: string) => _invoices.find(x => x.id === id) || null,
+  addInvoice: (data: Record<string, unknown>) => {
+    const inv = {
+      id: `inv${_counter++}`, invoiceNo: `INV-2026-${String(_counter).padStart(3, "0")}`,
+      patientName: String(data.patientName || ""), patientId: String(data.patientId || ""),
+      lineItems: String(data.lineItems || "[]"),
+      subtotal: Number(data.subtotal || 0), tax: Number(data.tax || 0), discount: Number(data.discount || 0),
+      total: Number(data.total || 0), amountPaid: 0, balance: Number(data.total || 0),
+      medicalAidClaim: Number(data.medicalAidClaim || 0), patientPortion: Number(data.patientPortion || 0),
+      claimStatus: "", claimReference: "",
+      status: "draft", dueDate: data.dueDate || null, paidAt: null,
+      notes: String(data.notes || ""), practiceId: "demo-practice", createdAt: new Date().toISOString(),
+    };
+    _invoices.push(inv);
+    return inv;
+  },
+  updateInvoice: (id: string, data: Record<string, unknown>) => {
+    const inv = _invoices.find(x => x.id === id);
+    if (inv) Object.assign(inv, data);
+    return inv;
+  },
+
+  // === Payments ===
+  getPayments: () => _payments,
+  addPayment: (data: Record<string, unknown>) => {
+    const p = {
+      id: `pay${_counter++}`, amount: Number(data.amount || 0),
+      method: String(data.method || "cash"), reference: String(data.reference || ""),
+      invoiceId: data.invoiceId ? String(data.invoiceId) : null,
+      patientName: String(data.patientName || ""), notes: String(data.notes || ""),
+      practiceId: "demo-practice", createdAt: new Date().toISOString(),
+    };
+    _payments.push(p);
+    // Update invoice if linked
+    if (p.invoiceId) {
+      const inv = _invoices.find(x => x.id === p.invoiceId);
+      if (inv) {
+        inv.amountPaid = Number(inv.amountPaid || 0) + p.amount;
+        inv.balance = Number(inv.total || 0) - Number(inv.amountPaid);
+        inv.status = Number(inv.balance) <= 0 ? "paid" : "partial";
+        if (Number(inv.balance) <= 0) inv.paidAt = new Date().toISOString();
+      }
+    }
+    return p;
+  },
+  getDailyRevenue: () => {
+    const today = new Date().toDateString();
+    return _payments
+      .filter(p => new Date(String(p.createdAt)).toDateString() === today)
+      .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+  },
+
+  // === Check-ins ===
+  getCheckIns: () => _checkIns,
+  addCheckIn: (data: Record<string, string>) => {
+    const ci = {
+      id: `ci${_counter++}`, patientName: data.patientName || "", patientId: data.patientId || "",
+      status: "waiting", arrivedAt: new Date().toISOString(), seenAt: null, leftAt: null,
+      notes: data.notes || "", practiceId: "demo-practice", createdAt: new Date().toISOString(),
+    };
+    _checkIns.push(ci);
+    return ci;
+  },
+  updateCheckIn: (id: string, data: Record<string, unknown>) => {
+    const ci = _checkIns.find(x => x.id === id);
+    if (!ci) return null;
+    if (data.status === "in_consultation") { ci.status = "in_consultation"; ci.seenAt = new Date().toISOString(); }
+    if (data.status === "checked_out") { ci.status = "checked_out"; ci.leftAt = new Date().toISOString(); }
+    if (data.status === "no_show") ci.status = "no_show";
+    if (data.notes !== undefined) ci.notes = String(data.notes);
+    return ci;
+  },
+
+  // === Notifications ===
+  getNotifications: () => _notificationsList,
+  addNotification: (data: Record<string, string>) => {
+    const n = {
+      id: `notif${_counter++}`, type: data.type || "whatsapp", recipient: data.recipient || "",
+      patientName: data.patientName || "", subject: data.subject || "", message: data.message || "",
+      status: "sent", template: data.template || "custom",
+      practiceId: "demo-practice", sentAt: new Date().toISOString(), createdAt: new Date().toISOString(),
+    };
+    _notificationsList.push(n);
+    return n;
+  },
+
+  // === Consent Records ===
+  getConsents: (patientId?: string) => patientId ? _consents.filter(c => c.patientId === patientId) : _consents,
+  addConsent: (data: Record<string, unknown>) => {
+    const c = {
+      id: `con${_counter++}`, patientName: String(data.patientName || ""), patientId: String(data.patientId || ""),
+      consentType: String(data.consentType || "treatment"), granted: data.granted !== false,
+      method: String(data.method || "digital"), ipAddress: String(data.ipAddress || ""),
+      notes: String(data.notes || ""), practiceId: "demo-practice",
+      grantedAt: new Date().toISOString(), revokedAt: data.granted === false ? new Date().toISOString() : null,
+      createdAt: new Date().toISOString(),
+    };
+    _consents.push(c);
+    return c;
+  },
+  revokeConsent: (id: string) => {
+    const c = _consents.find(x => x.id === id);
+    if (c) { c.granted = false; c.revokedAt = new Date().toISOString(); }
+    return c;
+  },
+
+  // === Daily Tasks ===
+  getDailyTasks: () => _dailyTasks,
+  toggleDailyTask: (id: string, completedBy: string) => {
+    const t = _dailyTasks.find(x => x.id === id);
+    if (!t) return null;
+    t.completed = !t.completed;
+    t.completedBy = t.completed ? completedBy : "";
+    t.completedAt = t.completed ? new Date().toISOString() : null;
+    return t;
+  },
+  addDailyTask: (data: Record<string, unknown>) => {
+    const t = {
+      id: `dt${_counter++}`, title: String(data.title || ""), category: String(data.category || "during_day"),
+      completed: false, completedBy: "", completedAt: null,
+      isRecurring: data.isRecurring !== false, sortOrder: _dailyTasks.length + 1,
+      practiceId: "demo-practice", date: new Date().toISOString(), createdAt: new Date().toISOString(),
+    };
+    _dailyTasks.push(t);
+    return t;
+  },
+  deleteDailyTask: (id: string) => { _dailyTasks = _dailyTasks.filter(x => x.id !== id); },
+
+  // === Analytics ===
+  getAnalytics: () => {
+    const today = new Date().toDateString();
+    const bookingsToday = _bookings.filter(b => new Date(b.scheduledAt).toDateString() === today).length;
+    const ratings = _reviews.map(r => r.rating);
+    const avgRating = ratings.length ? Number((ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1)) : 0;
+    const recallDue = _recallItems.filter(r => !r.contacted).length;
+    const recallOverdue = _recallItems.filter(r => !r.contacted && new Date(r.dueDate) < now).length;
+
+    const serviceCounts: Record<string, number> = {};
+    for (const b of _bookings) { const s = String(b.service); serviceCounts[s] = (serviceCounts[s] || 0) + 1; }
+    const topServices = Object.entries(serviceCounts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([name, count]) => ({ name, count }));
+
+    const reviewsBySource: Record<string, number> = {};
+    for (const r of _reviews) { const s = String(r.source); reviewsBySource[s] = (reviewsBySource[s] || 0) + 1; }
+
+    const recordsByType: Record<string, number> = {};
+    for (const r of _medicalRecords) { const t = String(r.type); recordsByType[t] = (recordsByType[t] || 0) + 1; }
+
+    return {
+      patients: { total: _patients.length, active: _patients.filter(p => p.status === "active").length, newThisMonth: 2 },
+      bookings: { total: _bookings.length, today: bookingsToday, pending: _bookings.filter(b => b.status === "pending").length, confirmed: _bookings.filter(b => b.status === "confirmed").length, cancelled: 0, completed: 0 },
+      topServices,
+      reviews: { total: _reviews.length, avgRating, bySource: reviewsBySource },
+      recall: { due: recallDue, overdue: recallOverdue },
+      conversations: { total: _conversations.length, active: _conversations.filter(c => c.status === "active").length },
+      records: { total: _medicalRecords.length, byType: recordsByType },
+      vitals: { total: _vitals.length },
+      billing: {
+        totalInvoices: _invoices.length,
+        totalRevenue: _payments.reduce((s, p) => s + Number(p.amount || 0), 0),
+        outstanding: _invoices.reduce((s, inv) => s + Number(inv.balance || 0), 0),
+        paidToday: _payments.filter(p => new Date(String(p.createdAt)).toDateString() === today).reduce((s, p) => s + Number(p.amount || 0), 0),
+        byMethod: _payments.reduce<Record<string, number>>((acc, p) => { const m = String(p.method); acc[m] = (acc[m] || 0) + Number(p.amount || 0); return acc; }, {}),
+      },
+      checkIns: {
+        waiting: _checkIns.filter(c => c.status === "waiting").length,
+        inConsultation: _checkIns.filter(c => c.status === "in_consultation").length,
+        checkedOut: _checkIns.filter(c => c.status === "checked_out").length,
+        noShows: _checkIns.filter(c => c.status === "no_show").length,
+      },
+      notifications: {
+        total: _notificationsList.length,
+        sent: _notificationsList.filter(n => n.status === "sent" || n.status === "delivered").length,
+        failed: _notificationsList.filter(n => n.status === "failed").length,
+      },
+      dailyTasks: {
+        total: _dailyTasks.length,
+        completed: _dailyTasks.filter(t => t.completed).length,
+        progress: _dailyTasks.length ? Math.round((_dailyTasks.filter(t => t.completed).length / _dailyTasks.length) * 100) : 0,
+      },
+    };
+  },
+};
+
+function generateMockAIReply(patientMessage: string, patientName: string): string {
+  const lower = patientMessage.toLowerCase();
+  const firstName = patientName.split(" ")[0];
+
+  if (lower.includes("reschedule") || lower.includes("appointment")) {
+    return `Hi ${firstName}! Of course, we can help with that. We have availability on Monday at 10:00, Wednesday at 14:00, and Friday at 9:00. Which works best for you?`;
+  }
+  if (lower.includes("price") || lower.includes("cost") || lower.includes("whitening")) {
+    return `Hi ${firstName}! Great question. Our teeth whitening starts from R2,500 for in-office treatment (1 hour) or R1,200 for take-home kits. Would you like to book a free consultation?`;
+  }
+  if (lower.includes("availability") || lower.includes("thursday") || lower.includes("book")) {
+    return `Hi ${firstName}! Let me check our schedule. We have openings at 14:00 and 15:30. Shall I book one of those for you?`;
+  }
+  if (lower.includes("pain") || lower.includes("emergency") || lower.includes("toothache")) {
+    return `Hi ${firstName}, I'm sorry to hear that. We prioritise emergencies — can you come in today at 15:30? Please take an anti-inflammatory in the meantime. If pain worsens, call us at +27 11 783 4500.`;
+  }
+  if (lower.includes("medical aid") || lower.includes("insurance")) {
+    return `Hi ${firstName}! Yes, we accept all major medical aids including Discovery, Bonitas, Momentum, and Medihelp. We can also do a benefits check before your appointment.`;
+  }
+  if (lower.includes("cancel")) {
+    return `Hi ${firstName}, no problem! I've noted the cancellation. Would you like to rebook for another day?`;
+  }
+  return `Hi ${firstName}! Thanks for reaching out. Let me connect you with our team who can assist. Is there anything specific I can help with in the meantime?`;
+}

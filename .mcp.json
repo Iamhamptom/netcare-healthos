@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "paystack": {
+      "command": "/Users/hga/.npm-global/bin/paystack-mcp",
+      "env": {
+        "PAYSTACK_SECRET_KEY": "${PAYSTACK_SECRET_KEY}"
+      }
+    }
+  }
+}

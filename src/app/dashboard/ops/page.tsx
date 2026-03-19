@@ -1,0 +1,246 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  FileText, Users, TrendingUp, Search, Target, Megaphone,
+  BarChart3, Globe, Stethoscope, ChevronRight, Pin, ExternalLink,
+  Loader2, Activity, Star, MapPin,
+} from "lucide-react";
+
+interface OpsDocument {
+  id: string;
+  category: string;
+  title: string;
+  content: string;
+  metadata: string;
+  pinned: boolean;
+  createdAt: string;
+}
+
+interface OpsStats {
+  referralCount: number;
+  pendingReferrals: number;
+  totalBookings: number;
+  bookingsBySource: { leadSource: string; _count: number }[];
+  opsDocuments: number;
+}
+
+const CATEGORY_CONFIG: Record<string, { label: string; icon: typeof FileText; color: string }> = {
+  market_research: { label: "Market Research", icon: Search, color: "#3B82F6" },
+  gp_leads: { label: "GP Leads", icon: Users, color: "#10B981" },
+  google_ads: { label: "Google Ads", icon: Target, color: "#F59E0B" },
+  content_strategy: { label: "Content Strategy", icon: Megaphone, color: "#8B5CF6" },
+  insights: { label: "Insights", icon: TrendingUp, color: "#EC4899" },
+  campaign: { label: "Campaigns", icon: BarChart3, color: "#06B6D4" },
+};
+
+const QUICK_LINKS = [
+  { label: "Public Booking", href: "/book/drlamola", icon: Globe },
+  { label: "Symptom Checker", href: "/check/drlamola", icon: Activity },
+  { label: "GP Referral Portal", href: "/refer/drlamola", icon: Stethoscope },
+  { label: "SEO Landing Page", href: "/ent/drlamola", icon: Star },
+];
+
+export default function OpsPage() {
+  const [documents, setDocuments] = useState<OpsDocument[]>([]);
+  const [stats, setStats] = useState<OpsStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [expandedDoc, setExpandedDoc] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch(`/api/ops?category=${selectedCategory}`)
+      .then(r => r.json())
+      .then(data => {
+        setDocuments(data.documents || []);
+        setStats(data.stats || null);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [selectedCategory]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-6 h-6 animate-spin text-[#D4AF37]" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-white">Operations Centre</h1>
+          <p className="text-xs text-white/40 mt-1">Research, strategy, leads, and campaign data — Dr. Lamola / Joburg ENT</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <MapPin className="w-3.5 h-3.5 text-white/30" />
+          <span className="text-xs text-white/30">Netcare Park Lane, Parktown</span>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      {stats && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: "Total Bookings", value: stats.totalBookings, icon: BarChart3, color: "#D4AF37" },
+            { label: "GP Referrals", value: stats.referralCount, icon: Stethoscope, color: "#10B981" },
+            { label: "Pending Referrals", value: stats.pendingReferrals, icon: Users, color: "#F59E0B" },
+            { label: "Ops Documents", value: stats.opsDocuments, icon: FileText, color: "#8B5CF6" },
+          ].map(stat => {
+            const Icon = stat.icon;
+            return (
+              <div key={stat.label} className="p-4 rounded-xl border border-white/10 bg-white/[0.02]">
+                <div className="flex items-center justify-between mb-2">
+                  <Icon className="w-4 h-4" style={{ color: stat.color }} />
+                  <span className="text-2xl font-bold" style={{ color: stat.color }}>{stat.value}</span>
+                </div>
+                <p className="text-[10px] text-white/40">{stat.label}</p>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Quick Links */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {QUICK_LINKS.map(link => {
+          const Icon = link.icon;
+          return (
+            <a
+              key={link.label}
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2.5 p-3 rounded-xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.05] transition-colors group"
+            >
+              <Icon className="w-4 h-4 text-[#D4AF37]" />
+              <span className="text-xs text-white/60 group-hover:text-white/90">{link.label}</span>
+              <ExternalLink className="w-3 h-3 text-white/20 ml-auto" />
+            </a>
+          );
+        })}
+      </div>
+
+      {/* Category Filter */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1">
+        <button
+          onClick={() => setSelectedCategory("all")}
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+            selectedCategory === "all"
+              ? "bg-[#D4AF37] text-black"
+              : "bg-white/5 text-white/50 hover:bg-white/10"
+          }`}
+        >
+          All
+        </button>
+        {Object.entries(CATEGORY_CONFIG).map(([key, config]) => {
+          const Icon = config.icon;
+          return (
+            <button
+              key={key}
+              onClick={() => setSelectedCategory(key)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+                selectedCategory === key
+                  ? "text-black"
+                  : "bg-white/5 text-white/50 hover:bg-white/10"
+              }`}
+              style={selectedCategory === key ? { backgroundColor: config.color } : undefined}
+            >
+              <Icon className="w-3 h-3" />
+              {config.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Documents List */}
+      <div className="space-y-3">
+        {documents.length === 0 ? (
+          <div className="text-center py-12">
+            <FileText className="w-8 h-8 text-white/20 mx-auto mb-2" />
+            <p className="text-sm text-white/40">No documents in this category</p>
+          </div>
+        ) : (
+          documents.map(doc => {
+            const catConfig = CATEGORY_CONFIG[doc.category] || { label: doc.category, icon: FileText, color: "#6B7280" };
+            const CatIcon = catConfig.icon;
+            const isExpanded = expandedDoc === doc.id;
+            let meta: Record<string, string> = {};
+            try { const parsed = JSON.parse(doc.metadata || "{}"); for (const k in parsed) meta[k] = String(parsed[k]); } catch {}
+
+            return (
+              <motion.div
+                key={doc.id}
+                layout
+                className="rounded-xl border border-white/10 bg-white/[0.02] overflow-hidden"
+              >
+                <button
+                  onClick={() => setExpandedDoc(isExpanded ? null : doc.id)}
+                  className="w-full p-4 text-left flex items-center gap-3 hover:bg-white/[0.02] transition-colors"
+                >
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: catConfig.color + "20" }}>
+                    <CatIcon className="w-4 h-4" style={{ color: catConfig.color }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      {doc.pinned && <Pin className="w-3 h-3 text-[#D4AF37]" />}
+                      <h3 className="text-sm font-medium text-white truncate">{doc.title}</h3>
+                    </div>
+                    <div className="flex items-center gap-3 mt-0.5">
+                      <span className="text-[10px] font-medium px-1.5 py-0.5 rounded" style={{ backgroundColor: catConfig.color + "20", color: catConfig.color }}>
+                        {catConfig.label}
+                      </span>
+                      {meta.lastUpdated && (
+                        <span className="text-[10px] text-white/30">Updated {String(meta.lastUpdated)}</span>
+                      )}
+                    </div>
+                  </div>
+                  <ChevronRight className={`w-4 h-4 text-white/20 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
+                </button>
+
+                {isExpanded && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    className="border-t border-white/10"
+                  >
+                    <div className="p-5 prose prose-invert prose-sm max-w-none">
+                      <div
+                        className="text-xs text-white/60 leading-relaxed whitespace-pre-wrap [&_h1]:text-base [&_h1]:font-bold [&_h1]:text-white [&_h1]:mb-3 [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:text-white/80 [&_h2]:mt-4 [&_h2]:mb-2 [&_h3]:text-xs [&_h3]:font-semibold [&_h3]:text-white/70 [&_table]:border-collapse [&_table]:text-[11px] [&_th]:text-left [&_th]:py-1.5 [&_th]:px-2 [&_th]:border-b [&_th]:border-white/10 [&_th]:text-white/50 [&_td]:py-1.5 [&_td]:px-2 [&_td]:border-b [&_td]:border-white/5"
+                        dangerouslySetInnerHTML={{
+                          __html: doc.content
+                            .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+                            .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+                            .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+                            .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white/80">$1</strong>')
+                            .replace(/\n\n/g, '<br/><br/>')
+                            .replace(/\n\|/g, '\n<table><tr><td>')
+                            .replace(/\|/g, '</td><td>')
+                            .replace(/<td>\s*---/g, '')
+                        }}
+                      />
+                    </div>
+                    {/* Metadata */}
+                    {Object.keys(meta).length > 1 && (
+                      <div className="px-5 pb-4 flex flex-wrap gap-2">
+                        {Object.entries(meta).filter(([k]) => k !== "lastUpdated").map(([key, value]) => (
+                          <span key={key} className="text-[10px] px-2 py-1 rounded-full bg-white/5 text-white/40">
+                            {key}: {typeof value === "object" ? JSON.stringify(value) : String(value)}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </motion.div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}

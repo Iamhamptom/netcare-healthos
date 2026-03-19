@@ -1,0 +1,628 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  passwordHash String
+  name         String
+  role         String      @default("admin") // admin | doctor | receptionist | nurse | platform_admin
+  practiceId   String?
+  practice     Practice?   @relation(fields: [practiceId], references: [id])
+  auditLogs    AuditLog[]
+  createdAt    DateTime    @default(now())
+}
+
+model Practice {
+  id             String           @id @default(cuid())
+  name           String
+  type           String           @default("dental")
+  address        String           @default("")
+  phone          String           @default("")
+  hours          String           @default("")
+  aiPersonality  String           @default("professional")
+  // White-label branding
+  logoUrl        String           @default("")
+  primaryColor   String           @default("#D4AF37") // gold default
+  secondaryColor String           @default("#2DD4BF") // teal default
+  subdomain      String           @default("") // e.g. "drmolefe" → drmolefe.healthops.co.za
+  tagline        String           @default("")
+  // Subscription billing (us → clinic)
+  plan           String           @default("starter") // starter | professional | enterprise
+  planStatus     String           @default("trial") // trial | active | past_due | cancelled
+  trialEndsAt    DateTime?
+  paystackSubId  String           @default("") // Paystack subscription ID
+  paystackCustId String           @default("") // Paystack customer ID
+  // Public booking page settings
+  bookingEnabled         Boolean  @default(true)
+  bookingRequiresApproval Boolean @default(true)
+  bookingDepositEnabled  Boolean  @default(false)
+  bookingDepositAmount   Float    @default(0)
+  bookingServices        String   @default("[]") // JSON: [{name, duration, price}]
+  bookingWelcomeMsg      String   @default("")
+  bookingConfirmMsg      String   @default("")
+  googlePlaceId          String   @default("")
+  // External integrations (JSON: gmail, accounting tokens/config)
+  integrations           String   @default("{}")
+  // Relations
+  users          User[]
+  patients       Patient[]
+  conversations  Conversation[]
+  bookings       Booking[]
+  reviews        Review[]
+  recallItems    RecallItem[]
+  auditLogs      AuditLog[]
+  invoices       Invoice[]
+  payments       Payment[]
+  checkIns       CheckIn[]
+  notifications  Notification[]
+  consents       ConsentRecord[]
+  dailyTasks     DailyTask[]
+  referrals      Referral[]
+  createdAt      DateTime         @default(now())
+}
+
+model Patient {
+  id              String           @id @default(cuid())
+  name            String
+  phone           String
+  email           String           @default("")
+  dateOfBirth     DateTime?
+  gender          String           @default("") // male | female | other
+  idNumber        String           @default("") // SA ID or passport
+  address         String           @default("")
+  medicalAid      String           @default("") // medical aid provider
+  medicalAidNo    String           @default("") // membership number
+  bloodType       String           @default("") // A+ A- B+ B- AB+ AB- O+ O-
+  emergencyName   String           @default("")
+  emergencyPhone  String           @default("")
+  notes           String           @default("")
+  status          String           @default("active") // active | inactive | discharged
+  lastVisit       DateTime?
+  nextRecallDue   DateTime?
+  practiceId      String
+  practice        Practice         @relation(fields: [practiceId], references: [id], onDelete: Cascade)
+  conversations   Conversation[]
+  allergies       Allergy[]
+  medications     Medication[]
+  medicalRecords  MedicalRecord[]
+  vitals          Vitals[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([practiceId])
+}
+
+model Allergy {
+  id        String   @id @default(cuid())
+  name      String   // e.g. "Penicillin", "Latex", "Ibuprofen"
+  severity  String   @default("moderate") // mild | moderate | severe | life-threatening
+  reaction  String   @default("") // e.g. "Rash", "Anaphylaxis"
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([patientId])
+}
+
+model Medication {
+  id        String   @id @default(cuid())
+  name      String   // e.g. "Metformin 500mg"
+  dosage    String   @default("") // e.g. "1 tablet twice daily"
+  frequency String   @default("") // e.g. "daily", "twice daily", "as needed"
+  prescriber String  @default("") // who prescribed it
+  startDate DateTime?
+  endDate   DateTime?
+  active    Boolean  @default(true)
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([patientId])
+}
+
+model MedicalRecord {
+  id          String   @id @default(cuid())
+  type        String   // consultation | procedure | lab_result | imaging | referral | note
+  title       String
+  description String   @default("")
+  diagnosis   String   @default("") // ICD-10 or free text
+  treatment   String   @default("")
+  provider    String   @default("") // doctor/nurse who created the record
+  attachments String   @default("") // comma-separated file URLs
+  patientId   String
+  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  practiceId  String   @default("")
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([patientId])
+}
+
+model Vitals {
+  id              String   @id @default(cuid())
+  bloodPressureSys Int?    // systolic mmHg
+  bloodPressureDia Int?    // diastolic mmHg
+  heartRate       Int?     // bpm
+  temperature     Float?   // Celsius
+  weight          Float?   // kg
+  height          Float?   // cm
+  oxygenSat       Int?     // SpO2 %
+  bloodGlucose    Float?   // mmol/L
+  respiratoryRate Int?     // breaths per minute
+  painLevel       Int?     // 0-10
+  notes           String   @default("")
+  recordedBy      String   @default("")
+  patientId       String
+  patient         Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  recordedAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([patientId])
+}
+
+model Conversation {
+  id         String    @id @default(cuid())
+  patientId  String
+  patient    Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  practiceId String
+  practice   Practice  @relation(fields: [practiceId], references: [id], onDelete: Cascade)
+  channel    String    @default("web") // web | whatsapp | phone
+  status     String    @default("active")
+  messages   Message[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([practiceId])
+  @@index([patientId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String       // "patient", "practice", "ai_suggestion"
+  content        String
+  approved       Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId])
+}
+
+model Booking {
+  id              String    @id @default(cuid())
+  patientName     String
+  patientPhone    String    @default("")
+  patientEmail    String    @default("")
+  service         String
+  scheduledAt     DateTime
+  status          String    @default("pending") // pending | confirmed | completed | cancelled | no_show
+  notes           String    @default("")
+  source          String    @default("dashboard") // dashboard | public | whatsapp | phone
+  leadSource      String    @default("") // google_ads | gp_referral | social_media | seo | medical_aid_dir | word_of_mouth | symptom_checker | corporate_wellness
+  referralId      String    @default("") // links to Referral if came from GP
+  // Approval workflow
+  confirmedAt     DateTime?
+  confirmedBy     String    @default("") // user ID who approved
+  rejectedAt      DateTime?
+  rejectionReason String    @default("")
+  // Deposit / advance payment
+  depositAmount   Float     @default(0)
+  depositPaid     Boolean   @default(false)
+  paymentRef      String    @default("")
+  // Notification tracking
+  reminderSentAt  DateTime?
+  followupSentAt  DateTime?
+  checkinSentAt   DateTime?
+  // Practice
+  practiceId      String
+  practice        Practice  @relation(fields: [practiceId], references: [id], onDelete: Cascade)
+  createdAt       DateTime  @default(now())
+
+  @@index([practiceId])
+  @@index([scheduledAt])
+  @@index([status])
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  rating     Int
+  comment    String   @default("")
+  source     String   @default("google")
+  authorName String   @default("")
+  practiceId String
+  practice   Practice @relation(fields: [practiceId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@index([practiceId])
+}
+
+model RecallItem {
+  id         String   @id @default(cuid())
+  patientName String
+  reason     String
+  dueDate    DateTime
+  contacted  Boolean  @default(false)
+  phone      String   @default("")
+  practiceId String
+  practice   Practice @relation(fields: [practiceId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@index([practiceId])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String   // patient_view | patient_edit | record_create | record_view | login | export
+  resource   String   @default("") // e.g. "patient:clxyz123"
+  details    String   @default("") // JSON string with extra context
+  ipAddress  String   @default("")
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  practiceId String
+  practice   Practice @relation(fields: [practiceId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@index([practiceId])
+  @@index([userId])
+}
+
+// === Billing: Clinic → Patient ===
+
+model Invoice {
+  id           String    @id @default(cuid())
+  invoiceNo    String    @default("") // e.g. "INV-2026-001"
+  patientName  String
+  patientId    String    @default("")
+  // Line items stored as JSON string: [{description, icd10Code, quantity, unitPrice, total}]
+  lineItems    String    @default("[]")
+  subtotal     Float     @default(0)
+  tax          Float     @default(0) // VAT 15% in SA
+  discount     Float     @default(0)
+  total        Float     @default(0)
+  amountPaid   Float     @default(0)
+  balance      Float     @default(0)
+  // Medical aid split
+  medicalAidClaim Float  @default(0) // portion claimed from medical aid
+  patientPortion  Float  @default(0) // patient co-pay
+  claimStatus     String @default("") // pending | submitted | approved | rejected | paid | partial
+  claimReference  String @default("") // medical aid claim reference
+  // Status
+  status       String    @default("draft") // draft | sent | paid | partial | overdue | cancelled
+  dueDate      DateTime?
+  paidAt       DateTime?
+  notes        String    @default("")
+  practiceId   String
+  practice     Practice  @relation(fields: [practiceId], references: [id], onDelete: Cascade)
+  payments     Payment[]
+  createdAt    DateTime  @default(now())
+
+  @@index([practiceId])
+}
+
+model Payment {
+  id         String   @id @default(cuid())
+  amount     Float
+  method     String   @default("cash") // cash | card | eft | medical_aid
+  reference  String   @default("") // card transaction ref, EFT reference, etc.
+  invoiceId  String?
+  invoice    Invoice? @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  patientName String  @default("")
+  notes      String   @default("")
+  practiceId String
+  practice   Practice @relation(fields: [practiceId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@index([practiceId])
+  @@index([invoiceId])
+}
+
+// === Patient Check-In/Out ===
+
+model CheckIn {
+  id          String    @id @default(cuid())
+  patientName String
+  patientId   String    @default("")
+  status      String    @default("waiting") // waiting | in_consultation | checked_out | no_show
+  arrivedAt   DateTime  @default(now())
+  seenAt      DateTime? // when doctor starts
+  leftAt      DateTime? // when patient leaves
+  notes       String    @default("")
+  practiceId  String
+  practice    Practice  @relation(fields: [practiceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  @@index([practiceId])
+}
+
+// === Notifications (WhatsApp/SMS/Email) ===
+
+model Notification {
+  id         String   @id @default(cuid())
+  type       String   @default("whatsapp") // whatsapp | sms | email
+  recipient  String   // phone or email
+  patientName String  @default("")
+  subject    String   @default("")
+  message    String
+  status     String   @default("sent") // queued | sent | delivered | failed
+  template   String   @default("") // reminder_24h | reminder_48h | recall | followup | custom
+  practiceId String
+  practice   Practice @relation(fields: [practiceId], references: [id], onDelete: Cascade)
+  sentAt     DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  @@index([practiceId])
+}
+
+// === POPIA Consent ===
+
+model ConsentRecord {
+  id           String   @id @default(cuid())
+  patientName  String
+  patientId    String   @default("")
+  consentType  String   // treatment | data_processing | marketing | research
+  granted      Boolean  @default(true)
+  method       String   @default("digital") // digital | paper | verbal
+  ipAddress    String   @default("")
+  notes        String   @default("")
+  practiceId   String
+  practice     Practice @relation(fields: [practiceId], references: [id], onDelete: Cascade)
+  grantedAt    DateTime @default(now())
+  revokedAt    DateTime?
+  createdAt    DateTime @default(now())
+
+  @@index([practiceId])
+}
+
+// === Investor Portal ===
+
+model InvestorNote {
+  id         String   @id @default(cuid())
+  userId     String   // investor user ID
+  section    String   @default("general") // general | ecosystem | compliance | product:<slug>
+  content    String
+  pinned     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// === Credit Tracking (Platform → Practice) ===
+
+model CreditLedger {
+  id          String   @id @default(cuid())
+  practiceId  String
+  type        String   // ai_agent | whatsapp | sms | email | api_call
+  amount      Float    // negative = usage, positive = top-up/included
+  balance     Float    // running balance after this transaction
+  description String   @default("")
+  reference   String   @default("") // e.g. conversation ID, booking ID
+  createdAt   DateTime @default(now())
+
+  @@index([practiceId])
+}
+
+// === API Keys (External Access) ===
+
+model ApiKey {
+  id          String   @id @default(cuid())
+  practiceId  String
+  key         String   @unique // the actual API key (hashed for storage)
+  keyPreview  String   @default("") // first 8 chars for display
+  name        String   @default("Default")
+  active      Boolean  @default(true)
+  lastUsedAt  DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([practiceId])
+  @@index([key])
+}
+
+// === Operations Hub ===
+
+model OpsDocument {
+  id          String   @id @default(cuid())
+  practiceId  String   @default("")
+  category    String   // market_research | gp_leads | content_strategy | google_ads | insights | campaign
+  title       String
+  content     String   // markdown content
+  metadata    String   @default("{}") // JSON metadata
+  pinned      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([practiceId])
+  @@index([category])
+}
+
+// === Client Lifecycle Management ===
+
+model ClientPipeline {
+  id            String   @id @default(cuid())
+  practiceName  String
+  doctorName    String
+  specialty     String   @default("")
+  location      String   @default("")
+  phone         String   @default("")
+  email         String   @default("")
+  website       String   @default("")
+  stage         String   @default("lead")
+  planTier      String   @default("professional")
+  monthlyValue  Float    @default(35000)
+  source        String   @default("")
+  practiceId    String?
+  assignedTo    String   @default("")
+  nextAction    String   @default("")
+  nextActionDue DateTime?
+  lastContactAt DateTime?
+  lastContactMethod String @default("")
+  notes         String   @default("")
+  leadCreatedAt DateTime @default(now())
+  contactedAt   DateTime?
+  demoAt        DateTime?
+  proposalSentAt DateTime?
+  wonAt         DateTime?
+  onboardingStartedAt DateTime?
+  goLiveAt      DateTime?
+  churnedAt     DateTime?
+  churnReason   String   @default("")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model ClientActivity {
+  id          String   @id @default(cuid())
+  clientId    String
+  type        String
+  title       String
+  description String   @default("")
+  metadata    String   @default("{}")
+  createdBy   String   @default("system")
+  createdAt   DateTime @default(now())
+
+  @@index([clientId])
+}
+
+// === GP Referral Pipeline ===
+
+model Referral {
+  id                String   @id @default(cuid())
+  // Referring doctor (GP)
+  referringDoctor   String   // GP name
+  referringPractice String   @default("") // GP practice/clinic name
+  referringEmail    String   @default("")
+  referringPhone    String   @default("")
+  // Patient being referred
+  patientName       String
+  patientPhone      String   @default("")
+  patientEmail      String   @default("")
+  dateOfBirth       String   @default("")
+  medicalAid        String   @default("") // e.g. Discovery, GEMS, Bonitas
+  medicalAidNo      String   @default("")
+  // Clinical
+  reason            String   // e.g. "Chronic sinusitis - 6 months, failed medical management"
+  urgency           String   @default("routine") // routine | urgent | emergency
+  clinicalNotes     String   @default("") // GP's notes, current medications, imaging done
+  icd10Code         String   @default("") // e.g. J32.9 Chronic sinusitis
+  // Workflow
+  status            String   @default("pending") // pending | accepted | booked | completed | declined
+  appointmentDate   DateTime?
+  // Feedback loop (back to GP)
+  feedbackSent      Boolean  @default(false)
+  feedbackNote      String   @default("") // specialist's findings/plan sent back to GP
+  feedbackSentAt    DateTime?
+  // Practice
+  practiceId        String
+  practice          Practice @relation(fields: [practiceId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+
+  @@index([practiceId])
+  @@index([status])
+  @@index([referringDoctor])
+}
+
+// === Admin Daily Tasks ===
+
+model DailyTask {
+  id          String   @id @default(cuid())
+  title       String
+  category    String   @default("morning") // morning | during_day | end_of_day
+  completed   Boolean  @default(false)
+  completedBy String   @default("")
+  completedAt DateTime?
+  isRecurring Boolean  @default(true) // resets daily
+  sortOrder   Int      @default(0)
+  practiceId  String
+  practice    Practice @relation(fields: [practiceId], references: [id], onDelete: Cascade)
+  date        DateTime @default(now()) // which day this task is for
+  createdAt   DateTime @default(now())
+
+  @@index([practiceId])
+}
+
+// === Newsletter Subscribers ===
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  source    String   @default("website") // website | vrl-research | landing | api
+  status    String   @default("active") // active | unsubscribed | bounced
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// === VRL Outreach Campaign System ===
+
+model OutreachCampaign {
+  id               String           @id @default(cuid())
+  name             String
+  segment          String           // A-J segment code
+  description      String           @default("")
+  status           String           @default("draft") // draft | active | paused | completed
+  emailTemplateKey String           @default("")
+  followUpCadence  String           @default("[3,7,14,30]") // JSON array of days
+  targetCount      Int              @default(0)
+  sentCount        Int              @default(0)
+  openCount        Int              @default(0)
+  responseCount    Int              @default(0)
+  meetingCount     Int              @default(0)
+  conversionCount  Int              @default(0)
+  startDate        DateTime?
+  endDate          DateTime?
+  notes            String           @default("")
+  targets          OutreachTarget[]
+  emails           OutreachEmail[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+}
+
+model OutreachTarget {
+  id                  String           @id @default(cuid())
+  campaignId          String
+  campaign            OutreachCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  name                String
+  title               String           @default("")
+  organization        String           @default("")
+  email               String           @default("")
+  phone               String           @default("")
+  linkedinUrl         String           @default("")
+  segment             String           @default("")
+  priority            Int              @default(3) // 1 (highest) - 5 (lowest)
+  status              String           @default("pending") // pending | queued | sent | opened | responded | meeting_booked | converted | opted_out
+  personalizationData String           @default("{}") // JSON
+  lastEmailSentAt     DateTime?
+  followUpStep        Int              @default(0) // 0-4
+  nextFollowUpAt      DateTime?
+  notes               String           @default("")
+  emails              OutreachEmail[]
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  @@index([campaignId])
+  @@index([status])
+  @@index([segment])
+}
+
+model OutreachEmail {
+  id          String           @id @default(cuid())
+  targetId    String
+  target      OutreachTarget   @relation(fields: [targetId], references: [id], onDelete: Cascade)
+  campaignId  String
+  campaign    OutreachCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  templateKey String           @default("")
+  subject     String           @default("")
+  resendId    String           @default("")
+  status      String           @default("queued") // queued | sent | delivered | opened | bounced | failed
+  openedAt    DateTime?
+  sentAt      DateTime?
+  createdAt   DateTime         @default(now())
+
+  @@index([targetId])
+  @@index([campaignId])
+}
