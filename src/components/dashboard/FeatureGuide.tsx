@@ -1,248 +1,333 @@
+
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Shield, Eye, EyeOff, Sparkles, Zap } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { X, Shield, Sparkles, ArrowRight, ChevronRight, Volume2, VolumeX, Minimize2, Maximize2 } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 
-// ─── NDA / T&C Popup ──────
+// ─── Jess's Welcome Sequence (plays once on first login) ──────
+const WELCOME_SEQUENCE = [
+  {
+    text: "Welcome, Thirushen. I\u2019m Jess, your AI operations guide \u2014 built specifically for you and the Netcare Primary Healthcare team.",
+    delay: 0,
+  },
+  {
+    text: "I know you\u2019ve spent years transforming financial systems \u2014 from Excel to Oracle at your previous role, reducing Group consolidation from weeks to hours. What we\u2019ve built here takes that same philosophy and applies it across your entire 88-clinic network.",
+    delay: 500,
+  },
+  {
+    text: "Let me show you what we found and what we\u2019ve built for Netcare. And remember \u2014 at any time, press the AI Assistant button in the bottom-right corner to ask me anything directly.",
+    delay: 500,
+  },
+];
+
+const SAVINGS_BRIEFING = [
+  { label: "Claims Intelligence", value: "R21.6M/year", detail: "Your current 15% first-pass rejection rate costs the division R3.85M/month. Our AI pre-validates ICD-10-ZA codes, NAPPI codes, and PMB benefits before claims hit Altron SwitchOn. We bring that to under 5%." },
+  { label: "eRA Reconciliation", value: "R10.1M/year", detail: "568 practitioners doing manual Excel-based eRA matching. We automate electronic Remittance Advice reconciliation across every clinic \u2014 your Excel-to-Oracle moment, but for the whole division." },
+  { label: "Debtor Recovery", value: "R33M/year", detail: "Debtor days at 42 (target: 35). GEMS averages 21-day payment, Medihelp 24 days. Automated WhatsApp follow-up sequences and scheme-specific collection strategies." },
+  { label: "Capitation Analytics", value: "R7.9M/year", detail: "Prime Cure 254,000 capitated lives at R287 PMPM. You\u2019re R1.1M over cap this month. Real-time monitoring flags overspend before it hits the P&L \u2014 critical after the lost occ health contract." },
+  { label: "Compliance Automation", value: "R5.8M/year", detail: "POPIA s18-s72 consent tracking, HPCSA Booklet 10 alignment, CMS reporting \u2014 automated across all 88 clinics in 8 provinces. Zero audit findings." },
+  { label: "Pharmacy Optimisation", value: "R16.8M/year", detail: "R1.4M/month freed working capital across 37 Clicks-operated pharmacies. NAPPI code sync with scheme formularies, dead stock elimination, CDL monitoring." },
+];
+
+const INTEGRATIONS = [
+  { name: "CareOn EMR", status: "Extends", detail: "34,000 users across 26 hospitals. We extend this intelligence to your 88 primary care clinics \u2014 the gap CareOn doesn\u2019t cover." },
+  { name: "SAP for Healthcare", status: "Connects", detail: "R100M investment. Patient ADT, billing, procurement, materials management. We add an AI analytics layer on top." },
+  { name: "Altron SwitchOn", status: "Pre-validates", detail: "Claims switching \u2014 we catch rejection-worthy claims BEFORE they hit the switch. 75% of rejections are preventable." },
+  { name: "MediSwitch EDI", status: "Auto-reconciles", detail: "eRA processing \u2014 we match payments to claims automatically, replacing manual reconciliation." },
+  { name: "IBM Watson Micromedex", status: "Surfaces", detail: "1.8M+ scripts/year drug interaction checking. We surface these alerts in the booking and dispensing flow." },
+  { name: "Corsano Wearables", status: "Integrates", detail: "6,000 beds with continuous vitals monitoring. We bring wearable alerts into primary care follow-up workflows." },
+  { name: "Netcare App", status: "Extends", detail: "iOS/Android/Huawei \u2014 booking, 911, pre-admission, health records. We add WhatsApp as a parallel channel where your patients already are." },
+];
+
+const MARKET_GAPS = [
+  "No WhatsApp patient routing in SA private healthcare \u2014 we\u2019re first",
+  "No AI claims pre-validation for primary care networks \u2014 hospitals have it, clinics don\u2019t",
+  "No real-time financial command center across fragmented clinic PMS systems",
+  "Discovery launching Flexicare through Clicks \u2014 direct threat to Medicross walk-in model. We give you the tech moat.",
+  "4+ separate booking systems (Appointmed, Medicross Online, VirtualCare, phone) \u2014 we unify into one WhatsApp + web channel",
+  "CareOn covers hospitals. Primary Care has no unified digital layer. We are that layer.",
+];
+
+const FUTURE_ROADMAP = [
+  { name: "Placeo Health", timeline: "Q3 2026", detail: "Patient marketplace \u2014 3.5M patients can discover and book across the Netcare network. Uber for healthcare appointments." },
+  { name: "Visio Integrator", timeline: "Q4 2026", detail: "Enterprise middleware connecting CareOn, SAP, Healthbridge, GoodX into one data layer. The missing bridge." },
+  { name: "Visio Waiting Room", timeline: "Q3 2026", detail: "Digital check-in via WhatsApp. Real-time queue visibility. Solve the queue problem at busy Medicross clinics." },
+  { name: "VisioMed AI", timeline: "Q1 2027", detail: "Clinical co-pilot \u2014 drug interaction checking (augments Micromedex), ICD-10-ZA coding assistance, treatment protocol suggestions." },
+  { name: "Payer Connect", timeline: "Q4 2026", detail: "Live coordination with medical schemes. Real-time benefit checking, pre-auth before the patient sits down. Turn 21-day GEMS cycles into 7-day." },
+  { name: "Predictive Analytics Suite", timeline: "Q2 2027", detail: "Budget variance prediction 60 days out. Cash flow forecasting. Staff cost optimisation. The tools Mayo Clinic and Cleveland Clinic use." },
+];
+
+const PAGE_CONTEXTS: Record<string, string> = {
+  "/dashboard": "This is your operational command center. The welcome banner shows your Netcare brand with network-wide impact metrics. Below are 10 stat cards pulling live data \u2014 patients, bookings, revenue, tasks. The quick actions give you one-click access to every critical function.",
+  "/dashboard/network": "This is where you\u2019ll spend most of your time. Five tabs: Overview gives you the divisional KPIs at a glance \u2014 R55.2M MTD revenue, 24.5% EBITDA margin, 5,234 first-pass rejections. Clinic Performance ranks all 88 sites. Claims Intelligence shows the top rejection codes with AI fixes. Cost Savings breaks down the R8.4M/month opportunity. Medical Schemes tracks Discovery, GEMS, Bonitas payment performance.",
+  "/dashboard/kpi": "These are YOUR KPIs \u2014 the ones Keith Gibson asks about in the quarterly divisional pack. 30+ metrics across revenue, profitability, working capital, managed care, and occupational health. Traffic lights show what needs attention. The bottom section shows exactly how VisioHealth OS moves each KPI.",
+  "/dashboard/savings": "This is the most powerful number in your career right now. R7.6M+ saved in 9 months. Every Rand is traceable to a specific AI module. The Before/After comparison is what you present to the board \u2014 from Excel hell to real-time intelligence.",
+  "/dashboard/suite": "Everything VisioHealth OS built for Netcare \u2014 10 AI modules, the full value chain integration map showing how we connect to CareOn, SAP, SwitchOn, and the Netcare App. Plus the branch deployment model \u2014 every doctor uses this under the Netcare umbrella.",
+  "/dashboard/pilot": "Start here. Pick a region, select clinics, launch an 8-week pilot. Data is isolated to your region. At week 8, you get a board-ready ROI report. This is zero risk \u2014 the pilot report becomes your business case for Keith Gibson.",
+  "/dashboard/board-pack": "Your weapon for the next Finance and Investment Committee. CEO Quick View for Dr Friedland (one slide: R100M+, 8 weeks, <5%, 88 clinics). Full 6-section business case for Keith Gibson. 3-year scenario modelling: Conservative R105M, Base R220M, Aggressive R295M.",
+  "/dashboard/intel": "Bloomberg-style health intelligence terminal. Market data, health news, research papers, SA competitive landscape, and global benchmarks \u2014 HCA Healthcare, Epic Systems, Mayo Clinic, Cleveland Clinic, NHS England. This positions you as the most informed FD in SA healthcare.",
+  "/dashboard/daily": "Your structured Financial Director daily workflow. Morning: claims review, revenue dashboard, Prime Cure reports. Midday: tariff reconciliation, ICD-10 analytics, occ health billing. End of day: collection ratios, EBITDA variance, POPIA compliance.",
+  "/dashboard/patients": "Unified patient records across Medicross clinics. Discovery, GEMS, Bonitas, Momentum, Polmed, Anglo Medical \u2014 all with medical history, medications, allergies, and POPIA consent. A patient at Sandton can be referenced at Fourways.",
+  "/dashboard/conversations": "The WhatsApp Patient Router in action. Patients message one number, AI routes to the right Medicross branch. This is the feature Netcare doesn\u2019t have today \u2014 and Discovery Flexicare doesn\u2019t offer either.",
+  "/dashboard/billing": "Claims and billing with ICD-10-ZA codes, NAPPI codes, medical aid status. See exactly which claims were rejected, why, and the AI recommendation to fix. R1.8M/month recoverable.",
+  "/dashboard/analytics": "Practice-level analytics \u2014 patient counts, booking patterns, service popularity, review scores, recall management. Data-driven operational insights.",
+};
+
+// ─── Typing Effect ──────
+function useTypingEffect(text: string, speed: number = 20) {
+  const [displayed, setDisplayed] = useState("");
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    setDisplayed("");
+    setDone(false);
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i < text.length) {
+        setDisplayed(text.slice(0, i + 1));
+        i++;
+      } else {
+        setDone(true);
+        clearInterval(interval);
+      }
+    }, speed);
+    return () => clearInterval(interval);
+  }, [text, speed]);
+
+  return { displayed, done };
+}
+
+// ─── NDA Popup ──────
 function NDAPopup({ onAccept }: { onAccept: () => void }) {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
-    >
-      <motion.div
-        initial={{ scale: 0.95, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.95, y: 20 }}
-        className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl"
-      >
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }}
+        className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-xl bg-[#1D3443]/10 flex items-center justify-center">
             <Shield className="w-5 h-5 text-[#1D3443]" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>Confidentiality Agreement</h2>
-            <p className="text-[11px] text-gray-400">VisioHealth OS &times; Netcare Primary Healthcare</p>
+            <h2 className="text-lg font-bold text-gray-900" style={{ fontFamily: "Montserrat, sans-serif" }}>Confidentiality Agreement</h2>
+            <p className="text-[11px] text-gray-400">VisioHealth OS x Netcare Primary Healthcare</p>
           </div>
         </div>
-
         <div className="text-[12px] text-gray-600 leading-relaxed space-y-3 max-h-[40vh] overflow-y-auto pr-2">
-          <p>
-            This platform demonstration contains <span className="font-semibold">proprietary technology, trade secrets, and confidential business intelligence</span> developed
-            by VisioHealth OS (Visio Research Labs, Touchline Agency (Pty) Ltd).
-          </p>
-          <p>By accessing this platform, you agree to:</p>
-          <ul className="list-disc pl-4 space-y-1.5">
-            <li>Keep all platform features, data, pricing, and technology confidential</li>
-            <li>Not share screenshots, recordings, or descriptions with third parties</li>
-            <li>Not reverse-engineer, copy, or replicate any features or algorithms</li>
-            <li>Use the demo solely for evaluating a partnership between Netcare and VisioHealth OS</li>
-          </ul>
-          <p>
-            All AI models, claims intelligence algorithms, patient routing systems, and financial analytics are the intellectual property
-            of Visio Research Labs. The research data (120+ citations) is proprietary.
-          </p>
-          <p className="text-[11px] text-gray-400">
-            Governed by the laws of the Republic of South Africa. High Court of Gauteng, Johannesburg.
-          </p>
+          <p>This platform contains <span className="font-semibold">proprietary technology and confidential intelligence</span> developed by VisioHealth OS (Visio Research Labs).</p>
+          <p>By accessing, you agree to: keep all features, data, and technology confidential; not share with third parties; use solely for evaluating a Netcare-VisioHealth OS partnership.</p>
+          <p className="text-[11px] text-gray-400">Governed by SA law. High Court of Gauteng, Johannesburg.</p>
         </div>
-
-        <button
-          onClick={onAccept}
-          className="w-full mt-5 py-3 bg-[#1D3443] text-white font-semibold text-[13px] rounded-xl hover:bg-[#152736] transition-colors"
-          style={{ fontFamily: 'Montserrat, sans-serif' }}
-        >
-          I Agree — Enter Platform
+        <button onClick={onAccept} className="w-full mt-5 py-3 bg-[#1D3443] text-white font-semibold text-[13px] rounded-xl hover:bg-[#152736] transition-colors" style={{ fontFamily: "Montserrat, sans-serif" }}>
+          I Agree \u2014 Enter Platform
         </button>
-
-        <p className="text-[10px] text-gray-400 text-center mt-3">
-          By clicking above, you accept the terms of this confidentiality agreement.
-        </p>
       </motion.div>
     </motion.div>
   );
 }
 
-// ─── Page-Specific Feature Guides ──────
-const PAGE_GUIDES: Record<string, { title: string; sections: { heading: string; text: string }[]; value: string }> = {
-  "/dashboard": {
-    title: "Welcome to Your Dashboard",
-    sections: [
-      { heading: "What You're Looking At", text: "This is your operational command center — a real-time view of patient flow, revenue, bookings, and daily tasks across the entire Netcare Primary Healthcare network." },
-      { heading: "The Welcome Banner", text: "Uses your Netcare brand colours (#1D3443 dark teal, #3DA9D1 sky blue). Shows network-wide impact metrics: 30% tech cost reduction, 50% faster claims processing, 10x scale capacity, R33M+ addressable claims." },
-      { heading: "Stat Cards", text: "Patient counts, today's bookings, waiting room status, daily revenue, task completion — all pulled from live data across your clinics." },
-      { heading: "Quick Actions", text: "One-click access to daily tasks, check-in queue, patients, billing, conversations, bookings, and recall management." },
-    ],
-    value: "This single view replaces 5+ Excel spreadsheets that clinic managers currently maintain independently.",
-  },
-  "/dashboard/network": {
-    title: "Network Financial Command Center",
-    sections: [
-      { heading: "Division Revenue (MTD)", text: "R55.2M against target — tracking your R662M annual Primary Care division revenue. EBITDA at 24.5% margin (up 1.5% YoY). Revenue breakdown by Gauteng North, South, East, Western Cape, KZN, and National." },
-      { heading: "Claims Intelligence", text: "34,892 claims submitted via MediSwitch this month. 5,234 first-pass rejections (15% rate). The Claims Intelligence tab shows the top 5 rejection codes with AI-recommended fixes — each fix has a Rand value attached." },
-      { heading: "Cost Savings Potential", text: "R8.4M/month addressable through 6 AI automation areas. The biggest: ICD-10-ZA + NAPPI pre-validation (R1.8M), eRA auto-reconciliation (R840K), and debtor aging intelligence (R3.2M recoverable)." },
-      { heading: "Financial Alerts", text: "Three live alerts: Medicross Soweto's 10% rejection spike, Prime Cure capitation overspend (R1.1M over PMPM cap), and GEMS eRA reconciliation backlog (R890K, 21-day avg)." },
-    ],
-    value: "Replaces fragmented Excel reporting across 568 practitioners. Saves R840K/month in manual reconciliation. Every number here maps to a real Netcare financial line item.",
-  },
-  "/dashboard/suite": {
-    title: "Your Custom-Built Suite",
-    sections: [
-      { heading: "10 AI Modules", text: "Claims Intelligence, WhatsApp Router, Financial Dashboard, Booking Engine, Patient Management, POPIA Compliance, Capitation Analytics, AI Triage, Pharmacy Intelligence, and eRA Auto-Reconciliation. Each with individual ROI." },
-      { heading: "Value Chain Integration", text: "Shows exactly how we connect to CareOn (26+ hospitals), SAP (R100M ERP), Altron SwitchOn, MediSwitch, IBM Watson Micromedex, Corsano wearables, and the Netcare App." },
-      { heading: "Branch Deployment", text: "Deploy to every Netcare branch — 49 hospitals, 55 clinics, 15 day theatres. Doctors use under the Netcare umbrella. All data routes back to this command center." },
-      { heading: "Resell Opportunity", text: "568 independent practitioners, 200+ corporate clients, 20+ medical schemes — each is a potential licensing revenue stream for Netcare." },
-    ],
-    value: "R8.4M/month = R100M+/year in addressable savings. Plus recurring SaaS revenue from licensing to your ecosystem.",
-  },
-  "/dashboard/kpi": {
-    title: "Financial Director KPI Dashboard",
-    sections: [
-      { heading: "Your KPI Framework", text: "30+ KPIs across 5 categories — Revenue, Profitability, Working Capital, Managed Care (Prime Cure), and Occupational Health. Each mapped to your actual divisional reporting requirements." },
-      { heading: "Traffic Light System", text: "Green (on track), Amber (watch), Red (attention required). At a glance, see which metrics need your focus today." },
-      { heading: "Where AI Moves the Needle", text: "For each underperforming KPI, VisioHealth OS shows the specific module that fixes it and the Rand impact. Claims rejection 15% to <5% = R21.6M/year. Debtor days 42 to 28 = R14M freed cash flow." },
-      { heading: "Group CFO Alignment", text: "This dashboard maps directly to what Keith Gibson expects in your quarterly divisional pack: EBITDA margin, cash conversion, working capital discipline, digital transformation ROI." },
-    ],
-    value: "Every KPI here is one Keith Gibson will ask about. This dashboard generates your quarterly board pack automatically.",
-  },
-  "/dashboard/pilot": {
-    title: "Start Your Regional Pilot",
-    sections: [
-      { heading: "How It Works", text: "Select a region (Gauteng North, South, East, Western Cape, KZN, or National Occ Health). Pick specific clinics. Launch an 8-week pilot. Data is isolated to your pilot region." },
-      { heading: "8-Week Timeline", text: "Weeks 1-2: Setup and integration with your PMS. Weeks 3-6: Live AI claims validation, WhatsApp routing, financial dashboards. Weeks 7-8: Measure results, generate board-ready ROI report." },
-      { heading: "Why Regional First", text: "Prove the ROI in a controlled environment. No risk to the broader network. The pilot report becomes your business case for Keith Gibson to approve network-wide rollout." },
-      { heading: "Global Benchmark", text: "HCA Healthcare, Mayo Clinic, and Cleveland Clinic all started with regional pilots before enterprise deployment. 3.2X average ROI within 14 months." },
-    ],
-    value: "Zero capital risk. Proven results in 8 weeks. The pilot report IS your board presentation. Start small, prove it, scale.",
-  },
-  "/dashboard/board-pack": {
-    title: "Your Board Presentation Pack",
-    sections: [
-      { heading: "CEO Quick View", text: "A one-slide summary for Dr Richard Friedland: R100M+ savings, 8-week pilot, <5% claims rejection target, 88-clinic scalability." },
-      { heading: "Full Business Case", text: "6 sections covering executive summary, financial impact (R100M+), strategic alignment (Phase 2 digital strategy), implementation approach, risk mitigation, and competitive positioning." },
-      { heading: "Scenario Modelling", text: "Conservative (R105M 3-year), Base Case (R220M), Aggressive (R295M) — three scenarios for Keith Gibson to evaluate." },
-      { heading: "Your Role", text: "YOU are the person bringing this to the board. The FD who identified R100M+ in savings, aligned it with the digital strategy, and proposed a zero-risk pilot. This makes you the innovation champion." },
-    ],
-    value: "This is your weapon for the next Finance and Investment Committee meeting. Every number is defensible, every claim is backed by research.",
-  },
-  "/dashboard/onboarding": {
-    title: "Your Platform Tour",
-    sections: [
-      { heading: "8 Key Areas", text: "Follow the numbered steps to see the full platform. Each step links directly to the feature with a description and ROI." },
-      { heading: "Coming Soon Modules", text: "6 expansion products being built: Placeo Health (patient marketplace), Visio Integrator (middleware), Waiting Room (digital check-in), VisioMed AI (clinical co-pilot), Payer Connect (scheme coordination), Pharmacy Intelligence." },
-    ],
-    value: "Each Coming Soon module is designed for the Netcare ecosystem specifically. Licensing creates additional revenue streams.",
-  },
-  "/dashboard/daily": {
-    title: "Financial Director Daily Tasks",
-    sections: [
-      { heading: "Morning", text: "Review overnight claims rejections (AI auto-flagged), check divisional revenue vs R55M target, review Prime Cure capitation utilisation, flag high-value outstanding claims." },
-      { heading: "During Day", text: "Process tariff reconciliations, review ICD-10 rejection analytics (top 10 codes), monitor occupational health billing accuracy, approve pharmacy purchase orders." },
-      { heading: "End of Day", text: "Review daily collection ratios per region, generate EBITDA variance report for Group reporting, check POPIA consent compliance dashboard across all 88 clinics." },
-    ],
-    value: "Structured workflow designed for a Financial Director managing a R662M division. AI handles overnight analysis — you review and decide.",
-  },
-  "/dashboard/patients": {
-    title: "Multi-Site Patient Management",
-    sections: [
-      { heading: "Cross-Network Records", text: "Patients from Discovery, GEMS, Bonitas, Momentum, Polmed, Anglo Medical, Prime Cure capitation, and NetcarePlus prepaid — all in one view with medical aid details." },
-      { heading: "Clinical Data", text: "ICD-10 diagnoses, medications (Metformin, Jardiance, Amlodipine, Symbicort), allergies (severity tracked), vitals, and POPIA consent status." },
-      { heading: "Multi-Site Visibility", text: "A patient at Medicross Sandton can be referenced at Medicross Fourways — no duplicate records, no lost history." },
-    ],
-    value: "Eliminates fragmented patient records across 568 practitioners using different PMS systems (Healthbridge, GoodX, Elixir).",
-  },
-  "/dashboard/conversations": {
-    title: "WhatsApp Patient Router",
-    sections: [
-      { heading: "How It Works", text: "Patients message one WhatsApp number. AI identifies: service needed, location preference, availability. Routes to nearest Medicross branch. Books and confirms automatically." },
-      { heading: "AI Suggestions", text: "AI drafts responses to patient queries. Your team reviews and approves before sending. Full conversation history tracked." },
-    ],
-    value: "24/7 patient access. 60% fewer phone calls. Fills the gap Netcare's current systems don't cover — no WhatsApp integration exists today.",
-  },
-  "/dashboard/intel": {
-    title: "Netcare × Visio Intelligence Terminal",
-    sections: [
-      { heading: "Market Data", text: "SA Healthcare IT market ($2.76B → $5.71B by 2034), medical aid beneficiaries (9.7M), claims rejection rates, health inflation trends. Plus Netcare's 10-year digital strategy timeline." },
-      { heading: "Health News", text: "Curated articles: Corsano wearable partnership, NHI constitutional challenge, Discovery Flexicare competition, FY2025 results, balance billing crisis." },
-      { heading: "Research Papers", text: "VRL-001 (routing crisis, 120 citations), Digital Health Evidence Base, ICD-10 coding quality analysis, capitation actuarial research." },
-      { heading: "Subscription Tier", text: "Daily intelligence, real-time CMS data, competitor pricing, NHI impact modelling — available with subscription." },
-    ],
-    value: "Bloomberg-level health industry intelligence. Daily briefings for Netcare leadership. Competitive edge over Discovery, Life, Mediclinic.",
-  },
-  "/dashboard/analytics": {
-    title: "Practice Analytics",
-    sections: [
-      { heading: "What's Here", text: "Patient counts, booking trends, service popularity, review scores, recall management, and conversation volumes." },
-    ],
-    value: "Data-driven operational insights across the network.",
-  },
-  "/dashboard/billing": {
-    title: "AI Claims & Billing",
-    sections: [
-      { heading: "Invoice Tracking", text: "Every invoice with ICD-10-ZA codes, NAPPI codes, medical aid claim reference, payment status (submitted/partial/rejected/paid), and patient portion." },
-      { heading: "Claims Status", text: "See exactly which claims were rejected, why (ICD-10 mismatch, benefits exhausted, NAPPI error), and the AI recommendation to fix it." },
-    ],
-    value: "R1.8M/month recovered through AI pre-validation. Each rejected claim costs R50-R150 in rework — we eliminate 75% before submission.",
-  },
-};
+// ─── Jess Welcome Sequence ──────
+function JessWelcome({ onComplete }: { onComplete: () => void }) {
+  const [step, setStep] = useState(0);
+  const [showSavings, setShowSavings] = useState(false);
+  const [showIntegrations, setShowIntegrations] = useState(false);
+  const [showGaps, setShowGaps] = useState(false);
+  const [showFuture, setShowFuture] = useState(false);
+  const currentMsg = step < WELCOME_SEQUENCE.length ? WELCOME_SEQUENCE[step].text : "";
+  const { displayed, done } = useTypingEffect(currentMsg, 18);
 
-// ─── Full Right-Side Panel ──────
-function GuidePanel({ guide, onClose }: { guide: { title: string; sections: { heading: string; text: string }[]; value: string }; onClose: () => void }) {
+  const nextStep = () => {
+    if (step < WELCOME_SEQUENCE.length - 1) {
+      setStep(s => s + 1);
+    } else if (!showSavings) {
+      setShowSavings(true);
+    } else if (!showIntegrations) {
+      setShowIntegrations(true);
+    } else if (!showGaps) {
+      setShowGaps(true);
+    } else if (!showFuture) {
+      setShowFuture(true);
+    } else {
+      onComplete();
+    }
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[9998] bg-[#0a1520]/95 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto">
+      <div className="max-w-3xl w-full py-8">
+        {/* Jess Avatar */}
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#3DA9D1] to-[#E3964C] flex items-center justify-center">
+            <Sparkles className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <div className="text-white font-semibold text-[15px]" style={{ fontFamily: "Montserrat, sans-serif" }}>Jess</div>
+            <div className="text-white/30 text-[11px]">Your AI Operations Guide \u2022 VisioHealth OS</div>
+          </div>
+        </motion.div>
+
+        {/* Welcome Messages */}
+        {step < WELCOME_SEQUENCE.length && !showSavings && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            className="bg-white/5 backdrop-blur-sm rounded-xl p-5 border border-white/10 mb-4">
+            <p className="text-white/80 text-[15px] leading-relaxed">{displayed}<span className={done ? "hidden" : "animate-pulse"}>|</span></p>
+          </motion.div>
+        )}
+
+        {/* Savings Briefing */}
+        {showSavings && !showIntegrations && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 mb-4">
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-5 border border-white/10">
+              <p className="text-white/80 text-[15px] leading-relaxed mb-2">Here is what we can save Netcare Primary Healthcare. Total: <span className="text-[#E3964C] font-bold">R95.2M per year</span>.</p>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {SAVINGS_BRIEFING.map((s, i) => (
+                <motion.div key={s.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
+                  className="p-3 rounded-lg bg-white/5 border border-white/8 hover:bg-white/8 transition-colors">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-white/60 text-[12px] font-medium">{s.label}</span>
+                    <span className="text-[#E3964C] text-[13px] font-bold">{s.value}</span>
+                  </div>
+                  <p className="text-white/30 text-[11px] leading-relaxed">{s.detail}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Integrations */}
+        {showIntegrations && !showGaps && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 mb-4">
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-5 border border-white/10">
+              <p className="text-white/80 text-[15px] leading-relaxed">We integrate with every system Netcare already uses. Nothing gets replaced \u2014 everything gets enhanced.</p>
+            </div>
+            <div className="space-y-2">
+              {INTEGRATIONS.map((s, i) => (
+                <motion.div key={s.name} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.06 }}
+                  className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-white/8">
+                  <span className="text-[11px] font-bold text-[#3DA9D1] bg-[#3DA9D1]/10 px-2 py-0.5 rounded uppercase">{s.status}</span>
+                  <span className="text-white/80 text-[13px] font-medium">{s.name}</span>
+                  <span className="text-white/30 text-[11px] flex-1">{s.detail}</span>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Market Gaps */}
+        {showGaps && !showFuture && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 mb-4">
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-5 border border-white/10">
+              <p className="text-white/80 text-[15px] leading-relaxed">These are the gaps we found in the market that nobody is filling. This is your competitive moat.</p>
+            </div>
+            <div className="space-y-2">
+              {MARKET_GAPS.map((gap, i) => (
+                <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.08 }}
+                  className="flex items-start gap-2 p-3 rounded-lg bg-white/5 border border-white/8">
+                  <span className="text-[#E3964C] text-[11px] font-bold mt-0.5 shrink-0">{i + 1}</span>
+                  <span className="text-white/60 text-[12px]">{gap}</span>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Future Roadmap */}
+        {showFuture && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 mb-4">
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-5 border border-white/10">
+              <p className="text-white/80 text-[15px] leading-relaxed">And this is what we are building next for Netcare. Each product makes the ecosystem stronger.</p>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {FUTURE_ROADMAP.map((item, i) => (
+                <motion.div key={item.name} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
+                  className="p-3 rounded-lg bg-white/5 border border-white/8">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-white/80 text-[12px] font-semibold">{item.name}</span>
+                    <span className="text-[#3DA9D1] text-[10px] font-bold">{item.timeline}</span>
+                  </div>
+                  <p className="text-white/30 text-[11px]">{item.detail}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Next Button */}
+        <motion.button
+          onClick={nextStep}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="w-full py-3 mt-4 rounded-xl bg-gradient-to-r from-[#3DA9D1] to-[#E3964C] text-white font-semibold text-[14px] flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+          style={{ fontFamily: "Montserrat, sans-serif" }}
+        >
+          {!showSavings ? "Show Me the Savings" : !showIntegrations ? "Show Integrations" : !showGaps ? "Show Market Gaps" : !showFuture ? "Show the Future" : "Enter the Platform"}
+          <ArrowRight className="w-4 h-4" />
+        </motion.button>
+
+        {/* Skip */}
+        <button onClick={onComplete} className="w-full py-2 mt-2 text-white/20 text-[11px] hover:text-white/40 transition-colors">
+          Skip intro
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Jess Contextual Panel (right side, per-page) ──────
+function JessPanel({ context, onClose, onNavigate }: { context: string; onClose: () => void; onNavigate: (path: string) => void }) {
+  const { displayed, done } = useTypingEffect(context, 12);
+
   return (
     <motion.div
-      initial={{ x: 400, opacity: 0 }}
+      initial={{ x: 440, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      exit={{ x: 400, opacity: 0 }}
+      exit={{ x: 440, opacity: 0 }}
       transition={{ type: "spring", damping: 25, stiffness: 200 }}
-      className="fixed top-0 right-0 bottom-0 z-[9998] w-[420px] bg-white border-l border-gray-200 shadow-2xl flex flex-col"
+      className="fixed top-0 right-0 bottom-0 z-[9995] w-[420px] bg-white border-l border-gray-200 shadow-2xl flex flex-col"
     >
-      {/* Header */}
-      <div className="p-5 border-b border-gray-200 bg-gradient-to-r from-[#1D3443] to-[#3DA9D1]">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#E3964C]" />
-            <span className="text-[11px] text-white/60 uppercase tracking-widest font-semibold">Jess — Your Guide</span>
+      <div className="p-4 bg-gradient-to-r from-[#1D3443] to-[#3DA9D1] flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#3DA9D1] to-[#E3964C] flex items-center justify-center">
+            <Sparkles className="w-4 h-4 text-white" />
           </div>
-          <button onClick={onClose} className="p-1.5 text-white/60 hover:text-white rounded-lg hover:bg-white/10 transition-colors">
-            <X className="w-4 h-4" />
-          </button>
+          <div>
+            <div className="text-[13px] text-white font-semibold" style={{ fontFamily: "Montserrat, sans-serif" }}>Jess</div>
+            <div className="text-[10px] text-white/40">AI Guide \u2022 VisioHealth OS</div>
+          </div>
         </div>
-        <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'Montserrat, sans-serif' }}>{guide.title}</h2>
+        <button onClick={onClose} className="p-1.5 text-white/40 hover:text-white rounded-lg hover:bg-white/10 transition-colors">
+          <X className="w-4 h-4" />
+        </button>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-4">
-        {guide.sections.map((section, i) => (
-          <motion.div
-            key={section.heading}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-          >
-            <h3 className="text-[13px] font-semibold text-[#1D3443] mb-1.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>{section.heading}</h3>
-            <p className="text-[12px] text-gray-600 leading-relaxed">{section.text}</p>
-          </motion.div>
-        ))}
+      <div className="flex-1 overflow-y-auto p-5">
+        <p className="text-[13px] text-gray-600 leading-relaxed">{displayed}<span className={done ? "hidden" : "text-[#3DA9D1] animate-pulse"}>|</span></p>
       </div>
 
-      {/* Value Footer */}
-      <div className="p-5 border-t border-gray-200 bg-[#E3964C]/5">
-        <div className="flex items-center gap-2 mb-2">
-          <Zap className="w-4 h-4 text-[#E3964C]" />
-          <span className="text-[11px] text-[#E3964C] font-semibold uppercase tracking-wide">Value for Netcare</span>
+      <div className="p-4 border-t border-gray-200 shrink-0">
+        <div className="p-2.5 rounded-lg bg-[#1D3443]/5 border border-[#1D3443]/10 mb-3">
+          <p className="text-[11px] text-[#1D3443] font-medium">Have a question? Press the <span className="inline-flex items-center gap-1 bg-[#1D3443] text-white px-1.5 py-0.5 rounded text-[10px] font-bold">AI Assistant</span> button (bottom-right) to ask me anything.</p>
         </div>
-        <p className="text-[13px] text-[#1D3443] font-medium leading-relaxed">{guide.value}</p>
-      </div>
-
-      {/* Powered by */}
-      <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 text-center">
-        <p className="text-[10px] text-gray-400">
-          Powered by <span className="text-[#1D3443] font-semibold">VisioHealth OS</span> &middot; Visio Research Labs
-        </p>
+        <div className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-2">Quick Navigate</div>
+        <div className="flex flex-wrap gap-1.5">
+          {[
+            { label: "Network Finance", path: "/dashboard/network" },
+            { label: "FD KPIs", path: "/dashboard/kpi" },
+            { label: "Savings", path: "/dashboard/savings" },
+            { label: "Board Pack", path: "/dashboard/board-pack" },
+            { label: "Start Pilot", path: "/dashboard/pilot" },
+            { label: "Intel Terminal", path: "/dashboard/intel" },
+          ].map(nav => (
+            <button key={nav.path} onClick={() => onNavigate(nav.path)}
+              className="text-[10px] px-2.5 py-1 rounded-full bg-gray-100 text-gray-500 hover:bg-[#3DA9D1]/10 hover:text-[#1D3443] transition-colors font-medium">
+              {nav.label}
+            </button>
+          ))}
+        </div>
       </div>
     </motion.div>
   );
@@ -251,68 +336,69 @@ function GuidePanel({ guide, onClose }: { guide: { title: string; sections: { he
 // ─── Main Component ──────
 export default function FeatureGuide() {
   const pathname = usePathname();
+  const router = useRouter();
   const [ndaAccepted, setNdaAccepted] = useState(true);
-  const [guidesEnabled, setGuidesEnabled] = useState(true);
-  const [currentGuide, setCurrentGuide] = useState<string | null>(null);
+  const [welcomeDone, setWelcomeDone] = useState(true);
+  const [jessOpen, setJessOpen] = useState(true);
   const [dismissedPages, setDismissedPages] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const accepted = localStorage.getItem("netcare-nda-accepted");
-    const guidePref = localStorage.getItem("netcare-guides-enabled");
+    const welcomed = localStorage.getItem("netcare-welcome-done");
+    const jessPref = localStorage.getItem("netcare-jess-open");
     setNdaAccepted(accepted === "true");
-    if (guidePref === "false") setGuidesEnabled(false);
+    setWelcomeDone(welcomed === "true");
+    if (jessPref === "false") setJessOpen(false);
   }, []);
-
-  useEffect(() => {
-    if (!ndaAccepted || !guidesEnabled) return;
-    if (dismissedPages.has(pathname)) return;
-    if (PAGE_GUIDES[pathname]) {
-      setCurrentGuide(pathname);
-    } else {
-      setCurrentGuide(null);
-    }
-  }, [pathname, ndaAccepted, guidesEnabled, dismissedPages]);
 
   const handleAcceptNDA = () => {
     setNdaAccepted(true);
     localStorage.setItem("netcare-nda-accepted", "true");
   };
 
-  const handleDismissGuide = () => {
-    setDismissedPages(prev => new Set([...prev, pathname]));
-    setCurrentGuide(null);
+  const handleWelcomeComplete = () => {
+    setWelcomeDone(true);
+    localStorage.setItem("netcare-welcome-done", "true");
   };
 
-  const toggleGuides = () => {
-    const next = !guidesEnabled;
-    setGuidesEnabled(next);
-    localStorage.setItem("netcare-guides-enabled", String(next));
-    if (!next) setCurrentGuide(null);
+  const handleDismissJess = () => {
+    setDismissedPages(prev => new Set([...prev, pathname]));
   };
+
+  const toggleJess = () => {
+    const next = !jessOpen;
+    setJessOpen(next);
+    localStorage.setItem("netcare-jess-open", String(next));
+  };
+
+  const handleNavigate = (path: string) => {
+    setDismissedPages(prev => { const n = new Set(prev); n.delete(path); return n; });
+    router.push(path);
+  };
+
+  const showPanel = jessOpen && !dismissedPages.has(pathname) && PAGE_CONTEXTS[pathname] && ndaAccepted && welcomeDone;
 
   return (
     <>
-      {/* NDA Popup */}
       <AnimatePresence>
         {!ndaAccepted && <NDAPopup onAccept={handleAcceptNDA} />}
       </AnimatePresence>
 
-      {/* Full Right-Side Guide Panel */}
       <AnimatePresence>
-        {currentGuide && PAGE_GUIDES[currentGuide] && (
-          <GuidePanel guide={PAGE_GUIDES[currentGuide]} onClose={handleDismissGuide} />
+        {ndaAccepted && !welcomeDone && <JessWelcome onComplete={handleWelcomeComplete} />}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showPanel && PAGE_CONTEXTS[pathname] && (
+          <JessPanel context={PAGE_CONTEXTS[pathname]} onClose={handleDismissJess} onNavigate={handleNavigate} />
         )}
       </AnimatePresence>
 
-      {/* Toggle button — positioned in header area, not bottom-left */}
-      {ndaAccepted && (
-        <button
-          onClick={toggleGuides}
-          className="fixed top-[18px] right-[220px] z-[9997] flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1D3443]/5 border border-[#1D3443]/10 text-[11px] font-semibold text-[#1D3443] hover:bg-[#1D3443]/10 transition-colors"
-          title={guidesEnabled ? "Turn off Jess guide" : "Turn on Jess guide"}
-        >
-          {guidesEnabled ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-          {guidesEnabled ? "Jess: On" : "Jess: Off"}
+      {ndaAccepted && welcomeDone && (
+        <button onClick={toggleJess}
+          className="fixed top-[18px] right-[220px] z-[9997] flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#3DA9D1]/10 to-[#E3964C]/10 border border-[#3DA9D1]/20 text-[11px] font-semibold text-[#1D3443] hover:border-[#3DA9D1]/40 transition-colors">
+          <Sparkles className="w-3 h-3 text-[#E3964C]" />
+          {jessOpen ? "Jess: On" : "Jess: Off"}
         </button>
       )}
     </>
