@@ -302,6 +302,18 @@ export default function Hero() {
             </div>
           ))}
         </motion.div>
+
+        {/* Research link */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2.2 }}
+          className="mt-8 text-center"
+        >
+          <a href="/research/vrl-001" className="text-[12px] text-white/20 font-medium hover:text-white/40 transition-colors underline underline-offset-4 decoration-white/10">
+            Visio Research Labs — VRL-001: The Routing Crisis (120+ citations) →
+          </a>
+        </motion.div>
       </motion.div>
 
       {/* Scroll indicator */}
