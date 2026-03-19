@@ -5,10 +5,9 @@ import { motion } from "framer-motion";
 import {
   MessageSquare, CalendarCheck, Star, RotateCcw, Users, FileText,
   DollarSign, UserCheck, ClipboardList, Receipt, Shield,
+  TrendingUp, TrendingDown, ArrowUpRight, Building2, Zap,
 } from "lucide-react";
-import StatCard from "@/components/dashboard/StatCard";
 import Link from "next/link";
-import PracticeMap from "@/components/dashboard/PracticeMap";
 
 interface DashboardStats {
   conversations: number;
@@ -31,68 +30,16 @@ interface PracticeBranding {
   userName: string;
 }
 
-function WelcomeBanner({ branding }: { branding: PracticeBranding }) {
-  const firstName = branding.userName?.split(" ")[0] || "there";
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl overflow-hidden bg-[#1D3443]"
-    >
-      <div className="p-5">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h2 className="text-white text-lg font-semibold mb-0.5" style={{ fontFamily: 'Montserrat, sans-serif' }}>Welcome back, {firstName}</h2>
-            <p className="text-white/50 text-[12px]">
-              {branding.name} &mdash; AI-powered financial analytics, claims intelligence, and network operations
-            </p>
-          </div>
-          <div className="flex items-center gap-1.5 bg-white/8 rounded-lg px-2.5 py-1">
-            <Shield className="w-3.5 h-3.5 text-white/60" />
-            <span className="text-white/60 text-[10px] font-medium">POPIA Compliant</span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-4 gap-3">
-          {[
-            { label: "Cost Reduction", value: "30%", desc: "vs fragmented tools" },
-            { label: "Claims Speed", value: "50%", desc: "faster processing" },
-            { label: "Scale", value: "10x", desc: "capacity without headcount" },
-            { label: "Claims Addressable", value: "R33M+", desc: "annually" },
-          ].map((stat, i) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 + i * 0.05 }}
-              className="bg-white/5 rounded-lg p-3"
-            >
-              <div className="text-white text-lg font-bold">{stat.value}</div>
-              <div className="text-white/60 text-[10px] font-medium">{stat.label}</div>
-              <div className="text-white/30 text-[9px]">{stat.desc}</div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [branding, setBranding] = useState<PracticeBranding | null>(null);
-  const [recentConversations, setRecentConversations] = useState<
-    { id: string; patient: { name: string }; messages: { content: string; createdAt: string }[]; updatedAt: string }[]
-  >([]);
 
   useEffect(() => {
-    // Fetch user + practice branding
     fetch("/api/auth/me").then(r => r.json()).then(data => {
       if (data.user?.practice) {
         const p = data.user.practice;
         setBranding({
-          name: p.name || p.practiceName || "Netcare Health OS",
+          name: p.name || p.practiceName || "Netcare",
           primaryColor: p.primaryColor || p.primary_color || "#1D3443",
           secondaryColor: p.secondaryColor || p.secondary_color || "#3DA9D1",
           tagline: p.tagline || "",
@@ -117,7 +64,7 @@ export default function DashboardPage() {
         (b: { scheduledAt: string }) => new Date(b.scheduledAt).toDateString() === today
       );
       const ratings = (reviews.reviews || []).map((r: { rating: number }) => r.rating);
-      const avgRating = ratings.length ? (ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length).toFixed(1) : "—";
+      const avgRating = ratings.length ? (ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length).toFixed(1) : "\u2014";
       const dueRecalls = (recall.recallItems || []).filter((r: { contacted: boolean }) => !r.contacted);
 
       setStats({
@@ -132,114 +79,128 @@ export default function DashboardPage() {
         waitingPatients: (checkins.checkIns || []).filter((c: { status: string }) => c.status === "waiting").length,
         taskProgress: dailyTasks.progress?.percent ?? 0,
       });
-
-      setRecentConversations((convos.conversations || []).slice(0, 5));
     }).catch(() => {});
   }, []);
 
-  const pc = branding?.primaryColor || "#1D3443";
-  const sc = branding?.secondaryColor || "#3DA9D1";
+  const firstName = branding?.userName?.split(" ")[0] || "there";
 
   return (
-    <div className="p-6 space-y-5">
-      {/* Welcome banner with branding */}
-      {branding && <WelcomeBanner branding={branding} />}
-
-      {/* Stats — 2 rows of 5, clean corporate palette */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <StatCard label="Patients" value={stats?.totalPatients ?? "—"} icon={Users} color="#1D3443" delay={0} />
-        <StatCard label="Bookings Today" value={stats?.bookingsToday ?? "—"} icon={CalendarCheck} color="#3DA9D1" delay={0.03} />
-        <StatCard label="Waiting Room" value={stats?.waitingPatients ?? "—"} icon={UserCheck} color="#1D3443" delay={0.06} />
-        <StatCard label="Revenue Today" value={stats ? `R${stats.todayRevenue.toLocaleString()}` : "—"} icon={DollarSign} color="#10b981" delay={0.09} />
-        <StatCard label="Daily Tasks" value={stats ? `${stats.taskProgress}%` : "—"} icon={ClipboardList} color="#3DA9D1" delay={0.12} />
-      </div>
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <StatCard label="Conversations" value={stats?.conversations ?? "—"} icon={MessageSquare} color="#1D3443" delay={0.15} />
-        <StatCard label="Avg Rating" value={stats?.avgRating ?? "—"} icon={Star} color="#E3964C" delay={0.18} />
-        <StatCard label="Recall Due" value={stats?.recallDue ?? "—"} icon={RotateCcw} color="#3DA9D1" delay={0.21} />
-        <StatCard label="Outstanding" value={stats ? `R${stats.outstanding.toLocaleString()}` : "—"} icon={Receipt} color="#ef4444" delay={0.24} />
-        <StatCard label="Records" value={stats?.totalRecords ?? "—"} icon={FileText} color="#1D3443" delay={0.27} />
-      </div>
-
-      {/* Recent conversations */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="rounded-xl border border-gray-200 bg-white overflow-hidden"
-      >
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <div className="flex items-center gap-2">
-            <MessageSquare className="w-4 h-4 text-[#1D3443]" />
-            <span className="text-[13px] font-semibold text-gray-900">Recent Conversations</span>
+    <div className="p-6 space-y-6 max-w-[1400px] mx-auto">
+      {/* Welcome Section */}
+      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900" style={{ fontFamily: "Montserrat, sans-serif" }}>
+              Welcome back, {firstName}
+            </h1>
+            <p className="text-[13px] text-gray-500 mt-0.5">
+              {branding?.name} \u2014 {branding?.tagline || "AI-Powered Operations Platform"}
+            </p>
           </div>
-          <Link href="/dashboard/conversations" className="text-[12px] text-[#3DA9D1] hover:underline font-medium">
-            View all
-          </Link>
-        </div>
-
-        {recentConversations.length === 0 ? (
-          <div className="p-8 text-center text-[13px] text-gray-400">
-            No conversations yet. Use the Conversations page to simulate patient messages.
-          </div>
-        ) : (
-          <div className="divide-y divide-gray-100">
-            {recentConversations.map((convo) => {
-              const lastMsg = convo.messages?.[convo.messages.length - 1];
-              return (
-                <Link
-                  key={convo.id}
-                  href="/dashboard/conversations"
-                  className="flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="w-9 h-9 rounded-full bg-[#1D3443]/8 flex items-center justify-center text-[11px] font-semibold text-[#1D3443] shrink-0">
-                    {convo.patient.name.split(" ").map((n: string) => n[0]).join("")}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[13px] font-semibold text-gray-900">{convo.patient.name}</div>
-                    <p className="text-[12px] text-gray-500 truncate">
-                      {lastMsg?.content || "No messages yet"}
-                    </p>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        )}
-      </motion.div>
-
-      {/* Quick actions */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-        className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4"
-      >
-        {[
-          { label: "Daily Tasks", icon: ClipboardList, color: "#1D3443", href: "/dashboard/daily" },
-          { label: "Check-In", icon: UserCheck, color: "#3DA9D1", href: "/dashboard/checkin" },
-          { label: "Patients", icon: Users, color: "#1D3443", href: "/dashboard/patients" },
-          { label: "Billing", icon: Receipt, color: "#3DA9D1", href: "/dashboard/billing" },
-          { label: "Conversations", icon: MessageSquare, color: "#1D3443", href: "/dashboard/conversations" },
-          { label: "Bookings", icon: CalendarCheck, color: "#3DA9D1", href: "/dashboard/bookings" },
-          { label: "Recall", icon: RotateCcw, color: "#1D3443", href: "/dashboard/recall" },
-        ].map(action => (
-          <Link
-            key={action.label}
-            href={action.href}
-            className="p-4 rounded-xl bg-white border border-gray-200 hover:border-gray-300 transition-all duration-300 hover:-translate-y-0.5 flex items-center gap-3"
-          >
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${action.color}15` }}>
-              <action.icon className="w-4 h-4" style={{ color: action.color }} />
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 border border-green-200">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-[11px] text-green-700 font-medium">All Systems Online</span>
             </div>
-            <span className="text-[13px] font-medium text-gray-600">{action.label}</span>
-          </Link>
-        ))}
+          </div>
+        </div>
       </motion.div>
 
-      {/* Practice Map */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}>
-        <PracticeMap />
+      {/* Impact Banner */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+        className="rounded-xl bg-[#1D3443] p-5">
+        <div className="grid grid-cols-4 gap-4">
+          {[
+            { label: "Annual Savings Potential", value: "R95M+", icon: Zap, trend: "addressable" },
+            { label: "Claims Processing", value: "50% faster", icon: TrendingUp, trend: "vs manual" },
+            { label: "Clinics Connected", value: "88", icon: Building2, trend: "network-wide" },
+            { label: "POPIA Compliance", value: "100%", icon: Shield, trend: "all provinces" },
+          ].map((item, i) => (
+            <motion.div key={item.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 + i * 0.05 }}
+              className="bg-white/5 rounded-lg p-3">
+              <item.icon className="w-4 h-4 text-[#3DA9D1] mb-1.5" />
+              <div className="text-xl font-bold text-white">{item.value}</div>
+              <div className="text-[10px] text-white/40 font-medium mt-0.5">{item.label}</div>
+              <div className="text-[9px] text-[#E3964C] mt-0.5">{item.trend}</div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-5 gap-3">
+        {[
+          { label: "Patients", value: stats?.totalPatients ?? "\u2014", icon: Users, color: "#1D3443" },
+          { label: "Bookings Today", value: stats?.bookingsToday ?? "\u2014", icon: CalendarCheck, color: "#3DA9D1" },
+          { label: "Waiting Room", value: stats?.waitingPatients ?? "\u2014", icon: UserCheck, color: "#1D3443" },
+          { label: "Revenue Today", value: stats ? "R" + stats.todayRevenue.toLocaleString() : "\u2014", icon: DollarSign, color: "#10B981" },
+          { label: "Tasks Done", value: stats ? stats.taskProgress + "%" : "\u2014", icon: ClipboardList, color: "#3DA9D1" },
+        ].map((item, i) => (
+          <motion.div key={item.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 + i * 0.03 }}
+            className="p-4 rounded-xl border border-gray-200 bg-white">
+            <div className="flex items-center justify-between mb-2">
+              <item.icon className="w-4 h-4" style={{ color: item.color }} />
+            </div>
+            <div className="text-xl font-bold text-gray-900">{item.value}</div>
+            <div className="text-[11px] text-gray-500 mt-0.5">{item.label}</div>
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-5 gap-3">
+        {[
+          { label: "Conversations", value: stats?.conversations ?? "\u2014", icon: MessageSquare, color: "#1D3443" },
+          { label: "Avg Rating", value: stats?.avgRating ?? "\u2014", icon: Star, color: "#E3964C" },
+          { label: "Recall Due", value: stats?.recallDue ?? "\u2014", icon: RotateCcw, color: "#3DA9D1" },
+          { label: "Outstanding", value: stats ? "R" + stats.outstanding.toLocaleString() : "\u2014", icon: Receipt, color: "#EF4444" },
+          { label: "Records", value: stats?.totalRecords ?? "\u2014", icon: FileText, color: "#1D3443" },
+        ].map((item, i) => (
+          <motion.div key={item.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 + i * 0.03 }}
+            className="p-4 rounded-xl border border-gray-200 bg-white">
+            <div className="flex items-center justify-between mb-2">
+              <item.icon className="w-4 h-4" style={{ color: item.color }} />
+            </div>
+            <div className="text-xl font-bold text-gray-900">{item.value}</div>
+            <div className="text-[11px] text-gray-500 mt-0.5">{item.label}</div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Quick Access Grid */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+        <h3 className="text-[13px] font-semibold text-gray-500 uppercase tracking-wider mb-3">Quick Access</h3>
+        <div className="grid grid-cols-4 gap-3">
+          {[
+            { label: "Network Finance", icon: Building2, href: "/dashboard/network", desc: "Divisional P&L", color: "#1D3443" },
+            { label: "FD KPIs", icon: TrendingUp, href: "/dashboard/kpi", desc: "30+ metrics", color: "#3DA9D1" },
+            { label: "Savings Tracker", icon: Zap, href: "/dashboard/savings", desc: "R7.6M+ saved", color: "#E3964C" },
+            { label: "Board Pack", icon: FileText, href: "/dashboard/board-pack", desc: "Export ready", color: "#1D3443" },
+            { label: "Start Pilot", icon: CalendarCheck, href: "/dashboard/pilot", desc: "8-week program", color: "#10B981" },
+            { label: "Your Suite", icon: Shield, href: "/dashboard/suite", desc: "10 AI modules", color: "#3DA9D1" },
+            { label: "Intel Terminal", icon: Star, href: "/dashboard/intel", desc: "Market data", color: "#1D3443" },
+            { label: "Daily Tasks", icon: ClipboardList, href: "/dashboard/daily", desc: "FD workflow", color: "#E3964C" },
+          ].map((item, i) => (
+            <Link key={item.label} href={item.href}>
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 + i * 0.03 }}
+                className="p-4 rounded-xl border border-gray-200 bg-white hover:border-[#3DA9D1]/30 hover:shadow-sm transition-all cursor-pointer group">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: item.color + "08" }}>
+                    <item.icon className="w-4 h-4" style={{ color: item.color }} />
+                  </div>
+                  <div>
+                    <div className="text-[13px] font-semibold text-gray-900 group-hover:text-[#1D3443]">{item.label}</div>
+                    <div className="text-[10px] text-gray-400">{item.desc}</div>
+                  </div>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-gray-300 ml-auto group-hover:text-[#3DA9D1] transition-colors" />
+                </div>
+              </motion.div>
+            </Link>
+          ))}
+        </div>
       </motion.div>
     </div>
   );
