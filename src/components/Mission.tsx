@@ -3,9 +3,9 @@
 import { motion } from "framer-motion";
 
 const stats = [
-  { number: "72%", label: "of adults skip routine checkups" },
-  { number: "1 in 3", label: "avoid the dentist entirely" },
-  { number: "We're", label: "changing that" },
+  { number: "R662M", label: "Primary Care division revenue" },
+  { number: "3.5M", label: "patients served annually" },
+  { number: "24.5%", label: "EBITDA margin — and growing" },
 ];
 
 const fadeUp = {
@@ -54,40 +54,40 @@ export default function Mission() {
       >
         {/* Section label */}
         <motion.div variants={fadeUp}>
-          <span className="uppercase tracking-[0.3em] text-xs text-[#1D8AB5] font-mono">
-            Our Mission
+          <span className="uppercase tracking-[0.3em] text-xs text-[#3DA9D1] font-semibold">
+            The Opportunity
           </span>
         </motion.div>
 
-        {/* Heading — dark gray with green accent */}
+        {/* Heading */}
         <motion.h2
           variants={fadeUp}
           className="text-3xl md:text-5xl font-light tracking-[-0.03em] text-gray-900 mt-8 leading-[1.2]"
+          style={{ fontFamily: 'Montserrat, sans-serif' }}
         >
-          Getting{" "}
-          <span className="text-[#1D8AB5]">Africa healthy</span>,
+          South Africa&apos;s largest{" "}
+          <span className="text-[#3DA9D1]">primary care network</span>
           <br />
-          one person at a time.
+          deserves the best technology.
         </motion.h2>
 
-        {/* Body text — readable on white */}
+        {/* Body text */}
         <motion.p
           variants={fadeUp}
           className="text-gray-600 text-base md:text-lg font-light leading-relaxed mt-10 max-w-2xl mx-auto"
         >
-          Studies show most people find it hard to walk through that door
-          — whether it&apos;s blood tests, dental checkups, or routine
-          screenings. Healthcare should be accessible to everyone, everywhere.
+          Netcare Primary Healthcare operates 88 clinics, 41 pharmacies, and 12 day theatres with 568 practitioners
+          — but the primary care division runs on fragmented systems. CareOn powers the hospitals. Healthbridge and GoodX
+          power individual clinics. Nothing connects the network.
         </motion.p>
 
         <motion.p
           variants={fadeUp}
           className="text-gray-500 text-base md:text-lg font-light leading-relaxed mt-6 max-w-2xl mx-auto"
         >
-          Netcare Health OS exists to bridge that gap. We help practices and health
-          centres reach the right people, fill their bookings, and make
-          healthcare less intimidating. From Johannesburg to Lagos, we&apos;re
-          on a mission to get people through that door.
+          <span className="text-[#1D3443] font-semibold">VisioHealth OS</span> was built to fill that gap —
+          unifying claims intelligence, financial analytics, patient routing, and compliance
+          across the entire Netcare Primary Healthcare division. One platform. One command center.
         </motion.p>
 
         {/* Divider — subtle on white */}
