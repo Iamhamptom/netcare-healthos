@@ -1,7 +1,5 @@
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import CommandAssistant from "@/components/dashboard/CommandAssistant";
-import VoiceAgentFloat from "@/components/voice-agent/VoiceAgentFloat";
 import FeatureGuide from "@/components/dashboard/FeatureGuide";
 import NetcareAssistant from "@/components/dashboard/NetcareAssistant";
 
@@ -27,8 +25,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </main>
       </div>
-      <CommandAssistant />
-      <VoiceAgentFloat />
       <FeatureGuide />
       <NetcareAssistant />
     </div>

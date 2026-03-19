@@ -11,7 +11,7 @@ import {
 
 // ─── SA Healthcare Market Data ──────
 const MARKET_INDICATORS = [
-  { label: "SA Healthcare IT Market", value: "USD 2.76B", change: "+8.4%", period: "2025 → USD 5.71B by 2034", icon: Globe, color: "#3DA9D1" },
+  { label: "SA Healthcare IT Market", value: "R51B", change: "+8.4%", period: "2025 → R106B by 2034", icon: Globe, color: "#3DA9D1" },
   { label: "Medical Aid Beneficiaries", value: "9.7M", change: "+1.2%", period: "15.8% of SA population", icon: Users, color: "#8B5CF6" },
   { label: "Private Hospital Beds", value: "36,000+", change: "+2.1%", period: "SA total — Netcare: 10,600", icon: Building2, color: "#E3964C" },
   { label: "Health Inflation", value: "8-12.5%", change: "above CPI", period: "2025 contribution increases", icon: TrendingUp, color: "#EF4444" },
@@ -349,10 +349,10 @@ export default function IntelPage() {
           {/* Global Market Size */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: "Global Healthcare IT", value: "$866B", sub: "2025 → $3.7T by 2035", color: "#3DA9D1" },
-              { label: "AI in Healthcare", value: "$21.7B", sub: "2025 → $110.6B by 2030 (38.6% CAGR)", color: "#E3964C" },
-              { label: "Digital Health Funding", value: "$14.2B", sub: "2025 — AI companies take 54%", color: "#10B981" },
-              { label: "African Digital Health", value: "$3.8B", sub: "Growing to $9.3B by 2030", color: "#8B5CF6" },
+              { label: "Global Healthcare IT", value: "R16.1T", sub: "2025 → R68.8T by 2035", color: "#3DA9D1" },
+              { label: "AI in Healthcare", value: "R403B", sub: "2025 → R2.1T by 2030 (38.6% CAGR)", color: "#E3964C" },
+              { label: "Digital Health Funding", value: "R264B", sub: "2025 — AI companies take 54%", color: "#10B981" },
+              { label: "African Digital Health", value: "R70.6B", sub: "Growing to R173B by 2030", color: "#8B5CF6" },
             ].map((m, i) => (
               <motion.div key={m.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="p-4 rounded-xl border border-gray-200 bg-white">
                 <div className="text-xl font-bold text-gray-900">{m.value}</div>
@@ -371,7 +371,7 @@ export default function IntelPage() {
             <div className="divide-y divide-gray-100">
               {[
                 { name: "HCA Healthcare (USA)", scale: "191 hospitals", innovation: "Largest ambient AI deployment globally — 83% reduction in charge entry time, 85%+ autonomous coding via Commure partnership", relevance: "Netcare has 49 hospitals. HCA is 4x the size and going all-in on AI billing automation." },
-                { name: "Epic Systems (USA)", scale: "$5.7B revenue, 42.3% market share", innovation: "325M patient records. Winning 70% of new hospital contracts. AI-native EHR with clinical decision support", relevance: "CareOn is Netcare's answer — but only covers hospitals. Primary care needs its own AI layer." },
+                { name: "Epic Systems (USA)", scale: "R106B revenue, 42.3% market share", innovation: "325M patient records. Winning 70% of new hospital contracts. AI-native EHR with clinical decision support", relevance: "CareOn is Netcare's answer — but only covers hospitals. Primary care needs its own AI layer." },
                 { name: "Mayo Clinic (USA)", scale: "#1 ranked hospital", innovation: "20M digital pathology images, NVIDIA partnership, licensing AI models to other health systems", relevance: "Mayo monetises its AI — Netcare could license VisioHealth OS modules to other SA hospital groups." },
                 { name: "Cleveland Clinic (USA)", scale: "4,000+ clinicians", innovation: "Ambient AI saving 14 min/day per clinician. Palantir virtual command center for operations", relevance: "Real-time command center concept = exactly what Network Financial Dashboard does for Netcare." },
                 { name: "NHS England", scale: "National health system", innovation: "GBP 10B digital investment by 2028/29. Mandatory Federated Data Platform across all trusts", relevance: "Government-scale digital transformation. NHI could push SA in same direction — Netcare must be ready." },
@@ -402,7 +402,7 @@ export default function IntelPage() {
             <div className="p-5 rounded-xl border border-gray-200 bg-white">
               <h4 className="text-[13px] font-semibold text-gray-900 mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>Predictive Analytics — Proven ROI</h4>
               <div className="space-y-2 text-[12px] text-gray-600">
-                <p>Johns Hopkins: <span className="font-semibold text-green-600">$700K saved</span> on ICU staffing alone with predictive models.</p>
+                <p>Johns Hopkins: <span className="font-semibold text-green-600">R13M saved</span> on ICU staffing alone with predictive models.</p>
                 <p>Industry average: <span className="font-semibold text-green-600">3.2X ROI in 14 months</span> on healthcare predictive analytics investments.</p>
                 <p className="text-[11px] text-[#E3964C] font-medium mt-2">For Netcare: R8.4M/month savings = R100M/year. Investment pays back in &lt;3 months.</p>
               </div>
@@ -413,7 +413,7 @@ export default function IntelPage() {
           <div className="p-4 rounded-xl border border-red-200 bg-red-50/30">
             <h4 className="text-[13px] font-semibold text-red-700 mb-1">Cautionary Tale: Babylon Health</h4>
             <p className="text-[12px] text-gray-600">
-              Babylon Health peaked at <span className="font-semibold">$4.2B valuation</span> with AI triage — then collapsed to a GBP 500K asset sale.
+              Babylon Health peaked at <span className="font-semibold">R78B valuation</span> with AI triage — then collapsed to a GBP 500K asset sale.
               Why? Overhyped AI without operational integration. VisioHealth OS avoids this by integrating directly with your existing CareOn, SAP, and SwitchOn systems — not replacing them.
             </p>
           </div>
@@ -423,8 +423,8 @@ export default function IntelPage() {
             <h4 className="text-[13px] font-semibold text-white mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>African Healthcare Tech Landscape</h4>
             <div className="grid grid-cols-3 gap-3">
               {[
-                { name: "mPharma (Ghana)", raised: "$80M+", focus: "Pharmacy supply chain" },
-                { name: "Helium Health (Nigeria)", raised: "$30M", focus: "Hospital management" },
+                { name: "mPharma (Ghana)", raised: "R1.5B+", focus: "Pharmacy supply chain" },
+                { name: "Helium Health (Nigeria)", raised: "R558M", focus: "Hospital management" },
                 { name: "VisioHealth OS (SA)", raised: "Bootstrapped", focus: "Primary care AI operations — the only platform built for SA-scale networks" },
               ].map(c => (
                 <div key={c.name} className="p-3 rounded-lg bg-white/5 border border-white/10">

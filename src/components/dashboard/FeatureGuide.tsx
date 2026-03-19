@@ -9,70 +9,70 @@ import { usePathname, useRouter } from "next/navigation";
 // ─── Jess's Welcome Sequence (plays once on first login) ──────
 const WELCOME_SEQUENCE = [
   {
-    text: "Welcome, Thirushen. I\u2019m Jess, your AI operations guide \u2014 built specifically for you and the Netcare Primary Healthcare team.",
+    text: "Welcome, Thirushen. I’m Jess, your AI operations guide — built specifically for you and the Netcare Primary Healthcare team.",
     delay: 0,
   },
   {
-    text: "I know you\u2019ve spent years transforming financial systems \u2014 from Excel to Oracle at your previous role, reducing Group consolidation from weeks to hours. What we\u2019ve built here takes that same philosophy and applies it across your entire 88-clinic network.",
+    text: "I know you’ve spent years transforming financial systems — from Excel to Oracle at your previous role, reducing Group consolidation from weeks to hours. What we’ve built here takes that same philosophy and applies it across your entire 88-clinic network.",
     delay: 500,
   },
   {
-    text: "Let me show you what we found and what we\u2019ve built for Netcare. And remember \u2014 at any time, press the AI Assistant button in the bottom-right corner to ask me anything directly.",
+    text: "Let me show you what we found and what we’ve built for Netcare. And remember — at any time, press the AI Assistant button in the bottom-right corner to ask me anything directly.",
     delay: 500,
   },
 ];
 
 const SAVINGS_BRIEFING = [
   { label: "Claims Intelligence", value: "R21.6M/year", detail: "Your current 15% first-pass rejection rate costs the division R3.85M/month. Our AI pre-validates ICD-10-ZA codes, NAPPI codes, and PMB benefits before claims hit Altron SwitchOn. We bring that to under 5%." },
-  { label: "eRA Reconciliation", value: "R10.1M/year", detail: "568 practitioners doing manual Excel-based eRA matching. We automate electronic Remittance Advice reconciliation across every clinic \u2014 your Excel-to-Oracle moment, but for the whole division." },
+  { label: "eRA Reconciliation", value: "R10.1M/year", detail: "568 practitioners doing manual Excel-based eRA matching. We automate electronic Remittance Advice reconciliation across every clinic — your Excel-to-Oracle moment, but for the whole division." },
   { label: "Debtor Recovery", value: "R33M/year", detail: "Debtor days at 42 (target: 35). GEMS averages 21-day payment, Medihelp 24 days. Automated WhatsApp follow-up sequences and scheme-specific collection strategies." },
-  { label: "Capitation Analytics", value: "R7.9M/year", detail: "Prime Cure 254,000 capitated lives at R287 PMPM. You\u2019re R1.1M over cap this month. Real-time monitoring flags overspend before it hits the P&L \u2014 critical after the lost occ health contract." },
-  { label: "Compliance Automation", value: "R5.8M/year", detail: "POPIA s18-s72 consent tracking, HPCSA Booklet 10 alignment, CMS reporting \u2014 automated across all 88 clinics in 8 provinces. Zero audit findings." },
+  { label: "Capitation Analytics", value: "R7.9M/year", detail: "Prime Cure 254,000 capitated lives at R287 PMPM. You’re R1.1M over cap this month. Real-time monitoring flags overspend before it hits the P&L — critical after the lost occ health contract." },
+  { label: "Compliance Automation", value: "R5.8M/year", detail: "POPIA s18-s72 consent tracking, HPCSA Booklet 10 alignment, CMS reporting — automated across all 88 clinics in 8 provinces. Zero audit findings." },
   { label: "Pharmacy Optimisation", value: "R16.8M/year", detail: "R1.4M/month freed working capital across 37 Clicks-operated pharmacies. NAPPI code sync with scheme formularies, dead stock elimination, CDL monitoring." },
 ];
 
 const INTEGRATIONS = [
-  { name: "CareOn EMR", status: "Extends", detail: "34,000 users across 26 hospitals. We extend this intelligence to your 88 primary care clinics \u2014 the gap CareOn doesn\u2019t cover." },
+  { name: "CareOn EMR", status: "Extends", detail: "34,000 users across 26 hospitals. We extend this intelligence to your 88 primary care clinics — the gap CareOn doesn’t cover." },
   { name: "SAP for Healthcare", status: "Connects", detail: "R100M investment. Patient ADT, billing, procurement, materials management. We add an AI analytics layer on top." },
-  { name: "Altron SwitchOn", status: "Pre-validates", detail: "Claims switching \u2014 we catch rejection-worthy claims BEFORE they hit the switch. 75% of rejections are preventable." },
-  { name: "MediSwitch EDI", status: "Auto-reconciles", detail: "eRA processing \u2014 we match payments to claims automatically, replacing manual reconciliation." },
+  { name: "Altron SwitchOn", status: "Pre-validates", detail: "Claims switching — we catch rejection-worthy claims BEFORE they hit the switch. 75% of rejections are preventable." },
+  { name: "MediSwitch EDI", status: "Auto-reconciles", detail: "eRA processing — we match payments to claims automatically, replacing manual reconciliation." },
   { name: "IBM Watson Micromedex", status: "Surfaces", detail: "1.8M+ scripts/year drug interaction checking. We surface these alerts in the booking and dispensing flow." },
   { name: "Corsano Wearables", status: "Integrates", detail: "6,000 beds with continuous vitals monitoring. We bring wearable alerts into primary care follow-up workflows." },
-  { name: "Netcare App", status: "Extends", detail: "iOS/Android/Huawei \u2014 booking, 911, pre-admission, health records. We add WhatsApp as a parallel channel where your patients already are." },
+  { name: "Netcare App", status: "Extends", detail: "iOS/Android/Huawei — booking, 911, pre-admission, health records. We add WhatsApp as a parallel channel where your patients already are." },
 ];
 
 const MARKET_GAPS = [
-  "No WhatsApp patient routing in SA private healthcare \u2014 we\u2019re first",
-  "No AI claims pre-validation for primary care networks \u2014 hospitals have it, clinics don\u2019t",
+  "No WhatsApp patient routing in SA private healthcare — we’re first",
+  "No AI claims pre-validation for primary care networks — hospitals have it, clinics don’t",
   "No real-time financial command center across fragmented clinic PMS systems",
-  "Discovery launching Flexicare through Clicks \u2014 direct threat to Medicross walk-in model. We give you the tech moat.",
-  "4+ separate booking systems (Appointmed, Medicross Online, VirtualCare, phone) \u2014 we unify into one WhatsApp + web channel",
+  "Discovery launching Flexicare through Clicks — direct threat to Medicross walk-in model. We give you the tech moat.",
+  "4+ separate booking systems (Appointmed, Medicross Online, VirtualCare, phone) — we unify into one WhatsApp + web channel",
   "CareOn covers hospitals. Primary Care has no unified digital layer. We are that layer.",
 ];
 
 const FUTURE_ROADMAP = [
-  { name: "Placeo Health", timeline: "Q3 2026", detail: "Patient marketplace \u2014 3.5M patients can discover and book across the Netcare network. Uber for healthcare appointments." },
+  { name: "Placeo Health", timeline: "Q3 2026", detail: "Patient marketplace — 3.5M patients can discover and book across the Netcare network. Uber for healthcare appointments." },
   { name: "Visio Integrator", timeline: "Q4 2026", detail: "Enterprise middleware connecting CareOn, SAP, Healthbridge, GoodX into one data layer. The missing bridge." },
   { name: "Visio Waiting Room", timeline: "Q3 2026", detail: "Digital check-in via WhatsApp. Real-time queue visibility. Solve the queue problem at busy Medicross clinics." },
-  { name: "VisioMed AI", timeline: "Q1 2027", detail: "Clinical co-pilot \u2014 drug interaction checking (augments Micromedex), ICD-10-ZA coding assistance, treatment protocol suggestions." },
+  { name: "VisioMed AI", timeline: "Q1 2027", detail: "Clinical co-pilot — drug interaction checking (augments Micromedex), ICD-10-ZA coding assistance, treatment protocol suggestions." },
   { name: "Payer Connect", timeline: "Q4 2026", detail: "Live coordination with medical schemes. Real-time benefit checking, pre-auth before the patient sits down. Turn 21-day GEMS cycles into 7-day." },
   { name: "Predictive Analytics Suite", timeline: "Q2 2027", detail: "Budget variance prediction 60 days out. Cash flow forecasting. Staff cost optimisation. The tools Mayo Clinic and Cleveland Clinic use." },
 ];
 
 const PAGE_CONTEXTS: Record<string, string> = {
-  "/dashboard": "This is your operational command center. The welcome banner shows your Netcare brand with network-wide impact metrics. Below are 10 stat cards pulling live data \u2014 patients, bookings, revenue, tasks. The quick actions give you one-click access to every critical function.",
-  "/dashboard/network": "This is where you\u2019ll spend most of your time. Five tabs: Overview gives you the divisional KPIs at a glance \u2014 R55.2M MTD revenue, 24.5% EBITDA margin, 5,234 first-pass rejections. Clinic Performance ranks all 88 sites. Claims Intelligence shows the top rejection codes with AI fixes. Cost Savings breaks down the R8.4M/month opportunity. Medical Schemes tracks Discovery, GEMS, Bonitas payment performance.",
-  "/dashboard/kpi": "These are YOUR KPIs \u2014 the ones Keith Gibson asks about in the quarterly divisional pack. 30+ metrics across revenue, profitability, working capital, managed care, and occupational health. Traffic lights show what needs attention. The bottom section shows exactly how VisioHealth OS moves each KPI.",
-  "/dashboard/savings": "This is the most powerful number in your career right now. R7.6M+ saved in 9 months. Every Rand is traceable to a specific AI module. The Before/After comparison is what you present to the board \u2014 from Excel hell to real-time intelligence.",
-  "/dashboard/suite": "Everything VisioHealth OS built for Netcare \u2014 10 AI modules, the full value chain integration map showing how we connect to CareOn, SAP, SwitchOn, and the Netcare App. Plus the branch deployment model \u2014 every doctor uses this under the Netcare umbrella.",
-  "/dashboard/pilot": "Start here. Pick a region, select clinics, launch an 8-week pilot. Data is isolated to your region. At week 8, you get a board-ready ROI report. This is zero risk \u2014 the pilot report becomes your business case for Keith Gibson.",
+  "/dashboard": "This is your operational command center. The welcome banner shows your Netcare brand with network-wide impact metrics. Below are 10 stat cards pulling live data — patients, bookings, revenue, tasks. The quick actions give you one-click access to every critical function.",
+  "/dashboard/network": "This is where you’ll spend most of your time. Five tabs: Overview gives you the divisional KPIs at a glance — R55.2M MTD revenue, 24.5% EBITDA margin, 5,234 first-pass rejections. Clinic Performance ranks all 88 sites. Claims Intelligence shows the top rejection codes with AI fixes. Cost Savings breaks down the R8.4M/month opportunity. Medical Schemes tracks Discovery, GEMS, Bonitas payment performance.",
+  "/dashboard/kpi": "These are YOUR KPIs — the ones Keith Gibson asks about in the quarterly divisional pack. 30+ metrics across revenue, profitability, working capital, managed care, and occupational health. Traffic lights show what needs attention. The bottom section shows exactly how VisioHealth OS moves each KPI.",
+  "/dashboard/savings": "This is the most powerful number in your career right now. R7.6M+ saved in 9 months. Every Rand is traceable to a specific AI module. The Before/After comparison is what you present to the board — from Excel hell to real-time intelligence.",
+  "/dashboard/suite": "Everything VisioHealth OS built for Netcare — 10 AI modules, the full value chain integration map showing how we connect to CareOn, SAP, SwitchOn, and the Netcare App. Plus the branch deployment model — every doctor uses this under the Netcare umbrella.",
+  "/dashboard/pilot": "Start here. Pick a region, select clinics, launch an 8-week pilot. Data is isolated to your region. At week 8, you get a board-ready ROI report. This is zero risk — the pilot report becomes your business case for Keith Gibson.",
   "/dashboard/board-pack": "Your weapon for the next Finance and Investment Committee. CEO Quick View for Dr Friedland (one slide: R100M+, 8 weeks, <5%, 88 clinics). Full 6-section business case for Keith Gibson. 3-year scenario modelling: Conservative R105M, Base R220M, Aggressive R295M.",
-  "/dashboard/intel": "Bloomberg-style health intelligence terminal. Market data, health news, research papers, SA competitive landscape, and global benchmarks \u2014 HCA Healthcare, Epic Systems, Mayo Clinic, Cleveland Clinic, NHS England. This positions you as the most informed FD in SA healthcare.",
+  "/dashboard/intel": "Bloomberg-style health intelligence terminal. Market data, health news, research papers, SA competitive landscape, and global benchmarks — HCA Healthcare, Epic Systems, Mayo Clinic, Cleveland Clinic, NHS England. This positions you as the most informed FD in SA healthcare.",
   "/dashboard/daily": "Your structured Financial Director daily workflow. Morning: claims review, revenue dashboard, Prime Cure reports. Midday: tariff reconciliation, ICD-10 analytics, occ health billing. End of day: collection ratios, EBITDA variance, POPIA compliance.",
-  "/dashboard/patients": "Unified patient records across Medicross clinics. Discovery, GEMS, Bonitas, Momentum, Polmed, Anglo Medical \u2014 all with medical history, medications, allergies, and POPIA consent. A patient at Sandton can be referenced at Fourways.",
-  "/dashboard/conversations": "The WhatsApp Patient Router in action. Patients message one number, AI routes to the right Medicross branch. This is the feature Netcare doesn\u2019t have today \u2014 and Discovery Flexicare doesn\u2019t offer either.",
+  "/dashboard/patients": "Unified patient records across Medicross clinics. Discovery, GEMS, Bonitas, Momentum, Polmed, Anglo Medical — all with medical history, medications, allergies, and POPIA consent. A patient at Sandton can be referenced at Fourways.",
+  "/dashboard/conversations": "The WhatsApp Patient Router in action. Patients message one number, AI routes to the right Medicross branch. This is the feature Netcare doesn’t have today — and Discovery Flexicare doesn’t offer either.",
   "/dashboard/billing": "Claims and billing with ICD-10-ZA codes, NAPPI codes, medical aid status. See exactly which claims were rejected, why, and the AI recommendation to fix. R1.8M/month recoverable.",
-  "/dashboard/analytics": "Practice-level analytics \u2014 patient counts, booking patterns, service popularity, review scores, recall management. Data-driven operational insights.",
+  "/dashboard/analytics": "Practice-level analytics — patient counts, booking patterns, service popularity, review scores, recall management. Data-driven operational insights.",
 };
 
 // ─── Typing Effect ──────
@@ -121,7 +121,7 @@ function NDAPopup({ onAccept }: { onAccept: () => void }) {
           <p className="text-[11px] text-gray-400">Governed by SA law. High Court of Gauteng, Johannesburg.</p>
         </div>
         <button onClick={onAccept} className="w-full mt-5 py-3 bg-[#1D3443] text-white font-semibold text-[13px] rounded-xl hover:bg-[#152736] transition-colors" style={{ fontFamily: "Montserrat, sans-serif" }}>
-          I Agree \u2014 Enter Platform
+          I Agree — Enter Platform
         </button>
       </motion.div>
     </motion.div>
@@ -165,7 +165,7 @@ function JessWelcome({ onComplete }: { onComplete: () => void }) {
           </div>
           <div>
             <div className="text-white font-semibold text-[15px]" style={{ fontFamily: "Montserrat, sans-serif" }}>Jess</div>
-            <div className="text-white/30 text-[11px]">Your AI Operations Guide \u2022 VisioHealth OS</div>
+            <div className="text-white/30 text-[11px]">Your AI Operations Guide • VisioHealth OS</div>
           </div>
         </motion.div>
 
@@ -202,7 +202,7 @@ function JessWelcome({ onComplete }: { onComplete: () => void }) {
         {showIntegrations && !showGaps && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 mb-4">
             <div className="bg-white/5 backdrop-blur-sm rounded-xl p-5 border border-white/10">
-              <p className="text-white/80 text-[15px] leading-relaxed">We integrate with every system Netcare already uses. Nothing gets replaced \u2014 everything gets enhanced.</p>
+              <p className="text-white/80 text-[15px] leading-relaxed">We integrate with every system Netcare already uses. Nothing gets replaced — everything gets enhanced.</p>
             </div>
             <div className="space-y-2">
               {INTEGRATIONS.map((s, i) => (
@@ -296,7 +296,7 @@ function JessPanel({ context, onClose, onNavigate }: { context: string; onClose:
           </div>
           <div>
             <div className="text-[13px] text-white font-semibold" style={{ fontFamily: "Montserrat, sans-serif" }}>Jess</div>
-            <div className="text-[10px] text-white/40">AI Guide \u2022 VisioHealth OS</div>
+            <div className="text-[10px] text-white/40">AI Guide • VisioHealth OS</div>
           </div>
         </div>
         <button onClick={onClose} className="p-1.5 text-white/40 hover:text-white rounded-lg hover:bg-white/10 transition-colors">

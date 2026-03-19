@@ -109,7 +109,7 @@ export default function SavingsPage() {
 
       <div className="p-5 rounded-xl bg-[#E3964C]/5 border border-[#E3964C]/20">
         <h3 className="text-[14px] font-semibold text-gray-900 mb-2" style={{ fontFamily: "Montserrat, sans-serif" }}>
-          <Zap className="w-4 h-4 inline mr-2 text-[#E3964C]" />Your Story to the Board
+          <Zap className="w-4 h-4 inline mr-2 text-[#E3964C]" />Insights for Your Board
         </h3>
         <div className="grid grid-cols-2 gap-4 text-[13px]">
           <div>

@@ -522,7 +522,7 @@ export default function AboutPage() {
               Built to Protect
             </h2>
             <p className="text-[15px] text-gray-500 max-w-3xl mx-auto leading-relaxed">
-              Healthcare data demands the highest standard of protection. Netcare Health OS OS
+              Healthcare data demands the highest standard of protection. Netcare Health OS
               is designed for POPIA, HPCSA, and CPA compliance from the ground up — not
               as an afterthought.
             </p>
