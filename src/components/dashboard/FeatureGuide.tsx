@@ -277,57 +277,39 @@ function JessWelcome({ onComplete }: { onComplete: () => void }) {
   );
 }
 
-// ─── Jess Contextual Panel (right side, per-page) ──────
-function JessPanel({ context, onClose, onNavigate }: { context: string; onClose: () => void; onNavigate: (path: string) => void }) {
-  const { displayed, done } = useTypingEffect(context, 12);
-
+// ─── Jess Contextual Bar (top notification, non-blocking) ─────
+function JessBar({ context, onClose, onNavigate }: { context: string; onClose: () => void; onNavigate: (path: string) => void }) {
   return (
     <motion.div
-      initial={{ x: 440, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      exit={{ x: 440, opacity: 0 }}
+      initial={{ y: -60, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: -60, opacity: 0 }}
       transition={{ type: "spring", damping: 25, stiffness: 200 }}
-      className="fixed top-0 right-0 bottom-0 z-[9995] w-[420px] bg-white border-l border-gray-200 shadow-2xl flex flex-col"
+      className="fixed top-[56px] left-[240px] right-0 z-[9995] bg-[#1D3443] border-b border-[#3DA9D1]/20 shadow-lg"
     >
-      <div className="p-4 bg-gradient-to-r from-[#1D3443] to-[#3DA9D1] flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#3DA9D1] to-[#E3964C] flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-white" />
-          </div>
-          <div>
-            <div className="text-[13px] text-white font-semibold" style={{ fontFamily: "Montserrat, sans-serif" }}>Jess</div>
-            <div className="text-[10px] text-white/40">AI Guide • VisioHealth OS</div>
-          </div>
+      <div className="px-5 py-3 flex items-center gap-3">
+        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#3DA9D1] to-[#E3964C] flex items-center justify-center shrink-0">
+          <Sparkles className="w-3.5 h-3.5 text-white" />
         </div>
-        <button onClick={onClose} className="p-1.5 text-white/40 hover:text-white rounded-lg hover:bg-white/10 transition-colors">
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-5">
-        <p className="text-[13px] text-gray-600 leading-relaxed">{displayed}<span className={done ? "hidden" : "text-[#3DA9D1] animate-pulse"}>|</span></p>
-      </div>
-
-      <div className="p-4 border-t border-gray-200 shrink-0">
-        <div className="p-2.5 rounded-lg bg-[#1D3443]/5 border border-[#1D3443]/10 mb-3">
-          <p className="text-[11px] text-[#1D3443] font-medium">Have a question? Press the <span className="inline-flex items-center gap-1 bg-[#1D3443] text-white px-1.5 py-0.5 rounded text-[10px] font-bold">AI Assistant</span> button (bottom-right) to ask me anything.</p>
+        <div className="flex-1 min-w-0">
+          <p className="text-[12px] text-white/80 leading-relaxed truncate">{context.slice(0, 200)}{context.length > 200 ? "..." : ""}</p>
         </div>
-        <div className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-2">Quick Navigate</div>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex items-center gap-1.5 shrink-0">
           {[
-            { label: "Network Finance", path: "/dashboard/network" },
-            { label: "FD KPIs", path: "/dashboard/kpi" },
+            { label: "Finance", path: "/dashboard/network" },
+            { label: "KPIs", path: "/dashboard/kpi" },
             { label: "Savings", path: "/dashboard/savings" },
-            { label: "Board Pack", path: "/dashboard/board-pack" },
-            { label: "Start Pilot", path: "/dashboard/pilot" },
-            { label: "Intel Terminal", path: "/dashboard/intel" },
+            { label: "Board", path: "/dashboard/board-pack" },
           ].map(nav => (
             <button key={nav.path} onClick={() => onNavigate(nav.path)}
-              className="text-[10px] px-2.5 py-1 rounded-full bg-gray-100 text-gray-500 hover:bg-[#3DA9D1]/10 hover:text-[#1D3443] transition-colors font-medium">
+              className="text-[9px] px-2 py-0.5 rounded bg-white/10 text-white/60 hover:bg-white/20 hover:text-white transition-colors font-medium">
               {nav.label}
             </button>
           ))}
         </div>
+        <button onClick={onClose} className="p-1 text-white/30 hover:text-white rounded transition-colors shrink-0">
+          <X className="w-3.5 h-3.5" />
+        </button>
       </div>
     </motion.div>
   );
@@ -390,7 +372,7 @@ export default function FeatureGuide() {
 
       <AnimatePresence>
         {showPanel && PAGE_CONTEXTS[pathname] && (
-          <JessPanel context={PAGE_CONTEXTS[pathname]} onClose={handleDismissJess} onNavigate={handleNavigate} />
+          <JessBar context={PAGE_CONTEXTS[pathname]} onClose={handleDismissJess} onNavigate={handleNavigate} />
         )}
       </AnimatePresence>
 
