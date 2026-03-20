@@ -125,7 +125,7 @@ export default function DashboardSidebar() {
     <motion.aside
       animate={{ width: collapsed ? 64 : 240 }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
-      className="shrink-0 border-r border-white/[0.06] flex flex-col bg-gray-950 overflow-hidden"
+      className="shrink-0 border-r border-white/[0.06] flex flex-col bg-[#1D3443] overflow-hidden"
     >
       {/* Logo */}
       <div className="h-14 flex items-center gap-2.5 px-4 border-b border-white/[0.06]">
@@ -133,7 +133,6 @@ export default function DashboardSidebar() {
           src="/images/netcare-logo.png"
           alt="Netcare"
           className="h-5 shrink-0"
-          style={{ filter: "brightness(10) saturate(0)" }}
         />
         <AnimatePresence>
           {!collapsed && (
