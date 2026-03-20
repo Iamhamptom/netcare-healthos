@@ -229,6 +229,66 @@ export default function FhirHubOverview() {
         </div>
       </motion.div>
 
+      {/* Netcare Offer */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }}>
+        <SectionTitle icon={<Heart className="w-5 h-5 text-rose-500" />} title="Netcare Partnership Offer" />
+        <Card className="!p-0 overflow-hidden">
+          <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-6 text-white">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-white/20">Exclusive Offer</span>
+            </div>
+            <h3 className="text-[20px] font-bold">FHIR Integration Hub — Pilot Programme</h3>
+            <p className="text-white/70 text-[13px] mt-1 max-w-2xl">
+              Deploy SA&apos;s first FHIR-native healthcare interoperability platform across Netcare Medicross clinics.
+              Connect CareConnect HIE, automate claims, and eliminate manual lab result entry.
+            </p>
+          </div>
+          <div className="p-6">
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="border border-[#1D3443]/5 rounded-xl p-4">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 mb-2">Phase 1 — Pilot (3 months)</div>
+                <div className="font-metric text-[24px] font-bold text-[#1D3443]">R250K</div>
+                <div className="text-[11px] text-[#1D3443]/40 mb-3">Setup + 3 months platform access</div>
+                <ul className="space-y-1.5 text-[11px] text-[#1D3443]/50">
+                  {["5 Medicross clinics connected", "FHIR R4 API fully deployed", "Claims auto-routing (MediSwitch)", "Lab result feeds (PathCare HL7v2)", "CareConnect HIE sandbox testing", "Dedicated technical support"].map((item, i) => (
+                    <li key={i} className="flex items-start gap-1.5"><Check className="w-3 h-3 text-emerald-500 mt-0.5 shrink-0" /> {item}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="border-2 border-teal-500 rounded-xl p-4 relative">
+                <span className="absolute -top-2.5 right-3 px-2 py-0.5 text-[9px] font-bold uppercase bg-teal-500 text-white rounded-full">Recommended</span>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-teal-600 mb-2">Phase 2 — Full Rollout (12 months)</div>
+                <div className="font-metric text-[24px] font-bold text-[#1D3443]">R1.5M/yr</div>
+                <div className="text-[11px] text-[#1D3443]/40 mb-3">All 88 clinics + 10 hospitals</div>
+                <ul className="space-y-1.5 text-[11px] text-[#1D3443]/50">
+                  {["All 88 Medicross clinics", "10 hospital CareOn connections", "CareConnect HIE production (5.2M patients)", "MediSwitch certified claims routing", "SMART on FHIR app access", "NHI compliance certification", "24/7 SLA with R42M savings guarantee"].map((item, i) => (
+                    <li key={i} className="flex items-start gap-1.5"><Check className="w-3 h-3 text-teal-500 mt-0.5 shrink-0" /> {item}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="border border-[#1D3443]/5 rounded-xl p-4">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-purple-600 mb-2">Enterprise — Full Platform</div>
+                <div className="font-metric text-[24px] font-bold text-[#1D3443]">Custom</div>
+                <div className="text-[11px] text-[#1D3443]/40 mb-3">White-label + all hospitals</div>
+                <ul className="space-y-1.5 text-[11px] text-[#1D3443]/50">
+                  {["White-label platform (Netcare branded)", "All 133 facilities connected", "Custom adapter development", "Population health analytics", "Third-party developer marketplace", "Pan-network data exchange", "Dedicated engineering team"].map((item, i) => (
+                    <li key={i} className="flex items-start gap-1.5"><Check className="w-3 h-3 text-purple-500 mt-0.5 shrink-0" /> {item}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <div className="mt-5 p-4 bg-emerald-50 rounded-xl text-center">
+              <p className="text-[13px] text-emerald-700 font-semibold">
+                Projected return: R139M+/year in cost savings — 93x ROI on Phase 2 investment
+              </p>
+              <p className="text-[11px] text-emerald-600/60 mt-1">
+                Contact: Dr Hampton George-Sobremisana | hampton@visiocorp.co | VisioCorp
+              </p>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+
       {/* Quick Links */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
         <div className="grid md:grid-cols-4 gap-4">
