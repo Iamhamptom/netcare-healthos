@@ -1,0 +1,888 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Netcare Health OS API",
+    "version": "2.0.0",
+    "description": "Complete API reference for Netcare Health OS — an AI-powered healthcare operating system for South African medical practices.\n\nCovers: Authentication, Patient Management, Bookings, Invoicing, Claims Analysis, Healthbridge Switching, CareOn Bridge (HL7v2), Network Analytics, Reporting, WhatsApp Channels, and Notifications.\n\nAll routes are rate-limited. Most require JWT session authentication via HTTP-only cookies. Platform admin routes require `platform_admin` role.",
+    "contact": {
+      "name": "Netcare Health OS Engineering",
+      "email": "travis.dewing@netcare.co.za"
+    },
+    "license": {
+      "name": "Proprietary",
+      "identifier": "LicenseRef-Netcare"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://netcare-healthos.vercel.app",
+      "description": "Production"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development"
+    }
+  ],
+  "tags": [
+    { "name": "Auth", "description": "Authentication — login, registration, password reset, session management" },
+    { "name": "Team", "description": "Team member management — invite, update roles, deactivate, activity logs (admin only)" },
+    { "name": "Patients", "description": "Patient CRUD — demographics, allergies, medications, medical records, vitals, CSV import" },
+    { "name": "Bookings", "description": "Appointment booking lifecycle — create, update, approve/reject, cancel" },
+    { "name": "Invoices", "description": "Invoice management — create, list, PDF generation, CSV export" },
+    { "name": "Claims Analyzer", "description": "AI-powered claims validation — CSV upload, ICD-10/tariff validation, auto-correction, AI suggestions, rejection patterns, POPIA retention" },
+    { "name": "Healthbridge", "description": "SA medical aid switching — claim submission, eligibility checks, eRA reconciliation, NAPPI lookup, AI coding, batch processing" },
+    { "name": "Switching", "description": "Multi-switch routing engine — EDIFACT generation, pre-auth, batch submission, eRA parsing, resubmission, FamCheck, vendor accreditation" },
+    { "name": "CareOn Bridge", "description": "CareOn HL7v2 integration — real-time advisories, message log, webhook for HL7 messages, advisory resolution" },
+    { "name": "Bridge", "description": "Platform-level integration status across all connected systems" },
+    { "name": "Network", "description": "Network-wide analytics — KPIs, clinic performance, scheme metrics, rejection analysis (platform_admin only)" },
+    { "name": "Reports", "description": "Report generation, scheduling, history, and cron execution (platform_admin only)" },
+    { "name": "Performance", "description": "Cross-product performance metrics — claims, switching, bridge, WhatsApp, FHIR (platform_admin only)" },
+    { "name": "WhatsApp", "description": "WhatsApp messaging — send, broadcast, clinic directory, incoming webhook with intent detection" },
+    { "name": "Notifications", "description": "Notification management — WhatsApp, SMS, email notifications with template support" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "session",
+        "description": "JWT session cookie set by /api/auth/login. HTTP-only, secure."
+      },
+      "cronSecret": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "CRON_SECRET for scheduled/cron endpoints. Passed as Bearer token."
+      },
+      "hmacAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Hub-Signature-256",
+        "description": "HMAC-SHA256 signature for CareOn Bridge webhook authentication"
+      },
+      "bearerToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Bearer token for webhook/external endpoints"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" }
+        },
+        "required": ["error"]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "role": { "type": "string", "enum": ["admin", "doctor", "receptionist", "nurse", "platform_admin"] }
+        }
+      },
+      "UserWithPractice": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "role": { "type": "string" },
+          "practice": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "type": { "type": "string" },
+              "address": { "type": "string" },
+              "phone": { "type": "string" }
+            }
+          }
+        }
+      },
+      "TeamMember": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "role": { "type": "string", "enum": ["admin", "doctor", "receptionist", "nurse"] },
+          "status": { "type": "string", "enum": ["active", "inactive"] },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Patient": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "phone": { "type": "string" },
+          "email": { "type": "string" },
+          "dateOfBirth": { "type": "string", "format": "date", "nullable": true },
+          "gender": { "type": "string" },
+          "idNumber": { "type": "string" },
+          "address": { "type": "string" },
+          "medicalAid": { "type": "string" },
+          "medicalAidNo": { "type": "string" },
+          "bloodType": { "type": "string" },
+          "emergencyName": { "type": "string" },
+          "emergencyPhone": { "type": "string" },
+          "notes": { "type": "string" },
+          "status": { "type": "string" },
+          "practiceId": { "type": "string" },
+          "allergies": { "type": "array", "items": { "$ref": "#/components/schemas/Allergy" } },
+          "medications": { "type": "array", "items": { "$ref": "#/components/schemas/Medication" } }
+        }
+      },
+      "Allergy": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "severity": { "type": "string", "enum": ["mild", "moderate", "severe"] },
+          "reaction": { "type": "string" },
+          "patientId": { "type": "string" }
+        }
+      },
+      "Medication": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "dosage": { "type": "string" },
+          "frequency": { "type": "string" },
+          "prescriber": { "type": "string" },
+          "startDate": { "type": "string", "format": "date", "nullable": true },
+          "endDate": { "type": "string", "format": "date", "nullable": true },
+          "active": { "type": "boolean" },
+          "patientId": { "type": "string" }
+        }
+      },
+      "MedicalRecord": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "type": "string", "enum": ["consultation", "procedure", "lab_result", "imaging", "referral", "note"] },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "diagnosis": { "type": "string" },
+          "treatment": { "type": "string" },
+          "provider": { "type": "string" },
+          "date": { "type": "string", "format": "date-time" },
+          "patientId": { "type": "string" }
+        }
+      },
+      "Vitals": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "bloodPressureSys": { "type": "integer", "minimum": 50, "maximum": 300 },
+          "bloodPressureDia": { "type": "integer", "minimum": 20, "maximum": 200 },
+          "heartRate": { "type": "integer", "minimum": 20, "maximum": 250 },
+          "temperature": { "type": "number", "minimum": 30, "maximum": 45 },
+          "weight": { "type": "number", "minimum": 1, "maximum": 500 },
+          "height": { "type": "number", "minimum": 20, "maximum": 300 },
+          "oxygenSat": { "type": "integer", "minimum": 50, "maximum": 100 },
+          "bloodGlucose": { "type": "number", "minimum": 0.5, "maximum": 50 },
+          "respiratoryRate": { "type": "integer", "minimum": 4, "maximum": 60 },
+          "painLevel": { "type": "integer", "minimum": 0, "maximum": 10 },
+          "notes": { "type": "string", "maxLength": 500 },
+          "recordedBy": { "type": "string", "maxLength": 200 },
+          "recordedAt": { "type": "string", "format": "date-time" },
+          "patientId": { "type": "string" }
+        }
+      },
+      "Booking": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "patientName": { "type": "string" },
+          "patientPhone": { "type": "string" },
+          "patientEmail": { "type": "string" },
+          "service": { "type": "string" },
+          "scheduledAt": { "type": "string", "format": "date-time" },
+          "status": { "type": "string", "enum": ["pending", "confirmed", "completed", "cancelled", "no_show"] },
+          "notes": { "type": "string" },
+          "source": { "type": "string" },
+          "practiceId": { "type": "string" }
+        }
+      },
+      "Invoice": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "invoiceNo": { "type": "string" },
+          "patientName": { "type": "string" },
+          "patientId": { "type": "string" },
+          "lineItems": { "type": "string", "description": "JSON-encoded array of line items" },
+          "subtotal": { "type": "number" },
+          "tax": { "type": "number" },
+          "discount": { "type": "number" },
+          "total": { "type": "number" },
+          "balance": { "type": "number" },
+          "amountPaid": { "type": "number" },
+          "medicalAidClaim": { "type": "number" },
+          "patientPortion": { "type": "number" },
+          "status": { "type": "string", "enum": ["draft", "sent", "paid", "overdue", "cancelled"] },
+          "claimStatus": { "type": "string" },
+          "claimReference": { "type": "string" },
+          "notes": { "type": "string" },
+          "practiceId": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "InvoiceLineItem": {
+        "type": "object",
+        "properties": {
+          "description": { "type": "string" },
+          "icd10Code": { "type": "string" },
+          "cptCode": { "type": "string" },
+          "quantity": { "type": "integer" },
+          "unitPrice": { "type": "number" },
+          "total": { "type": "number" }
+        }
+      },
+      "ClaimLineItem": {
+        "type": "object",
+        "properties": {
+          "icd10Code": { "type": "string", "description": "ICD-10-ZA diagnosis code" },
+          "cptCode": { "type": "string", "description": "CPT/CCSA procedure code" },
+          "nappiCode": { "type": "string", "description": "NAPPI medicine code (optional)" },
+          "description": { "type": "string" },
+          "quantity": { "type": "integer", "default": 1 },
+          "amount": { "type": "integer", "description": "Amount in cents (ZAR)" },
+          "modifiers": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "HealthbridgeClaim": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "practiceId": { "type": "string" },
+          "invoiceId": { "type": "string" },
+          "patientName": { "type": "string" },
+          "patientIdNumber": { "type": "string" },
+          "medicalAidScheme": { "type": "string" },
+          "membershipNumber": { "type": "string" },
+          "dependentCode": { "type": "string" },
+          "dateOfService": { "type": "string", "format": "date" },
+          "placeOfService": { "type": "string" },
+          "bhfNumber": { "type": "string" },
+          "lineItems": { "type": "string", "description": "JSON-encoded ClaimLineItem array" },
+          "totalAmount": { "type": "integer", "description": "Total in cents" },
+          "transactionRef": { "type": "string" },
+          "status": { "type": "string", "enum": ["draft", "submitted", "accepted", "rejected", "resubmitted", "reversed", "paid", "short_paid", "pending_payment", "partial"] },
+          "approvedAmount": { "type": "integer" },
+          "rejectionCode": { "type": "string" },
+          "rejectionReason": { "type": "string" },
+          "paidAmount": { "type": "integer" },
+          "remittanceRef": { "type": "string" },
+          "submittedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "respondedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "reconciledAt": { "type": "string", "format": "date-time", "nullable": true },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Notification": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "type": "string", "enum": ["whatsapp", "sms", "email"] },
+          "recipient": { "type": "string" },
+          "patientName": { "type": "string" },
+          "subject": { "type": "string" },
+          "message": { "type": "string" },
+          "status": { "type": "string", "enum": ["sent", "delivered", "failed", "pending"] },
+          "template": { "type": "string" },
+          "sentAt": { "type": "string", "format": "date-time" },
+          "practiceId": { "type": "string" }
+        }
+      },
+      "AuditLog": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "action": { "type": "string" },
+          "details": { "type": "string" },
+          "userId": { "type": "string" },
+          "userName": { "type": "string" },
+          "ipAddress": { "type": "string" },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ValidationIssue": {
+        "type": "object",
+        "properties": {
+          "lineNumber": { "type": "integer" },
+          "field": { "type": "string" },
+          "code": { "type": "string" },
+          "severity": { "type": "string", "enum": ["error", "warning", "info"] },
+          "rule": { "type": "string" },
+          "message": { "type": "string" },
+          "suggestion": { "type": "string" }
+        }
+      },
+      "ClaimsAnalysisSummary": {
+        "type": "object",
+        "properties": {
+          "totalClaims": { "type": "integer" },
+          "validClaims": { "type": "integer" },
+          "invalidClaims": { "type": "integer" },
+          "warningClaims": { "type": "integer" },
+          "errorCount": { "type": "integer" },
+          "warningCount": { "type": "integer" },
+          "infoCount": { "type": "integer" },
+          "estimatedRejectionRate": { "type": "integer" },
+          "estimatedSavings": { "type": "integer" },
+          "topIssues": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "rule": { "type": "string" },
+                "count": { "type": "integer" },
+                "severity": { "type": "string" }
+              }
+            }
+          }
+        }
+      },
+      "ReportSchedule": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "reportType": { "type": "string" },
+          "reportName": { "type": "string" },
+          "frequency": { "type": "string", "enum": ["daily", "weekly", "monthly"] },
+          "recipients": { "type": "array", "items": { "type": "string", "format": "email" } },
+          "time": { "type": "string", "description": "HH:MM format" },
+          "lastSentAt": { "type": "string", "format": "date-time", "nullable": true },
+          "nextSendAt": { "type": "string", "format": "date-time" },
+          "createdBy": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "active": { "type": "boolean" }
+        }
+      }
+    },
+    "responses": {
+      "401": {
+        "description": "Not authenticated — session cookie missing or expired",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+      },
+      "403": {
+        "description": "Forbidden — insufficient role or missing POPIA consent",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+      },
+      "429": {
+        "description": "Rate limit exceeded",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+      },
+      "500": {
+        "description": "Internal server error",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+      }
+    }
+  },
+  "paths": {
+    "/api/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Log in with email and password",
+        "description": "Authenticates user credentials and sets an HTTP-only session cookie. Rate limited to 10 requests/minute per IP.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 6 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful — session cookie set",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "user": { "$ref": "#/components/schemas/User" } }
+                }
+              }
+            }
+          },
+          "400": { "description": "Missing or invalid input", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "401": { "description": "Invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "429": { "$ref": "#/components/responses/429" },
+          "500": { "$ref": "#/components/responses/500" }
+        }
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Register a new account",
+        "description": "Creates a new user account and sets session cookie. Rate limited to 5 requests/minute per IP. Sends signup alert emails.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "password"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 6 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Registration successful",
+            "content": { "application/json": { "schema": { "type": "object", "properties": { "user": { "$ref": "#/components/schemas/User" } } } } }
+          },
+          "400": { "description": "Missing or invalid fields", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "409": { "description": "Email already registered", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "429": { "$ref": "#/components/responses/429" },
+          "500": { "$ref": "#/components/responses/500" }
+        }
+      }
+    },
+    "/api/auth/forgot-password": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Request a password reset email",
+        "description": "Sends a password reset link via Resend. Always returns success to prevent email enumeration. Token expires in 1 hour. Rate limited to 5/minute.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email"],
+                "properties": { "email": { "type": "string", "format": "email" } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Always returns success message",
+            "content": { "application/json": { "schema": { "type": "object", "properties": { "message": { "type": "string" } } } } }
+          },
+          "400": { "description": "Invalid input", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "429": { "$ref": "#/components/responses/429" },
+          "500": { "$ref": "#/components/responses/500" }
+        }
+      }
+    },
+    "/api/auth/reset-password": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Reset password using token",
+        "description": "Accepts the token from the reset email and sets a new password. Password must be at least 8 characters. Rate limited to 10/minute.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["token", "password"],
+                "properties": {
+                  "token": { "type": "string" },
+                  "password": { "type": "string", "minLength": 8 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Password updated", "content": { "application/json": { "schema": { "type": "object", "properties": { "message": { "type": "string" } } } } } },
+          "400": { "description": "Invalid or expired token", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "429": { "$ref": "#/components/responses/429" },
+          "500": { "$ref": "#/components/responses/500" }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Get current authenticated user",
+        "description": "Returns the current user profile and practice info from the session cookie.",
+        "security": [{ "sessionCookie": [] }],
+        "responses": {
+          "200": {
+            "description": "Current user",
+            "content": { "application/json": { "schema": { "type": "object", "properties": { "user": { "$ref": "#/components/schemas/UserWithPractice" } } } } }
+          },
+          "401": { "$ref": "#/components/responses/401" },
+          "404": { "description": "User not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Log out and clear session",
+        "description": "Clears the session cookie.",
+        "security": [{ "sessionCookie": [] }],
+        "responses": {
+          "200": { "description": "Logged out", "content": { "application/json": { "schema": { "type": "object", "properties": { "ok": { "type": "boolean" } } } } } }
+        }
+      }
+    },
+    "/api/team": {
+      "get": {
+        "tags": ["Team"],
+        "summary": "List all team members",
+        "description": "Returns all team members for the authenticated user's practice. Requires admin or platform_admin role.",
+        "security": [{ "sessionCookie": [] }],
+        "responses": {
+          "200": { "description": "Team member list", "content": { "application/json": { "schema": { "type": "object", "properties": { "members": { "type": "array", "items": { "$ref": "#/components/schemas/TeamMember" } } } } } } },
+          "401": { "$ref": "#/components/responses/401" },
+          "403": { "$ref": "#/components/responses/403" },
+          "429": { "$ref": "#/components/responses/429" }
+        }
+      },
+      "post": {
+        "tags": ["Team"],
+        "summary": "Invite a new team member",
+        "description": "Creates a new user with a temporary password and sends a welcome email via Resend. Requires admin role.",
+        "security": [{ "sessionCookie": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "role"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "role": { "type": "string", "enum": ["admin", "doctor", "receptionist", "nurse"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Team member created", "content": { "application/json": { "schema": { "type": "object", "properties": { "member": { "$ref": "#/components/schemas/TeamMember" }, "message": { "type": "string" } } } } } },
+          "400": { "description": "Invalid input", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "409": { "description": "Email already exists", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "401": { "$ref": "#/components/responses/401" },
+          "403": { "$ref": "#/components/responses/403" },
+          "500": { "$ref": "#/components/responses/500" }
+        }
+      },
+      "patch": {
+        "tags": ["Team"],
+        "summary": "Update a team member",
+        "description": "Updates role, status, or name. Validates role against whitelist.",
+        "security": [{ "sessionCookie": [] }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "required": ["id"], "properties": { "id": { "type": "string" }, "role": { "type": "string", "enum": ["admin", "doctor", "receptionist", "nurse"] }, "status": { "type": "string" }, "name": { "type": "string" } } } } }
+        },
+        "responses": {
+          "200": { "description": "Updated", "content": { "application/json": { "schema": { "type": "object", "properties": { "member": { "$ref": "#/components/schemas/TeamMember" } } } } } },
+          "400": { "description": "Invalid input", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "404": { "description": "Not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "401": { "$ref": "#/components/responses/401" },
+          "403": { "$ref": "#/components/responses/403" }
+        }
+      },
+      "delete": {
+        "tags": ["Team"],
+        "summary": "Deactivate a team member",
+        "description": "Soft-deletes (sets status to inactive). Cannot deactivate yourself.",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [{ "name": "id", "in": "query", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Deactivated", "content": { "application/json": { "schema": { "type": "object", "properties": { "message": { "type": "string" } } } } } },
+          "400": { "description": "Missing ID or self-deletion", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "404": { "description": "Not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "401": { "$ref": "#/components/responses/401" },
+          "403": { "$ref": "#/components/responses/403" }
+        }
+      }
+    },
+    "/api/team/{id}": {
+      "get": {
+        "tags": ["Team"], "summary": "Get individual team member", "security": [{ "sessionCookie": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Team member", "content": { "application/json": { "schema": { "type": "object", "properties": { "member": { "$ref": "#/components/schemas/TeamMember" } } } } } }, "404": { "description": "Not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }, "401": { "$ref": "#/components/responses/401" }, "403": { "$ref": "#/components/responses/403" } }
+      },
+      "patch": {
+        "tags": ["Team"], "summary": "Update individual team member", "security": [{ "sessionCookie": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "role": { "type": "string" }, "status": { "type": "string" }, "name": { "type": "string" } } } } } },
+        "responses": { "200": { "description": "Updated", "content": { "application/json": { "schema": { "type": "object", "properties": { "member": { "$ref": "#/components/schemas/TeamMember" } } } } } }, "400": { "description": "Invalid role", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }, "404": { "description": "Not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }, "401": { "$ref": "#/components/responses/401" } }
+      },
+      "delete": {
+        "tags": ["Team"], "summary": "Deactivate individual team member", "security": [{ "sessionCookie": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Deactivated", "content": { "application/json": { "schema": { "type": "object", "properties": { "message": { "type": "string" } } } } } }, "400": { "description": "Cannot deactivate yourself", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }, "404": { "description": "Not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }, "401": { "$ref": "#/components/responses/401" } }
+      }
+    },
+    "/api/team/{id}/activity": {
+      "get": {
+        "tags": ["Team"], "summary": "Get activity log for a team member", "description": "Returns the last 50 audit log entries for the specified team member.",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Activity log", "content": { "application/json": { "schema": { "type": "object", "properties": { "logs": { "type": "array", "items": { "$ref": "#/components/schemas/AuditLog" } } } } } } }, "401": { "$ref": "#/components/responses/401" }, "403": { "$ref": "#/components/responses/403" } }
+      }
+    },
+    "/api/patients": {
+      "get": {
+        "tags": ["Patients"], "summary": "List patients", "description": "Returns paginated patient list with allergies and active medications. Requires POPIA data_processing consent. Supports search and status filter.",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          { "name": "search", "in": "query", "schema": { "type": "string" }, "description": "Search by name, email, or phone" },
+          { "name": "status", "in": "query", "schema": { "type": "string" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 100, "maximum": 100 } }
+        ],
+        "responses": { "200": { "description": "Patient list", "content": { "application/json": { "schema": { "type": "object", "properties": { "patients": { "type": "array", "items": { "$ref": "#/components/schemas/Patient" } }, "total": { "type": "integer" }, "page": { "type": "integer" }, "limit": { "type": "integer" } } } } } }, "403": { "description": "POPIA consent required", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }, "401": { "$ref": "#/components/responses/401" } }
+      },
+      "post": {
+        "tags": ["Patients"], "summary": "Create a patient", "description": "Creates a new patient record. Name and phone are required.",
+        "security": [{ "sessionCookie": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["name", "phone"], "properties": { "name": { "type": "string" }, "phone": { "type": "string" }, "email": { "type": "string" }, "dateOfBirth": { "type": "string", "format": "date" }, "gender": { "type": "string" }, "idNumber": { "type": "string" }, "address": { "type": "string" }, "medicalAid": { "type": "string" }, "medicalAidNo": { "type": "string" }, "bloodType": { "type": "string" }, "emergencyName": { "type": "string" }, "emergencyPhone": { "type": "string" }, "notes": { "type": "string" } } } } } },
+        "responses": { "201": { "description": "Patient created", "content": { "application/json": { "schema": { "type": "object", "properties": { "patient": { "$ref": "#/components/schemas/Patient" } } } } } }, "400": { "description": "Missing required fields", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }, "401": { "$ref": "#/components/responses/401" } }
+      }
+    },
+    "/api/patients/{id}": {
+      "get": {
+        "tags": ["Patients"], "summary": "Get patient with full history", "description": "Returns patient with allergies, medications, last 20 medical records, and last 10 vitals.",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Patient details", "content": { "application/json": { "schema": { "type": "object", "properties": { "patient": { "$ref": "#/components/schemas/Patient" } } } } } }, "404": { "description": "Not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }, "401": { "$ref": "#/components/responses/401" } }
+      },
+      "put": {
+        "tags": ["Patients"], "summary": "Update patient", "security": [{ "sessionCookie": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "name": { "type": "string" }, "phone": { "type": "string" }, "email": { "type": "string" }, "gender": { "type": "string" }, "dateOfBirth": { "type": "string", "format": "date" }, "status": { "type": "string" } } } } } },
+        "responses": { "200": { "description": "Updated", "content": { "application/json": { "schema": { "type": "object", "properties": { "patient": { "$ref": "#/components/schemas/Patient" } } } } } }, "404": { "description": "Not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }, "401": { "$ref": "#/components/responses/401" } }
+      },
+      "delete": {
+        "tags": ["Patients"], "summary": "Delete patient", "security": [{ "sessionCookie": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Deleted", "content": { "application/json": { "schema": { "type": "object", "properties": { "ok": { "type": "boolean" } } } } } }, "404": { "description": "Not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }, "401": { "$ref": "#/components/responses/401" } }
+      }
+    },
+    "/api/patients/{id}/allergies": {
+      "get": { "tags": ["Patients"], "summary": "List patient allergies", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Allergies", "content": { "application/json": { "schema": { "type": "object", "properties": { "allergies": { "type": "array", "items": { "$ref": "#/components/schemas/Allergy" } } } } } } } } },
+      "post": { "tags": ["Patients"], "summary": "Add allergy", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["name"], "properties": { "name": { "type": "string" }, "severity": { "type": "string", "enum": ["mild", "moderate", "severe"], "default": "moderate" }, "reaction": { "type": "string" } } } } } }, "responses": { "201": { "description": "Created", "content": { "application/json": { "schema": { "type": "object", "properties": { "allergy": { "$ref": "#/components/schemas/Allergy" } } } } } } } },
+      "delete": { "tags": ["Patients"], "summary": "Delete allergy", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }, { "name": "allergyId", "in": "query", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Deleted" } } }
+    },
+    "/api/patients/{id}/medications": {
+      "get": { "tags": ["Patients"], "summary": "List patient medications", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Medications", "content": { "application/json": { "schema": { "type": "object", "properties": { "medications": { "type": "array", "items": { "$ref": "#/components/schemas/Medication" } } } } } } } } },
+      "post": { "tags": ["Patients"], "summary": "Add medication", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["name"], "properties": { "name": { "type": "string" }, "dosage": { "type": "string" }, "frequency": { "type": "string" }, "prescriber": { "type": "string" }, "startDate": { "type": "string", "format": "date" }, "endDate": { "type": "string", "format": "date" }, "active": { "type": "boolean", "default": true } } } } } }, "responses": { "201": { "description": "Created", "content": { "application/json": { "schema": { "type": "object", "properties": { "medication": { "$ref": "#/components/schemas/Medication" } } } } } } } },
+      "patch": { "tags": ["Patients"], "summary": "Update medication (e.g. discontinue)", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "required": ["medicationId"], "properties": { "medicationId": { "type": "string" }, "active": { "type": "boolean" }, "endDate": { "type": "string", "format": "date" } } } } } }, "responses": { "200": { "description": "Updated" } } }
+    },
+    "/api/patients/{id}/records": {
+      "get": { "tags": ["Patients"], "summary": "List medical records", "description": "Returns medical records for a patient. Optional type filter.", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }, { "name": "type", "in": "query", "schema": { "type": "string", "enum": ["consultation", "procedure", "lab_result", "imaging", "referral", "note"] } }], "responses": { "200": { "description": "Records", "content": { "application/json": { "schema": { "type": "object", "properties": { "records": { "type": "array", "items": { "$ref": "#/components/schemas/MedicalRecord" } } } } } } } } },
+      "post": { "tags": ["Patients"], "summary": "Add medical record", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["type", "title"], "properties": { "type": { "type": "string", "enum": ["consultation", "procedure", "lab_result", "imaging", "referral", "note"] }, "title": { "type": "string" }, "description": { "type": "string" }, "diagnosis": { "type": "string" }, "treatment": { "type": "string" }, "provider": { "type": "string" }, "date": { "type": "string", "format": "date-time" } } } } } }, "responses": { "201": { "description": "Created", "content": { "application/json": { "schema": { "type": "object", "properties": { "record": { "$ref": "#/components/schemas/MedicalRecord" } } } } } }, "400": { "description": "Invalid type", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } } } }
+    },
+    "/api/patients/{id}/vitals": {
+      "get": { "tags": ["Patients"], "summary": "List vitals (last 20)", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Vitals", "content": { "application/json": { "schema": { "type": "object", "properties": { "vitals": { "type": "array", "items": { "$ref": "#/components/schemas/Vitals" } } } } } } } } },
+      "post": { "tags": ["Patients"], "summary": "Record vitals", "description": "All numeric fields are clamped to safe physiological ranges.", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Vitals" } } } }, "responses": { "201": { "description": "Created", "content": { "application/json": { "schema": { "type": "object", "properties": { "vital": { "$ref": "#/components/schemas/Vitals" } } } } } } } }
+    },
+    "/api/patients/import": {
+      "post": { "tags": ["Patients"], "summary": "Bulk import patients from CSV", "description": "Accepts an array of patient rows. Auto-extracts DOB and gender from SA ID numbers. Skips duplicates by phone. Rate limited to 5/minute.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["rows"], "properties": { "rows": { "type": "array", "items": { "type": "object", "required": ["name", "phone"], "properties": { "name": { "type": "string" }, "phone": { "type": "string" }, "email": { "type": "string" }, "idNumber": { "type": "string" }, "dateOfBirth": { "type": "string" }, "gender": { "type": "string" }, "medicalAid": { "type": "string" }, "bloodType": { "type": "string" }, "address": { "type": "string" } } } } } } } } }, "responses": { "200": { "description": "Import result", "content": { "application/json": { "schema": { "type": "object", "properties": { "imported": { "type": "integer" }, "skipped": { "type": "integer" }, "errors": { "type": "array", "items": { "type": "string" } }, "message": { "type": "string" } } } } } }, "429": { "$ref": "#/components/responses/429" } } }
+    },
+    "/api/bookings": {
+      "get": { "tags": ["Bookings"], "summary": "List bookings", "description": "Returns paginated bookings for the practice ordered by scheduled date.", "security": [{ "sessionCookie": [] }], "parameters": [ { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } }, { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 100, "maximum": 100 } } ], "responses": { "200": { "description": "Bookings list", "content": { "application/json": { "schema": { "type": "object", "properties": { "bookings": { "type": "array", "items": { "$ref": "#/components/schemas/Booking" } }, "total": { "type": "integer" }, "page": { "type": "integer" }, "limit": { "type": "integer" } } } } } } } },
+      "post": { "tags": ["Bookings"], "summary": "Create a booking", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["patientName", "service", "scheduledAt"], "properties": { "patientName": { "type": "string" }, "patientPhone": { "type": "string" }, "patientEmail": { "type": "string" }, "service": { "type": "string" }, "scheduledAt": { "type": "string", "format": "date-time" }, "notes": { "type": "string" }, "source": { "type": "string", "default": "dashboard" } } } } } }, "responses": { "200": { "description": "Booking created", "content": { "application/json": { "schema": { "type": "object", "properties": { "booking": { "$ref": "#/components/schemas/Booking" } } } } } } } }
+    },
+    "/api/bookings/{id}": {
+      "get": { "tags": ["Bookings"], "summary": "Get booking by ID", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Booking", "content": { "application/json": { "schema": { "type": "object", "properties": { "booking": { "$ref": "#/components/schemas/Booking" } } } } } }, "404": { "description": "Not found" } } },
+      "patch": { "tags": ["Bookings"], "summary": "Update booking status", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "status": { "type": "string", "enum": ["pending", "confirmed", "completed", "cancelled", "no_show"] } } } } } }, "responses": { "200": { "description": "Updated" }, "400": { "description": "Invalid status" } } },
+      "delete": { "tags": ["Bookings"], "summary": "Delete booking", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Deleted" }, "404": { "description": "Not found" } } }
+    },
+    "/api/bookings/{id}/approve": {
+      "post": { "tags": ["Bookings"], "summary": "Approve or reject a booking", "description": "Approves or rejects a pending booking. Sends WhatsApp and email notifications to the patient.", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["action"], "properties": { "action": { "type": "string", "enum": ["approve", "reject"] }, "reason": { "type": "string", "maxLength": 500 } } } } } }, "responses": { "200": { "description": "Booking approved/rejected", "content": { "application/json": { "schema": { "type": "object", "properties": { "booking": { "$ref": "#/components/schemas/Booking" }, "message": { "type": "string" } } } } } }, "400": { "description": "Invalid action or booking not pending" }, "404": { "description": "Booking not found" } } }
+    },
+    "/api/invoices": {
+      "get": { "tags": ["Invoices"], "summary": "List invoices", "description": "Returns paginated invoices with payment records.", "security": [{ "sessionCookie": [] }], "parameters": [ { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } }, { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 100, "maximum": 100 } } ], "responses": { "200": { "description": "Invoice list", "content": { "application/json": { "schema": { "type": "object", "properties": { "invoices": { "type": "array", "items": { "$ref": "#/components/schemas/Invoice" } }, "total": { "type": "integer" }, "page": { "type": "integer" }, "limit": { "type": "integer" } } } } } } } },
+      "post": { "tags": ["Invoices"], "summary": "Create an invoice", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["patientName"], "properties": { "patientName": { "type": "string" }, "patientId": { "type": "string" }, "lineItems": { "type": "array", "items": { "$ref": "#/components/schemas/InvoiceLineItem" } }, "subtotal": { "type": "number" }, "tax": { "type": "number" }, "discount": { "type": "number" }, "total": { "type": "number" }, "medicalAidClaim": { "type": "number" }, "patientPortion": { "type": "number" }, "notes": { "type": "string" } } } } } }, "responses": { "201": { "description": "Invoice created", "content": { "application/json": { "schema": { "type": "object", "properties": { "invoice": { "$ref": "#/components/schemas/Invoice" } } } } } }, "400": { "description": "Missing patient name" } } }
+    },
+    "/api/invoices/{id}/pdf": {
+      "get": { "tags": ["Invoices"], "summary": "Download invoice as PDF", "description": "Generates and returns a PDF document for the specified invoice.", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "PDF file", "content": { "application/pdf": { "schema": { "type": "string", "format": "binary" } } } }, "404": { "description": "Invoice not found" } } }
+    },
+    "/api/invoices/export": {
+      "get": { "tags": ["Invoices"], "summary": "Export invoices as CSV", "description": "Returns a CSV file of all invoices. Supports date range and status filters.", "security": [{ "sessionCookie": [] }], "parameters": [ { "name": "from", "in": "query", "schema": { "type": "string", "format": "date" } }, { "name": "to", "in": "query", "schema": { "type": "string", "format": "date" } }, { "name": "status", "in": "query", "schema": { "type": "string" }, "description": "Filter by status. Use 'all' for no filter." } ], "responses": { "200": { "description": "CSV file", "content": { "text/csv": { "schema": { "type": "string" } } } } } }
+    },
+    "/api/claims/validate": {
+      "post": { "tags": ["Claims Analyzer"], "summary": "Validate claims CSV", "description": "Accepts CSV (multipart or JSON body), validates ICD-10, tariff codes, scheme rules, unbundling violations, and generates auto-corrections. Max 10,000 rows. Auto-detects Healthbridge format. Rate limited to 30/minute.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "multipart/form-data": { "schema": { "type": "object", "properties": { "file": { "type": "string", "format": "binary" }, "mapping": { "type": "string", "description": "JSON column mapping override" }, "scheme": { "type": "string", "description": "Medical aid scheme code for scheme-specific rules" } } } }, "application/json": { "schema": { "type": "object", "required": ["csv"], "properties": { "csv": { "type": "string" }, "mapping": { "type": "object" }, "scheme": { "type": "string" } } } } } }, "responses": { "200": { "description": "Validation result with issues, auto-corrections, and summary", "content": { "application/json": { "schema": { "type": "object", "properties": { "totalClaims": { "type": "integer" }, "validClaims": { "type": "integer" }, "invalidClaims": { "type": "integer" }, "warningClaims": { "type": "integer" }, "issues": { "type": "array", "items": { "$ref": "#/components/schemas/ValidationIssue" } }, "summary": { "$ref": "#/components/schemas/ClaimsAnalysisSummary" }, "autoCorrections": { "type": "array", "items": { "type": "object" } }, "detectedFormat": { "type": "string", "enum": ["standard", "healthbridge"] }, "schemeCode": { "type": "string" }, "schemeList": { "type": "array", "items": { "type": "string" } } } } } } }, "400": { "description": "No file, no data, or too many rows" }, "429": { "$ref": "#/components/responses/429" } } }
+    },
+    "/api/claims/autocorrect": {
+      "post": { "tags": ["Claims Analyzer"], "summary": "Auto-correct claims CSV", "description": "Uploads CSV, validates, applies high-confidence auto-corrections, and returns corrected CSV with before/after comparison. Rate limited to 15/minute.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "multipart/form-data": { "schema": { "type": "object", "required": ["file"], "properties": { "file": { "type": "string", "format": "binary" }, "applyMedium": { "type": "string", "enum": ["true", "false"], "description": "Also apply medium-confidence corrections" } } } } } }, "responses": { "200": { "description": "Corrected CSV and summary", "content": { "application/json": { "schema": { "type": "object", "properties": { "corrections": { "type": "array", "items": { "type": "object" } }, "applied": { "type": "array", "items": { "type": "object" } }, "summary": { "type": "object", "properties": { "totalCorrections": { "type": "integer" }, "applied": { "type": "integer" }, "beforeRejectionRate": { "type": "integer" }, "afterRejectionRate": { "type": "integer" }, "improvement": { "type": "integer" } } }, "correctedCSV": { "type": "string" } } } } } } } }
+    },
+    "/api/claims/search": {
+      "get": { "tags": ["Claims Analyzer"], "summary": "Search ICD-10, NAPPI, or tariff codes", "description": "Lightweight search endpoint for code lookups. Rate limited to 60/minute. No auth required beyond rate limit.", "security": [], "parameters": [ { "name": "q", "in": "query", "required": true, "schema": { "type": "string", "minLength": 2 }, "description": "Search query (min 2 chars)" }, { "name": "type", "in": "query", "schema": { "type": "string", "enum": ["icd10", "nappi", "tariff"], "default": "icd10" } } ], "responses": { "200": { "description": "Search results", "content": { "application/json": { "schema": { "type": "object", "properties": { "results": { "type": "array", "items": { "type": "object" } } } } } } }, "429": { "$ref": "#/components/responses/429" } } }
+    },
+    "/api/claims/suggest": {
+      "post": { "tags": ["Claims Analyzer"], "summary": "AI-powered ICD-10 suggestions", "description": "Uses AI to suggest correct ICD-10 codes or explain rejection reasons. Rate limited to 20/minute (AI calls cost money).", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["action"], "properties": { "action": { "type": "string", "enum": ["suggest", "explain"] }, "currentCode": { "type": "string" }, "description": { "type": "string" }, "patientGender": { "type": "string" }, "patientAge": { "type": "integer" }, "issues": { "type": "array", "items": { "type": "string" } }, "code": { "type": "string", "description": "For explain action" }, "rule": { "type": "string", "description": "For explain action" }, "message": { "type": "string", "description": "For explain action" } } } } } }, "responses": { "200": { "description": "AI suggestions or explanation" }, "400": { "description": "Invalid action" }, "429": { "$ref": "#/components/responses/429" } } }
+    },
+    "/api/claims/report": {
+      "post": { "tags": ["Claims Analyzer"], "summary": "Generate claims analysis PDF report", "description": "Generates a PDF report from validation results. Rate limited to 10/minute.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["result"], "properties": { "result": { "type": "object", "description": "Full validation result from /api/claims/validate" }, "practiceName": { "type": "string", "default": "Netcare Practice" }, "generatedBy": { "type": "string" } } } } } }, "responses": { "200": { "description": "PDF report", "content": { "application/pdf": { "schema": { "type": "string", "format": "binary" } } } }, "400": { "description": "No result data" } } }
+    },
+    "/api/claims/history": {
+      "get": { "tags": ["Claims Analyzer"], "summary": "List saved analyses with trend data", "description": "Returns past analyses for the practice with 6-month trend data. Rate limited to 30/minute.", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "limit", "in": "query", "schema": { "type": "integer", "default": 20, "maximum": 100 } }], "responses": { "200": { "description": "Analysis history and trend", "content": { "application/json": { "schema": { "type": "object", "properties": { "analyses": { "type": "array", "items": { "type": "object" } }, "trend": { "type": "array", "items": { "type": "object", "properties": { "month": { "type": "string" }, "avgRejectionRate": { "type": "number" }, "totalSavings": { "type": "integer" }, "totalClaims": { "type": "integer" } } } } } } } } } } },
+      "post": { "tags": ["Claims Analyzer"], "summary": "Save an analysis result", "description": "Stores analysis result with PII sanitized for POPIA compliance.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["result"], "properties": { "fileName": { "type": "string" }, "result": { "type": "object" }, "schemeCode": { "type": "string" }, "period": { "type": "string", "description": "YYYY-MM format" } } } } } }, "responses": { "200": { "description": "Saved", "content": { "application/json": { "schema": { "type": "object", "properties": { "id": { "type": "string" }, "saved": { "type": "boolean" } } } } } } } }
+    },
+    "/api/claims/patterns": {
+      "get": { "tags": ["Claims Analyzer"], "summary": "Get rejection patterns and insights", "description": "Analyzes historical analyses to extract rejection patterns, generate insights, and optionally predict rejection for a specific code.", "security": [{ "sessionCookie": [] }], "parameters": [ { "name": "scheme", "in": "query", "schema": { "type": "string" } }, { "name": "predict", "in": "query", "schema": { "type": "string" }, "description": "ICD-10 code to predict rejection probability" } ], "responses": { "200": { "description": "Patterns and insights", "content": { "application/json": { "schema": { "type": "object", "properties": { "patterns": { "type": "array", "items": { "type": "object" } }, "insights": { "type": "array", "items": { "type": "object" } }, "prediction": { "type": "object", "nullable": true }, "practiceRate": { "type": "integer" }, "networkAvgRate": { "type": "integer" }, "dataPoints": { "type": "integer" } } } } } } } }
+    },
+    "/api/claims/rules": {
+      "get": { "tags": ["Claims Analyzer"], "summary": "List validation rules", "description": "Returns global and practice-specific validation rules.", "security": [{ "sessionCookie": [] }], "responses": { "200": { "description": "Rules list", "content": { "application/json": { "schema": { "type": "object", "properties": { "rules": { "type": "array", "items": { "type": "object" } } } } } } } } },
+      "post": { "tags": ["Claims Analyzer"], "summary": "Create or update a validation rule", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["ruleCode", "name"], "properties": { "ruleCode": { "type": "string" }, "name": { "type": "string" }, "description": { "type": "string" }, "severity": { "type": "string", "enum": ["error", "warning", "info"] }, "enabled": { "type": "boolean" }, "category": { "type": "string" }, "metadata": { "type": "object" } } } } } }, "responses": { "200": { "description": "Rule saved" } } },
+      "delete": { "tags": ["Claims Analyzer"], "summary": "Delete a practice-specific rule", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "ruleCode", "in": "query", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Deleted" } } }
+    },
+    "/api/claims/network": {
+      "get": { "tags": ["Claims Analyzer"], "summary": "Network-wide claims analytics", "description": "Aggregated claims metrics across all practices. Platform admin only.", "security": [{ "sessionCookie": [] }], "responses": { "200": { "description": "Network analytics", "content": { "application/json": { "schema": { "type": "object", "properties": { "network": { "type": "object", "properties": { "totalClinics": { "type": "integer" }, "totalClaims": { "type": "integer" }, "avgRejectionRate": { "type": "integer" }, "totalSavings": { "type": "integer" } } }, "clinicStats": { "type": "array", "items": { "type": "object" } }, "worstClinics": { "type": "array", "items": { "type": "object" } }, "bestClinics": { "type": "array", "items": { "type": "object" } }, "trend": { "type": "array", "items": { "type": "object" } } } } } } }, "403": { "description": "Platform admin access required" } } }
+    },
+    "/api/claims/retention": {
+      "get": { "tags": ["Claims Analyzer"], "summary": "POPIA data retention cleanup (cron)", "description": "Deletes analyses older than 12 months for POPIA compliance. Triggered by Vercel cron with CRON_SECRET.", "security": [{ "cronSecret": [] }], "responses": { "200": { "description": "Cleanup result", "content": { "application/json": { "schema": { "type": "object", "properties": { "deleted": { "type": "integer" }, "cutoffDate": { "type": "string", "format": "date-time" }, "message": { "type": "string" } } } } } }, "401": { "description": "Invalid cron secret" } } }
+    },
+    "/api/healthbridge/claims": {
+      "get": { "tags": ["Healthbridge"], "summary": "List submitted claims", "description": "Returns claims for the practice. Supports status and scheme filters.", "security": [{ "sessionCookie": [] }], "parameters": [ { "name": "status", "in": "query", "schema": { "type": "string" } }, { "name": "scheme", "in": "query", "schema": { "type": "string" } } ], "responses": { "200": { "description": "Claims list", "content": { "application/json": { "schema": { "type": "object", "properties": { "claims": { "type": "array", "items": { "$ref": "#/components/schemas/HealthbridgeClaim" } } } } } } } } },
+      "post": { "tags": ["Healthbridge"], "summary": "Submit a claim to the medical aid switch", "description": "Validates ICD-10 and CPT codes, builds XML, submits to configured switch (Healthbridge/MediKredit/MediSwitch). Falls back to draft if switch fails.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["patientName", "medicalAidScheme", "membershipNumber", "dateOfService"], "properties": { "patientName": { "type": "string" }, "patientDob": { "type": "string" }, "patientIdNumber": { "type": "string" }, "medicalAidScheme": { "type": "string" }, "membershipNumber": { "type": "string" }, "dependentCode": { "type": "string", "default": "00" }, "dateOfService": { "type": "string", "format": "date" }, "placeOfService": { "type": "string", "default": "11" }, "bhfNumber": { "type": "string" }, "providerNumber": { "type": "string" }, "treatingProvider": { "type": "string" }, "authorizationNumber": { "type": "string" }, "lineItems": { "type": "array", "items": { "$ref": "#/components/schemas/ClaimLineItem" }, "minItems": 1 }, "submit": { "type": "boolean", "default": true, "description": "Set false to save as draft" }, "invoiceId": { "type": "string" } } } } } }, "responses": { "201": { "description": "Claim submitted (or saved as draft)", "content": { "application/json": { "schema": { "type": "object", "properties": { "claim": { "$ref": "#/components/schemas/HealthbridgeClaim" }, "switchResponse": { "type": "object", "nullable": true } } } } } }, "400": { "description": "Validation error (invalid ICD-10, missing line items, etc.)" } } }
+    },
+    "/api/healthbridge/claims/{id}": {
+      "get": { "tags": ["Healthbridge"], "summary": "Get claim details", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Claim details" }, "404": { "description": "Not found" } } },
+      "patch": { "tags": ["Healthbridge"], "summary": "Update, resubmit, or reverse a claim", "description": "Supports actions: resubmit (for rejected/draft claims), reverse (cancel an accepted claim), or general update (notes, status).", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "action": { "type": "string", "enum": ["resubmit", "reverse"], "description": "Optional action. Omit for general update." }, "authorizationNumber": { "type": "string", "description": "For resubmit: updated auth number" }, "lineItems": { "type": "array", "items": { "$ref": "#/components/schemas/ClaimLineItem" }, "description": "For resubmit: corrected line items" }, "reason": { "type": "string", "description": "For reverse: reversal reason" }, "notes": { "type": "string" }, "status": { "type": "string" } } } } } }, "responses": { "200": { "description": "Updated" }, "400": { "description": "Invalid action for current status" }, "404": { "description": "Not found" }, "502": { "description": "Switch communication failed" } } }
+    },
+    "/api/healthbridge/eligibility": {
+      "get": { "tags": ["Healthbridge"], "summary": "List eligibility checks", "security": [{ "sessionCookie": [] }], "responses": { "200": { "description": "Eligibility check history" } } },
+      "post": { "tags": ["Healthbridge"], "summary": "Check patient eligibility and benefits", "description": "Verifies medical aid membership, option, remaining benefits, and pre-auth requirements.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["membershipNumber", "scheme"], "properties": { "patientName": { "type": "string" }, "membershipNumber": { "type": "string" }, "dependentCode": { "type": "string", "default": "00" }, "patientDob": { "type": "string" }, "scheme": { "type": "string" } } } } } }, "responses": { "201": { "description": "Eligibility result", "content": { "application/json": { "schema": { "type": "object", "properties": { "check": { "type": "object" }, "result": { "type": "object", "properties": { "eligible": { "type": "boolean" }, "option": { "type": "string" }, "benefits": { "type": "array", "items": { "type": "object" } }, "preAuthRequired": { "type": "boolean" } } } } } } } } } }
+    },
+    "/api/healthbridge/remittances": {
+      "get": { "tags": ["Healthbridge"], "summary": "List electronic remittance advices (eRAs)", "security": [{ "sessionCookie": [] }], "responses": { "200": { "description": "Remittance list" } } },
+      "post": { "tags": ["Healthbridge"], "summary": "Fetch and auto-reconcile new eRAs", "description": "Fetches eRAs from the switch for a date range and auto-reconciles payments against submitted claims.", "security": [{ "sessionCookie": [] }], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "fromDate": { "type": "string", "format": "date" }, "toDate": { "type": "string", "format": "date" } } } } } }, "responses": { "200": { "description": "Fetched and reconciled eRAs" } } }
+    },
+    "/api/healthbridge/reconcile": {
+      "post": { "tags": ["Healthbridge"], "summary": "Auto-reconcile outstanding eRAs", "description": "Matches unreconciled eRA payments against submitted claims by transaction ref and membership+date fallback.", "security": [{ "sessionCookie": [] }], "responses": { "200": { "description": "Reconciliation result", "content": { "application/json": { "schema": { "type": "object", "properties": { "reconciled": { "type": "integer" }, "shortPaid": { "type": "integer" }, "unmatched": { "type": "integer" }, "totalReconciled": { "type": "string" }, "details": { "type": "array", "items": { "type": "object" } } } } } } } } }
+    },
+    "/api/healthbridge/validate": {
+      "post": { "tags": ["Healthbridge"], "summary": "Pre-submission claim validation", "description": "Validates a claim before submission. Returns errors, warnings, PMB/CDL detection, and rejection risk score.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "properties": { "patientName": { "type": "string" }, "medicalAidScheme": { "type": "string" }, "membershipNumber": { "type": "string" }, "dateOfService": { "type": "string", "format": "date" }, "lineItems": { "type": "array", "items": { "$ref": "#/components/schemas/ClaimLineItem" } }, "patientGender": { "type": "string" } } } } } }, "responses": { "200": { "description": "Validation result with PMB status", "content": { "application/json": { "schema": { "type": "object", "properties": { "validation": { "type": "object" }, "pmb": { "type": "object" }, "summary": { "type": "object", "properties": { "canSubmit": { "type": "boolean" }, "errors": { "type": "integer" }, "warnings": { "type": "integer" }, "rejectionRisk": { "type": "string" }, "pmbDetected": { "type": "boolean" } } } } } } } } } }
+    },
+    "/api/healthbridge/analytics": {
+      "get": { "tags": ["Healthbridge"], "summary": "Scheme-specific revenue analytics and aging", "description": "Revenue breakdown per medical aid scheme, acceptance/rejection rates, average days to payment, and outstanding claims aging (30/60/90/120+ days).", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "period", "in": "query", "schema": { "type": "string", "enum": ["all", "month", "quarter", "year"], "default": "all" } }], "responses": { "200": { "description": "Analytics data" } } },
+      "post": { "tags": ["Healthbridge"], "summary": "Patient cost estimate", "description": "Estimates patient cost breakdown: medical aid portion, co-pay, gap cover.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["action"], "properties": { "action": { "type": "string", "enum": ["estimate"] }, "lineItems": { "type": "array", "items": { "$ref": "#/components/schemas/ClaimLineItem" } }, "schemeRate": { "type": "number", "default": 100 }, "hasGapCover": { "type": "boolean" }, "gapCoverMultiple": { "type": "number", "default": 3 } } } } } }, "responses": { "200": { "description": "Cost estimate" }, "400": { "description": "Invalid action" } } }
+    },
+    "/api/healthbridge/nappi": {
+      "get": { "tags": ["Healthbridge"], "summary": "NAPPI code and medicine price lookup", "description": "Searches NAPPI codes via medicineprices.org.za API. Returns medicine name, NAPPI code, Single Exit Price, dispensing fee, schedule.", "security": [{ "sessionCookie": [] }], "parameters": [ { "name": "q", "in": "query", "schema": { "type": "string" }, "description": "Search term (e.g. 'metformin')" }, { "name": "code", "in": "query", "schema": { "type": "string" }, "description": "Direct NAPPI code lookup" } ], "responses": { "200": { "description": "Medicine results" }, "400": { "description": "No search term or code" }, "404": { "description": "NAPPI code not found" } } }
+    },
+    "/api/healthbridge/ai-code": {
+      "post": { "tags": ["Healthbridge"], "summary": "AI-powered ICD-10 + CPT code suggestion from clinical notes", "description": "Accepts clinical notes text and returns suggested ICD-10 and CPT codes with PMB/CDL flags, confidence levels, and reasoning. Uses Gemini 2.5 Flash.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["clinicalNotes"], "properties": { "clinicalNotes": { "type": "string", "minLength": 10 } } } } } }, "responses": { "200": { "description": "Code suggestions" }, "400": { "description": "Notes too short" } } }
+    },
+    "/api/healthbridge/autofill": {
+      "post": { "tags": ["Healthbridge"], "summary": "AI auto-fill claim from clinical notes", "description": "Accepts free-text clinical notes and returns a complete structured claim with ICD-10, CPT, amounts, and clinical summary. Min 20 chars.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["clinicalNotes"], "properties": { "clinicalNotes": { "type": "string", "minLength": 20 } } } } } }, "responses": { "200": { "description": "Auto-filled claim" }, "400": { "description": "Notes too short" } } }
+    },
+    "/api/healthbridge/predict": {
+      "post": { "tags": ["Healthbridge"], "summary": "AI rejection prediction before submission", "description": "Predicts rejection probability, risk factors, and recommendations for a claim before submission.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["medicalAidScheme", "lineItems"], "properties": { "medicalAidScheme": { "type": "string" }, "lineItems": { "type": "array", "items": { "$ref": "#/components/schemas/ClaimLineItem" }, "minItems": 1 }, "patientName": { "type": "string" }, "dateOfService": { "type": "string", "format": "date" }, "membershipNumber": { "type": "string" }, "authorizationNumber": { "type": "string" } } } } } }, "responses": { "200": { "description": "Rejection prediction" }, "400": { "description": "Missing required fields" } } }
+    },
+    "/api/healthbridge/followups": {
+      "get": { "tags": ["Healthbridge"], "summary": "Generate follow-up actions for outstanding claims", "description": "Returns prioritized follow-up actions with draft emails and scheme contacts for all outstanding claims.", "security": [{ "sessionCookie": [] }], "responses": { "200": { "description": "Follow-up actions", "content": { "application/json": { "schema": { "type": "object", "properties": { "followUps": { "type": "array", "items": { "type": "object" } }, "summary": { "type": "object", "properties": { "total": { "type": "integer" }, "critical": { "type": "integer" }, "high": { "type": "integer" }, "medium": { "type": "integer" }, "low": { "type": "integer" } } } } } } } } } },
+      "post": { "tags": ["Healthbridge"], "summary": "Generate follow-ups for specific claims", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["claimIds"], "properties": { "claimIds": { "type": "array", "items": { "type": "string" } } } } } } }, "responses": { "200": { "description": "Follow-ups for specified claims" }, "400": { "description": "Missing claimIds" }, "404": { "description": "No claims found" } } }
+    },
+    "/api/healthbridge/batch": {
+      "post": { "tags": ["Healthbridge"], "summary": "Batch claim upload via CSV", "description": "Accepts CSV content, validates all rows, and optionally submits valid claims. Max 500 rows. Rate limited to 10/minute.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["csv"], "properties": { "csv": { "type": "string" }, "action": { "type": "string", "enum": ["validate", "submit"], "default": "validate" }, "bhfNumber": { "type": "string" } } } } } }, "responses": { "200": { "description": "Batch validation/submission result" }, "400": { "description": "CSV parse error or too many rows" } } }
+    },
+    "/api/healthbridge/export": {
+      "get": { "tags": ["Healthbridge"], "summary": "Export claims as CSV", "description": "Exports claims data as CSV with period, status, and scheme filters.", "security": [{ "sessionCookie": [] }], "parameters": [ { "name": "format", "in": "query", "schema": { "type": "string", "default": "csv" } }, { "name": "period", "in": "query", "schema": { "type": "string", "enum": ["all", "month", "quarter", "year"], "default": "all" } }, { "name": "status", "in": "query", "schema": { "type": "string" } }, { "name": "scheme", "in": "query", "schema": { "type": "string" } } ], "responses": { "200": { "description": "CSV file", "content": { "text/csv": { "schema": { "type": "string" } } } } } }
+    },
+    "/api/healthbridge/status": {
+      "get": { "tags": ["Healthbridge"], "summary": "Integration status and reference data", "description": "Returns Healthbridge integration config, switch status, stats, AI coder status, and reference data (medical aid schemes, ICD-10, CPT, place of service, rejection codes).", "security": [{ "sessionCookie": [] }], "responses": { "200": { "description": "Status and reference data" } } }
+    },
+    "/api/switching/route": {
+      "get": { "tags": ["Switching"], "summary": "Get switch routing for a scheme or all switch statuses", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "scheme", "in": "query", "schema": { "type": "string" }, "description": "Medical aid scheme name. Omit to get all switch statuses." }], "responses": { "200": { "description": "Routing info or switch status list" } } },
+      "post": { "tags": ["Switching"], "summary": "Submit a claim through the routed switch", "description": "Routes claim to the correct switch (Healthbridge/MediKredit/SwitchOn) and submits. Persists result to database.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["claim"], "properties": { "claim": { "type": "object", "description": "Full claim submission object" }, "forceSwitch": { "type": "string", "description": "Override auto-routing" }, "forceProtocol": { "type": "string", "description": "Force XML or EDIFACT" } } } } } }, "responses": { "200": { "description": "Routing + switch response + EDIFACT" } } }
+    },
+    "/api/switching/edifact": {
+      "post": { "tags": ["Switching"], "summary": "Generate EDIFACT MEDCLM message from claim", "description": "Generates PHISC MEDCLM v0:912:ZA EDIFACT message and validates it.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["claim"], "properties": { "claim": { "type": "object" }, "batchNumber": { "type": "string" }, "correctionType": { "type": "string" }, "messageRef": { "type": "string" } } } } } }, "responses": { "200": { "description": "EDIFACT message + validation" } } },
+      "put": { "tags": ["Switching"], "summary": "Parse raw EDIFACT message", "description": "Parses raw EDIFACT string into structured data. Supports claim and response types.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["raw"], "properties": { "raw": { "type": "string" }, "type": { "type": "string", "enum": ["claim", "response"], "default": "claim" } } } } } }, "responses": { "200": { "description": "Parsed EDIFACT" } } }
+    },
+    "/api/switching/preauth": {
+      "get": { "tags": ["Switching"], "summary": "Check if pre-authorization is required", "security": [{ "sessionCookie": [] }], "parameters": [ { "name": "cpt", "in": "query", "required": true, "schema": { "type": "string" }, "description": "Comma-separated CPT codes" }, { "name": "icd10", "in": "query", "schema": { "type": "string" }, "description": "Comma-separated ICD-10 codes" }, { "name": "scheme", "in": "query", "schema": { "type": "string" } }, { "name": "cost", "in": "query", "schema": { "type": "integer" }, "description": "Estimated cost in cents" } ], "responses": { "200": { "description": "Pre-auth check result" }, "400": { "description": "No CPT codes provided" } } },
+      "post": { "tags": ["Switching"], "summary": "Create pre-authorization request", "description": "Creates pre-auth request with XML for switch submission. Supports action: 'check' for quick check.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "properties": { "action": { "type": "string", "enum": ["check"] }, "cptCodes": { "type": "array", "items": { "type": "string" } }, "icd10Codes": { "type": "array", "items": { "type": "string" } }, "medicalAidScheme": { "type": "string" }, "estimatedCost": { "type": "integer" } } } } } }, "responses": { "200": { "description": "Pre-auth request with XML" } } }
+    },
+    "/api/switching/batch": {
+      "post": { "tags": ["Switching"], "summary": "Submit batch of claims or generate batch EDIFACT", "description": "Processes up to 500 claims. mode=edifact generates a batch EDIFACT file without submission. mode=submit processes and submits all claims.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["claims"], "properties": { "claims": { "type": "array", "items": { "type": "object" }, "maxItems": 500 }, "mode": { "type": "string", "enum": ["submit", "edifact"], "default": "submit" } } } } } }, "responses": { "200": { "description": "Batch job result with per-claim status" }, "400": { "description": "Empty or oversized batch" } } }
+    },
+    "/api/switching/era": {
+      "post": { "tags": ["Switching"], "summary": "Parse eRA XML and reconcile payments", "description": "Parses electronic remittance advice XML document, matches against existing claims, and generates dispute items for underpayments.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["xml"], "properties": { "xml": { "type": "string", "description": "eRA XML document" }, "existingClaims": { "type": "array", "items": { "type": "object" }, "description": "Claims to reconcile against" }, "scheme": { "type": "string" } } } } } }, "responses": { "200": { "description": "Parsed eRA with reconciliation and disputes" } } }
+    },
+    "/api/switching/resubmit": {
+      "post": { "tags": ["Switching"], "summary": "Analyze rejections and prepare resubmissions", "description": "Actions: analyze (single rejection analysis), autofix (auto-fix a claim), categorize (bulk categorization), or create resubmission.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "properties": { "action": { "type": "string", "enum": ["analyze", "autofix", "categorize"] }, "rejectionCode": { "type": "string" }, "rejectionReason": { "type": "string" }, "claim": { "type": "object" }, "rejectedClaims": { "type": "array", "items": { "type": "object" } }, "originalClaim": { "type": "object" }, "originalClaimId": { "type": "string" }, "corrections": { "type": "array", "items": { "type": "object" } } } } } } }, "responses": { "200": { "description": "Analysis, auto-fix result, categorization, or resubmission" } } }
+    },
+    "/api/switching/famcheck": {
+      "post": { "tags": ["Switching"], "summary": "FamCheck / AuthCheck / Eligibility via MediKredit", "description": "Actions: famcheck (full member & family download), authcheck (pre-auth requirements), eligibility (quick benefit check via routed switch).", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["membershipNumber", "scheme"], "properties": { "action": { "type": "string", "enum": ["famcheck", "authcheck", "eligibility"], "default": "famcheck" }, "membershipNumber": { "type": "string" }, "scheme": { "type": "string" }, "dependentCode": { "type": "string", "default": "00" }, "patientDob": { "type": "string" }, "bhfNumber": { "type": "string" }, "icd10Codes": { "type": "array", "items": { "type": "string" } }, "cptCodes": { "type": "array", "items": { "type": "string" } }, "estimatedCost": { "type": "integer" } } } } } }, "responses": { "200": { "description": "FamCheck/AuthCheck/Eligibility result" }, "400": { "description": "Missing required fields or invalid action" } } }
+    },
+    "/api/switching/vendor": {
+      "get": { "tags": ["Switching"], "summary": "Get vendor accreditation test suite info", "description": "Returns accreditation process documentation and list of all test cases for PMS vendor accreditation.", "security": [{ "sessionCookie": [] }], "responses": { "200": { "description": "Accreditation process and tests" } } },
+      "post": { "tags": ["Switching"], "summary": "Register a new PMS vendor", "description": "Registers a vendor and returns a vendor code, accreditation summary, and next steps.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["vendorName", "contactEmail", "softwareName"], "properties": { "vendorName": { "type": "string" }, "contactName": { "type": "string" }, "contactEmail": { "type": "string", "format": "email" }, "contactPhone": { "type": "string" }, "softwareName": { "type": "string" }, "softwareVersion": { "type": "string", "default": "1.0.0" }, "protocols": { "type": "array", "items": { "type": "string", "enum": ["xml", "edifact"] }, "default": ["xml"] } } } } } }, "responses": { "201": { "description": "Vendor registered with accreditation summary" }, "400": { "description": "Missing required fields" } } }
+    },
+    "/api/bridge/careon": {
+      "get": { "tags": ["CareOn Bridge"], "summary": "Get CareOn Bridge data by view", "description": "Returns bridge stats, advisories, messages, connection status, resolution stats, anomalies, or audit log. All access is logged for POPIA compliance.", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "view", "in": "query", "required": true, "schema": { "type": "string", "enum": ["stats", "advisories", "messages", "connection", "resolutions", "anomalies", "audit"] }, "description": "Data view to return" }, { "name": "severity", "in": "query", "schema": { "type": "string", "enum": ["critical", "warning", "info"] }, "description": "Filter advisories by severity" }, { "name": "category", "in": "query", "schema": { "type": "string" }, "description": "Filter advisories by category" }, { "name": "facility", "in": "query", "schema": { "type": "string" } }, { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 50 } }], "responses": { "200": { "description": "Requested view data" }, "400": { "description": "Invalid view" } } },
+      "post": { "tags": ["CareOn Bridge"], "summary": "Receive HL7v2 message (webhook)", "description": "Webhook endpoint for CareOn HL7v2 messages. Supports HMAC-SHA256 and Bearer token authentication. Processes HL7 messages and generates clinical advisories. AI-enhanced processing if Gemini key is available.", "security": [{ "hmacAuth": [] }, { "bearerToken": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "properties": { "message": { "type": "string", "description": "Raw HL7v2 message" } } } }, "text/plain": { "schema": { "type": "string", "description": "Raw HL7v2 ER7 format" } }, "x-application/hl7-v2+er7": { "schema": { "type": "string" } } } }, "parameters": [{ "name": "ai", "in": "query", "schema": { "type": "string", "enum": ["true"] }, "description": "Force AI-enhanced processing" }], "responses": { "200": { "description": "HL7 ACK + advisories", "content": { "application/json": { "schema": { "type": "object", "properties": { "ack": { "type": "string" }, "advisoriesGenerated": { "type": "integer" }, "advisories": { "type": "array", "items": { "type": "object" } }, "aiEnhanced": { "type": "boolean" } } } } } }, "401": { "description": "Authentication failed" } } },
+      "patch": { "tags": ["CareOn Bridge"], "summary": "Resolve a clinical advisory", "description": "Resolves an advisory with an action: resolve, generate_claim, notify_doctor, dismiss.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["advisoryId", "action"], "properties": { "advisoryId": { "type": "string" }, "action": { "type": "string", "enum": ["resolve", "generate_claim", "notify_doctor", "dismiss"] }, "notes": { "type": "string" } } } } } }, "responses": { "200": { "description": "Advisory resolved" }, "400": { "description": "Invalid action or advisory not found" } } }
+    },
+    "/api/bridge": {
+      "get": { "tags": ["Bridge"], "summary": "Get all integration statuses", "description": "Returns status of all connected systems (Healthbridge, CareOn, etc.). Platform admin only.", "security": [{ "sessionCookie": [] }], "responses": { "200": { "description": "Integration status list" }, "403": { "description": "Platform admin required" } } }
+    },
+    "/api/network": {
+      "get": { "tags": ["Network"], "summary": "Network-wide analytics by tab", "description": "Returns analytics data based on tab parameter. Platform admin only.", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "tab", "in": "query", "required": true, "schema": { "type": "string", "enum": ["kpis", "clinics", "schemes", "rejections"] } }, { "name": "region", "in": "query", "schema": { "type": "string" }, "description": "Filter clinics by region" }], "responses": { "200": { "description": "Analytics data for the requested tab" }, "400": { "description": "Invalid tab" }, "403": { "description": "Platform admin required" } } }
+    },
+    "/api/performance": {
+      "get": { "tags": ["Performance"], "summary": "Cross-product performance metrics", "description": "Aggregated performance across claims, switching, bridge, WhatsApp, and FHIR. Platform admin only.", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "product", "in": "query", "schema": { "type": "string", "enum": ["all", "claims", "switching", "bridge", "whatsapp", "fhir"], "default": "all" } }], "responses": { "200": { "description": "Performance metrics" }, "403": { "description": "Platform admin required" } } }
+    },
+    "/api/reports/generate": {
+      "post": { "tags": ["Reports"], "summary": "Generate a report on demand", "description": "Generates one of 6 report types in JSON or CSV format. Platform admin only.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["type"], "properties": { "type": { "type": "string", "enum": ["claims_summary", "revenue", "rejection_analysis", "scheme_performance", "team_activity", "popia_compliance"] }, "format": { "type": "string", "enum": ["json", "csv"], "default": "json" }, "period": { "type": "string", "enum": ["mtd", "qtd", "ytd"], "default": "mtd" } } } } } }, "responses": { "200": { "description": "Generated report (JSON or CSV)" }, "400": { "description": "Invalid report type" }, "403": { "description": "Platform admin required" } } }
+    },
+    "/api/reports/schedule": {
+      "get": { "tags": ["Reports"], "summary": "List scheduled reports", "security": [{ "sessionCookie": [] }], "responses": { "200": { "description": "Scheduled reports", "content": { "application/json": { "schema": { "type": "object", "properties": { "schedules": { "type": "array", "items": { "$ref": "#/components/schemas/ReportSchedule" } } } } } } }, "403": { "description": "Platform admin required" } } },
+      "post": { "tags": ["Reports"], "summary": "Create a report schedule", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["reportType", "frequency", "recipients", "time"], "properties": { "reportType": { "type": "string" }, "reportName": { "type": "string" }, "frequency": { "type": "string", "enum": ["daily", "weekly", "monthly"] }, "recipients": { "type": "array", "items": { "type": "string", "format": "email" }, "minItems": 1 }, "time": { "type": "string", "description": "HH:MM format" } } } } } }, "responses": { "201": { "description": "Schedule created" }, "400": { "description": "Missing fields or invalid frequency" } } },
+      "delete": { "tags": ["Reports"], "summary": "Delete a report schedule", "security": [{ "sessionCookie": [] }], "parameters": [{ "name": "id", "in": "query", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Deleted" }, "404": { "description": "Schedule not found" } } }
+    },
+    "/api/reports/history": {
+      "get": { "tags": ["Reports"], "summary": "List previously generated reports", "security": [{ "sessionCookie": [] }], "responses": { "200": { "description": "Report history" }, "403": { "description": "Platform admin required" } } }
+    },
+    "/api/reports/run": {
+      "get": { "tags": ["Reports"], "summary": "Cron endpoint — run scheduled reports", "description": "Checks which scheduled reports are due, generates them, and (in production) emails to recipients. Triggered daily at 7 AM by Vercel cron.", "security": [{ "cronSecret": [] }], "responses": { "200": { "description": "Cron result", "content": { "application/json": { "schema": { "type": "object", "properties": { "message": { "type": "string" }, "generated": { "type": "integer" }, "checkedAt": { "type": "string", "format": "date-time" } } } } } }, "401": { "description": "Invalid cron secret" } } }
+    },
+    "/api/whatsapp/send": {
+      "post": { "tags": ["WhatsApp"], "summary": "Send a single WhatsApp message", "description": "Sends a WhatsApp message to a phone number via Twilio.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["to", "message"], "properties": { "to": { "type": "string", "description": "Phone number (E.164 format)" }, "message": { "type": "string" } } } } } }, "responses": { "200": { "description": "Message sent", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "sid": { "type": "string" } } } } } }, "400": { "description": "Missing to or message" }, "500": { "description": "Twilio send failed" } } }
+    },
+    "/api/whatsapp/broadcast": {
+      "post": { "tags": ["WhatsApp"], "summary": "Broadcast WhatsApp message to patients", "description": "Sends a message to all patients with phone numbers, or filtered by upcoming bookings. Rate limited to 5/minute.", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["message"], "properties": { "message": { "type": "string" }, "filter": { "type": "string", "enum": ["upcoming_bookings"], "description": "Optional filter" } } } } } }, "responses": { "200": { "description": "Broadcast result", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "sent": { "type": "integer" }, "results": { "type": "array", "items": { "type": "object" } } } } } } } } }
+    },
+    "/api/whatsapp/directory": {
+      "get": { "tags": ["WhatsApp"], "summary": "Get clinic directory or find nearest clinics", "description": "Returns full clinic directory or finds nearest clinics by coordinates and optional service filter.", "security": [{ "sessionCookie": [] }], "parameters": [ { "name": "lat", "in": "query", "schema": { "type": "number" }, "description": "Latitude for nearest-clinic search" }, { "name": "lng", "in": "query", "schema": { "type": "number" }, "description": "Longitude" }, { "name": "service", "in": "query", "schema": { "type": "string" }, "description": "Service type filter (e.g. 'GP', 'Dentist')" } ], "responses": { "200": { "description": "Clinic directory or nearest clinics" } } }
+    },
+    "/api/webhook/whatsapp": {
+      "get": { "tags": ["WhatsApp"], "summary": "WhatsApp webhook verification", "description": "Verification endpoint for WhatsApp Cloud API webhook setup. Returns the challenge if verify_token matches.", "security": [], "parameters": [ { "name": "hub.mode", "in": "query", "schema": { "type": "string" } }, { "name": "hub.verify_token", "in": "query", "schema": { "type": "string" } }, { "name": "hub.challenge", "in": "query", "schema": { "type": "string" } } ], "responses": { "200": { "description": "Challenge response" }, "403": { "description": "Verification failed" } } },
+      "post": { "tags": ["WhatsApp"], "summary": "Receive incoming WhatsApp messages", "description": "Processes incoming WhatsApp messages with intent detection (emergency, find_clinic, book_appointment, repeat_prescription, general). Routes through AI triage and conversation pipeline. Rate limited to 100/minute.", "security": [], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "description": "WhatsApp Cloud API webhook payload" } } } }, "responses": { "200": { "description": "Processing result with intent and conversation ID", "content": { "application/json": { "schema": { "type": "object", "properties": { "status": { "type": "string" }, "patientId": { "type": "string" }, "conversationId": { "type": "string" }, "intent": { "type": "string" }, "triageUrgency": { "type": "string" } } } } } }, "429": { "$ref": "#/components/responses/429" } } }
+    },
+    "/api/notifications": {
+      "get": { "tags": ["Notifications"], "summary": "List notifications", "description": "Returns paginated notifications for the practice.", "security": [{ "sessionCookie": [] }], "parameters": [ { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } }, { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 100, "maximum": 100 } } ], "responses": { "200": { "description": "Notifications list", "content": { "application/json": { "schema": { "type": "object", "properties": { "notifications": { "type": "array", "items": { "$ref": "#/components/schemas/Notification" } }, "total": { "type": "integer" }, "page": { "type": "integer" }, "limit": { "type": "integer" } } } } } } } },
+      "post": { "tags": ["Notifications"], "summary": "Create a notification", "description": "Creates and queues a notification (WhatsApp, SMS, or email).", "security": [{ "sessionCookie": [] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["recipient", "message"], "properties": { "type": { "type": "string", "enum": ["whatsapp", "sms", "email"], "default": "whatsapp" }, "recipient": { "type": "string" }, "patientName": { "type": "string" }, "subject": { "type": "string" }, "message": { "type": "string" }, "template": { "type": "string", "default": "custom" } } } } } }, "responses": { "201": { "description": "Notification created", "content": { "application/json": { "schema": { "type": "object", "properties": { "notification": { "$ref": "#/components/schemas/Notification" } } } } } }, "400": { "description": "Missing recipient or message" } } }
+    }
+  }
+}
