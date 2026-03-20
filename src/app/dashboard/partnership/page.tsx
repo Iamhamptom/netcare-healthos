@@ -231,6 +231,114 @@ export default function PartnershipPage() {
         </div>
       </div>
 
+      {/* Netcare Ecosystem Map — How We Aggregate */}
+      <div className="p-6 rounded-xl border border-gray-200 bg-white">
+        <h2 className="text-lg font-semibold text-gray-900 mb-2">How We Sit Across Your Ecosystem</h2>
+        <p className="text-[13px] text-gray-500 mb-5">
+          We do not tamper with your existing stacks. We aggregate them, find the gaps, and build agentic AI tools on top to automate.
+        </p>
+
+        {/* Netcare ecosystem visual */}
+        <div className="rounded-xl bg-gray-50 p-5 mb-5">
+          <div className="text-center mb-4">
+            <span className="text-[10px] text-gray-400 uppercase tracking-widest font-semibold">Netcare Digital Ecosystem</span>
+          </div>
+          <div className="grid grid-cols-4 gap-3 mb-4">
+            {[
+              { name: "CareOn EMR", desc: "49 hospitals, 34K users", type: "Hospital Clinical" },
+              { name: "HEAL (A2D24)", desc: "55 Medicross clinics", type: "Primary Care EMR" },
+              { name: "SAP Healthcare", desc: "Finance, billing, ADT", type: "Enterprise ERP" },
+              { name: "Netcare App", desc: "iOS/Android/Huawei", type: "Patient Portal" },
+              { name: "SwitchOn/MediKredit", desc: "Claims switching", type: "Claims Infrastructure" },
+              { name: "IBM Micromedex", desc: "4.5M drug pair checks", type: "Drug Safety" },
+              { name: "Corsano Wearables", desc: "6,000 beds", type: "Patient Monitoring" },
+              { name: "Clicks Pharmacy", desc: "41 pharmacies", type: "Pharmacy Network" },
+            ].map(sys => (
+              <div key={sys.name} className="p-3 rounded-lg bg-white border border-gray-200 text-center">
+                <div className="text-[11px] font-semibold text-gray-900">{sys.name}</div>
+                <div className="text-[9px] text-gray-400 mt-0.5">{sys.desc}</div>
+                <div className="text-[8px] text-[#3DA9D1] mt-1 font-medium">{sys.type}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Arrow down */}
+          <div className="flex justify-center my-3">
+            <div className="flex flex-col items-center">
+              <div className="text-[10px] text-[#E3964C] font-semibold uppercase tracking-wider">VisioHealth OS Aggregation Layer</div>
+              <div className="w-px h-4 bg-[#E3964C] mt-1" />
+              <ArrowRight className="w-4 h-4 text-[#E3964C] rotate-90" />
+            </div>
+          </div>
+
+          {/* Our tools on top */}
+          <div className="grid grid-cols-5 gap-2">
+            {[
+              { name: "AI Claims Engine", desc: "Pre-validates across all switches" },
+              { name: "WhatsApp Router", desc: "One number, all clinics" },
+              { name: "Network Dashboard", desc: "Aggregates all financial data" },
+              { name: "Practitioner Portal", desc: "Performance across all PMS" },
+              { name: "Compliance Engine", desc: "POPIA across all systems" },
+            ].map(tool => (
+              <div key={tool.name} className="p-2.5 rounded-lg bg-[#1D3443] text-center">
+                <div className="text-[10px] font-semibold text-white">{tool.name}</div>
+                <div className="text-[8px] text-white/40 mt-0.5">{tool.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <p className="text-[12px] text-gray-500 leading-relaxed">
+          We aggregate your existing systems into one intelligence layer. Then we build agentic AI tools on top that automate the gaps between them.
+          Nothing gets replaced. Everything gets connected. And we continuously find areas where you can save money in data costs, operational overhead,
+          and system redundancies.
+        </p>
+      </div>
+
+      {/* What We Will Build — The Promise */}
+      <div className="p-6 rounded-xl bg-gradient-to-br from-[#1D3443] to-[#152736]">
+        <h2 className="text-xl font-semibold text-white mb-3">What We Will Build</h2>
+        <p className="text-[14px] text-white/60 leading-relaxed mb-4">
+          We will probably build the best tools you have ever seen. We will unlock insights in the business
+          you did not know existed. We will build additional tools for you and integrate them at no extra cost.
+          Keep your costs low. Optimise across the board.
+        </p>
+        <p className="text-[14px] text-white/60 leading-relaxed mb-4">
+          Starting with the Health OS and its 5 AI agents — but that is just the beginning.
+          As we learn your data, we build more. As AI capabilities grow, we bring them to you first.
+        </p>
+        <div className="p-4 rounded-lg bg-white/5 border border-white/10 mb-4">
+          <p className="text-[13px] text-[#E3964C] font-medium leading-relaxed">
+            We have worked with doctors who have professionally consulted in the development of these products.
+            That is our driver — real clinical input shaping real tools. And you can make requests too.
+            We can safely implement anything your teams need.
+          </p>
+        </div>
+        <p className="text-[14px] text-white/60 leading-relaxed">
+          We charge reasonably for using the tools. The research, the data, the insights —
+          we would love to share all of it with you. Updates on new technologies across AI.
+          Help with adoption. A true research partnership, not a software subscription.
+        </p>
+      </div>
+
+      {/* David's Sign-off */}
+      <div className="p-5 rounded-xl border border-[#3DA9D1]/20 bg-[#3DA9D1]/5">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-full bg-[#1D3443] flex items-center justify-center text-white font-bold text-[14px] shrink-0">DH</div>
+          <div>
+            <p className="text-[13px] text-gray-700 leading-relaxed italic">
+              &ldquo;We are not here to sell you software. We are here to partner with you in making AI work for healthcare.
+              The technology does not stop growing. The question is not whether to adopt it — it is who you adopt it with.
+              We chose Netcare because you are South Africa&apos;s largest private healthcare provider.
+              We believe the combination of your scale and our AI capability can genuinely transform how
+              3.5 million people receive care. That is worth building together.&rdquo;
+            </p>
+            <p className="text-[13px] text-gray-900 font-semibold mt-3">David M. Hampton</p>
+            <p className="text-[11px] text-gray-500">Managing Director, VisioCorp &middot; Founder, Visio Research Labs</p>
+          </div>
+        </div>
+      </div>
+
       {/* Final line */}
       <div className="text-center py-4">
         <p className="text-[13px] text-gray-400">
