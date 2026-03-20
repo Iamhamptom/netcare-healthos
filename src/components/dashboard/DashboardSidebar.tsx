@@ -132,7 +132,7 @@ export default function DashboardSidebar() {
         <img
           src="/images/netcare-logo.png"
           alt="Netcare"
-          className="h-5 shrink-0"
+          className="h-5 shrink-0 brightness-[10] saturate-0 opacity-80"
         />
         <AnimatePresence>
           {!collapsed && (

@@ -7,20 +7,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex h-screen bg-[#1D3443]">
       <DashboardSidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden rounded-tl-2xl">
         <DashboardHeader />
-        <main className="flex-1 overflow-y-auto bg-[#fafafa] text-gray-900 light-content font-body">
+        <main className="flex-1 overflow-y-auto bg-gradient-to-br from-[#f0f2f5] via-[#f5f6f8] to-[#eef0f4] text-[#1D3443] light-content font-body">
           {children}
-          <div className="px-6 py-3 border-t border-gray-100 bg-white/50 flex items-center justify-between">
+          <div className="px-6 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
-              <span className="text-[11px] text-gray-400 font-medium">
-                Powered by <span className="text-gray-600 font-semibold">VisioHealth OS</span>
+              <div className="w-1 h-1 rounded-full bg-[#1D3443]/15" />
+              <span className="text-[10px] text-[#1D3443]/20 font-medium">
+                Powered by <span className="font-semibold text-[#1D3443]/30">VisioHealth OS</span>
               </span>
             </div>
-            <span className="text-[10px] text-gray-300">
-              Visio Research Labs
-            </span>
+            <span className="text-[10px] text-[#1D3443]/15">Visio Research Labs</span>
           </div>
         </main>
       </div>
