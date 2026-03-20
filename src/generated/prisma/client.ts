@@ -191,3 +191,48 @@ export type OutreachTarget = Prisma.OutreachTargetModel
  * 
  */
 export type OutreachEmail = Prisma.OutreachEmailModel
+/**
+ * Model HealthbridgeClaim
+ * 
+ */
+export type HealthbridgeClaim = Prisma.HealthbridgeClaimModel
+/**
+ * Model HealthbridgeRemittance
+ * 
+ */
+export type HealthbridgeRemittance = Prisma.HealthbridgeRemittanceModel
+/**
+ * Model HealthbridgeEligibility
+ * 
+ */
+export type HealthbridgeEligibility = Prisma.HealthbridgeEligibilityModel
+/**
+ * Model ClaimsAnalysis
+ * 
+ */
+export type ClaimsAnalysis = Prisma.ClaimsAnalysisModel
+/**
+ * Model ClaimsRule
+ * 
+ */
+export type ClaimsRule = Prisma.ClaimsRuleModel
+/**
+ * Model SwitchingPreAuth
+ * 
+ */
+export type SwitchingPreAuth = Prisma.SwitchingPreAuthModel
+/**
+ * Model SwitchingBatchJob
+ * 
+ */
+export type SwitchingBatchJob = Prisma.SwitchingBatchJobModel
+/**
+ * Model SwitchingERA
+ * 
+ */
+export type SwitchingERA = Prisma.SwitchingERAModel
+/**
+ * Model SwitchingVendor
+ * 
+ */
+export type SwitchingVendor = Prisma.SwitchingVendorModel

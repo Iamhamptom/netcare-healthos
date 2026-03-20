@@ -17,6 +17,18 @@ export async function middleware(request: NextRequest) {
   const isInvestor = pathname.startsWith("/investor");
   const isGPDashboard = pathname.startsWith("/gp/dashboard");
 
+  // Protected API routes (return 401 instead of redirect)
+  const isProtectedApi = pathname.startsWith("/api/claims") ||
+    pathname.startsWith("/api/admin") ||
+    pathname.startsWith("/api/invoices") ||
+    pathname.startsWith("/api/payments");
+
+  if (isProtectedApi) {
+    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const session = await verifyToken(token);
+    if (!session) return NextResponse.json({ error: "Session expired" }, { status: 401 });
+  }
+
   if (isDashboard || isAdmin || isInvestor || isGPDashboard) {
     if (!token) return NextResponse.redirect(new URL("/login", request.url));
     const session = await verifyToken(token);
@@ -36,5 +48,9 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*", "/investor/:path*", "/gp/dashboard/:path*", "/login", "/register"],
+  matcher: [
+    "/dashboard/:path*", "/admin/:path*", "/investor/:path*", "/gp/dashboard/:path*",
+    "/login", "/register",
+    "/api/claims/:path*", "/api/admin/:path*", "/api/invoices/:path*", "/api/payments/:path*",
+  ],
 };

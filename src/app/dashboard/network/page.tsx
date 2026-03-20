@@ -1,67 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   Building2, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2,
   DollarSign, FileWarning, Activity, Users, Receipt, Shield, BarChart3,
-  ArrowUpRight, ArrowDownRight, Clock, Zap, Globe, ChevronRight,
+  ArrowUpRight, ArrowDownRight, Clock, Zap, Globe, ChevronRight, Loader2,
 } from "lucide-react";
+import type { DivisionKPI, ClinicPerformance, RejectionCode, SchemeMetric } from "@/lib/data-sources/types";
 
-// ─── Netcare Primary Healthcare Division — Financial Command Center ──────
-// FY2025: Division Revenue R662M, EBITDA R162M (24.5% margin)
-// Group: R26.3B revenue, R4.9B EBITDA, CEO Dr Richard Friedland
-// Primary Care = 2.5% of group but high-margin (24.5%) — tech leverage is disproportionately valuable
-
-const DIVISION_KPIs = [
-  { label: "Division Revenue (MTD)", value: "R55.2M", target: "R55.2M", pct: 100, trend: "+2.8%", icon: DollarSign, color: "#3DA9D1", status: "on_track" },
-  { label: "Claims via MediSwitch", value: "34,892", target: "38,000", pct: 91.8, trend: "+8.1%", icon: Receipt, color: "#E3964C", status: "on_track" },
-  { label: "First-Pass Rejections", value: "5,234", target: "<3,800", pct: 137.7, trend: "-3.2%", icon: FileWarning, color: "#EF4444", status: "attention" },
-  { label: "Collection Ratio", value: "91.3%", target: "95%", pct: 96.1, trend: "+1.8%", icon: TrendingUp, color: "#10B981", status: "improving" },
-  { label: "EBITDA Margin", value: "24.5%", target: "25%", pct: 98.0, trend: "+1.5%", icon: BarChart3, color: "#8B5CF6", status: "on_track" },
-  { label: "Debtors >60 Days", value: "R8.9M", target: "<R7M", pct: 127.1, trend: "-5.4%", icon: Clock, color: "#F59E0B", status: "attention" },
-];
-
-const CLINIC_PERFORMANCE = [
-  { name: "Medicross Sandton City", region: "Gauteng North", revenue: 2450000, target: 2800000, claims: 1890, rejected: 98, rejectionRate: 5.2, patients: 4250, collectionRatio: 94.1 },
-  { name: "Medicross Fourways", region: "Gauteng North", revenue: 1980000, target: 2200000, claims: 1650, rejected: 132, rejectionRate: 8.0, patients: 3890, collectionRatio: 89.2 },
-  { name: "Medicross Pretoria East", region: "Gauteng East", revenue: 1640000, target: 1800000, claims: 1340, rejected: 67, rejectionRate: 5.0, patients: 3120, collectionRatio: 93.8 },
-  { name: "Medicross Rosebank", region: "Gauteng North", revenue: 1420000, target: 1600000, claims: 980, rejected: 45, rejectionRate: 4.6, patients: 2340, collectionRatio: 95.2 },
-  { name: "Medicross Soweto", region: "Gauteng South", revenue: 1890000, target: 2000000, claims: 2890, rejected: 289, rejectionRate: 10.0, patients: 5670, collectionRatio: 86.4 },
-  { name: "Prime Cure Occ Health", region: "National", revenue: 3200000, target: 3000000, claims: 2100, rejected: 42, rejectionRate: 2.0, patients: 8900, collectionRatio: 97.1 },
-  { name: "Medicross Cape Town CBD", region: "Western Cape", revenue: 2100000, target: 2400000, claims: 1720, rejected: 86, rejectionRate: 5.0, patients: 4100, collectionRatio: 92.6 },
-  { name: "Medicross Durban North", region: "KZN", revenue: 1560000, target: 1700000, claims: 1290, rejected: 71, rejectionRate: 5.5, patients: 2980, collectionRatio: 91.8 },
-];
-
-const TOP_REJECTION_CODES = [
-  { code: "ICD-10 E11.9", desc: "Type 2 DM — missing HbA1c motivation", count: 342, value: "R1.2M", action: "Auto-attach HbA1c results to chronic claims" },
-  { code: "ICD-10 Z00.0", desc: "General screening — not covered on plan", count: 287, value: "R890K", action: "Pre-check benefit limits before booking" },
-  { code: "ICD-10 J06.9", desc: "Acute URTI — duplicate claim within 14 days", count: 198, value: "R420K", action: "Flag duplicate consultations in booking system" },
-  { code: "ICD-10 K04.0", desc: "Dental benefits exhausted for year", count: 156, value: "R780K", action: "Alert patient of benefit status before treatment" },
-  { code: "NAPPI mismatch", desc: "Pharmacy code not matching formulary", count: 134, value: "R560K", action: "Sync NAPPI codes with scheme formularies monthly" },
-];
-
-const COST_SAVINGS = [
-  { area: "ICD-10-ZA + NAPPI Pre-validation", current: "15-25% first-pass rejection rate", savings: "R1.8M/month recoverable", pct: 75, desc: "AI validates ICD-10-ZA codes, NAPPI codes, and PMB benefit checks before claims hit the switch — catching 75% of rejectable claims. At R50-R150 rework cost per rejected claim, this eliminates thousands of hours of manual correction." },
-  { area: "eRA Auto-Reconciliation", current: "568 practitioners × manual eRA matching", savings: "R840K/month in labour", pct: 60, desc: "Automated electronic Remittance Advice (eRA) matching across all 568 practitioners — replacing the Excel-based reconciliation that each clinic runs independently. Single dashboard shows scheme tariff vs provider charge gaps." },
-  { area: "Debtor Aging Intelligence", current: "R8.9M outstanding > 60 days", savings: "R3.2M recoverable", pct: 36, desc: "AI-powered aging analysis with automated follow-up — SMS, WhatsApp, escalation. Targets GEMS (21-day avg payment) and Medihelp (24-day avg) where payment cycles exceed industry norms." },
-  { area: "Capitation vs Fee-for-Service Analytics", current: "Prime Cure PMPM overspend: R1.1M", savings: "R660K/month flagged early", pct: 60, desc: "Real-time monitoring of per-member-per-month spend against Prime Cure capitation rates (R287 PMPM). Alerts when clinics exceed thresholds — critical after the lost occupational health contract reduced diversification." },
-  { area: "POPIA + HPCSA Compliance Engine", current: "Manual audits across 8 provinces", savings: "R480K/month in compliance labour", pct: 50, desc: "Automated consent tracking (s18-s72 POPIA), HPCSA Booklet 10 alignment, audit logging, and breach detection across all 88 clinics. Replaces regional FTE-based compliance checks." },
-  { area: "Pharmacy Inventory (41 Pharmacies)", current: "R2.1M dead stock, NAPPI mismatches", savings: "R1.4M freed working capital", pct: 67, desc: "AI demand forecasting for pharmacy inventory across 41 Netcare pharmacies — reducing overstocking while syncing NAPPI codes with scheme formularies to prevent dispensing rejections." },
-];
-
-// SA has ~9.7M medical aid beneficiaries (15.8% of population)
-// Discovery has 40%+ market share, GEMS is largest single scheme
-const MEDICAL_SCHEMES = [
-  { name: "Discovery Health (DSP network)", lives: 89000, claimsVolume: "R18.2M", rejectionRate: 4.8, avgDays: 14 },
-  { name: "GEMS (Government Employees)", lives: 42000, claimsVolume: "R8.6M", rejectionRate: 5.2, avgDays: 21 },
-  { name: "Bonitas", lives: 31000, claimsVolume: "R6.1M", rejectionRate: 6.1, avgDays: 18 },
-  { name: "Momentum Health", lives: 24000, claimsVolume: "R4.8M", rejectionRate: 5.5, avgDays: 16 },
-  { name: "Medihelp", lives: 18000, claimsVolume: "R3.4M", rejectionRate: 7.3, avgDays: 24 },
-  { name: "Polmed (SAPS)", lives: 12000, claimsVolume: "R2.2M", rejectionRate: 4.9, avgDays: 19 },
-  { name: "Prime Cure (capitated managed care)", lives: 254000, claimsVolume: "R12.8M", rejectionRate: 2.0, avgDays: 7 },
-  { name: "NetcarePlus (prepaid/uninsured)", lives: 35000, claimsVolume: "R2.1M", rejectionRate: 0, avgDays: 0 },
-];
+// Icon map for KPIs from API
+const ICON_MAP: Record<string, typeof DollarSign> = {
+  DollarSign, Receipt, FileWarning, TrendingUp, BarChart3, Clock, Activity, Users, Shield, Zap,
+};
 
 function formatRand(n: number) {
   if (n >= 1000000) return `R${(n / 1000000).toFixed(1)}M`;
@@ -69,20 +20,75 @@ function formatRand(n: number) {
   return `R${n.toLocaleString()}`;
 }
 
+function LoadingSkeleton({ rows = 4 }: { rows?: number }) {
+  return (
+    <div className="space-y-3">
+      {Array.from({ length: rows }).map((_, i) => (
+        <div key={i} className="h-16 bg-gray-100 rounded-xl animate-pulse" />
+      ))}
+    </div>
+  );
+}
+
 export default function NetworkFinancialPage() {
   const [selectedTab, setSelectedTab] = useState<"overview" | "clinics" | "claims" | "savings" | "schemes">("overview");
+  const [kpis, setKpis] = useState<DivisionKPI[]>([]);
+  const [clinics, setClinics] = useState<ClinicPerformance[]>([]);
+  const [rejections, setRejections] = useState<RejectionCode[]>([]);
+  const [schemes, setSchemes] = useState<SchemeMetric[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const totalRevenue = CLINIC_PERFORMANCE.reduce((s, c) => s + c.revenue, 0);
-  const totalTarget = CLINIC_PERFORMANCE.reduce((s, c) => s + c.target, 0);
-  const totalClaims = CLINIC_PERFORMANCE.reduce((s, c) => s + c.claims, 0);
-  const totalRejected = CLINIC_PERFORMANCE.reduce((s, c) => s + c.rejected, 0);
-  const networkRejectionRate = ((totalRejected / totalClaims) * 100).toFixed(1);
-  const totalSavings = COST_SAVINGS.reduce((s, c) => {
-    const match = c.savings.match(/R([\d.]+)([MK])/);
-    if (!match) return s;
-    const val = parseFloat(match[1]) * (match[2] === "M" ? 1000000 : 1000);
-    return s + val;
-  }, 0);
+  const fetchData = useCallback(async (tab: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/network?tab=${tab}`);
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
+      const data = await res.json();
+
+      switch (tab) {
+        case "kpis": setKpis(data); break;
+        case "clinics": setClinics(data); break;
+        case "rejections": setRejections(data); break;
+        case "schemes": setSchemes(data); break;
+      }
+    } catch (err) {
+      console.error(`Failed to fetch ${tab}:`, err);
+      setError(`Failed to load data. The database may not be seeded yet.`);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch data for current tab
+  useEffect(() => {
+    const tabMap: Record<string, string> = {
+      overview: "kpis",
+      clinics: "clinics",
+      claims: "rejections",
+      schemes: "schemes",
+    };
+    const apiTab = tabMap[selectedTab];
+    if (apiTab) fetchData(apiTab);
+    else setLoading(false);
+  }, [selectedTab, fetchData]);
+
+  // Pre-fetch clinics for overview revenue breakdown
+  useEffect(() => {
+    if (clinics.length === 0) {
+      fetch("/api/network?tab=clinics")
+        .then(r => r.ok ? r.json() : [])
+        .then(d => { if (Array.isArray(d) && d.length > 0) setClinics(d); })
+        .catch(() => {});
+    }
+  }, [clinics.length]);
+
+  const totalRevenue = clinics.reduce((s, c) => s + c.revenue, 0);
+  const totalTarget = clinics.reduce((s, c) => s + c.target, 0);
+  const totalClaims = clinics.reduce((s, c) => s + c.claimsSubmitted, 0);
+  const totalRejected = clinics.reduce((s, c) => s + c.claimsRejected, 0);
+  const networkRejectionRate = totalClaims > 0 ? ((totalRejected / totalClaims) * 100).toFixed(1) : "0";
 
   return (
     <div className="p-6 space-y-6 max-w-[1400px] mx-auto">
@@ -93,19 +99,17 @@ export default function NetworkFinancialPage() {
             <img src="/images/netcare-logo.png" alt="Netcare" className="h-5" />
             <span className="text-[11px] text-gray-400 uppercase tracking-widest font-semibold">Financial Command Center</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Network Financial Overview
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900">Network Financial Overview</h1>
           <p className="text-[13px] text-gray-500 mt-0.5">
-            88 clinics (55 Medicross) &middot; 41 pharmacies &middot; 12 day theatres &middot; 568 practitioners &middot; 3.5M patients/year
+            {clinics.length > 0 ? `${clinics.length} clinics` : "88 clinics"} &middot; 41 pharmacies &middot; 12 day theatres &middot; 568 practitioners &middot; 3.5M patients/year
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#3DA9D1]/10 text-[#1D3443]">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-100 text-amber-800">
             <Activity className="w-3.5 h-3.5" />
-            <span className="text-[11px] font-semibold">LIVE</span>
+            <span className="text-[11px] font-semibold">DEMO</span>
           </div>
-          <span className="text-[11px] text-gray-400">March 2026</span>
+          <span className="text-[11px] text-gray-400">Sample data &middot; March 2026</span>
         </div>
       </div>
 
@@ -131,300 +135,280 @@ export default function NetworkFinancialPage() {
         ))}
       </div>
 
+      {/* Error state */}
+      {error && (
+        <div className="p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-800 text-[13px]">
+          <AlertTriangle className="w-4 h-4 inline mr-2" />
+          {error}
+        </div>
+      )}
+
       {/* Overview Tab */}
       {selectedTab === "overview" && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-          {/* KPI Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {DIVISION_KPIs.map((kpi, i) => (
-              <motion.div
-                key={kpi.label}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className={`p-4 rounded-xl border ${kpi.status === "attention" ? "border-red-200 bg-red-50/30" : "border-gray-200 bg-white"}`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <kpi.icon className="w-4 h-4" style={{ color: kpi.color }} />
-                  <span className={`text-[10px] font-semibold flex items-center gap-0.5 ${kpi.trend.startsWith("+") ? "text-green-600" : kpi.trend.startsWith("-") && kpi.status === "attention" ? "text-green-600" : "text-red-500"}`}>
-                    {kpi.trend.startsWith("+") ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                    {kpi.trend}
-                  </span>
-                </div>
-                <div className="text-xl font-bold text-gray-900 font-metric">{kpi.value}</div>
-                <div className="text-[10px] text-gray-500 mt-0.5">{kpi.label}</div>
-                <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{ width: `${Math.min(kpi.pct, 100)}%`, backgroundColor: kpi.status === "attention" ? "#EF4444" : kpi.color }}
-                  />
-                </div>
-                <div className="text-[9px] text-gray-400 mt-1">Target: {kpi.target}</div>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Two column — Revenue vs Savings */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Revenue Summary */}
-            <div className="p-5 rounded-xl border border-gray-200 bg-white">
-              <h3 className="text-[15px] font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-[#3DA9D1]" /> Revenue by Region
-              </h3>
-              <div className="space-y-3">
-                {["Gauteng North", "Gauteng South", "Gauteng East", "Western Cape", "KZN", "National"].map(region => {
-                  const clinics = CLINIC_PERFORMANCE.filter(c => c.region === region);
-                  const rev = clinics.reduce((s, c) => s + c.revenue, 0);
-                  const tgt = clinics.reduce((s, c) => s + c.target, 0);
-                  if (clinics.length === 0) return null;
+          {loading && kpis.length === 0 ? <LoadingSkeleton rows={2} /> : (
+            <>
+              {/* KPI Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                {kpis.map((kpi, i) => {
+                  const Icon = ICON_MAP[kpi.icon] || BarChart3;
                   return (
-                    <div key={region}>
-                      <div className="flex items-center justify-between text-[13px]">
-                        <span className="text-gray-700 font-medium">{region} <span className="text-gray-400">({clinics.length} {clinics.length === 1 ? "site" : "sites"})</span></span>
-                        <span className="font-semibold text-gray-900">{formatRand(rev)}</span>
+                    <motion.div
+                      key={kpi.label}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      className={`p-4 rounded-xl border ${kpi.status === "attention" ? "border-red-200 bg-red-50/30" : "border-gray-200 bg-white"}`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <Icon className="w-4 h-4" style={{ color: kpi.color }} />
+                        <span className={`text-[10px] font-semibold flex items-center gap-0.5 ${kpi.trend.startsWith("+") ? "text-green-600" : "text-red-500"}`}>
+                          {kpi.trend.startsWith("+") ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                          {kpi.trend}
+                        </span>
                       </div>
-                      <div className="mt-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-[#3DA9D1] rounded-full" style={{ width: `${(rev / tgt) * 100}%` }} />
+                      <div className="text-xl font-bold text-gray-900 font-metric">{kpi.value}</div>
+                      <div className="text-[10px] text-gray-500 mt-0.5">{kpi.label}</div>
+                      <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{ width: `${Math.min(kpi.pct, 100)}%`, backgroundColor: kpi.status === "attention" ? "#EF4444" : kpi.color }}
+                        />
                       </div>
-                    </div>
+                      <div className="text-[9px] text-gray-400 mt-1">Target: {kpi.target}</div>
+                    </motion.div>
                   );
                 })}
               </div>
-              <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
-                <span className="text-[13px] text-gray-500">Network Total (MTD)</span>
-                <span className="text-lg font-bold text-[#1D3443]">{formatRand(totalRevenue)}</span>
-              </div>
-            </div>
 
-            {/* Savings Summary */}
-            <div className="p-5 rounded-xl border border-[#E3964C]/20 bg-[#E3964C]/5">
-              <h3 className="text-[15px] font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <Zap className="w-4 h-4 text-[#E3964C]" /> AI Cost Savings Potential
-              </h3>
-              <div className="text-3xl font-bold text-[#E3964C] mb-1">{formatRand(totalSavings)}<span className="text-[13px] text-gray-500 font-normal">/month</span></div>
-              <p className="text-[12px] text-gray-500 mb-4">Addressable through AI automation across 6 operational areas</p>
-              <div className="space-y-2">
-                {COST_SAVINGS.slice(0, 4).map(s => (
-                  <div key={s.area} className="flex items-center justify-between">
-                    <span className="text-[12px] text-gray-600">{s.area}</span>
-                    <span className="text-[12px] font-semibold text-[#E3964C]">{s.savings}</span>
+              {/* Two column — Revenue vs Alerts */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Revenue by Region */}
+                <div className="p-5 rounded-xl border border-gray-200 bg-white">
+                  <h3 className="text-[15px] font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <DollarSign className="w-4 h-4 text-[#3DA9D1]" /> Revenue by Region
+                  </h3>
+                  <div className="space-y-3">
+                    {Array.from(new Set(clinics.map(c => c.region))).map(region => {
+                      const regionClinics = clinics.filter(c => c.region === region);
+                      const rev = regionClinics.reduce((s, c) => s + c.revenue, 0);
+                      const tgt = regionClinics.reduce((s, c) => s + c.target, 0);
+                      if (regionClinics.length === 0) return null;
+                      return (
+                        <div key={region}>
+                          <div className="flex items-center justify-between text-[13px]">
+                            <span className="text-gray-700 font-medium">{region} <span className="text-gray-400">({regionClinics.length} sites)</span></span>
+                            <span className="font-semibold text-gray-900">{formatRand(rev)}</span>
+                          </div>
+                          <div className="mt-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-[#3DA9D1] rounded-full" style={{ width: `${tgt > 0 ? (rev / tgt) * 100 : 0}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
-              </div>
-              <button onClick={() => setSelectedTab("savings")} className="mt-4 text-[12px] text-[#3DA9D1] font-semibold flex items-center gap-1 hover:underline">
-                View full breakdown <ChevronRight className="w-3 h-3" />
-              </button>
-            </div>
-          </div>
+                  <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <span className="text-[13px] text-gray-500">Network Total</span>
+                    <span className="text-lg font-bold text-[#1D3443]">{formatRand(totalRevenue)}</span>
+                  </div>
+                </div>
 
-          {/* Alerts */}
-          <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/50">
-            <h3 className="text-[13px] font-semibold text-amber-800 mb-3 flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4" /> Financial Alerts — Requires Attention
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="p-3 rounded-lg bg-white border border-amber-200">
-                <div className="text-[11px] text-amber-600 font-semibold uppercase">First-Pass Rejection Spike</div>
-                <div className="text-[13px] text-gray-700 mt-1">Medicross Soweto: <span className="font-bold text-red-600">10% first-pass rejection</span> via SwitchOn — double network avg. Root cause: ICD-10-ZA coding errors on chronic CDL scripts. Est. rework cost: R78K (at R50-R150/claim).</div>
+                {/* Alerts */}
+                <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/50">
+                  <h3 className="text-[13px] font-semibold text-amber-800 mb-3 flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4" /> Financial Alerts — Requires Attention
+                  </h3>
+                  <div className="space-y-3">
+                    {clinics.filter(c => c.rejectionRate > 8).slice(0, 3).map(c => (
+                      <div key={c.id} className="p-3 rounded-lg bg-white border border-amber-200">
+                        <div className="text-[11px] text-amber-600 font-semibold uppercase">High Rejection Rate</div>
+                        <div className="text-[13px] text-gray-700 mt-1">
+                          {c.name}: <span className="font-bold text-red-600">{c.rejectionRate}% rejection rate</span> — {c.claimsRejected} claims rejected out of {c.claimsSubmitted}.
+                        </div>
+                      </div>
+                    ))}
+                    {clinics.filter(c => c.rejectionRate > 8).length === 0 && (
+                      <div className="p-3 rounded-lg bg-white border border-green-200 text-[13px] text-green-700">
+                        <CheckCircle2 className="w-4 h-4 inline mr-2" />
+                        No clinics above 8% rejection threshold
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div className="p-3 rounded-lg bg-white border border-amber-200">
-                <div className="text-[11px] text-amber-600 font-semibold uppercase">Capitation PMPM Overspend</div>
-                <div className="text-gray-700 text-[13px] mt-1">Prime Cure capitated lives exceeding R287 PMPM cap by <span className="font-bold text-red-600">R1.1M this month</span>. Post-contract loss (May 2025), remaining capitated book must stay within actuarial bounds.</div>
-              </div>
-              <div className="p-3 rounded-lg bg-white border border-amber-200">
-                <div className="text-[11px] text-amber-600 font-semibold uppercase">GEMS eRA Reconciliation Backlog</div>
-                <div className="text-gray-700 text-[13px] mt-1"><span className="font-bold text-red-600">R890K</span> in GEMS claims with unmatched eRAs — avg 21-day payment cycle. Manual reconciliation across 568 practitioners creating bottleneck.</div>
-              </div>
-            </div>
-          </div>
+            </>
+          )}
         </motion.div>
       )}
 
       {/* Clinics Tab */}
       {selectedTab === "clinics" && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="rounded-xl border border-gray-200 overflow-hidden">
-            <table className="w-full text-[13px]">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="text-left p-3 font-semibold text-gray-600">Clinic</th>
-                  <th className="text-left p-3 font-semibold text-gray-600">Region</th>
-                  <th className="text-right p-3 font-semibold text-gray-600">Revenue (MTD)</th>
-                  <th className="text-right p-3 font-semibold text-gray-600">Target</th>
-                  <th className="text-right p-3 font-semibold text-gray-600">Claims</th>
-                  <th className="text-right p-3 font-semibold text-gray-600">Rejected</th>
-                  <th className="text-right p-3 font-semibold text-gray-600">Rej. Rate</th>
-                  <th className="text-right p-3 font-semibold text-gray-600">Collection</th>
-                  <th className="text-right p-3 font-semibold text-gray-600">Patients</th>
-                </tr>
-              </thead>
-              <tbody>
-                {CLINIC_PERFORMANCE.map((clinic, i) => (
-                  <tr key={clinic.name} className={`border-b border-gray-100 hover:bg-gray-50/50 ${i % 2 === 0 ? "bg-white" : "bg-gray-50/30"}`}>
-                    <td className="p-3 font-medium text-gray-900">{clinic.name}</td>
-                    <td className="p-3 text-gray-500">{clinic.region}</td>
-                    <td className="p-3 text-right font-semibold">{formatRand(clinic.revenue)}</td>
-                    <td className="p-3 text-right text-gray-400">{formatRand(clinic.target)}</td>
-                    <td className="p-3 text-right">{clinic.claims.toLocaleString()}</td>
-                    <td className="p-3 text-right text-red-600 font-medium">{clinic.rejected}</td>
-                    <td className={`p-3 text-right font-semibold ${clinic.rejectionRate > 7 ? "text-red-600" : clinic.rejectionRate > 5 ? "text-amber-600" : "text-green-600"}`}>
-                      {clinic.rejectionRate}%
-                    </td>
-                    <td className={`p-3 text-right font-semibold ${clinic.collectionRatio >= 95 ? "text-green-600" : clinic.collectionRatio >= 90 ? "text-amber-600" : "text-red-600"}`}>
-                      {clinic.collectionRatio}%
-                    </td>
-                    <td className="p-3 text-right text-gray-600">{clinic.patients.toLocaleString()}</td>
+          {loading && clinics.length === 0 ? <LoadingSkeleton rows={6} /> : (
+            <div className="rounded-xl border border-gray-200 overflow-hidden">
+              <table className="w-full text-[13px]">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-200">
+                    <th className="text-left p-3 font-semibold text-gray-600">Clinic</th>
+                    <th className="text-left p-3 font-semibold text-gray-600">Region</th>
+                    <th className="text-right p-3 font-semibold text-gray-600">Revenue</th>
+                    <th className="text-right p-3 font-semibold text-gray-600">Target</th>
+                    <th className="text-right p-3 font-semibold text-gray-600">Claims</th>
+                    <th className="text-right p-3 font-semibold text-gray-600">Rejected</th>
+                    <th className="text-right p-3 font-semibold text-gray-600">Rej. Rate</th>
+                    <th className="text-right p-3 font-semibold text-gray-600">Collection</th>
+                    <th className="text-right p-3 font-semibold text-gray-600">Patients</th>
                   </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="bg-[#1D3443] text-white font-semibold">
-                  <td className="p-3" colSpan={2}>Network Total (8 of 88 clinics shown)</td>
-                  <td className="p-3 text-right">{formatRand(totalRevenue)}</td>
-                  <td className="p-3 text-right">{formatRand(totalTarget)}</td>
-                  <td className="p-3 text-right">{totalClaims.toLocaleString()}</td>
-                  <td className="p-3 text-right">{totalRejected.toLocaleString()}</td>
-                  <td className="p-3 text-right">{networkRejectionRate}%</td>
-                  <td className="p-3 text-right">91.3%</td>
-                  <td className="p-3 text-right">35,250</td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {clinics.map((clinic, i) => (
+                    <tr key={clinic.id || i} className={`border-b border-gray-100 hover:bg-gray-50/50 ${i % 2 === 0 ? "bg-white" : "bg-gray-50/30"}`}>
+                      <td className="p-3 font-medium text-gray-900">{clinic.name}</td>
+                      <td className="p-3 text-gray-500">{clinic.region}</td>
+                      <td className="p-3 text-right font-semibold">{formatRand(clinic.revenue)}</td>
+                      <td className="p-3 text-right text-gray-400">{formatRand(clinic.target)}</td>
+                      <td className="p-3 text-right">{clinic.claimsSubmitted.toLocaleString()}</td>
+                      <td className="p-3 text-right text-red-600 font-medium">{clinic.claimsRejected}</td>
+                      <td className={`p-3 text-right font-semibold ${clinic.rejectionRate > 7 ? "text-red-600" : clinic.rejectionRate > 5 ? "text-amber-600" : "text-green-600"}`}>
+                        {clinic.rejectionRate}%
+                      </td>
+                      <td className={`p-3 text-right font-semibold ${clinic.collectionRatio >= 95 ? "text-green-600" : clinic.collectionRatio >= 90 ? "text-amber-600" : "text-red-600"}`}>
+                        {clinic.collectionRatio}%
+                      </td>
+                      <td className="p-3 text-right text-gray-600">{clinic.patientCount.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="bg-[#1D3443] text-white font-semibold">
+                    <td className="p-3" colSpan={2}>Network Total ({clinics.length} clinics)</td>
+                    <td className="p-3 text-right">{formatRand(totalRevenue)}</td>
+                    <td className="p-3 text-right">{formatRand(totalTarget)}</td>
+                    <td className="p-3 text-right">{totalClaims.toLocaleString()}</td>
+                    <td className="p-3 text-right">{totalRejected.toLocaleString()}</td>
+                    <td className="p-3 text-right">{networkRejectionRate}%</td>
+                    <td className="p-3 text-right">—</td>
+                    <td className="p-3 text-right">{clinics.reduce((s, c) => s + c.patientCount, 0).toLocaleString()}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          )}
         </motion.div>
       )}
 
       {/* Claims Intelligence Tab */}
       {selectedTab === "claims" && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="p-4 rounded-xl border border-gray-200 bg-white">
-              <div className="text-[11px] text-gray-500 uppercase font-semibold">Total Claims MTD</div>
-              <div className="text-2xl font-bold text-gray-900 mt-1">34,892</div>
-              <div className="text-[11px] text-green-600 font-medium mt-1 flex items-center gap-1"><ArrowUpRight className="w-3 h-3" /> +8.1% vs prev month</div>
-            </div>
-            <div className="p-4 rounded-xl border border-red-200 bg-red-50/30">
-              <div className="text-[11px] text-red-600 uppercase font-semibold">Rejected</div>
-              <div className="text-2xl font-bold text-red-600 mt-1">2,417</div>
-              <div className="text-[11px] text-gray-500 font-medium mt-1">6.9% rejection rate</div>
-            </div>
-            <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/30">
-              <div className="text-[11px] text-amber-600 uppercase font-semibold">Value at Risk</div>
-              <div className="text-2xl font-bold text-amber-600 mt-1">R3.85M</div>
-              <div className="text-[11px] text-gray-500 font-medium mt-1">Rejected claim value</div>
-            </div>
-            <div className="p-4 rounded-xl border border-green-200 bg-green-50/30">
-              <div className="text-[11px] text-green-600 uppercase font-semibold">AI Preventable</div>
-              <div className="text-2xl font-bold text-green-600 mt-1">R2.9M</div>
-              <div className="text-[11px] text-gray-500 font-medium mt-1">75% recoverable with AI</div>
-            </div>
-          </div>
+          {loading && rejections.length === 0 ? <LoadingSkeleton rows={4} /> : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="p-4 rounded-xl border border-gray-200 bg-white">
+                  <div className="text-[11px] text-gray-500 uppercase font-semibold">Total Claims</div>
+                  <div className="text-2xl font-bold text-gray-900 mt-1">{totalClaims.toLocaleString()}</div>
+                </div>
+                <div className="p-4 rounded-xl border border-red-200 bg-red-50/30">
+                  <div className="text-[11px] text-red-600 uppercase font-semibold">Rejected</div>
+                  <div className="text-2xl font-bold text-red-600 mt-1">{totalRejected.toLocaleString()}</div>
+                  <div className="text-[11px] text-gray-500 font-medium mt-1">{networkRejectionRate}% rejection rate</div>
+                </div>
+                <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/30">
+                  <div className="text-[11px] text-amber-600 uppercase font-semibold">Value at Risk</div>
+                  <div className="text-2xl font-bold text-amber-600 mt-1">
+                    {formatRand(rejections.reduce((s, r) => s + r.value, 0))}
+                  </div>
+                </div>
+                <div className="p-4 rounded-xl border border-green-200 bg-green-50/30">
+                  <div className="text-[11px] text-green-600 uppercase font-semibold">AI Preventable</div>
+                  <div className="text-2xl font-bold text-green-600 mt-1">
+                    {formatRand(Math.floor(rejections.reduce((s, r) => s + r.value, 0) * 0.75))}
+                  </div>
+                  <div className="text-[11px] text-gray-500 font-medium mt-1">75% recoverable with AI</div>
+                </div>
+              </div>
 
-          <div className="rounded-xl border border-gray-200 overflow-hidden">
-            <div className="p-4 bg-gray-50 border-b border-gray-200">
-              <h3 className="text-[14px] font-semibold text-gray-900">Top Rejection Reasons — AI Action Plan</h3>
-              <p className="text-[12px] text-gray-500">Claims rejected via MediSwitch EDI — ranked by recoverable value</p>
-            </div>
-            <table className="w-full text-[13px]">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left p-3 font-semibold text-gray-600">Code</th>
-                  <th className="text-left p-3 font-semibold text-gray-600">Reason</th>
-                  <th className="text-right p-3 font-semibold text-gray-600">Count</th>
-                  <th className="text-right p-3 font-semibold text-gray-600">Value</th>
-                  <th className="text-left p-3 font-semibold text-gray-600">AI Recommendation</th>
-                </tr>
-              </thead>
-              <tbody>
-                {TOP_REJECTION_CODES.map((code, i) => (
-                  <tr key={code.code} className={`border-b border-gray-100 ${i % 2 === 0 ? "bg-white" : "bg-gray-50/30"}`}>
-                    <td className="p-3 font-mono text-[12px] text-red-600 font-medium">{code.code}</td>
-                    <td className="p-3 text-gray-700">{code.desc}</td>
-                    <td className="p-3 text-right font-semibold">{code.count}</td>
-                    <td className="p-3 text-right font-semibold text-red-600">{code.value}</td>
-                    <td className="p-3 text-[12px] text-[#3DA9D1] font-medium">{code.action}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              <div className="rounded-xl border border-gray-200 overflow-hidden">
+                <div className="p-4 bg-gray-50 border-b border-gray-200">
+                  <h3 className="text-[14px] font-semibold text-gray-900">Top Rejection Reasons — AI Action Plan</h3>
+                  <p className="text-[12px] text-gray-500">Claims rejected via switching — ranked by recoverable value</p>
+                </div>
+                <table className="w-full text-[13px]">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left p-3 font-semibold text-gray-600">Code</th>
+                      <th className="text-left p-3 font-semibold text-gray-600">Reason</th>
+                      <th className="text-right p-3 font-semibold text-gray-600">Count</th>
+                      <th className="text-right p-3 font-semibold text-gray-600">Value</th>
+                      <th className="text-left p-3 font-semibold text-gray-600">AI Recommendation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rejections.map((code, i) => (
+                      <tr key={code.code} className={`border-b border-gray-100 ${i % 2 === 0 ? "bg-white" : "bg-gray-50/30"}`}>
+                        <td className="p-3 font-mono text-[12px] text-red-600 font-medium">{code.code}</td>
+                        <td className="p-3 text-gray-700">{code.description}</td>
+                        <td className="p-3 text-right font-semibold">{code.count}</td>
+                        <td className="p-3 text-right font-semibold text-red-600">{formatRand(code.value)}</td>
+                        <td className="p-3 text-[12px] text-[#3DA9D1] font-medium">{code.aiRecommendation}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </motion.div>
       )}
 
-      {/* Cost Savings Tab */}
+      {/* Cost Savings Tab — links to /dashboard/savings */}
       {selectedTab === "savings" && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-          <div className="p-5 rounded-xl border border-[#E3964C]/20 bg-gradient-to-br from-[#E3964C]/5 to-[#3DA9D1]/5">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-bold text-gray-900">Total Addressable Savings</h3>
-              <span className="text-[11px] text-gray-500 uppercase font-semibold">Monthly Potential</span>
-            </div>
-            <div className="text-4xl font-bold text-[#E3964C]">{formatRand(totalSavings)}<span className="text-lg text-gray-400 font-normal">/month</span></div>
-            <p className="text-[13px] text-gray-500 mt-1">= {formatRand(totalSavings * 12)}/year across claims, labour, compliance, and working capital</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {COST_SAVINGS.map((item, i) => (
-              <motion.div
-                key={item.area}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="p-5 rounded-xl border border-gray-200 bg-white hover:border-[#3DA9D1]/30 transition-colors"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-[14px] font-semibold text-gray-900">{item.area}</h4>
-                  <span className="text-[12px] font-bold text-[#E3964C] bg-[#E3964C]/10 px-2 py-0.5 rounded">{item.savings}</span>
-                </div>
-                <p className="text-[12px] text-gray-500 leading-relaxed mb-3">{item.desc}</p>
-                <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-gray-400">Current cost: {item.current}</span>
-                  <span className="text-green-600 font-semibold">{item.pct}% reduction</span>
-                </div>
-                <div className="mt-2 h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-[#3DA9D1] to-[#E3964C] rounded-full" style={{ width: `${item.pct}%` }} />
-                </div>
-              </motion.div>
-            ))}
-          </div>
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-center py-12">
+          <Zap className="w-8 h-8 text-[#E3964C] mx-auto mb-3" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Savings Analysis</h3>
+          <p className="text-[13px] text-gray-500 mb-4">Detailed savings breakdown with projections</p>
+          <a href="/dashboard/savings" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#1D3443] text-white text-[13px] font-semibold hover:bg-[#2a4a5e] transition-colors">
+            View Savings Dashboard <ChevronRight className="w-4 h-4" />
+          </a>
         </motion.div>
       )}
 
       {/* Medical Schemes Tab */}
       {selectedTab === "schemes" && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="rounded-xl border border-gray-200 overflow-hidden">
-            <div className="p-4 bg-gray-50 border-b border-gray-200">
-              <h3 className="text-[14px] font-semibold text-gray-900">Medical Scheme Performance — Netcare Primary Healthcare</h3>
-              <p className="text-[12px] text-gray-500">Claims volume, rejection rates, and payment turnaround by scheme</p>
-            </div>
-            <table className="w-full text-[13px]">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left p-3 font-semibold text-gray-600">Scheme</th>
-                  <th className="text-right p-3 font-semibold text-gray-600">Lives Covered</th>
-                  <th className="text-right p-3 font-semibold text-gray-600">Claims Volume (MTD)</th>
-                  <th className="text-right p-3 font-semibold text-gray-600">Rejection Rate</th>
-                  <th className="text-right p-3 font-semibold text-gray-600">Avg Payment (days)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {MEDICAL_SCHEMES.map((scheme, i) => (
-                  <tr key={scheme.name} className={`border-b border-gray-100 ${i % 2 === 0 ? "bg-white" : "bg-gray-50/30"}`}>
-                    <td className="p-3 font-medium text-gray-900">{scheme.name}</td>
-                    <td className="p-3 text-right">{scheme.lives.toLocaleString()}</td>
-                    <td className="p-3 text-right font-semibold">{scheme.claimsVolume}</td>
-                    <td className={`p-3 text-right font-semibold ${scheme.rejectionRate > 6 ? "text-red-600" : scheme.rejectionRate > 4 ? "text-amber-600" : "text-green-600"}`}>
-                      {scheme.rejectionRate}%
-                    </td>
-                    <td className={`p-3 text-right ${scheme.avgDays > 20 ? "text-red-600 font-semibold" : "text-gray-600"}`}>
-                      {scheme.avgDays === 0 ? "N/A" : `${scheme.avgDays} days`}
-                    </td>
+          {loading && schemes.length === 0 ? <LoadingSkeleton rows={6} /> : (
+            <div className="rounded-xl border border-gray-200 overflow-hidden">
+              <div className="p-4 bg-gray-50 border-b border-gray-200">
+                <h3 className="text-[14px] font-semibold text-gray-900">Medical Scheme Performance — Netcare Primary Healthcare</h3>
+                <p className="text-[12px] text-gray-500">Claims volume, rejection rates, and payment turnaround by scheme</p>
+              </div>
+              <table className="w-full text-[13px]">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left p-3 font-semibold text-gray-600">Scheme</th>
+                    <th className="text-right p-3 font-semibold text-gray-600">Lives Covered</th>
+                    <th className="text-right p-3 font-semibold text-gray-600">Claims Volume</th>
+                    <th className="text-right p-3 font-semibold text-gray-600">Rejection Rate</th>
+                    <th className="text-right p-3 font-semibold text-gray-600">Avg Payment (days)</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {schemes.map((scheme, i) => (
+                    <tr key={scheme.schemeName} className={`border-b border-gray-100 ${i % 2 === 0 ? "bg-white" : "bg-gray-50/30"}`}>
+                      <td className="p-3 font-medium text-gray-900">{scheme.schemeName}</td>
+                      <td className="p-3 text-right">{scheme.livesCovered.toLocaleString()}</td>
+                      <td className="p-3 text-right font-semibold">{formatRand(scheme.claimsVolume)}</td>
+                      <td className={`p-3 text-right font-semibold ${scheme.rejectionRate > 6 ? "text-red-600" : scheme.rejectionRate > 4 ? "text-amber-600" : "text-green-600"}`}>
+                        {scheme.rejectionRate}%
+                      </td>
+                      <td className={`p-3 text-right ${scheme.avgPaymentDays > 20 ? "text-red-600 font-semibold" : "text-gray-600"}`}>
+                        {scheme.avgPaymentDays === 0 ? "N/A" : `${scheme.avgPaymentDays} days`}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </motion.div>
       )}
 
@@ -432,7 +416,8 @@ export default function NetworkFinancialPage() {
       <div className="mt-8 p-4 rounded-xl bg-gray-50 border border-gray-200">
         <div className="flex items-center gap-2 mb-2">
           <Globe className="w-4 h-4 text-[#3DA9D1]" />
-          <span className="text-[12px] font-semibold text-gray-700">Connected Systems</span>
+          <span className="text-[12px] font-semibold text-gray-700">Planned Integrations</span>
+          <span className="text-[10px] text-gray-400 ml-2">Requires Netcare API access</span>
         </div>
         <div className="flex flex-wrap gap-3">
           {[
@@ -444,8 +429,8 @@ export default function NetworkFinancialPage() {
             "POPIA Compliance Engine",
             "ICD-10-ZA + NAPPI Validation",
           ].map(sys => (
-            <span key={sys} className="text-[11px] px-2.5 py-1 rounded-full bg-white border border-gray-200 text-gray-600 font-medium flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3 text-green-500" /> {sys}
+            <span key={sys} className="text-[11px] px-2.5 py-1 rounded-full bg-white border border-gray-200 text-gray-500 font-medium flex items-center gap-1">
+              <CheckCircle2 className="w-3 h-3 text-gray-300" /> {sys}
             </span>
           ))}
         </div>

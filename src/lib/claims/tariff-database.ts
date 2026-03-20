@@ -1,0 +1,3515 @@
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// SA Medical Tariff Code Database
+// Based on NHRPL (National Health Reference Price List), SAMA tariff guides,
+// and CCSA (Current Clinical Service Arrangement) coding structures.
+// Amounts in ZAR cents (divide by 100 for Rands). Approximate 2024/2025 tariffs.
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export type TariffCategory =
+  | "consultation"
+  | "procedure"
+  | "pathology"
+  | "radiology"
+  | "anaesthetics"
+  | "allied_health"
+  | "nursing"
+  | "emergency"
+  | "dental"
+  | "maternity"
+  | "mental_health";
+
+export type Discipline =
+  | "gp"
+  | "specialist"
+  | "pathology"
+  | "radiology"
+  | "anaesthetist"
+  | "physiotherapy"
+  | "occupational_therapy"
+  | "dietetics"
+  | "psychology"
+  | "psychiatry"
+  | "nursing"
+  | "emergency"
+  | "dental"
+  | "ophthalmology"
+  | "ent"
+  | "orthopaedics"
+  | "cardiology"
+  | "dermatology"
+  | "gynaecology"
+  | "paediatrics"
+  | "surgeon"
+  | "urologist"
+  | "pulmonologist"
+  | "neurologist"
+  | "gastroenterologist"
+  | "oncologist"
+  | "midwifery";
+
+/** ICD-10 chapter ranges for cross-validation */
+export type ICD10Chapter =
+  | "A00-B99"   // Infectious & parasitic diseases
+  | "C00-D48"   // Neoplasms
+  | "D50-D89"   // Blood & immune disorders
+  | "E00-E90"   // Endocrine, nutritional, metabolic
+  | "F00-F99"   // Mental & behavioural
+  | "G00-G99"   // Nervous system
+  | "H00-H59"   // Eye & adnexa
+  | "H60-H95"   // Ear & mastoid
+  | "I00-I99"   // Circulatory system
+  | "J00-J99"   // Respiratory system
+  | "K00-K93"   // Digestive system
+  | "L00-L99"   // Skin & subcutaneous
+  | "M00-M99"   // Musculoskeletal
+  | "N00-N99"   // Genitourinary
+  | "O00-O99"   // Pregnancy/childbirth
+  | "P00-P96"   // Perinatal conditions
+  | "Q00-Q99"   // Congenital malformations
+  | "R00-R99"   // Symptoms/signs (not elsewhere classified)
+  | "S00-T98"   // Injury/poisoning
+  | "V01-Y98"   // External causes
+  | "Z00-Z99"   // Factors influencing health status
+  | "ALL";       // Universal — applies to any diagnosis
+
+export interface TariffEntry {
+  /** 4-digit CCSA/CPT tariff code */
+  code: string;
+  /** Human-readable description */
+  description: string;
+  /** Billing category */
+  category: TariffCategory;
+  /** Which practitioner discipline(s) may bill this code */
+  discipline: Discipline[];
+  /** Approximate fee in ZAR cents (2024/2025 tariff guide) */
+  avgFee: number;
+  /** ICD-10 chapter ranges this procedure is valid for */
+  validDiagnosisCategories: ICD10Chapter[];
+  /** Whether this procedure typically requires pre-authorization */
+  requiresPreAuth: boolean;
+  /** Maximum units/occurrences billable per day for overuse detection */
+  maxUnitsPerDay: number;
+}
+
+export interface UnbundlingRule {
+  /** First code in the pair */
+  code1: string;
+  /** Second code in the pair */
+  code2: string;
+  /** Reason these codes may not be billed together */
+  reason: string;
+}
+
+export interface DisciplineRule {
+  /** Tariff code prefix (e.g. "01" for GP consults, "02" for specialist) */
+  tariffPrefix: string;
+  /** Disciplines allowed to bill codes starting with this prefix */
+  allowedDisciplines: Discipline[];
+}
+
+// ─── GP Consultation Codes (0190-0199) ────────────────────────────────────────
+
+const GP_CONSULTATIONS: TariffEntry[] = [
+  {
+    code: "0190",
+    description: "GP consultation — standard office visit",
+    category: "consultation",
+    discipline: ["gp"],
+    avgFee: 52000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0191",
+    description: "GP follow-up consultation",
+    category: "consultation",
+    discipline: ["gp"],
+    avgFee: 36000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0192",
+    description: "GP telephonic consultation",
+    category: "consultation",
+    discipline: ["gp"],
+    avgFee: 26000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "0193",
+    description: "GP extended consultation (>30 minutes)",
+    category: "consultation",
+    discipline: ["gp"],
+    avgFee: 78000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0194",
+    description: "GP home visit consultation",
+    category: "consultation",
+    discipline: ["gp"],
+    avgFee: 72000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0195",
+    description: "GP hospital visit (inpatient round)",
+    category: "consultation",
+    discipline: ["gp"],
+    avgFee: 58000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "0196",
+    description: "GP subsequent hospital visit (same admission)",
+    category: "consultation",
+    discipline: ["gp"],
+    avgFee: 40000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0197",
+    description: "GP telehealth/video consultation",
+    category: "consultation",
+    discipline: ["gp"],
+    avgFee: 44000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "0198",
+    description: "GP comprehensive assessment (>45 minutes, multisystem)",
+    category: "consultation",
+    discipline: ["gp"],
+    avgFee: 98000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0199",
+    description: "GP emergency/unscheduled consultation",
+    category: "consultation",
+    discipline: ["gp"],
+    avgFee: 68000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+];
+
+// ─── Specialist Consultation Codes (0290-0299 range + 0141-0149) ──────────────
+
+const SPECIALIST_CONSULTATIONS: TariffEntry[] = [
+  {
+    code: "0141",
+    description: "Specialist consultation — new patient",
+    category: "consultation",
+    discipline: ["specialist", "cardiology", "dermatology", "ent", "orthopaedics", "gynaecology", "paediatrics", "neurologist", "gastroenterologist", "pulmonologist", "urologist", "ophthalmology", "oncologist"],
+    avgFee: 95000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0142",
+    description: "Specialist follow-up consultation",
+    category: "consultation",
+    discipline: ["specialist", "cardiology", "dermatology", "ent", "orthopaedics", "gynaecology", "paediatrics", "neurologist", "gastroenterologist", "pulmonologist", "urologist", "ophthalmology", "oncologist"],
+    avgFee: 60000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0143",
+    description: "Specialist telephonic consultation",
+    category: "consultation",
+    discipline: ["specialist"],
+    avgFee: 48000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "0144",
+    description: "Specialist extended consultation (>45 minutes)",
+    category: "consultation",
+    discipline: ["specialist"],
+    avgFee: 140000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0145",
+    description: "Specialist hospital inpatient visit",
+    category: "consultation",
+    discipline: ["specialist"],
+    avgFee: 85000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "0146",
+    description: "Specialist subsequent hospital visit",
+    category: "consultation",
+    discipline: ["specialist"],
+    avgFee: 55000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0147",
+    description: "Specialist telehealth/video consultation",
+    category: "consultation",
+    discipline: ["specialist"],
+    avgFee: 80000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "0290",
+    description: "After-hours consultation (GP or specialist)",
+    category: "consultation",
+    discipline: ["gp", "specialist"],
+    avgFee: 78000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0291",
+    description: "After-hours extended consultation",
+    category: "consultation",
+    discipline: ["gp", "specialist"],
+    avgFee: 110000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0292",
+    description: "After-hours home visit",
+    category: "consultation",
+    discipline: ["gp"],
+    avgFee: 120000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0293",
+    description: "Sunday/public holiday consultation",
+    category: "consultation",
+    discipline: ["gp", "specialist"],
+    avgFee: 95000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0294",
+    description: "Consultation at request of another practitioner",
+    category: "consultation",
+    discipline: ["specialist"],
+    avgFee: 105000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0295",
+    description: "Multi-disciplinary team consultation",
+    category: "consultation",
+    discipline: ["specialist"],
+    avgFee: 150000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+];
+
+// ─── Pathology Codes (3000-4999 range) ────────────────────────────────────────
+
+const PATHOLOGY_CODES: TariffEntry[] = [
+  // Haematology (3700s)
+  {
+    code: "3710",
+    description: "Full blood count (FBC/CBC)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 11500,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3711",
+    description: "Differential white cell count",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 8500,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3712",
+    description: "Erythrocyte sedimentation rate (ESR)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 5500,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3715",
+    description: "Reticulocyte count",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 8000,
+    validDiagnosisCategories: ["D50-D89", "C00-D48", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3720",
+    description: "Prothrombin time (PT/INR)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 9000,
+    validDiagnosisCategories: ["I00-I99", "D50-D89", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3721",
+    description: "Partial thromboplastin time (PTT/aPTT)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 9500,
+    validDiagnosisCategories: ["I00-I99", "D50-D89", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3722",
+    description: "D-dimer",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 18000,
+    validDiagnosisCategories: ["I00-I99", "R00-R99", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3723",
+    description: "Fibrinogen level",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 12000,
+    validDiagnosisCategories: ["I00-I99", "D50-D89"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+
+  // Chemistry — Glucose & Metabolic (3800s)
+  {
+    code: "3810",
+    description: "Blood glucose (fasting)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 5000,
+    validDiagnosisCategories: ["E00-E90", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "3811",
+    description: "Blood glucose (random)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 5000,
+    validDiagnosisCategories: ["E00-E90", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "3812",
+    description: "Oral glucose tolerance test (OGTT)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 14000,
+    validDiagnosisCategories: ["E00-E90", "O00-O99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3815",
+    description: "HbA1c (glycated haemoglobin)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 16000,
+    validDiagnosisCategories: ["E00-E90"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3820",
+    description: "Urea (blood)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 4500,
+    validDiagnosisCategories: ["N00-N99", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3821",
+    description: "Creatinine (serum)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 4500,
+    validDiagnosisCategories: ["N00-N99", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3822",
+    description: "eGFR (estimated glomerular filtration rate)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 5000,
+    validDiagnosisCategories: ["N00-N99", "E00-E90", "I00-I99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3823",
+    description: "Uric acid (serum)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 4500,
+    validDiagnosisCategories: ["M00-M99", "E00-E90", "N00-N99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+
+  // Electrolytes
+  {
+    code: "3825",
+    description: "Sodium (serum)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 4000,
+    validDiagnosisCategories: ["E00-E90", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3826",
+    description: "Potassium (serum)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 4000,
+    validDiagnosisCategories: ["E00-E90", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3827",
+    description: "Chloride (serum)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 4000,
+    validDiagnosisCategories: ["E00-E90", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3828",
+    description: "Calcium (serum)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 4500,
+    validDiagnosisCategories: ["E00-E90", "M00-M99", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3829",
+    description: "Magnesium (serum)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 5000,
+    validDiagnosisCategories: ["E00-E90", "I00-I99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3830",
+    description: "Phosphate (serum)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 4500,
+    validDiagnosisCategories: ["E00-E90", "M00-M99", "N00-N99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+
+  // Liver Function
+  {
+    code: "3835",
+    description: "Alanine aminotransferase (ALT/SGPT)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 4500,
+    validDiagnosisCategories: ["K00-K93", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3836",
+    description: "Aspartate aminotransferase (AST/SGOT)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 4500,
+    validDiagnosisCategories: ["K00-K93", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3837",
+    description: "Gamma-glutamyl transferase (GGT)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 4500,
+    validDiagnosisCategories: ["K00-K93", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3838",
+    description: "Alkaline phosphatase (ALP)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 4500,
+    validDiagnosisCategories: ["K00-K93", "M00-M99", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3839",
+    description: "Total bilirubin",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 4500,
+    validDiagnosisCategories: ["K00-K93", "P00-P96", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3840",
+    description: "Direct (conjugated) bilirubin",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 5000,
+    validDiagnosisCategories: ["K00-K93"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3841",
+    description: "Total protein (serum)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 4000,
+    validDiagnosisCategories: ["K00-K93", "E00-E90", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3842",
+    description: "Albumin (serum)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 4000,
+    validDiagnosisCategories: ["K00-K93", "E00-E90", "N00-N99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3843",
+    description: "Lactate dehydrogenase (LDH)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 5000,
+    validDiagnosisCategories: ["C00-D48", "D50-D89", "K00-K93"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+
+  // Lipids
+  {
+    code: "3845",
+    description: "Total cholesterol",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 5000,
+    validDiagnosisCategories: ["E00-E90", "I00-I99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3846",
+    description: "HDL cholesterol",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 5500,
+    validDiagnosisCategories: ["E00-E90", "I00-I99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3847",
+    description: "LDL cholesterol (calculated)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 5500,
+    validDiagnosisCategories: ["E00-E90", "I00-I99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3848",
+    description: "Triglycerides",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 5000,
+    validDiagnosisCategories: ["E00-E90", "I00-I99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3849",
+    description: "Lipogram (full lipid profile)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 18000,
+    validDiagnosisCategories: ["E00-E90", "I00-I99", "Z00-Z99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+
+  // Thyroid
+  {
+    code: "3850",
+    description: "TSH (thyroid-stimulating hormone)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 12000,
+    validDiagnosisCategories: ["E00-E90", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3851",
+    description: "Free T4 (thyroxine)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 12000,
+    validDiagnosisCategories: ["E00-E90"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3852",
+    description: "Free T3 (triiodothyronine)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 12000,
+    validDiagnosisCategories: ["E00-E90"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3853",
+    description: "Thyroid antibodies (anti-TPO)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 22000,
+    validDiagnosisCategories: ["E00-E90"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+
+  // Iron studies
+  {
+    code: "3855",
+    description: "Serum iron",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 6000,
+    validDiagnosisCategories: ["D50-D89", "E00-E90"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3856",
+    description: "Ferritin",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 12000,
+    validDiagnosisCategories: ["D50-D89", "E00-E90", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3857",
+    description: "Total iron-binding capacity (TIBC)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 7000,
+    validDiagnosisCategories: ["D50-D89"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3858",
+    description: "Transferrin saturation",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 7500,
+    validDiagnosisCategories: ["D50-D89"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+
+  // Cardiac markers
+  {
+    code: "3860",
+    description: "Troponin I/T (high-sensitivity)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 22000,
+    validDiagnosisCategories: ["I00-I99", "R00-R99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 3,
+  },
+  {
+    code: "3861",
+    description: "CK-MB (creatine kinase-MB)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 12000,
+    validDiagnosisCategories: ["I00-I99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "3862",
+    description: "BNP/NT-proBNP (brain natriuretic peptide)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 35000,
+    validDiagnosisCategories: ["I00-I99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3863",
+    description: "CRP (C-reactive protein)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 8000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3864",
+    description: "High-sensitivity CRP (hs-CRP)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 14000,
+    validDiagnosisCategories: ["I00-I99", "M00-M99", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+
+  // Hormone / Endocrine
+  {
+    code: "3870",
+    description: "Cortisol (morning)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 15000,
+    validDiagnosisCategories: ["E00-E90"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "3871",
+    description: "Testosterone (total)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 18000,
+    validDiagnosisCategories: ["E00-E90", "N00-N99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3872",
+    description: "Oestradiol (E2)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 18000,
+    validDiagnosisCategories: ["E00-E90", "N00-N99", "O00-O99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3873",
+    description: "FSH (follicle-stimulating hormone)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 15000,
+    validDiagnosisCategories: ["E00-E90", "N00-N99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3874",
+    description: "LH (luteinising hormone)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 15000,
+    validDiagnosisCategories: ["E00-E90", "N00-N99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3875",
+    description: "Prolactin",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 16000,
+    validDiagnosisCategories: ["E00-E90", "N00-N99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3876",
+    description: "Beta-HCG (pregnancy test, quantitative)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 14000,
+    validDiagnosisCategories: ["O00-O99", "Z00-Z99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3877",
+    description: "PSA (prostate-specific antigen)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 16000,
+    validDiagnosisCategories: ["C00-D48", "N00-N99", "Z00-Z99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3878",
+    description: "Vitamin D (25-hydroxyvitamin D)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 25000,
+    validDiagnosisCategories: ["E00-E90", "M00-M99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3879",
+    description: "Vitamin B12",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 18000,
+    validDiagnosisCategories: ["D50-D89", "E00-E90", "G00-G99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3880",
+    description: "Folate (serum)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 16000,
+    validDiagnosisCategories: ["D50-D89", "E00-E90", "O00-O99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3881",
+    description: "Insulin (fasting)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 18000,
+    validDiagnosisCategories: ["E00-E90"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+
+  // Urinalysis
+  {
+    code: "3890",
+    description: "Urinalysis (dipstick — routine)",
+    category: "pathology",
+    discipline: ["pathology", "gp"],
+    avgFee: 3500,
+    validDiagnosisCategories: ["N00-N99", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3891",
+    description: "Urine microscopy, culture & sensitivity (MC&S)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 18000,
+    validDiagnosisCategories: ["N00-N99", "A00-B99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3892",
+    description: "Urine protein/creatinine ratio (uPCR)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 9000,
+    validDiagnosisCategories: ["N00-N99", "E00-E90", "O00-O99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3893",
+    description: "Microalbumin (urine)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 12000,
+    validDiagnosisCategories: ["E00-E90", "N00-N99", "I00-I99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+
+  // Microbiology & Serology
+  {
+    code: "3900",
+    description: "Blood culture (aerobic)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 25000,
+    validDiagnosisCategories: ["A00-B99", "R00-R99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "3901",
+    description: "Blood culture (anaerobic)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 25000,
+    validDiagnosisCategories: ["A00-B99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "3905",
+    description: "Throat swab MC&S",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 16000,
+    validDiagnosisCategories: ["J00-J99", "A00-B99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3906",
+    description: "Wound swab MC&S",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 16000,
+    validDiagnosisCategories: ["L00-L99", "S00-T98", "A00-B99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "3907",
+    description: "Sputum MC&S",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 18000,
+    validDiagnosisCategories: ["J00-J99", "A00-B99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3908",
+    description: "Stool MC&S",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 18000,
+    validDiagnosisCategories: ["A00-B99", "K00-K93"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3910",
+    description: "HIV ELISA / 4th-gen combo test",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 15000,
+    validDiagnosisCategories: ["A00-B99", "Z00-Z99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3911",
+    description: "HIV viral load (PCR)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 55000,
+    validDiagnosisCategories: ["A00-B99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3912",
+    description: "CD4 count",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 28000,
+    validDiagnosisCategories: ["A00-B99", "D50-D89"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3915",
+    description: "Hepatitis B surface antigen (HBsAg)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 14000,
+    validDiagnosisCategories: ["A00-B99", "K00-K93", "Z00-Z99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3916",
+    description: "Hepatitis B surface antibody (anti-HBs)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 14000,
+    validDiagnosisCategories: ["A00-B99", "Z00-Z99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3917",
+    description: "Hepatitis C antibody",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 16000,
+    validDiagnosisCategories: ["A00-B99", "K00-K93"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3920",
+    description: "RPR/VDRL (syphilis screen)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 8000,
+    validDiagnosisCategories: ["A00-B99", "O00-O99", "Z00-Z99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3925",
+    description: "Malaria rapid antigen test",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 12000,
+    validDiagnosisCategories: ["A00-B99", "R00-R99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3926",
+    description: "Malaria thick and thin smear",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 14000,
+    validDiagnosisCategories: ["A00-B99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3930",
+    description: "TB GeneXpert (Xpert MTB/RIF)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 45000,
+    validDiagnosisCategories: ["A00-B99", "J00-J99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3931",
+    description: "AFB smear (acid-fast bacilli, Ziehl-Neelsen)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 10000,
+    validDiagnosisCategories: ["A00-B99", "J00-J99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3935",
+    description: "COVID-19 PCR (SARS-CoV-2 RT-PCR)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 50000,
+    validDiagnosisCategories: ["A00-B99", "J00-J99", "Z00-Z99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+
+  // Tumour markers
+  {
+    code: "3940",
+    description: "CEA (carcinoembryonic antigen)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 20000,
+    validDiagnosisCategories: ["C00-D48"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3941",
+    description: "CA-125",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 22000,
+    validDiagnosisCategories: ["C00-D48", "N00-N99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3942",
+    description: "CA 15-3 (breast cancer marker)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 22000,
+    validDiagnosisCategories: ["C00-D48"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "3943",
+    description: "AFP (alpha-fetoprotein)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 18000,
+    validDiagnosisCategories: ["C00-D48", "K00-K93", "O00-O99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+
+  // Histology / Cytology
+  {
+    code: "4500",
+    description: "Histology — single specimen, routine H&E",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 55000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 5,
+  },
+  {
+    code: "4501",
+    description: "Histology — additional specimen (same case)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 35000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 10,
+  },
+  {
+    code: "4505",
+    description: "Pap smear (cervical cytology)",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 22000,
+    validDiagnosisCategories: ["C00-D48", "N00-N99", "Z00-Z99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "4510",
+    description: "Fine needle aspiration (FNA) cytology",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 45000,
+    validDiagnosisCategories: ["C00-D48", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 3,
+  },
+  {
+    code: "4520",
+    description: "Immunohistochemistry — per antibody",
+    category: "pathology",
+    discipline: ["pathology"],
+    avgFee: 40000,
+    validDiagnosisCategories: ["C00-D48"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 10,
+  },
+];
+
+// ─── Radiology Codes (5000-5999 range) ────────────────────────────────────────
+
+const RADIOLOGY_CODES: TariffEntry[] = [
+  // Plain X-rays
+  {
+    code: "5001",
+    description: "X-ray chest (PA view)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 28000,
+    validDiagnosisCategories: ["J00-J99", "I00-I99", "S00-T98", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5002",
+    description: "X-ray chest (PA & lateral)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 38000,
+    validDiagnosisCategories: ["J00-J99", "I00-I99", "S00-T98", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5010",
+    description: "X-ray cervical spine (AP & lateral)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 35000,
+    validDiagnosisCategories: ["M00-M99", "S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5011",
+    description: "X-ray thoracic spine (AP & lateral)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 35000,
+    validDiagnosisCategories: ["M00-M99", "S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5012",
+    description: "X-ray lumbar spine (AP & lateral)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 38000,
+    validDiagnosisCategories: ["M00-M99", "S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5015",
+    description: "X-ray pelvis (AP)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 28000,
+    validDiagnosisCategories: ["M00-M99", "S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5020",
+    description: "X-ray shoulder (AP)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 25000,
+    validDiagnosisCategories: ["M00-M99", "S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5021",
+    description: "X-ray elbow (AP & lateral)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 25000,
+    validDiagnosisCategories: ["M00-M99", "S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5022",
+    description: "X-ray wrist (AP & lateral)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 25000,
+    validDiagnosisCategories: ["M00-M99", "S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5023",
+    description: "X-ray hand (AP & oblique)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 25000,
+    validDiagnosisCategories: ["M00-M99", "S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5025",
+    description: "X-ray knee (AP & lateral)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 28000,
+    validDiagnosisCategories: ["M00-M99", "S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5026",
+    description: "X-ray ankle (AP & lateral)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 25000,
+    validDiagnosisCategories: ["M00-M99", "S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5027",
+    description: "X-ray foot (AP & oblique)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 25000,
+    validDiagnosisCategories: ["M00-M99", "S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5030",
+    description: "X-ray abdomen (erect & supine)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 32000,
+    validDiagnosisCategories: ["K00-K93", "N00-N99", "R00-R99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5035",
+    description: "X-ray skull (AP & lateral)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 30000,
+    validDiagnosisCategories: ["S00-T98", "G00-G99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5038",
+    description: "X-ray sinuses (OM view)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 25000,
+    validDiagnosisCategories: ["J00-J99", "H60-H95"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+
+  // Ultrasound
+  {
+    code: "5100",
+    description: "Ultrasound abdomen (complete)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 85000,
+    validDiagnosisCategories: ["K00-K93", "N00-N99", "C00-D48", "R00-R99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5101",
+    description: "Ultrasound abdomen (limited/focused)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 55000,
+    validDiagnosisCategories: ["K00-K93", "N00-N99", "R00-R99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5105",
+    description: "Ultrasound pelvis (transabdominal)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 65000,
+    validDiagnosisCategories: ["N00-N99", "O00-O99", "C00-D48"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5106",
+    description: "Ultrasound pelvis (transvaginal)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 75000,
+    validDiagnosisCategories: ["N00-N99", "O00-O99", "C00-D48"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5110",
+    description: "Ultrasound obstetric (first trimester, dating)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 75000,
+    validDiagnosisCategories: ["O00-O99", "Z00-Z99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5111",
+    description: "Ultrasound obstetric (second/third trimester, growth)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 85000,
+    validDiagnosisCategories: ["O00-O99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5112",
+    description: "Ultrasound obstetric (detailed anomaly scan)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 120000,
+    validDiagnosisCategories: ["O00-O99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5115",
+    description: "Ultrasound thyroid/neck",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 65000,
+    validDiagnosisCategories: ["E00-E90", "C00-D48"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5116",
+    description: "Ultrasound breast (bilateral)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 75000,
+    validDiagnosisCategories: ["C00-D48", "N00-N99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5120",
+    description: "Ultrasound renal (kidneys & bladder)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 65000,
+    validDiagnosisCategories: ["N00-N99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5125",
+    description: "Ultrasound musculoskeletal (joint/soft tissue)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 60000,
+    validDiagnosisCategories: ["M00-M99", "S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "5130",
+    description: "Doppler ultrasound — carotid arteries",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 120000,
+    validDiagnosisCategories: ["I00-I99", "G00-G99"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5131",
+    description: "Doppler ultrasound — lower limb venous",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 110000,
+    validDiagnosisCategories: ["I00-I99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5132",
+    description: "Doppler ultrasound — lower limb arterial",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 120000,
+    validDiagnosisCategories: ["I00-I99"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+
+  // CT Scans
+  {
+    code: "5200",
+    description: "CT brain (without contrast)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 350000,
+    validDiagnosisCategories: ["G00-G99", "S00-T98", "I00-I99", "C00-D48"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5201",
+    description: "CT brain (with contrast)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 450000,
+    validDiagnosisCategories: ["G00-G99", "C00-D48", "I00-I99"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5205",
+    description: "CT chest (without contrast)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 380000,
+    validDiagnosisCategories: ["J00-J99", "C00-D48", "I00-I99"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5206",
+    description: "CT chest (with contrast / CTPA)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 480000,
+    validDiagnosisCategories: ["J00-J99", "C00-D48", "I00-I99"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5210",
+    description: "CT abdomen & pelvis (without contrast)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 420000,
+    validDiagnosisCategories: ["K00-K93", "N00-N99", "C00-D48", "R00-R99"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5211",
+    description: "CT abdomen & pelvis (with contrast)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 520000,
+    validDiagnosisCategories: ["K00-K93", "N00-N99", "C00-D48"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5215",
+    description: "CT cervical spine",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 350000,
+    validDiagnosisCategories: ["M00-M99", "S00-T98", "G00-G99"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5216",
+    description: "CT lumbar spine",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 350000,
+    validDiagnosisCategories: ["M00-M99", "S00-T98", "G00-G99"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5220",
+    description: "CT coronary angiography (CTA heart)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 850000,
+    validDiagnosisCategories: ["I00-I99"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5225",
+    description: "CT sinuses",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 280000,
+    validDiagnosisCategories: ["J00-J99", "H60-H95"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+
+  // MRI
+  {
+    code: "5300",
+    description: "MRI brain (without contrast)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 650000,
+    validDiagnosisCategories: ["G00-G99", "C00-D48", "I00-I99"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5301",
+    description: "MRI brain (with contrast)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 800000,
+    validDiagnosisCategories: ["G00-G99", "C00-D48"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5305",
+    description: "MRI cervical spine",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 650000,
+    validDiagnosisCategories: ["M00-M99", "G00-G99", "S00-T98"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5306",
+    description: "MRI lumbar spine",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 650000,
+    validDiagnosisCategories: ["M00-M99", "G00-G99", "S00-T98"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5310",
+    description: "MRI knee",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 600000,
+    validDiagnosisCategories: ["M00-M99", "S00-T98"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5311",
+    description: "MRI shoulder",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 600000,
+    validDiagnosisCategories: ["M00-M99", "S00-T98"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5315",
+    description: "MRI abdomen",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 750000,
+    validDiagnosisCategories: ["K00-K93", "C00-D48", "N00-N99"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5316",
+    description: "MRI pelvis",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 700000,
+    validDiagnosisCategories: ["N00-N99", "C00-D48", "M00-M99"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5320",
+    description: "MRI cardiac (functional)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 950000,
+    validDiagnosisCategories: ["I00-I99"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+
+  // Mammography
+  {
+    code: "5400",
+    description: "Mammography (bilateral, screening)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 95000,
+    validDiagnosisCategories: ["C00-D48", "Z00-Z99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5401",
+    description: "Mammography (diagnostic, with additional views)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 120000,
+    validDiagnosisCategories: ["C00-D48", "N00-N99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+
+  // Bone density
+  {
+    code: "5410",
+    description: "DEXA bone densitometry (spine & hip)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 85000,
+    validDiagnosisCategories: ["M00-M99", "E00-E90"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+
+  // Fluoroscopy
+  {
+    code: "5450",
+    description: "Barium swallow",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 95000,
+    validDiagnosisCategories: ["K00-K93"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5451",
+    description: "Barium meal (upper GI series)",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 110000,
+    validDiagnosisCategories: ["K00-K93"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "5452",
+    description: "Barium enema",
+    category: "radiology",
+    discipline: ["radiology"],
+    avgFee: 120000,
+    validDiagnosisCategories: ["K00-K93"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+];
+
+// ─── Procedure Codes (common surgical & minor) ───────────────────────────────
+
+const PROCEDURE_CODES: TariffEntry[] = [
+  // Minor office procedures
+  {
+    code: "0308",
+    description: "ECG recording & interpretation (12-lead)",
+    category: "procedure",
+    discipline: ["gp", "specialist", "cardiology"],
+    avgFee: 35000,
+    validDiagnosisCategories: ["I00-I99", "R00-R99", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "0312",
+    description: "Spirometry (lung function test)",
+    category: "procedure",
+    discipline: ["gp", "specialist", "pulmonologist"],
+    avgFee: 28000,
+    validDiagnosisCategories: ["J00-J99", "R00-R99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0314",
+    description: "Peak expiratory flow measurement",
+    category: "procedure",
+    discipline: ["gp"],
+    avgFee: 8000,
+    validDiagnosisCategories: ["J00-J99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "0382",
+    description: "Blood glucose (point-of-care/glucometer)",
+    category: "procedure",
+    discipline: ["gp", "nursing"],
+    avgFee: 6500,
+    validDiagnosisCategories: ["E00-E90", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 4,
+  },
+  {
+    code: "0389",
+    description: "Urine pregnancy test (point-of-care)",
+    category: "procedure",
+    discipline: ["gp", "nursing"],
+    avgFee: 5000,
+    validDiagnosisCategories: ["O00-O99", "Z00-Z99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+
+  // Wound care
+  {
+    code: "0400",
+    description: "Wound suturing — simple (up to 5cm)",
+    category: "procedure",
+    discipline: ["gp", "emergency", "surgeon"],
+    avgFee: 42000,
+    validDiagnosisCategories: ["S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 3,
+  },
+  {
+    code: "0401",
+    description: "Wound suturing — intermediate (5-12cm)",
+    category: "procedure",
+    discipline: ["gp", "emergency", "surgeon"],
+    avgFee: 65000,
+    validDiagnosisCategories: ["S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 3,
+  },
+  {
+    code: "0402",
+    description: "Wound suturing — complex (>12cm or layered)",
+    category: "procedure",
+    discipline: ["surgeon", "emergency"],
+    avgFee: 95000,
+    validDiagnosisCategories: ["S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "0405",
+    description: "Wound debridement",
+    category: "procedure",
+    discipline: ["gp", "surgeon", "emergency"],
+    avgFee: 48000,
+    validDiagnosisCategories: ["S00-T98", "L00-L99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "0408",
+    description: "Wound dressing (complex)",
+    category: "procedure",
+    discipline: ["gp", "nursing"],
+    avgFee: 25000,
+    validDiagnosisCategories: ["S00-T98", "L00-L99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 3,
+  },
+  {
+    code: "0410",
+    description: "Incision & drainage (abscess)",
+    category: "procedure",
+    discipline: ["gp", "surgeon", "emergency"],
+    avgFee: 48000,
+    validDiagnosisCategories: ["L00-L99", "K00-K93"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+
+  // Injections
+  {
+    code: "1101",
+    description: "Intramuscular injection",
+    category: "procedure",
+    discipline: ["gp", "nursing"],
+    avgFee: 12000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 4,
+  },
+  {
+    code: "1102",
+    description: "Intravenous injection",
+    category: "procedure",
+    discipline: ["gp", "nursing", "emergency"],
+    avgFee: 18000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 4,
+  },
+  {
+    code: "1103",
+    description: "Subcutaneous injection",
+    category: "procedure",
+    discipline: ["gp", "nursing"],
+    avgFee: 10000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 4,
+  },
+  {
+    code: "1105",
+    description: "Intravenous infusion (IV drip setup + first hour)",
+    category: "procedure",
+    discipline: ["gp", "nursing", "emergency"],
+    avgFee: 35000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "1106",
+    description: "Intravenous infusion (each additional hour)",
+    category: "procedure",
+    discipline: ["gp", "nursing", "emergency"],
+    avgFee: 15000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 8,
+  },
+  {
+    code: "1110",
+    description: "Joint injection (intra-articular — small joint)",
+    category: "procedure",
+    discipline: ["gp", "orthopaedics"],
+    avgFee: 42000,
+    validDiagnosisCategories: ["M00-M99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 3,
+  },
+  {
+    code: "1111",
+    description: "Joint injection (intra-articular — large joint)",
+    category: "procedure",
+    discipline: ["gp", "orthopaedics"],
+    avgFee: 55000,
+    validDiagnosisCategories: ["M00-M99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "1115",
+    description: "Trigger point injection",
+    category: "procedure",
+    discipline: ["gp", "orthopaedics"],
+    avgFee: 32000,
+    validDiagnosisCategories: ["M00-M99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 4,
+  },
+
+  // Skin procedures
+  {
+    code: "0420",
+    description: "Excision of skin lesion (up to 1cm)",
+    category: "procedure",
+    discipline: ["gp", "surgeon", "dermatology"],
+    avgFee: 55000,
+    validDiagnosisCategories: ["L00-L99", "C00-D48"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 5,
+  },
+  {
+    code: "0421",
+    description: "Excision of skin lesion (1-3cm)",
+    category: "procedure",
+    discipline: ["gp", "surgeon", "dermatology"],
+    avgFee: 75000,
+    validDiagnosisCategories: ["L00-L99", "C00-D48"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 3,
+  },
+  {
+    code: "0422",
+    description: "Excision of skin lesion (>3cm)",
+    category: "procedure",
+    discipline: ["surgeon", "dermatology"],
+    avgFee: 110000,
+    validDiagnosisCategories: ["L00-L99", "C00-D48"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "0425",
+    description: "Cryotherapy (wart/skin lesion, per session)",
+    category: "procedure",
+    discipline: ["gp", "dermatology"],
+    avgFee: 28000,
+    validDiagnosisCategories: ["L00-L99", "A00-B99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 5,
+  },
+  {
+    code: "0430",
+    description: "Cauterisation/diathermy of skin lesion",
+    category: "procedure",
+    discipline: ["gp", "dermatology"],
+    avgFee: 32000,
+    validDiagnosisCategories: ["L00-L99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 5,
+  },
+  {
+    code: "0435",
+    description: "Punch biopsy (skin)",
+    category: "procedure",
+    discipline: ["gp", "dermatology"],
+    avgFee: 38000,
+    validDiagnosisCategories: ["L00-L99", "C00-D48"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 3,
+  },
+  {
+    code: "0440",
+    description: "Ingrown toenail — wedge resection (partial nail avulsion)",
+    category: "procedure",
+    discipline: ["gp", "surgeon"],
+    avgFee: 55000,
+    validDiagnosisCategories: ["L00-L99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+
+  // Ear/Nose
+  {
+    code: "0450",
+    description: "Ear syringing/irrigation (cerumen removal)",
+    category: "procedure",
+    discipline: ["gp", "ent"],
+    avgFee: 22000,
+    validDiagnosisCategories: ["H60-H95"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "0455",
+    description: "Foreign body removal — ear",
+    category: "procedure",
+    discipline: ["gp", "ent", "emergency"],
+    avgFee: 35000,
+    validDiagnosisCategories: ["H60-H95", "S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "0456",
+    description: "Foreign body removal — nose",
+    category: "procedure",
+    discipline: ["gp", "ent", "emergency"],
+    avgFee: 35000,
+    validDiagnosisCategories: ["J00-J99", "S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "0458",
+    description: "Anterior nasal packing (epistaxis)",
+    category: "procedure",
+    discipline: ["gp", "ent", "emergency"],
+    avgFee: 32000,
+    validDiagnosisCategories: ["R00-R99", "J00-J99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+
+  // Eye
+  {
+    code: "0460",
+    description: "Foreign body removal — eye (superficial corneal)",
+    category: "procedure",
+    discipline: ["gp", "ophthalmology", "emergency"],
+    avgFee: 38000,
+    validDiagnosisCategories: ["H00-H59", "S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "0462",
+    description: "Tonometry (intraocular pressure measurement)",
+    category: "procedure",
+    discipline: ["ophthalmology", "gp"],
+    avgFee: 15000,
+    validDiagnosisCategories: ["H00-H59"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0464",
+    description: "Visual acuity testing (Snellen chart)",
+    category: "procedure",
+    discipline: ["gp", "ophthalmology"],
+    avgFee: 8000,
+    validDiagnosisCategories: ["H00-H59", "Z00-Z99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+
+  // Orthopaedic
+  {
+    code: "0470",
+    description: "Application of Plaster of Paris (short arm/leg)",
+    category: "procedure",
+    discipline: ["gp", "orthopaedics", "emergency"],
+    avgFee: 45000,
+    validDiagnosisCategories: ["S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "0471",
+    description: "Application of Plaster of Paris (long arm/leg)",
+    category: "procedure",
+    discipline: ["orthopaedics", "emergency"],
+    avgFee: 65000,
+    validDiagnosisCategories: ["S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "0475",
+    description: "Closed reduction of fracture — finger/toe",
+    category: "procedure",
+    discipline: ["gp", "orthopaedics", "emergency"],
+    avgFee: 55000,
+    validDiagnosisCategories: ["S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 4,
+  },
+  {
+    code: "0476",
+    description: "Closed reduction of fracture — radius/ulna",
+    category: "procedure",
+    discipline: ["orthopaedics", "emergency"],
+    avgFee: 120000,
+    validDiagnosisCategories: ["S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0478",
+    description: "Reduction of dislocated joint (shoulder/elbow/finger)",
+    category: "procedure",
+    discipline: ["gp", "orthopaedics", "emergency"],
+    avgFee: 85000,
+    validDiagnosisCategories: ["S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+
+  // Gastro
+  {
+    code: "0500",
+    description: "Gastroscopy (OGD) — diagnostic",
+    category: "procedure",
+    discipline: ["gastroenterologist", "surgeon"],
+    avgFee: 350000,
+    validDiagnosisCategories: ["K00-K93", "C00-D48"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0501",
+    description: "Gastroscopy with biopsy",
+    category: "procedure",
+    discipline: ["gastroenterologist", "surgeon"],
+    avgFee: 420000,
+    validDiagnosisCategories: ["K00-K93", "C00-D48"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0505",
+    description: "Colonoscopy — diagnostic",
+    category: "procedure",
+    discipline: ["gastroenterologist", "surgeon"],
+    avgFee: 450000,
+    validDiagnosisCategories: ["K00-K93", "C00-D48"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0506",
+    description: "Colonoscopy with polypectomy",
+    category: "procedure",
+    discipline: ["gastroenterologist", "surgeon"],
+    avgFee: 550000,
+    validDiagnosisCategories: ["K00-K93", "C00-D48"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+
+  // Cardiovascular
+  {
+    code: "0510",
+    description: "Echocardiography (transthoracic, TTE)",
+    category: "procedure",
+    discipline: ["cardiology"],
+    avgFee: 250000,
+    validDiagnosisCategories: ["I00-I99"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0512",
+    description: "Exercise stress test (treadmill/bicycle ECG)",
+    category: "procedure",
+    discipline: ["cardiology"],
+    avgFee: 180000,
+    validDiagnosisCategories: ["I00-I99", "R00-R99"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0515",
+    description: "24-hour Holter monitor (recording + interpretation)",
+    category: "procedure",
+    discipline: ["cardiology"],
+    avgFee: 150000,
+    validDiagnosisCategories: ["I00-I99", "R00-R99"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0516",
+    description: "24-hour ambulatory blood pressure monitoring (ABPM)",
+    category: "procedure",
+    discipline: ["cardiology", "gp"],
+    avgFee: 85000,
+    validDiagnosisCategories: ["I00-I99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+
+  // Gynaecology
+  {
+    code: "0520",
+    description: "Pap smear (cervical smear collection)",
+    category: "procedure",
+    discipline: ["gp", "gynaecology"],
+    avgFee: 22000,
+    validDiagnosisCategories: ["Z00-Z99", "N00-N99", "C00-D48"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0522",
+    description: "Insertion of IUCD (intrauterine contraceptive device)",
+    category: "procedure",
+    discipline: ["gp", "gynaecology"],
+    avgFee: 65000,
+    validDiagnosisCategories: ["Z00-Z99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0523",
+    description: "Insertion of contraceptive implant (e.g. Implanon)",
+    category: "procedure",
+    discipline: ["gp", "gynaecology"],
+    avgFee: 55000,
+    validDiagnosisCategories: ["Z00-Z99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0525",
+    description: "Colposcopy with biopsy",
+    category: "procedure",
+    discipline: ["gynaecology"],
+    avgFee: 150000,
+    validDiagnosisCategories: ["C00-D48", "N00-N99"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+
+  // Immunisation (procedure fee only — vaccine NAPPI separate)
+  {
+    code: "0700",
+    description: "Immunisation/vaccination — administration fee",
+    category: "procedure",
+    discipline: ["gp", "nursing", "paediatrics"],
+    avgFee: 15000,
+    validDiagnosisCategories: ["Z00-Z99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 5,
+  },
+];
+
+// ─── Anaesthetic Codes ────────────────────────────────────────────────────────
+
+const ANAESTHETIC_CODES: TariffEntry[] = [
+  {
+    code: "1200",
+    description: "General anaesthesia — base units (first 30 minutes)",
+    category: "anaesthetics",
+    discipline: ["anaesthetist"],
+    avgFee: 350000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "1201",
+    description: "General anaesthesia — per additional 15 minutes",
+    category: "anaesthetics",
+    discipline: ["anaesthetist"],
+    avgFee: 120000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 12,
+  },
+  {
+    code: "1210",
+    description: "Regional anaesthesia — spinal/epidural",
+    category: "anaesthetics",
+    discipline: ["anaesthetist"],
+    avgFee: 280000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "1211",
+    description: "Epidural for labour analgesia (insertion + management)",
+    category: "anaesthetics",
+    discipline: ["anaesthetist"],
+    avgFee: 450000,
+    validDiagnosisCategories: ["O00-O99"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "1215",
+    description: "Regional nerve block (brachial plexus, femoral, etc.)",
+    category: "anaesthetics",
+    discipline: ["anaesthetist"],
+    avgFee: 200000,
+    validDiagnosisCategories: ["M00-M99", "S00-T98"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "1220",
+    description: "Conscious sedation (procedural, per 30 minutes)",
+    category: "anaesthetics",
+    discipline: ["anaesthetist", "gp"],
+    avgFee: 180000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "1225",
+    description: "Local anaesthesia — administered by surgeon/GP (included in procedure fee)",
+    category: "anaesthetics",
+    discipline: ["gp", "surgeon", "dermatology"],
+    avgFee: 0,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "1230",
+    description: "Post-anaesthetic recovery room care (first hour)",
+    category: "anaesthetics",
+    discipline: ["anaesthetist"],
+    avgFee: 95000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "1235",
+    description: "Anaesthesia for emergency surgery (after-hours modifier)",
+    category: "anaesthetics",
+    discipline: ["anaesthetist"],
+    avgFee: 550000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+];
+
+// ─── Allied Health Codes ──────────────────────────────────────────────────────
+
+const ALLIED_HEALTH_CODES: TariffEntry[] = [
+  // Physiotherapy
+  {
+    code: "7001",
+    description: "Physiotherapy — initial assessment",
+    category: "allied_health",
+    discipline: ["physiotherapy"],
+    avgFee: 55000,
+    validDiagnosisCategories: ["M00-M99", "S00-T98", "G00-G99", "J00-J99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "7002",
+    description: "Physiotherapy — follow-up treatment session",
+    category: "allied_health",
+    discipline: ["physiotherapy"],
+    avgFee: 42000,
+    validDiagnosisCategories: ["M00-M99", "S00-T98", "G00-G99", "J00-J99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "7005",
+    description: "Physiotherapy — post-operative rehabilitation",
+    category: "allied_health",
+    discipline: ["physiotherapy"],
+    avgFee: 48000,
+    validDiagnosisCategories: ["M00-M99", "S00-T98"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "7010",
+    description: "Physiotherapy — chest physiotherapy (respiratory)",
+    category: "allied_health",
+    discipline: ["physiotherapy"],
+    avgFee: 45000,
+    validDiagnosisCategories: ["J00-J99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "7015",
+    description: "Physiotherapy — hydrotherapy session",
+    category: "allied_health",
+    discipline: ["physiotherapy"],
+    avgFee: 55000,
+    validDiagnosisCategories: ["M00-M99", "S00-T98", "G00-G99"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "7020",
+    description: "Physiotherapy — electrotherapy (TENS/ultrasound/interferential)",
+    category: "allied_health",
+    discipline: ["physiotherapy"],
+    avgFee: 28000,
+    validDiagnosisCategories: ["M00-M99", "S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "7025",
+    description: "Physiotherapy — home visit",
+    category: "allied_health",
+    discipline: ["physiotherapy"],
+    avgFee: 65000,
+    validDiagnosisCategories: ["M00-M99", "G00-G99", "S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+
+  // Occupational Therapy
+  {
+    code: "7101",
+    description: "Occupational therapy — initial assessment",
+    category: "allied_health",
+    discipline: ["occupational_therapy"],
+    avgFee: 55000,
+    validDiagnosisCategories: ["G00-G99", "F00-F99", "M00-M99", "S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "7102",
+    description: "Occupational therapy — follow-up treatment",
+    category: "allied_health",
+    discipline: ["occupational_therapy"],
+    avgFee: 42000,
+    validDiagnosisCategories: ["G00-G99", "F00-F99", "M00-M99", "S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "7105",
+    description: "Occupational therapy — hand therapy",
+    category: "allied_health",
+    discipline: ["occupational_therapy"],
+    avgFee: 48000,
+    validDiagnosisCategories: ["M00-M99", "S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "7110",
+    description: "Occupational therapy — cognitive rehabilitation",
+    category: "allied_health",
+    discipline: ["occupational_therapy"],
+    avgFee: 52000,
+    validDiagnosisCategories: ["G00-G99", "F00-F99", "S00-T98"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "7115",
+    description: "Occupational therapy — workplace assessment/ergonomic",
+    category: "allied_health",
+    discipline: ["occupational_therapy"],
+    avgFee: 85000,
+    validDiagnosisCategories: ["M00-M99", "Z00-Z99"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+
+  // Dietetics
+  {
+    code: "7201",
+    description: "Dietitian — initial consultation",
+    category: "allied_health",
+    discipline: ["dietetics"],
+    avgFee: 55000,
+    validDiagnosisCategories: ["E00-E90", "K00-K93", "I00-I99", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "7202",
+    description: "Dietitian — follow-up consultation",
+    category: "allied_health",
+    discipline: ["dietetics"],
+    avgFee: 38000,
+    validDiagnosisCategories: ["E00-E90", "K00-K93", "I00-I99", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "7205",
+    description: "Dietitian — diabetes management programme",
+    category: "allied_health",
+    discipline: ["dietetics"],
+    avgFee: 48000,
+    validDiagnosisCategories: ["E00-E90"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "7206",
+    description: "Dietitian — eating disorder management",
+    category: "allied_health",
+    discipline: ["dietetics"],
+    avgFee: 55000,
+    validDiagnosisCategories: ["F00-F99", "E00-E90"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+
+  // Psychology
+  {
+    code: "7301",
+    description: "Clinical psychologist — initial assessment (60 min)",
+    category: "mental_health",
+    discipline: ["psychology"],
+    avgFee: 125000,
+    validDiagnosisCategories: ["F00-F99", "Z00-Z99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "7302",
+    description: "Clinical psychologist — follow-up session (45-50 min)",
+    category: "mental_health",
+    discipline: ["psychology"],
+    avgFee: 95000,
+    validDiagnosisCategories: ["F00-F99", "Z00-Z99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "7305",
+    description: "Psychometric testing — per hour",
+    category: "mental_health",
+    discipline: ["psychology"],
+    avgFee: 120000,
+    validDiagnosisCategories: ["F00-F99", "G00-G99"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 4,
+  },
+  {
+    code: "7306",
+    description: "Psychometric test — report writing",
+    category: "mental_health",
+    discipline: ["psychology"],
+    avgFee: 180000,
+    validDiagnosisCategories: ["F00-F99", "G00-G99"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "7310",
+    description: "Group psychotherapy (per person, per session)",
+    category: "mental_health",
+    discipline: ["psychology", "psychiatry"],
+    avgFee: 55000,
+    validDiagnosisCategories: ["F00-F99"],
+    requiresPreAuth: true,
+    maxUnitsPerDay: 1,
+  },
+
+  // Psychiatry
+  {
+    code: "7401",
+    description: "Psychiatrist — initial consultation",
+    category: "mental_health",
+    discipline: ["psychiatry"],
+    avgFee: 180000,
+    validDiagnosisCategories: ["F00-F99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "7402",
+    description: "Psychiatrist — follow-up consultation",
+    category: "mental_health",
+    discipline: ["psychiatry"],
+    avgFee: 110000,
+    validDiagnosisCategories: ["F00-F99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "7405",
+    description: "Psychiatrist — medication review (brief, 15-20 min)",
+    category: "mental_health",
+    discipline: ["psychiatry"],
+    avgFee: 65000,
+    validDiagnosisCategories: ["F00-F99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+];
+
+// ─── Nursing Codes ────────────────────────────────────────────────────────────
+
+const NURSING_CODES: TariffEntry[] = [
+  {
+    code: "8001",
+    description: "Nursing — wound dressing (simple)",
+    category: "nursing",
+    discipline: ["nursing"],
+    avgFee: 15000,
+    validDiagnosisCategories: ["S00-T98", "L00-L99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 3,
+  },
+  {
+    code: "8002",
+    description: "Nursing — wound dressing (complex/large)",
+    category: "nursing",
+    discipline: ["nursing"],
+    avgFee: 25000,
+    validDiagnosisCategories: ["S00-T98", "L00-L99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "8005",
+    description: "Nursing — blood pressure monitoring",
+    category: "nursing",
+    discipline: ["nursing"],
+    avgFee: 5000,
+    validDiagnosisCategories: ["I00-I99", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 4,
+  },
+  {
+    code: "8006",
+    description: "Nursing — blood glucose monitoring (fingerprick)",
+    category: "nursing",
+    discipline: ["nursing"],
+    avgFee: 5000,
+    validDiagnosisCategories: ["E00-E90", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 4,
+  },
+  {
+    code: "8010",
+    description: "Nursing — phlebotomy/venepuncture (blood draw)",
+    category: "nursing",
+    discipline: ["nursing"],
+    avgFee: 8000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 3,
+  },
+  {
+    code: "8012",
+    description: "Nursing — catheterisation (urinary, male or female)",
+    category: "nursing",
+    discipline: ["nursing"],
+    avgFee: 22000,
+    validDiagnosisCategories: ["N00-N99", "R00-R99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "8015",
+    description: "Nursing — nebulisation",
+    category: "nursing",
+    discipline: ["nursing"],
+    avgFee: 12000,
+    validDiagnosisCategories: ["J00-J99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 4,
+  },
+  {
+    code: "8020",
+    description: "Nursing — ECG recording (procedure, no interpretation)",
+    category: "nursing",
+    discipline: ["nursing"],
+    avgFee: 18000,
+    validDiagnosisCategories: ["I00-I99", "R00-R99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+  {
+    code: "8025",
+    description: "Nursing — suture/staple removal",
+    category: "nursing",
+    discipline: ["nursing"],
+    avgFee: 12000,
+    validDiagnosisCategories: ["S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 3,
+  },
+  {
+    code: "8030",
+    description: "Nursing — home visit (chronic care)",
+    category: "nursing",
+    discipline: ["nursing"],
+    avgFee: 45000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "8035",
+    description: "Nursing — post-operative wound care (home)",
+    category: "nursing",
+    discipline: ["nursing"],
+    avgFee: 55000,
+    validDiagnosisCategories: ["S00-T98", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+];
+
+// ─── Emergency/Casualty Codes ─────────────────────────────────────────────────
+
+const EMERGENCY_CODES: TariffEntry[] = [
+  {
+    code: "0601",
+    description: "Emergency unit — triage & assessment (category green)",
+    category: "emergency",
+    discipline: ["emergency", "gp"],
+    avgFee: 55000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0602",
+    description: "Emergency unit — assessment & treatment (category yellow)",
+    category: "emergency",
+    discipline: ["emergency", "gp"],
+    avgFee: 85000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0603",
+    description: "Emergency unit — major resuscitation (category orange)",
+    category: "emergency",
+    discipline: ["emergency"],
+    avgFee: 150000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0604",
+    description: "Emergency unit — critical/life-threatening (category red)",
+    category: "emergency",
+    discipline: ["emergency"],
+    avgFee: 250000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0610",
+    description: "Emergency — CPR/advanced life support",
+    category: "emergency",
+    discipline: ["emergency"],
+    avgFee: 350000,
+    validDiagnosisCategories: ["I00-I99", "R00-R99", "S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0612",
+    description: "Emergency — endotracheal intubation",
+    category: "emergency",
+    discipline: ["emergency", "anaesthetist"],
+    avgFee: 180000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0615",
+    description: "Emergency — intercostal drain (chest tube) insertion",
+    category: "emergency",
+    discipline: ["emergency", "surgeon"],
+    avgFee: 220000,
+    validDiagnosisCategories: ["J00-J99", "S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0618",
+    description: "Emergency — lumbar puncture",
+    category: "emergency",
+    discipline: ["emergency", "specialist", "neurologist", "paediatrics"],
+    avgFee: 150000,
+    validDiagnosisCategories: ["G00-G99", "A00-B99"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0620",
+    description: "Emergency — gastric lavage (stomach pump)",
+    category: "emergency",
+    discipline: ["emergency"],
+    avgFee: 120000,
+    validDiagnosisCategories: ["S00-T98"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 1,
+  },
+  {
+    code: "0625",
+    description: "Emergency — observation (per hour, max 6 hours)",
+    category: "emergency",
+    discipline: ["emergency"],
+    avgFee: 45000,
+    validDiagnosisCategories: ["ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 6,
+  },
+  {
+    code: "0630",
+    description: "Emergency — procedural sedation & analgesia",
+    category: "emergency",
+    discipline: ["emergency"],
+    avgFee: 120000,
+    validDiagnosisCategories: ["S00-T98", "ALL"],
+    requiresPreAuth: false,
+    maxUnitsPerDay: 2,
+  },
+];
+
+// ─── Combined Database ────────────────────────────────────────────────────────
+
+export const TARIFF_DATABASE: TariffEntry[] = [
+  ...GP_CONSULTATIONS,
+  ...SPECIALIST_CONSULTATIONS,
+  ...PATHOLOGY_CODES,
+  ...RADIOLOGY_CODES,
+  ...PROCEDURE_CODES,
+  ...ANAESTHETIC_CODES,
+  ...ALLIED_HEALTH_CODES,
+  ...NURSING_CODES,
+  ...EMERGENCY_CODES,
+];
+
+// ─── Lookup Helpers ───────────────────────────────────────────────────────────
+
+/** Map for O(1) lookups by code */
+const _tariffMap = new Map<string, TariffEntry>(
+  TARIFF_DATABASE.map((entry) => [entry.code, entry])
+);
+
+/** Look up a single tariff entry by its 4-digit code. */
+export function lookupTariff(code: string): TariffEntry | undefined {
+  return _tariffMap.get(code);
+}
+
+/** Look up multiple tariff entries by code array. */
+export function lookupTariffs(codes: string[]): (TariffEntry | undefined)[] {
+  return codes.map((c) => _tariffMap.get(c));
+}
+
+/** Search tariff entries by description keyword(s). */
+export function searchTariffs(query: string): TariffEntry[] {
+  const lowerQuery = query.toLowerCase();
+  const terms = lowerQuery.split(/\s+/);
+  return TARIFF_DATABASE.filter((entry) => {
+    const desc = entry.description.toLowerCase();
+    return terms.every((term) => desc.includes(term));
+  });
+}
+
+/** Get all tariff entries for a specific category. */
+export function getTariffsByCategory(category: TariffCategory): TariffEntry[] {
+  return TARIFF_DATABASE.filter((entry) => entry.category === category);
+}
+
+/** Get all tariff entries for a specific discipline. */
+export function getTariffsByDiscipline(discipline: Discipline): TariffEntry[] {
+  return TARIFF_DATABASE.filter((entry) =>
+    entry.discipline.includes(discipline)
+  );
+}
+
+// ─── Unbundling Rules ─────────────────────────────────────────────────────────
+// Pairs of codes that should NOT be billed together on the same date of service.
+// Based on SA medical aid scheme rules and HPCSA coding guidelines.
+
+export const UNBUNDLING_RULES: UnbundlingRule[] = [
+  // Consultation + consultation (same provider, same day)
+  {
+    code1: "0190",
+    code2: "0191",
+    reason: "Cannot bill initial and follow-up GP consultation on the same day",
+  },
+  {
+    code1: "0190",
+    code2: "0193",
+    reason: "Cannot bill standard and extended GP consultation on the same day — use the higher-valued code only",
+  },
+  {
+    code1: "0190",
+    code2: "0198",
+    reason: "Cannot bill standard and comprehensive GP consultation on the same day",
+  },
+  {
+    code1: "0191",
+    code2: "0193",
+    reason: "Cannot bill follow-up and extended GP consultation on the same day",
+  },
+  {
+    code1: "0141",
+    code2: "0142",
+    reason: "Cannot bill initial and follow-up specialist consultation on the same day",
+  },
+  {
+    code1: "0141",
+    code2: "0144",
+    reason: "Cannot bill standard and extended specialist consultation on the same day",
+  },
+  {
+    code1: "0190",
+    code2: "0141",
+    reason: "GP and specialist consultation by same provider on same day — bill highest only",
+  },
+  {
+    code1: "0190",
+    code2: "0290",
+    reason: "Cannot bill standard consultation and after-hours consultation together — after-hours replaces standard",
+  },
+  {
+    code1: "0192",
+    code2: "0197",
+    reason: "Cannot bill telephonic and telehealth consultation on the same day",
+  },
+
+  // Consultation bundled into procedure
+  {
+    code1: "0190",
+    code2: "0601",
+    reason: "GP consultation bundled into emergency triage — cannot bill separately",
+  },
+  {
+    code1: "0190",
+    code2: "0602",
+    reason: "GP consultation bundled into emergency assessment — cannot bill separately",
+  },
+  {
+    code1: "0141",
+    code2: "0601",
+    reason: "Specialist consultation bundled into emergency triage — cannot bill separately",
+  },
+
+  // Pathology unbundling — common profile vs individual tests
+  {
+    code1: "3849",
+    code2: "3845",
+    reason: "Lipogram (3849) already includes total cholesterol — do not bill separately",
+  },
+  {
+    code1: "3849",
+    code2: "3846",
+    reason: "Lipogram (3849) already includes HDL — do not bill separately",
+  },
+  {
+    code1: "3849",
+    code2: "3847",
+    reason: "Lipogram (3849) already includes LDL — do not bill separately",
+  },
+  {
+    code1: "3849",
+    code2: "3848",
+    reason: "Lipogram (3849) already includes triglycerides — do not bill separately",
+  },
+  {
+    code1: "3710",
+    code2: "3711",
+    reason: "FBC (3710) already includes differential count — do not bill 3711 separately",
+  },
+  {
+    code1: "3820",
+    code2: "3821",
+    reason: "Urea and creatinine commonly billed as U&E pair, but each is valid individually — review if both needed",
+  },
+  {
+    code1: "3835",
+    code2: "3836",
+    reason: "ALT and AST — verify clinical necessity if both billed (liver screen should include both, but not redundant with LFT panel)",
+  },
+
+  // Radiology unbundling
+  {
+    code1: "5001",
+    code2: "5002",
+    reason: "Chest X-ray PA only (5001) is included in PA+lateral (5002) — bill one or the other",
+  },
+  {
+    code1: "5100",
+    code2: "5101",
+    reason: "Complete abdomen US (5100) includes limited/focused (5101) — do not bill both",
+  },
+  {
+    code1: "5100",
+    code2: "5120",
+    reason: "Complete abdomen US (5100) includes renal assessment — do not bill renal US (5120) separately",
+  },
+  {
+    code1: "5105",
+    code2: "5106",
+    reason: "Transabdominal (5105) and transvaginal (5106) pelvis US — only bill both if clinically indicated and documented",
+  },
+  {
+    code1: "5200",
+    code2: "5201",
+    reason: "CT brain without (5200) and with contrast (5201) — bill the one performed, not both",
+  },
+  {
+    code1: "5205",
+    code2: "5206",
+    reason: "CT chest without (5205) and with contrast (5206) — bill the one performed, not both",
+  },
+  {
+    code1: "5210",
+    code2: "5211",
+    reason: "CT abdomen without (5210) and with contrast (5211) — bill the one performed, not both",
+  },
+  {
+    code1: "5300",
+    code2: "5301",
+    reason: "MRI brain without (5300) and with contrast (5301) — bill the one performed, not both",
+  },
+  {
+    code1: "5400",
+    code2: "5401",
+    reason: "Screening mammography (5400) and diagnostic mammography (5401) — bill one only per visit",
+  },
+
+  // Procedure unbundling
+  {
+    code1: "0308",
+    code2: "8020",
+    reason: "ECG recording + interpretation (0308) includes recording — do not also bill nursing ECG recording (8020)",
+  },
+  {
+    code1: "0382",
+    code2: "8006",
+    reason: "Point-of-care glucose (0382) and nursing glucose monitoring (8006) — do not bill both for same measurement",
+  },
+  {
+    code1: "0400",
+    code2: "0401",
+    reason: "Simple (0400) and intermediate (0401) wound suturing — bill appropriate complexity level, not both for same wound",
+  },
+  {
+    code1: "0400",
+    code2: "0402",
+    reason: "Simple (0400) and complex (0402) wound suturing — bill one complexity level per wound",
+  },
+  {
+    code1: "0401",
+    code2: "0402",
+    reason: "Intermediate (0401) and complex (0402) wound suturing — bill one complexity level per wound",
+  },
+  {
+    code1: "0500",
+    code2: "0501",
+    reason: "Diagnostic gastroscopy (0500) is included in gastroscopy with biopsy (0501) — bill 0501 only",
+  },
+  {
+    code1: "0505",
+    code2: "0506",
+    reason: "Diagnostic colonoscopy (0505) is included in colonoscopy with polypectomy (0506) — bill 0506 only",
+  },
+  {
+    code1: "1225",
+    code2: "1220",
+    reason: "Local anaesthesia (1225, included in procedure fee) should not be billed alongside conscious sedation (1220)",
+  },
+
+  // Nursing vs GP procedure overlap
+  {
+    code1: "8010",
+    code2: "3710",
+    reason: "Phlebotomy (8010) drawing fee may be bundled into pathology collection fee — check scheme rules",
+  },
+  {
+    code1: "0520",
+    code2: "4505",
+    reason: "Pap smear collection (0520) and Pap smear cytology (4505) — collection is clinical, cytology is lab; both valid if billed by different providers",
+  },
+
+  // Emergency bundling
+  {
+    code1: "0601",
+    code2: "0602",
+    reason: "Green and yellow triage categories — bill the highest applicable category only",
+  },
+  {
+    code1: "0602",
+    code2: "0603",
+    reason: "Yellow and orange triage categories — bill the highest applicable category only",
+  },
+  {
+    code1: "0603",
+    code2: "0604",
+    reason: "Orange and red triage categories — bill the highest applicable category only",
+  },
+  {
+    code1: "0601",
+    code2: "0603",
+    reason: "Only one emergency triage category may be billed per visit",
+  },
+  {
+    code1: "0601",
+    code2: "0604",
+    reason: "Only one emergency triage category may be billed per visit",
+  },
+  {
+    code1: "0602",
+    code2: "0604",
+    reason: "Only one emergency triage category may be billed per visit",
+  },
+];
+
+// ─── Discipline Rules ─────────────────────────────────────────────────────────
+// Which practitioner types are allowed to bill codes starting with each prefix.
+
+export const DISCIPLINE_RULES: DisciplineRule[] = [
+  {
+    tariffPrefix: "019",
+    allowedDisciplines: ["gp"],
+  },
+  {
+    tariffPrefix: "014",
+    allowedDisciplines: [
+      "specialist", "cardiology", "dermatology", "ent", "orthopaedics",
+      "gynaecology", "paediatrics", "neurologist", "gastroenterologist",
+      "pulmonologist", "urologist", "ophthalmology", "oncologist", "psychiatry",
+    ],
+  },
+  {
+    tariffPrefix: "029",
+    allowedDisciplines: ["gp", "specialist"],
+  },
+  {
+    tariffPrefix: "03",
+    allowedDisciplines: ["gp", "specialist", "emergency"],
+  },
+  {
+    tariffPrefix: "04",
+    allowedDisciplines: ["gp", "specialist", "surgeon", "dermatology", "gynaecology", "ent", "orthopaedics", "ophthalmology", "emergency"],
+  },
+  {
+    tariffPrefix: "05",
+    allowedDisciplines: ["gastroenterologist", "surgeon", "cardiology", "gynaecology"],
+  },
+  {
+    tariffPrefix: "06",
+    allowedDisciplines: ["emergency", "gp", "surgeon", "anaesthetist", "specialist", "neurologist", "paediatrics"],
+  },
+  {
+    tariffPrefix: "07",
+    allowedDisciplines: ["gp", "nursing", "paediatrics"],
+  },
+  {
+    tariffPrefix: "110",
+    allowedDisciplines: ["gp", "nursing", "emergency", "orthopaedics"],
+  },
+  {
+    tariffPrefix: "111",
+    allowedDisciplines: ["gp", "orthopaedics"],
+  },
+  {
+    tariffPrefix: "12",
+    allowedDisciplines: ["anaesthetist", "gp", "surgeon", "dermatology"],
+  },
+  {
+    tariffPrefix: "37",
+    allowedDisciplines: ["pathology"],
+  },
+  {
+    tariffPrefix: "38",
+    allowedDisciplines: ["pathology"],
+  },
+  {
+    tariffPrefix: "39",
+    allowedDisciplines: ["pathology"],
+  },
+  {
+    tariffPrefix: "45",
+    allowedDisciplines: ["pathology"],
+  },
+  {
+    tariffPrefix: "50",
+    allowedDisciplines: ["radiology"],
+  },
+  {
+    tariffPrefix: "51",
+    allowedDisciplines: ["radiology"],
+  },
+  {
+    tariffPrefix: "52",
+    allowedDisciplines: ["radiology"],
+  },
+  {
+    tariffPrefix: "53",
+    allowedDisciplines: ["radiology"],
+  },
+  {
+    tariffPrefix: "54",
+    allowedDisciplines: ["radiology"],
+  },
+  {
+    tariffPrefix: "700",
+    allowedDisciplines: ["physiotherapy"],
+  },
+  {
+    tariffPrefix: "710",
+    allowedDisciplines: ["occupational_therapy"],
+  },
+  {
+    tariffPrefix: "711",
+    allowedDisciplines: ["occupational_therapy"],
+  },
+  {
+    tariffPrefix: "720",
+    allowedDisciplines: ["dietetics"],
+  },
+  {
+    tariffPrefix: "730",
+    allowedDisciplines: ["psychology"],
+  },
+  {
+    tariffPrefix: "740",
+    allowedDisciplines: ["psychiatry"],
+  },
+  {
+    tariffPrefix: "800",
+    allowedDisciplines: ["nursing"],
+  },
+  {
+    tariffPrefix: "801",
+    allowedDisciplines: ["nursing"],
+  },
+  {
+    tariffPrefix: "802",
+    allowedDisciplines: ["nursing"],
+  },
+  {
+    tariffPrefix: "803",
+    allowedDisciplines: ["nursing"],
+  },
+];
+
+// ─── Validation Helpers ───────────────────────────────────────────────────────
+
+/** Check if two codes violate an unbundling rule. */
+export function checkUnbundling(
+  code1: string,
+  code2: string
+): UnbundlingRule | undefined {
+  return UNBUNDLING_RULES.find(
+    (rule) =>
+      (rule.code1 === code1 && rule.code2 === code2) ||
+      (rule.code1 === code2 && rule.code2 === code1)
+  );
+}
+
+/** Check all unbundling violations for a set of codes billed together. */
+export function findUnbundlingViolations(codes: string[]): UnbundlingRule[] {
+  const violations: UnbundlingRule[] = [];
+  for (let i = 0; i < codes.length; i++) {
+    for (let j = i + 1; j < codes.length; j++) {
+      const violation = checkUnbundling(codes[i], codes[j]);
+      if (violation) violations.push(violation);
+    }
+  }
+  return violations;
+}
+
+/** Check if a discipline is allowed to bill a specific code. */
+export function isDisciplineAllowed(
+  code: string,
+  discipline: Discipline
+): boolean {
+  // First check the tariff entry itself (most specific)
+  const entry = lookupTariff(code);
+  if (entry) {
+    return entry.discipline.includes(discipline);
+  }
+  // Fallback to prefix rules
+  const rule = DISCIPLINE_RULES.find((r) => code.startsWith(r.tariffPrefix));
+  if (rule) {
+    return rule.allowedDisciplines.includes(discipline);
+  }
+  // Unknown code — allow by default (will be caught by code validation)
+  return true;
+}
+
+/** Check if a tariff code is valid for a given ICD-10 diagnosis code. */
+export function isTariffValidForDiagnosis(
+  tariffCode: string,
+  icd10Code: string
+): boolean {
+  const entry = lookupTariff(tariffCode);
+  if (!entry) return true; // Unknown code — can't validate
+
+  // If the entry allows ALL diagnoses, it's always valid
+  if (entry.validDiagnosisCategories.includes("ALL")) return true;
+
+  // Extract the letter prefix from the ICD-10 code (e.g. "J" from "J32.9")
+  const letter = icd10Code.charAt(0).toUpperCase();
+
+  // Check if any valid chapter range contains this letter
+  return entry.validDiagnosisCategories.some((chapter) => {
+    if (chapter === "ALL") return true;
+    const [start, end] = chapter.split("-");
+    const startLetter = start.charAt(0);
+    const endLetter = end.charAt(0);
+    return letter >= startLetter && letter <= endLetter;
+  });
+}
+
+/** Check if units billed exceed the maximum allowed per day. */
+export function checkMaxUnits(
+  code: string,
+  unitsBilled: number
+): { exceeded: boolean; maxAllowed: number } {
+  const entry = lookupTariff(code);
+  if (!entry) return { exceeded: false, maxAllowed: 999 };
+  return {
+    exceeded: unitsBilled > entry.maxUnitsPerDay,
+    maxAllowed: entry.maxUnitsPerDay,
+  };
+}
+
+// ─── Stats ────────────────────────────────────────────────────────────────────
+// Quick reference: total count by category
+
+export const TARIFF_STATS = {
+  total: TARIFF_DATABASE.length,
+  byCategory: Object.fromEntries(
+    (
+      [
+        "consultation",
+        "procedure",
+        "pathology",
+        "radiology",
+        "anaesthetics",
+        "allied_health",
+        "nursing",
+        "emergency",
+        "mental_health",
+      ] as TariffCategory[]
+    ).map((cat) => [
+      cat,
+      TARIFF_DATABASE.filter((e) => e.category === cat).length,
+    ])
+  ),
+  unbundlingRules: UNBUNDLING_RULES.length,
+  disciplineRules: DISCIPLINE_RULES.length,
+} as const;

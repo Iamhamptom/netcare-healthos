@@ -40,4 +40,16 @@ export const tables = {
   clientPipeline: "ho_client_pipeline",
   clientActivities: "ho_client_activities",
   referrals: "ho_referrals",
+  // Network & Analytics
+  clinics: "ho_clinics",
+  clinicMetrics: "ho_clinic_metrics",
+  medicalSchemeMetrics: "ho_medical_scheme_metrics",
+  rejectionCodes: "ho_rejection_codes",
+  divisionKpis: "ho_division_kpis",
+  // Claims
+  icd10Codes: "ho_icd10_codes",
+  // Integrations
+  integrationStatus: "ho_integration_status",
+  // WhatsApp
+  clinicDirectory: "ho_clinic_directory",
 } as const;

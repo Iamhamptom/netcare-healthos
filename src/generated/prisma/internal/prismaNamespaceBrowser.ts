@@ -80,7 +80,16 @@ export const ModelName = {
   NewsletterSubscriber: 'NewsletterSubscriber',
   OutreachCampaign: 'OutreachCampaign',
   OutreachTarget: 'OutreachTarget',
-  OutreachEmail: 'OutreachEmail'
+  OutreachEmail: 'OutreachEmail',
+  HealthbridgeClaim: 'HealthbridgeClaim',
+  HealthbridgeRemittance: 'HealthbridgeRemittance',
+  HealthbridgeEligibility: 'HealthbridgeEligibility',
+  ClaimsAnalysis: 'ClaimsAnalysis',
+  ClaimsRule: 'ClaimsRule',
+  SwitchingPreAuth: 'SwitchingPreAuth',
+  SwitchingBatchJob: 'SwitchingBatchJob',
+  SwitchingERA: 'SwitchingERA',
+  SwitchingVendor: 'SwitchingVendor'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -650,6 +659,240 @@ export const OutreachEmailScalarFieldEnum = {
 } as const
 
 export type OutreachEmailScalarFieldEnum = (typeof OutreachEmailScalarFieldEnum)[keyof typeof OutreachEmailScalarFieldEnum]
+
+
+export const HealthbridgeClaimScalarFieldEnum = {
+  id: 'id',
+  practiceId: 'practiceId',
+  invoiceId: 'invoiceId',
+  patientName: 'patientName',
+  patientIdNumber: 'patientIdNumber',
+  medicalAidScheme: 'medicalAidScheme',
+  membershipNumber: 'membershipNumber',
+  dependentCode: 'dependentCode',
+  dateOfService: 'dateOfService',
+  placeOfService: 'placeOfService',
+  bhfNumber: 'bhfNumber',
+  providerNumber: 'providerNumber',
+  treatingProvider: 'treatingProvider',
+  authorizationNumber: 'authorizationNumber',
+  lineItems: 'lineItems',
+  totalAmount: 'totalAmount',
+  transactionRef: 'transactionRef',
+  status: 'status',
+  approvedAmount: 'approvedAmount',
+  rejectionCode: 'rejectionCode',
+  rejectionReason: 'rejectionReason',
+  paidAmount: 'paidAmount',
+  remittanceRef: 'remittanceRef',
+  reconciledAt: 'reconciledAt',
+  switchProvider: 'switchProvider',
+  edifactMessage: 'edifactMessage',
+  requestXml: 'requestXml',
+  responseXml: 'responseXml',
+  submittedAt: 'submittedAt',
+  respondedAt: 'respondedAt',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HealthbridgeClaimScalarFieldEnum = (typeof HealthbridgeClaimScalarFieldEnum)[keyof typeof HealthbridgeClaimScalarFieldEnum]
+
+
+export const HealthbridgeRemittanceScalarFieldEnum = {
+  id: 'id',
+  practiceId: 'practiceId',
+  scheme: 'scheme',
+  remittanceRef: 'remittanceRef',
+  paymentDate: 'paymentDate',
+  totalAmount: 'totalAmount',
+  claimCount: 'claimCount',
+  payments: 'payments',
+  status: 'status',
+  reconciledCount: 'reconciledCount',
+  unmatchedCount: 'unmatchedCount',
+  notes: 'notes',
+  processedAt: 'processedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type HealthbridgeRemittanceScalarFieldEnum = (typeof HealthbridgeRemittanceScalarFieldEnum)[keyof typeof HealthbridgeRemittanceScalarFieldEnum]
+
+
+export const HealthbridgeEligibilityScalarFieldEnum = {
+  id: 'id',
+  practiceId: 'practiceId',
+  patientName: 'patientName',
+  membershipNumber: 'membershipNumber',
+  dependentCode: 'dependentCode',
+  scheme: 'scheme',
+  eligible: 'eligible',
+  option: 'option',
+  benefits: 'benefits',
+  preAuthRequired: 'preAuthRequired',
+  responseData: 'responseData',
+  checkedAt: 'checkedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type HealthbridgeEligibilityScalarFieldEnum = (typeof HealthbridgeEligibilityScalarFieldEnum)[keyof typeof HealthbridgeEligibilityScalarFieldEnum]
+
+
+export const ClaimsAnalysisScalarFieldEnum = {
+  id: 'id',
+  practiceId: 'practiceId',
+  fileName: 'fileName',
+  totalClaims: 'totalClaims',
+  validClaims: 'validClaims',
+  invalidClaims: 'invalidClaims',
+  warningClaims: 'warningClaims',
+  rejectionRate: 'rejectionRate',
+  estimatedSavings: 'estimatedSavings',
+  schemeCode: 'schemeCode',
+  resultJson: 'resultJson',
+  topIssuesJson: 'topIssuesJson',
+  analyzedBy: 'analyzedBy',
+  period: 'period',
+  notes: 'notes',
+  createdAt: 'createdAt'
+} as const
+
+export type ClaimsAnalysisScalarFieldEnum = (typeof ClaimsAnalysisScalarFieldEnum)[keyof typeof ClaimsAnalysisScalarFieldEnum]
+
+
+export const ClaimsRuleScalarFieldEnum = {
+  id: 'id',
+  practiceId: 'practiceId',
+  ruleCode: 'ruleCode',
+  name: 'name',
+  description: 'description',
+  severity: 'severity',
+  enabled: 'enabled',
+  category: 'category',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ClaimsRuleScalarFieldEnum = (typeof ClaimsRuleScalarFieldEnum)[keyof typeof ClaimsRuleScalarFieldEnum]
+
+
+export const SwitchingPreAuthScalarFieldEnum = {
+  id: 'id',
+  practiceId: 'practiceId',
+  bhfNumber: 'bhfNumber',
+  providerNumber: 'providerNumber',
+  patientName: 'patientName',
+  patientDob: 'patientDob',
+  patientIdNumber: 'patientIdNumber',
+  membershipNumber: 'membershipNumber',
+  dependentCode: 'dependentCode',
+  medicalAidScheme: 'medicalAidScheme',
+  icd10Codes: 'icd10Codes',
+  cptCodes: 'cptCodes',
+  nappiCodes: 'nappiCodes',
+  procedureDescription: 'procedureDescription',
+  clinicalMotivation: 'clinicalMotivation',
+  urgency: 'urgency',
+  estimatedCost: 'estimatedCost',
+  admissionDate: 'admissionDate',
+  dischargeDate: 'dischargeDate',
+  facilityName: 'facilityName',
+  facilityBhf: 'facilityBhf',
+  status: 'status',
+  authorizationNumber: 'authorizationNumber',
+  approvedAmount: 'approvedAmount',
+  denialReason: 'denialReason',
+  validFrom: 'validFrom',
+  validTo: 'validTo',
+  switchProvider: 'switchProvider',
+  switchTransactionRef: 'switchTransactionRef',
+  requestedAt: 'requestedAt',
+  respondedAt: 'respondedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SwitchingPreAuthScalarFieldEnum = (typeof SwitchingPreAuthScalarFieldEnum)[keyof typeof SwitchingPreAuthScalarFieldEnum]
+
+
+export const SwitchingBatchJobScalarFieldEnum = {
+  id: 'id',
+  practiceId: 'practiceId',
+  totalClaims: 'totalClaims',
+  processedClaims: 'processedClaims',
+  successfulClaims: 'successfulClaims',
+  failedClaims: 'failedClaims',
+  switchProvider: 'switchProvider',
+  protocol: 'protocol',
+  status: 'status',
+  results: 'results',
+  errorMessage: 'errorMessage',
+  retryCount: 'retryCount',
+  maxRetries: 'maxRetries',
+  queuedAt: 'queuedAt',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SwitchingBatchJobScalarFieldEnum = (typeof SwitchingBatchJobScalarFieldEnum)[keyof typeof SwitchingBatchJobScalarFieldEnum]
+
+
+export const SwitchingERAScalarFieldEnum = {
+  id: 'id',
+  practiceId: 'practiceId',
+  remittanceRef: 'remittanceRef',
+  scheme: 'scheme',
+  administrator: 'administrator',
+  paymentDate: 'paymentDate',
+  paymentMethod: 'paymentMethod',
+  bankReference: 'bankReference',
+  totalAmount: 'totalAmount',
+  totalClaimed: 'totalClaimed',
+  totalApproved: 'totalApproved',
+  totalPaid: 'totalPaid',
+  totalRejected: 'totalRejected',
+  totalAdjusted: 'totalAdjusted',
+  lineItemCount: 'lineItemCount',
+  lineItems: 'lineItems',
+  reconciliationStatus: 'reconciliationStatus',
+  matchedCount: 'matchedCount',
+  unmatchedCount: 'unmatchedCount',
+  totalVariance: 'totalVariance',
+  disputes: 'disputes',
+  rawXml: 'rawXml',
+  receivedAt: 'receivedAt',
+  reconciledAt: 'reconciledAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SwitchingERAScalarFieldEnum = (typeof SwitchingERAScalarFieldEnum)[keyof typeof SwitchingERAScalarFieldEnum]
+
+
+export const SwitchingVendorScalarFieldEnum = {
+  id: 'id',
+  vendorName: 'vendorName',
+  vendorCode: 'vendorCode',
+  contactName: 'contactName',
+  contactEmail: 'contactEmail',
+  contactPhone: 'contactPhone',
+  softwareName: 'softwareName',
+  softwareVersion: 'softwareVersion',
+  protocols: 'protocols',
+  accreditations: 'accreditations',
+  webhookUrl: 'webhookUrl',
+  apiKey: 'apiKey',
+  ipWhitelist: 'ipWhitelist',
+  status: 'status',
+  registeredAt: 'registeredAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SwitchingVendorScalarFieldEnum = (typeof SwitchingVendorScalarFieldEnum)[keyof typeof SwitchingVendorScalarFieldEnum]
 
 
 export const SortOrder = {

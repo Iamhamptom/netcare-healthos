@@ -626,3 +626,263 @@ model OutreachEmail {
   @@index([targetId])
   @@index([campaignId])
 }
+
+// === Healthbridge Medical Aid Claims Switching ===
+
+model HealthbridgeClaim {
+  id                 String    @id @default(cuid())
+  practiceId         String
+  invoiceId          String    @default("") // links to Invoice if created from one
+  patientName        String
+  patientIdNumber    String    @default("")
+  medicalAidScheme   String    @default("") // e.g. "Discovery Health"
+  membershipNumber   String    @default("")
+  dependentCode      String    @default("00") // 00 = main member
+  dateOfService      String    @default("") // YYYY-MM-DD
+  placeOfService     String    @default("11") // 11 = office
+  bhfNumber          String    @default("") // BHF practice number
+  providerNumber     String    @default("") // HPCSA number
+  treatingProvider   String    @default("")
+  authorizationNumber String   @default("")
+  // Claim data (JSON)
+  lineItems          String    @default("[]") // JSON: [{icd10Code, cptCode, nappiCode, description, quantity, amount}]
+  totalAmount        Int       @default(0) // amount in ZAR cents
+  // Switch response
+  transactionRef     String    @default("") // Healthbridge transaction reference
+  status             String    @default("draft") // draft | submitted | accepted | rejected | partial | pending_payment | paid | short_paid | reversed | resubmitted
+  approvedAmount     Int       @default(0) // amount approved by medical aid (cents)
+  rejectionCode      String    @default("")
+  rejectionReason    String    @default("")
+  // eRA reconciliation
+  paidAmount         Int       @default(0) // amount received via eRA (cents)
+  remittanceRef      String    @default("") // eRA reference
+  reconciledAt       DateTime?
+  // Multi-switch routing
+  switchProvider     String    @default("healthbridge") // healthbridge | medikredit | switchon
+  edifactMessage     String    @default("") // EDIFACT MEDCLM audit trail
+  // XML audit trail
+  requestXml         String    @default("") // outbound XML (for audit)
+  responseXml        String    @default("") // inbound XML (for audit)
+  // Lifecycle
+  submittedAt        DateTime?
+  respondedAt        DateTime?
+  notes              String    @default("")
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([practiceId])
+  @@index([status])
+  @@index([membershipNumber])
+  @@index([transactionRef])
+}
+
+model HealthbridgeRemittance {
+  id              String   @id @default(cuid())
+  practiceId      String
+  scheme          String   @default("") // medical aid scheme
+  remittanceRef   String   @default("") // eRA reference number
+  paymentDate     String   @default("") // YYYY-MM-DD
+  totalAmount     Int      @default(0) // total payment in ZAR cents
+  claimCount      Int      @default(0) // number of claims in this eRA
+  // JSON: [{claimRef, membershipNumber, patientName, dateOfService, claimedAmount, paidAmount, adjustmentCode, adjustmentReason}]
+  payments        String   @default("[]")
+  // Processing
+  status          String   @default("received") // received | processing | reconciled | disputed
+  reconciledCount Int      @default(0) // how many claims were auto-matched
+  unmatchedCount  Int      @default(0) // claims that couldn't be matched
+  notes           String   @default("")
+  processedAt     DateTime?
+  createdAt       DateTime @default(now())
+
+  @@index([practiceId])
+  @@index([remittanceRef])
+}
+
+model HealthbridgeEligibility {
+  id               String   @id @default(cuid())
+  practiceId       String
+  patientName      String   @default("")
+  membershipNumber String   @default("")
+  dependentCode    String   @default("00")
+  scheme           String   @default("")
+  // Result
+  eligible         Boolean  @default(false)
+  option           String   @default("") // plan/option name
+  benefits         String   @default("[]") // JSON: [{category, available, remainingAmount, usedAmount, annualLimit}]
+  preAuthRequired  Boolean  @default(false)
+  // Raw
+  responseData     String   @default("{}") // full response JSON
+  checkedAt        DateTime @default(now())
+  createdAt        DateTime @default(now())
+
+  @@index([practiceId])
+  @@index([membershipNumber])
+}
+
+// === Claims Rejection Analyzer ===
+
+model ClaimsAnalysis {
+  id                  String   @id @default(cuid())
+  practiceId          String
+  fileName            String   @default("")
+  totalClaims         Int      @default(0)
+  validClaims         Int      @default(0)
+  invalidClaims       Int      @default(0)
+  warningClaims       Int      @default(0)
+  rejectionRate       Float    @default(0) // percentage
+  estimatedSavings    Float    @default(0) // ZAR
+  schemeCode          String   @default("") // which scheme rules were applied
+  // Full result JSON
+  resultJson          String   @default("{}") // full ValidationResult
+  topIssuesJson       String   @default("[]") // top issues summary
+  // Metadata
+  analyzedBy          String   @default("") // user who ran the analysis
+  period              String   @default("") // e.g. "2026-02" for monthly tracking
+  notes               String   @default("")
+  createdAt           DateTime @default(now())
+
+  @@index([practiceId])
+  @@index([period])
+}
+
+model ClaimsRule {
+  id            String   @id @default(cuid())
+  practiceId    String   @default("") // blank = global rule
+  ruleCode      String   // e.g. MISSING_ICD10, GENDER_MISMATCH
+  name          String
+  description   String   @default("")
+  severity      String   @default("error") // error | warning | info
+  enabled       Boolean  @default(true)
+  category      String   @default("icd10") // icd10 | tariff | scheme | billing | custom
+  metadata      String   @default("{}") // JSON config for the rule
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([practiceId, ruleCode])
+  @@index([practiceId])
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Medical Aid Switching Engine — Multi-switch routing, pre-auth, batch, eRA, vendors
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+model SwitchingPreAuth {
+  id                   String   @id @default(cuid())
+  practiceId           String
+  bhfNumber            String   @default("")
+  providerNumber       String   @default("")
+  patientName          String
+  patientDob           String   @default("")
+  patientIdNumber      String   @default("")
+  membershipNumber     String
+  dependentCode        String   @default("00")
+  medicalAidScheme     String
+  icd10Codes           String   @default("[]") // JSON array
+  cptCodes             String   @default("[]") // JSON array
+  nappiCodes           String   @default("[]") // JSON array
+  procedureDescription String   @default("")
+  clinicalMotivation   String   @default("")
+  urgency              String   @default("elective") // elective | urgent | emergency
+  estimatedCost        Int      @default(0) // ZAR cents
+  admissionDate        String   @default("")
+  dischargeDate        String   @default("")
+  facilityName         String   @default("")
+  facilityBhf          String   @default("")
+  // Status
+  status               String   @default("pending") // pending | approved | denied | expired | cancelled
+  authorizationNumber  String   @default("")
+  approvedAmount       Int      @default(0)
+  denialReason         String   @default("")
+  validFrom            String   @default("")
+  validTo              String   @default("")
+  // Switch routing
+  switchProvider       String   @default("healthbridge") // healthbridge | medikredit | switchon
+  switchTransactionRef String   @default("")
+  // Timestamps
+  requestedAt          DateTime @default(now())
+  respondedAt          DateTime?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([practiceId])
+  @@index([membershipNumber])
+  @@index([status])
+}
+
+model SwitchingBatchJob {
+  id               String   @id @default(cuid())
+  practiceId       String
+  totalClaims      Int      @default(0)
+  processedClaims  Int      @default(0)
+  successfulClaims Int      @default(0)
+  failedClaims     Int      @default(0)
+  switchProvider   String   @default("healthbridge")
+  protocol         String   @default("xml") // xml | edifact
+  status           String   @default("queued") // queued | processing | completed | failed | partial
+  results          String   @default("[]") // JSON array of BatchClaimResult
+  errorMessage     String   @default("")
+  retryCount       Int      @default(0)
+  maxRetries       Int      @default(3)
+  queuedAt         DateTime @default(now())
+  startedAt        DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([practiceId])
+  @@index([status])
+}
+
+model SwitchingERA {
+  id                    String   @id @default(cuid())
+  practiceId            String
+  remittanceRef         String
+  scheme                String   @default("")
+  administrator         String   @default("")
+  paymentDate           String   @default("")
+  paymentMethod         String   @default("EFT") // EFT | cheque | direct
+  bankReference         String   @default("")
+  totalAmount           Int      @default(0) // ZAR cents
+  totalClaimed          Int      @default(0)
+  totalApproved         Int      @default(0)
+  totalPaid             Int      @default(0)
+  totalRejected         Int      @default(0)
+  totalAdjusted         Int      @default(0)
+  lineItemCount         Int      @default(0)
+  lineItems             String   @default("[]") // JSON array of ERALineItem
+  reconciliationStatus  String   @default("pending") // pending | matched | partial | unmatched | disputed
+  matchedCount          Int      @default(0)
+  unmatchedCount        Int      @default(0)
+  totalVariance         Int      @default(0)
+  disputes              String   @default("[]") // JSON array of disputes
+  rawXml                String   @default("")
+  receivedAt            DateTime @default(now())
+  reconciledAt          DateTime?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([practiceId])
+  @@index([remittanceRef])
+  @@index([reconciliationStatus])
+}
+
+model SwitchingVendor {
+  id              String   @id @default(cuid())
+  vendorName      String
+  vendorCode      String   @unique
+  contactName     String   @default("")
+  contactEmail    String
+  contactPhone    String   @default("")
+  softwareName    String
+  softwareVersion String   @default("1.0.0")
+  protocols       String   @default("[\"xml\"]") // JSON array
+  accreditations  String   @default("[]") // JSON array per switch
+  webhookUrl      String   @default("")
+  apiKey          String   @default("")
+  ipWhitelist     String   @default("[]") // JSON array
+  status          String   @default("pending") // pending | testing | accredited | suspended | revoked
+  registeredAt    DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+}

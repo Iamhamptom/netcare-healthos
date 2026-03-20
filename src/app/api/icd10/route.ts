@@ -1,11 +1,45 @@
-import { NextResponse } from "next/server";
-import { searchICD10 } from "@/lib/icd10-data";
+import { NextResponse, NextRequest } from "next/server";
+import { getClaimsSource } from "@/lib/data-sources";
+import { searchICD10 as searchStatic } from "@/lib/icd10-data";
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const query = searchParams.get("q") || "";
-  const limit = parseInt(searchParams.get("limit") || "20");
+export async function GET(request: NextRequest) {
+  const url = new URL(request.url);
+  const query = url.searchParams.get("q") || "";
+  const code = url.searchParams.get("code");
+  const limit = parseInt(url.searchParams.get("limit") || "20");
 
-  const results = searchICD10(query, limit);
+  // Validate a specific code
+  if (code) {
+    try {
+      const source = getClaimsSource();
+      const result = await source.validateICD10(code);
+      return NextResponse.json(result);
+    } catch {
+      const results = searchStatic(code, 1);
+      return NextResponse.json({
+        valid: results.length > 0,
+        code,
+        description: results[0]?.description || "",
+        specificity: results.length > 0 ? "sufficient" : "invalid",
+        pmbCondition: false,
+        requiresAuth: false,
+        warnings: results.length === 0 ? [`Code ${code} not found`] : [],
+        suggestions: [],
+      });
+    }
+  }
+
+  // Search
+  try {
+    const source = getClaimsSource();
+    const results = await source.searchICD10(query, limit);
+    if (results.length > 0) {
+      return NextResponse.json({ results, total: results.length });
+    }
+  } catch {
+    // Fallback to static data on Supabase error
+  }
+
+  const results = searchStatic(query, limit);
   return NextResponse.json({ results, total: results.length });
 }

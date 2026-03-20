@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, MapPin, Calendar, CheckCircle2, Phone, Clock, Zap } from "lucide-react";
 
+// Simulated conversations showing the intended patient experience
 const DEMO_CONVERSATIONS = [
   {
     title: "Find a GP near me",
@@ -47,6 +48,9 @@ export default function WhatsAppPage() {
           Patients message one WhatsApp number. AI identifies the service needed, finds the nearest Medicross with availability, and books instantly.
           No app download. No phone queue. No clinic-specific numbers.
         </p>
+        <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-amber-50 border border-amber-200 text-amber-700 text-[11px] font-medium">
+          Simulated conversations — Twilio backend built, pending deployment
+        </div>
       </div>
 
       {/* Stats */}

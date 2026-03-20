@@ -9,7 +9,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <DashboardSidebar />
       <div className="flex-1 flex flex-col overflow-hidden rounded-tl-2xl">
         <DashboardHeader />
-        <main className="flex-1 overflow-y-auto bg-gradient-to-br from-[#f0f2f5] via-[#f5f6f8] to-[#eef0f4] text-[#1D3443] light-content font-body">
+        <main className="flex-1 overflow-y-auto bg-gradient-to-br from-[#f0f2f5] via-[#f5f6f8] to-[#eef0f4] text-[#1D3443] light-content font-body relative">
+          <div className="sticky top-0 z-40 flex justify-center py-1.5 bg-amber-50/90 backdrop-blur-sm border-b border-amber-200/50">
+            <span className="text-[10px] font-medium text-amber-700 tracking-wide">
+              DEMO ENVIRONMENT — Sample data for evaluation purposes only
+            </span>
+          </div>
           {children}
           <div className="px-6 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
