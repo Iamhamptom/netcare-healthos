@@ -6,6 +6,8 @@
 // SEP = Single Exit Price (regulated maximum wholesale price in SA)
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { logger } from "@/lib/logger";
+
 const LOG_PREFIX = '[nappi]';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -84,16 +86,16 @@ export class NAPPIAdapter {
   constructor(config?: { baseUrl?: string; apiKey?: string }) {
     this.baseUrl = config?.baseUrl ?? process.env.NAPPI_API_URL ?? 'https://api.medikredit.co.za/nappi/v1';
     this.apiKey = config?.apiKey ?? process.env.NAPPI_API_KEY ?? '';
-    console.log(`${LOG_PREFIX} Adapter initialized (endpoint: ${this.baseUrl})`);
+    logger.info(`${LOG_PREFIX} Adapter initialized (endpoint: ${this.baseUrl})`);
   }
 
   /** Test NAPPI database connectivity */
   async testConnection(): Promise<{ connected: boolean; latencyMs: number; productCount: number }> {
     const start = Date.now();
-    console.log(`${LOG_PREFIX} Testing connection to NAPPI database...`);
+    logger.info(`${LOG_PREFIX} Testing connection to NAPPI database...`);
     await this.simulateLatency(30, 80);
     const latency = Date.now() - start;
-    console.log(`${LOG_PREFIX} Connected (${latency}ms) — 312,847 active products`);
+    logger.info(`${LOG_PREFIX} Connected (${latency}ms) — 312,847 active products`);
     return { connected: true, latencyMs: latency, productCount: 312_847 };
   }
 
@@ -101,16 +103,16 @@ export class NAPPIAdapter {
 
   /** GET /products/{nappiCode} — Get product details by NAPPI code */
   async lookup(nappiCode: string): Promise<NAPPIProduct | null> {
-    console.log(`${LOG_PREFIX} Looking up NAPPI code: ${nappiCode}`);
+    logger.info(`${LOG_PREFIX} Looking up NAPPI code: ${nappiCode}`);
     await this.simulateLatency(40, 100);
 
     const product = MOCK_PRODUCTS[nappiCode];
     if (!product) {
-      console.log(`${LOG_PREFIX} Product not found: ${nappiCode}`);
+      logger.info(`${LOG_PREFIX} Product not found: ${nappiCode}`);
       return null;
     }
 
-    console.log(`${LOG_PREFIX} Found: ${product.productName} (${product.manufacturer}) — SEP R${product.sepPrice.toFixed(2)}`);
+    logger.info(`${LOG_PREFIX} Found: ${product.productName} (${product.manufacturer}) — SEP R${product.sepPrice.toFixed(2)}`);
     return product;
   }
 
@@ -118,7 +120,7 @@ export class NAPPIAdapter {
 
   /** GET /products?q={query}&limit=20 — Search by product name or active ingredient */
   async search(query: string): Promise<NAPPISearchResult> {
-    console.log(`${LOG_PREFIX} Searching products: "${query}"`);
+    logger.info(`${LOG_PREFIX} Searching products: "${query}"`);
     await this.simulateLatency(60, 150);
 
     const normQuery = query.toLowerCase().trim();
@@ -130,7 +132,7 @@ export class NAPPIAdapter {
         p.manufacturer.toLowerCase().includes(normQuery)
     );
 
-    console.log(`${LOG_PREFIX} Search "${query}": ${results.length} result(s)`);
+    logger.info(`${LOG_PREFIX} Search "${query}": ${results.length} result(s)`);
     return {
       query,
       totalResults: results.length,
@@ -142,12 +144,12 @@ export class NAPPIAdapter {
 
   /** GET /products/{nappiCode}/validate — Check if NAPPI code is active/expired */
   async validateCode(nappiCode: string): Promise<NAPPICodeValidation> {
-    console.log(`${LOG_PREFIX} Validating NAPPI code: ${nappiCode}`);
+    logger.info(`${LOG_PREFIX} Validating NAPPI code: ${nappiCode}`);
     await this.simulateLatency(30, 80);
 
     // Check format: 7-9 digits
     if (!/^\d{7,9}$/.test(nappiCode)) {
-      console.log(`${LOG_PREFIX} Invalid format: ${nappiCode} (must be 7-9 digits)`);
+      logger.info(`${LOG_PREFIX} Invalid format: ${nappiCode} (must be 7-9 digits)`);
       return {
         nappiCode,
         valid: false,
@@ -162,7 +164,7 @@ export class NAPPIAdapter {
       // Check expired/withdrawn codes
       const expired = EXPIRED_CODES[nappiCode];
       if (expired) {
-        console.log(`${LOG_PREFIX} Code ${nappiCode} is ${expired.status}: ${expired.productName}`);
+        logger.info(`${LOG_PREFIX} Code ${nappiCode} is ${expired.status}: ${expired.productName}`);
         return {
           nappiCode,
           valid: false,
@@ -172,7 +174,7 @@ export class NAPPIAdapter {
         };
       }
 
-      console.log(`${LOG_PREFIX} Code ${nappiCode} not found in database`);
+      logger.info(`${LOG_PREFIX} Code ${nappiCode} not found in database`);
       return {
         nappiCode,
         valid: false,
@@ -181,7 +183,7 @@ export class NAPPIAdapter {
       };
     }
 
-    console.log(`${LOG_PREFIX} Code ${nappiCode} is active: ${product.productName}`);
+    logger.info(`${LOG_PREFIX} Code ${nappiCode} is active: ${product.productName}`);
     return {
       nappiCode,
       valid: true,
@@ -195,14 +197,14 @@ export class NAPPIAdapter {
 
   /** GET /formulary/{schemeName}?option={optionName} — Get scheme-specific formulary */
   async getFormulary(schemeName: string, optionName?: string): Promise<NAPPIFormularyResult> {
-    console.log(`${LOG_PREFIX} Fetching formulary for scheme: ${schemeName}${optionName ? ` (${optionName})` : ''}`);
+    logger.info(`${LOG_PREFIX} Fetching formulary for scheme: ${schemeName}${optionName ? ` (${optionName})` : ''}`);
     await this.simulateLatency(80, 200);
 
     const normScheme = schemeName.toLowerCase().trim();
     const formulary = MOCK_FORMULARIES[normScheme] ?? MOCK_FORMULARIES['default'];
     const items = formulary(optionName);
 
-    console.log(`${LOG_PREFIX} Formulary for ${schemeName}: ${items.length} items`);
+    logger.info(`${LOG_PREFIX} Formulary for ${schemeName}: ${items.length} items`);
     return {
       schemeName,
       optionName,
@@ -216,12 +218,12 @@ export class NAPPIAdapter {
 
   /** GET /products/{nappiCode}/sep — Get Single Exit Price */
   async getSEP(nappiCode: string): Promise<NAPPISEPResult | null> {
-    console.log(`${LOG_PREFIX} Fetching SEP for NAPPI code: ${nappiCode}`);
+    logger.info(`${LOG_PREFIX} Fetching SEP for NAPPI code: ${nappiCode}`);
     await this.simulateLatency(30, 80);
 
     const product = MOCK_PRODUCTS[nappiCode];
     if (!product) {
-      console.log(`${LOG_PREFIX} Product not found for SEP lookup: ${nappiCode}`);
+      logger.info(`${LOG_PREFIX} Product not found for SEP lookup: ${nappiCode}`);
       return null;
     }
 
@@ -246,7 +248,7 @@ export class NAPPIAdapter {
       currency: 'ZAR',
     };
 
-    console.log(`${LOG_PREFIX} SEP for ${product.productName}: R${result.sepPrice} (fee: R${result.dispensingFee})`);
+    logger.info(`${LOG_PREFIX} SEP for ${product.productName}: R${result.sepPrice} (fee: R${result.dispensingFee})`);
     return result;
   }
 

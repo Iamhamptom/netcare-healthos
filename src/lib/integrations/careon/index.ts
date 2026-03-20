@@ -16,6 +16,7 @@ import type {
   FHIREncounter,
   FHIRObservation,
 } from "../../hl7/types";
+import { logger } from "@/lib/logger";
 import {
   MOCK_PATIENTS,
   MOCK_ENCOUNTERS,
@@ -59,7 +60,7 @@ class FHIRClient {
 
   async read<T>(resourceType: string, id: string): Promise<T | null> {
     const url = `${this.baseUrl}/${resourceType}/${id}`;
-    console.log(`[careon] FHIR GET ${url}`);
+    logger.info(`[careon] FHIR GET ${url}`);
     // STUB: In production, use fetch() with auth header
     return null;
   }
@@ -67,7 +68,7 @@ class FHIRClient {
   async search<T>(resourceType: string, params: Record<string, string>): Promise<FHIRBundle<T>> {
     const query = new URLSearchParams(params).toString();
     const url = `${this.baseUrl}/${resourceType}?${query}`;
-    console.log(`[careon] FHIR SEARCH ${url}`);
+    logger.info(`[careon] FHIR SEARCH ${url}`);
     // STUB: In production, call the real FHIR endpoint
     return { resourceType: "Bundle", type: "searchset", total: 0, entry: [] };
   }
@@ -150,12 +151,12 @@ export class CareOnAdapter {
     if (this.useMocks) {
       console.log("[careon] Running in MOCK mode — no live CareOn connection");
     } else {
-      console.log(`[careon] Connecting to ${this.config.fhirBaseUrl}`);
+      logger.info(`[careon] Connecting to ${this.config.fhirBaseUrl}`);
     }
   }
 
   async getPatient(mrn: string): Promise<UnifiedPatientRecord | null> {
-    console.log(`[careon] getPatient(${mrn})`);
+    logger.info(`[careon] getPatient(${mrn})`);
     if (!this.useMocks) {
       const fhirPatient = await this.fhir.read<FHIRPatient>("Patient", mrn);
       if (!fhirPatient) return null;
@@ -163,14 +164,14 @@ export class CareOnAdapter {
     }
     const mock = MOCK_PATIENTS[mrn];
     if (!mock) {
-      console.log(`[careon] Patient ${mrn} not found`);
+      logger.info(`[careon] Patient ${mrn} not found`);
       return null;
     }
     return mock;
   }
 
   async getEncounters(patientId: string): Promise<HospitalEncounter[]> {
-    console.log(`[careon] getEncounters(${patientId})`);
+    logger.info(`[careon] getEncounters(${patientId})`);
     if (!this.useMocks) {
       await this.fhir.search<FHIREncounter>("Encounter", {
         patient: patientId, _sort: "-date", _count: "20",
@@ -181,7 +182,7 @@ export class CareOnAdapter {
   }
 
   async getLabResults(patientId: string): Promise<LabResult[]> {
-    console.log(`[careon] getLabResults(${patientId})`);
+    logger.info(`[careon] getLabResults(${patientId})`);
     if (!this.useMocks) {
       await this.fhir.search<FHIRObservation>("Observation", {
         patient: patientId, category: "laboratory", _sort: "-date", _count: "50",
@@ -192,7 +193,7 @@ export class CareOnAdapter {
   }
 
   async getMedications(patientId: string): Promise<Medication[]> {
-    console.log(`[careon] getMedications(${patientId})`);
+    logger.info(`[careon] getMedications(${patientId})`);
     if (!this.useMocks) {
       await this.fhir.search<FHIRMedicationRequest>("MedicationRequest", {
         patient: patientId, status: "active", _sort: "-authoredon",
@@ -203,7 +204,7 @@ export class CareOnAdapter {
   }
 
   async getVitals(patientId: string): Promise<VitalSign[]> {
-    console.log(`[careon] getVitals(${patientId})`);
+    logger.info(`[careon] getVitals(${patientId})`);
     if (!this.useMocks) {
       await this.fhir.search<FHIRObservation>("Observation", {
         patient: patientId, category: "vital-signs", _sort: "-date", _count: "10",
@@ -223,7 +224,7 @@ export class CareOnAdapter {
 
   processHL7Message(raw: string): { ack: string; parsed: ParsedHL7v2Message } {
     const parsed = parseHL7v2(raw);
-    console.log(`[careon] HL7v2 ${parsed.messageType} from ${parsed.facility} (${parsed.messageId})`);
+    logger.info(`[careon] HL7v2 ${parsed.messageType} from ${parsed.facility} (${parsed.messageId})`);
     const ack = generateHL7ACK(parsed, "AA");
     return { ack, parsed };
   }

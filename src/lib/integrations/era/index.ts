@@ -4,6 +4,8 @@
 // Flags unmatched items for manual review + generates variance reports
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+import { logger } from "@/lib/logger";
+
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export interface ERALine {
@@ -235,7 +237,7 @@ export class ERAReconciler {
     matched: MatchedERAItem[];
     unmatched: UnmatchedERAItem[];
   } {
-    console.log(`[era] Matching ${era.lines.length} eRA lines against ${invoices.length} invoices`);
+    logger.info(`[era] Matching ${era.lines.length} eRA lines against ${invoices.length} invoices`);
 
     // Build lookup indices for O(1) matching
     const byClaimRef = new Map<string, InvoiceRecord>();
@@ -342,7 +344,7 @@ export class ERAReconciler {
       }
     }
 
-    console.log(`[era] Matching complete: ${matched.length} matched, ${unmatched.length} unmatched`);
+    logger.info(`[era] Matching complete: ${matched.length} matched, ${unmatched.length} unmatched`);
 
     return { matched, unmatched };
   }
@@ -379,7 +381,7 @@ export class ERAReconciler {
       filtered = filtered.filter(u => u.flaggedForReview);
     }
 
-    console.log(`[era] ${filtered.length} unmatched items after filtering (of ${unmatched.length} total)`);
+    logger.info(`[era] ${filtered.length} unmatched items after filtering (of ${unmatched.length} total)`);
 
     return filtered;
   }
@@ -391,7 +393,7 @@ export class ERAReconciler {
    * Includes financial summary, variance analysis, and dispute recommendations.
    */
   generateReport(era: ERADocument, invoices: InvoiceRecord[]): ERAReconciliationReport {
-    console.log(`[era] Generating reconciliation report for ${era.remittanceRef}`);
+    logger.info(`[era] Generating reconciliation report for ${era.remittanceRef}`);
 
     const { matched, unmatched } = this.matchToInvoices(era, invoices);
 
@@ -452,7 +454,7 @@ export class ERAReconciler {
       generatedAt: new Date().toISOString(),
     };
 
-    console.log(`[era] Report generated: ${matched.length} matched, ${unmatched.length} unmatched, variance ${formatZAR(totalVarianceCents)}`);
+    logger.info(`[era] Report generated: ${matched.length} matched, ${unmatched.length} unmatched, variance ${formatZAR(totalVarianceCents)}`);
 
     return report;
   }
@@ -633,7 +635,7 @@ export class ERAReconciler {
 
     const totalPaid = lines.reduce((sum, li) => sum + li.paidAmountCents, 0);
 
-    console.log(`[era] Generated mock eRA: ${remittanceRef} | ${lines.length} lines | Total paid: ${formatZAR(totalPaid)}`);
+    logger.info(`[era] Generated mock eRA: ${remittanceRef} | ${lines.length} lines | Total paid: ${formatZAR(totalPaid)}`);
 
     return {
       remittanceRef,

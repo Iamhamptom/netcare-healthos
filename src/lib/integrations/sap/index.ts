@@ -6,6 +6,8 @@
 // OData API patterns — swap mock → real by replacing fetch calls
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { logger } from "@/lib/logger";
+
 const LOG_PREFIX = '[sap]';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -107,18 +109,18 @@ export class SAPAdapter {
   constructor(config?: { baseUrl?: string; apiKey?: string }) {
     this.baseUrl = config?.baseUrl ?? process.env.SAP_ODATA_BASE_URL ?? 'https://sap-hc.netcare.co.za/sap/opu/odata/sap';
     this.apiKey = config?.apiKey ?? process.env.SAP_API_KEY ?? '';
-    console.log(`${LOG_PREFIX} Adapter initialized (endpoint: ${this.baseUrl})`);
+    logger.info(`${LOG_PREFIX} Adapter initialized (endpoint: ${this.baseUrl})`);
   }
 
   /** Test SAP connectivity */
   async testConnection(): Promise<{ connected: boolean; latencyMs: number; sapSystem: string }> {
     const start = Date.now();
     // In production: GET /sap/opu/odata/sap/ZHCOS_HEALTH_SRV/$metadata
-    console.log(`${LOG_PREFIX} Testing connection to SAP...`);
+    logger.info(`${LOG_PREFIX} Testing connection to SAP...`);
     await this.simulateLatency(50, 150);
     this.connected = true;
     const latency = Date.now() - start;
-    console.log(`${LOG_PREFIX} Connected (${latency}ms)`);
+    logger.info(`${LOG_PREFIX} Connected (${latency}ms)`);
     return { connected: true, latencyMs: latency, sapSystem: 'SAP ECC 6.0 EHP8 — Netcare Healthcare' };
   }
 
@@ -126,7 +128,7 @@ export class SAPAdapter {
 
   /** GET /ZHCOS_FINANCE_SRV/ClinicRevenueSet?$filter=ClinicId eq '{clinicId}' and Period eq '{month}' */
   async getClinicRevenue(clinicId: string, month: string): Promise<SAPClinicRevenue> {
-    console.log(`${LOG_PREFIX} Fetching clinic revenue: clinic=${clinicId}, month=${month}`);
+    logger.info(`${LOG_PREFIX} Fetching clinic revenue: clinic=${clinicId}, month=${month}`);
     await this.simulateLatency(100, 300);
 
     const clinic = MOCK_CLINICS[clinicId] ?? { name: `Medicross ${clinicId}`, tier: 'mid' };
@@ -159,7 +161,7 @@ export class SAPAdapter {
       currency: 'ZAR',
     };
 
-    console.log(`${LOG_PREFIX} Revenue for ${clinic.name}: R${(result.revenue / 1_000_000).toFixed(2)}M (collection: ${(result.collectionRatio * 100).toFixed(1)}%)`);
+    logger.info(`${LOG_PREFIX} Revenue fetched for clinic=${clinicId}, month=${month}`);
     return result;
   }
 
@@ -167,7 +169,7 @@ export class SAPAdapter {
 
   /** GET /ZHCOS_FINANCE_SRV/DebtorAgingSet?$filter=ClinicId eq '{clinicId}' */
   async getDebtorAging(clinicId: string): Promise<SAPDebtorAging> {
-    console.log(`${LOG_PREFIX} Fetching debtor aging: clinic=${clinicId}`);
+    logger.info(`${LOG_PREFIX} Fetching debtor aging: clinic=${clinicId}`);
     await this.simulateLatency(100, 250);
 
     const clinic = MOCK_CLINICS[clinicId] ?? { name: `Medicross ${clinicId}`, tier: 'mid' };
@@ -200,7 +202,7 @@ export class SAPAdapter {
       currency: 'ZAR',
     };
 
-    console.log(`${LOG_PREFIX} Debtor aging for ${clinic.name}: R${(result.totalOutstanding / 1000).toFixed(0)}K outstanding`);
+    logger.info(`${LOG_PREFIX} Debtor aging fetched for clinic=${clinicId}`);
     return result;
   }
 
@@ -208,7 +210,7 @@ export class SAPAdapter {
 
   /** GET /ZHCOS_FINANCE_SRV/CapitationSet?$filter=ClinicId eq '{clinicId}' */
   async getCapitationMetrics(clinicId: string): Promise<SAPCapitationMetrics> {
-    console.log(`${LOG_PREFIX} Fetching capitation metrics: clinic=${clinicId}`);
+    logger.info(`${LOG_PREFIX} Fetching capitation metrics: clinic=${clinicId}`);
     await this.simulateLatency(80, 200);
 
     const clinic = MOCK_CLINICS[clinicId] ?? { name: `Medicross ${clinicId}`, tier: 'mid' };
@@ -234,7 +236,7 @@ export class SAPAdapter {
       currency: 'ZAR',
     };
 
-    console.log(`${LOG_PREFIX} Capitation for ${clinic.name}: ${lives} lives, PMPM actual R${pmpmActual} vs cap R${pmpmRate} (surplus: R${(result.surplus / 1000).toFixed(0)}K)`);
+    logger.info(`${LOG_PREFIX} Capitation fetched for clinic=${clinicId}`);
     return result;
   }
 
@@ -242,7 +244,7 @@ export class SAPAdapter {
 
   /** GET /ZHCOS_FINANCE_SRV/DivisionPLSet?$filter=Division eq 'Primary Care' */
   async getFinancialSummary(): Promise<SAPFinancialSummary> {
-    console.log(`${LOG_PREFIX} Fetching division-level financial summary`);
+    logger.info(`${LOG_PREFIX} Fetching division-level financial summary`);
     await this.simulateLatency(150, 400);
 
     // Netcare Primary Care division financials (realistic — based on public disclosures)
@@ -270,7 +272,7 @@ export class SAPAdapter {
       currency: 'ZAR',
     };
 
-    console.log(`${LOG_PREFIX} Division P&L: Revenue R${(result.revenue / 1_000_000).toFixed(0)}M, EBITDA R${(result.ebitda / 1_000_000).toFixed(0)}M (${result.ebitdaMargin}%)`);
+    logger.info(`${LOG_PREFIX} Division P&L fetched for period=${result.period}`);
     return result;
   }
 
@@ -278,7 +280,7 @@ export class SAPAdapter {
 
   /** GET /ZHCOS_MM_SRV/ProcurementAlertSet?$orderby=Severity desc */
   async getProcurementAlerts(): Promise<SAPProcurementAlert[]> {
-    console.log(`${LOG_PREFIX} Fetching procurement alerts`);
+    logger.info(`${LOG_PREFIX} Fetching procurement alerts`);
     await this.simulateLatency(100, 250);
 
     const alerts: SAPProcurementAlert[] = [
@@ -362,7 +364,7 @@ export class SAPAdapter {
       },
     ];
 
-    console.log(`${LOG_PREFIX} ${alerts.length} procurement alerts (${alerts.filter(a => a.severity === 'critical').length} critical)`);
+    logger.info(`${LOG_PREFIX} ${alerts.length} procurement alerts (${alerts.filter(a => a.severity === 'critical').length} critical)`);
     return alerts;
   }
 

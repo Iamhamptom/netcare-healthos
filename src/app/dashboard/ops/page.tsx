@@ -8,6 +8,16 @@ import {
   Loader2, Activity, Star, MapPin,
 } from "lucide-react";
 
+/** Safely render inline markdown bold (**text**) as React elements */
+function renderInline(text: string) {
+  const parts = text.split(/\*\*(.*?)\*\*/g);
+  return parts.map((part, i) =>
+    i % 2 === 1
+      ? <strong className="text-white/80">{part}</strong>
+      : <span>{part}</span>
+  );
+}
+
 interface OpsDocument {
   id: string;
   category: string;
@@ -209,20 +219,31 @@ export default function OpsPage() {
                     className="border-t border-white/10"
                   >
                     <div className="p-5 prose prose-invert prose-sm max-w-none">
-                      <div
-                        className="text-xs text-white/60 leading-relaxed whitespace-pre-wrap [&_h1]:text-base [&_h1]:font-bold [&_h1]:text-white [&_h1]:mb-3 [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:text-white/80 [&_h2]:mt-4 [&_h2]:mb-2 [&_h3]:text-xs [&_h3]:font-semibold [&_h3]:text-white/70 [&_table]:border-collapse [&_table]:text-[11px] [&_th]:text-left [&_th]:py-1.5 [&_th]:px-2 [&_th]:border-b [&_th]:border-white/10 [&_th]:text-white/50 [&_td]:py-1.5 [&_td]:px-2 [&_td]:border-b [&_td]:border-white/5"
-                        dangerouslySetInnerHTML={{
-                          __html: doc.content
-                            .replace(/^### (.*$)/gm, '<h3>$1</h3>')
-                            .replace(/^## (.*$)/gm, '<h2>$1</h2>')
-                            .replace(/^# (.*$)/gm, '<h1>$1</h1>')
-                            .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white/80">$1</strong>')
-                            .replace(/\n\n/g, '<br/><br/>')
-                            .replace(/\n\|/g, '\n<table><tr><td>')
-                            .replace(/\|/g, '</td><td>')
-                            .replace(/<td>\s*---/g, '')
-                        }}
-                      />
+                      <div className="text-xs text-white/60 leading-relaxed whitespace-pre-wrap">
+                        {doc.content.split("\n").map((line, i) => {
+                          // Headings
+                          if (line.startsWith("### ")) return <h3 key={i} className="text-xs font-semibold text-white/70">{line.slice(4)}</h3>;
+                          if (line.startsWith("## ")) return <h2 key={i} className="text-sm font-semibold text-white/80 mt-4 mb-2">{line.slice(3)}</h2>;
+                          if (line.startsWith("# ")) return <h1 key={i} className="text-base font-bold text-white mb-3">{line.slice(2)}</h1>;
+                          // Table separator rows
+                          if (/^\|[\s-|]+\|$/.test(line)) return null;
+                          // Table rows
+                          if (line.startsWith("|") && line.endsWith("|")) {
+                            const cells = line.slice(1, -1).split("|").map(c => c.trim());
+                            return (
+                              <div key={i} className="flex text-[11px] border-b border-white/5">
+                                {cells.map((cell, j) => (
+                                  <span key={j} className="py-1.5 px-2 flex-1">{renderInline(cell)}</span>
+                                ))}
+                              </div>
+                            );
+                          }
+                          // Empty lines
+                          if (line.trim() === "") return <br key={i} />;
+                          // Normal paragraph with inline bold
+                          return <p key={i}>{renderInline(line)}</p>;
+                        })}
+                      </div>
                     </div>
                     {/* Metadata */}
                     {Object.keys(meta).length > 1 && (

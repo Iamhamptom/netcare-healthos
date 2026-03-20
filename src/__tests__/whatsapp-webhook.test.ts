@@ -84,7 +84,7 @@ describe("WhatsApp Webhook — POST Message Processing", () => {
     const response = await POST(request);
     const data = await response.json();
     expect(response.status).toBe(200);
-    expect(data.status).toBe("received_demo");
+    expect(data.status).toBe("demo");
     expect(data.message.text).toBe("I need to book an appointment");
     expect(data.message.from).toBe("27821234567");
   });

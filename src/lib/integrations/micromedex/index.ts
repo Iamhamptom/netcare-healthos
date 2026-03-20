@@ -5,6 +5,8 @@
 // Used at point of prescribing in Medicross clinics
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { logger } from "@/lib/logger";
+
 const LOG_PREFIX = '[micromedex]';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -91,16 +93,16 @@ export class MicromedexAdapter {
   constructor(config?: { baseUrl?: string; apiKey?: string }) {
     this.baseUrl = config?.baseUrl ?? process.env.MICROMEDEX_API_URL ?? 'https://api.merative.com/micromedex/v2';
     this.apiKey = config?.apiKey ?? process.env.MICROMEDEX_API_KEY ?? '';
-    console.log(`${LOG_PREFIX} Adapter initialized (endpoint: ${this.baseUrl})`);
+    logger.info(`${LOG_PREFIX} Adapter initialized (endpoint: ${this.baseUrl})`);
   }
 
   /** Test Micromedex API connectivity */
   async testConnection(): Promise<{ connected: boolean; latencyMs: number; databaseVersion: string }> {
     const start = Date.now();
-    console.log(`${LOG_PREFIX} Testing connection...`);
+    logger.info(`${LOG_PREFIX} Testing connection...`);
     await this.simulateLatency(30, 100);
     const latency = Date.now() - start;
-    console.log(`${LOG_PREFIX} Connected (${latency}ms) — database v2026.03.19`);
+    logger.info(`${LOG_PREFIX} Connected (${latency}ms) — database v2026.03.19`);
     return { connected: true, latencyMs: latency, databaseVersion: 'v2026.03.19-daily' };
   }
 
@@ -108,7 +110,7 @@ export class MicromedexAdapter {
 
   /** POST /interactions/check — Check all drug pairs for interactions */
   async checkInteractions(medications: string[]): Promise<InteractionCheckResult> {
-    console.log(`${LOG_PREFIX} Checking interactions for ${medications.length} medications: ${medications.join(', ')}`);
+    logger.info(`${LOG_PREFIX} Checking interactions for ${medications.length} medications: ${medications.join(', ')}`);
     await this.simulateLatency(80, 200);
 
     const normalised = medications.map(m => m.toLowerCase().trim());
@@ -141,9 +143,9 @@ export class MicromedexAdapter {
     };
 
     if (interactions.length > 0) {
-      console.log(`${LOG_PREFIX} Found ${interactions.length} interaction(s): ${interactions.map(i => `${i.drug1}+${i.drug2} [${i.severity}]`).join(', ')}`);
+      logger.info(`${LOG_PREFIX} Found ${interactions.length} interaction(s): ${interactions.map(i => `${i.drug1}+${i.drug2} [${i.severity}]`).join(', ')}`);
     } else {
-      console.log(`${LOG_PREFIX} No interactions found (${pairsChecked} pairs checked)`);
+      logger.info(`${LOG_PREFIX} No interactions found (${pairsChecked} pairs checked)`);
     }
 
     return result;
@@ -153,16 +155,16 @@ export class MicromedexAdapter {
 
   /** GET /drugs/{nappiCode}/monograph — Full drug monograph by NAPPI code */
   async getDrugInfo(nappiCode: string): Promise<DrugMonograph | null> {
-    console.log(`${LOG_PREFIX} Fetching drug monograph: NAPPI ${nappiCode}`);
+    logger.info(`${LOG_PREFIX} Fetching drug monograph: NAPPI ${nappiCode}`);
     await this.simulateLatency(60, 150);
 
     const drug = MOCK_MONOGRAPHS[nappiCode];
     if (!drug) {
-      console.log(`${LOG_PREFIX} Drug not found: NAPPI ${nappiCode}`);
+      logger.info(`${LOG_PREFIX} Drug not found: NAPPI ${nappiCode}`);
       return null;
     }
 
-    console.log(`${LOG_PREFIX} Found: ${drug.genericName} (${drug.brandNames[0]})`);
+    logger.info(`${LOG_PREFIX} Found: ${drug.genericName} (${drug.brandNames[0]})`);
     return drug;
   }
 
@@ -170,7 +172,7 @@ export class MicromedexAdapter {
 
   /** POST /allergies/check — Check medications against patient allergies */
   async checkAllergies(medications: string[], allergies: string[]): Promise<AllergyCheckResult> {
-    console.log(`${LOG_PREFIX} Checking ${medications.length} meds against ${allergies.length} allergies`);
+    logger.info(`${LOG_PREFIX} Checking ${medications.length} meds against ${allergies.length} allergies`);
     await this.simulateLatency(50, 120);
 
     const conflicts: AllergyConflict[] = [];
@@ -227,9 +229,9 @@ export class MicromedexAdapter {
     };
 
     if (conflicts.length > 0) {
-      console.log(`${LOG_PREFIX} ALERT: ${conflicts.length} allergy conflict(s) detected`);
+      logger.info(`${LOG_PREFIX} ALERT: ${conflicts.length} allergy conflict(s) detected`);
     } else {
-      console.log(`${LOG_PREFIX} No allergy conflicts detected`);
+      logger.info(`${LOG_PREFIX} No allergy conflicts detected`);
     }
 
     return result;
@@ -239,7 +241,7 @@ export class MicromedexAdapter {
 
   /** POST /duplicates/check — Detect therapeutic duplication */
   async checkDuplicates(medications: string[]): Promise<DuplicateCheckResult> {
-    console.log(`${LOG_PREFIX} Checking therapeutic duplicates for ${medications.length} medications`);
+    logger.info(`${LOG_PREFIX} Checking therapeutic duplicates for ${medications.length} medications`);
     await this.simulateLatency(50, 120);
 
     const duplicates: TherapeuticDuplicate[] = [];
@@ -271,9 +273,9 @@ export class MicromedexAdapter {
     };
 
     if (duplicates.length > 0) {
-      console.log(`${LOG_PREFIX} ${duplicates.length} therapeutic duplication(s) found`);
+      logger.info(`${LOG_PREFIX} ${duplicates.length} therapeutic duplication(s) found`);
     } else {
-      console.log(`${LOG_PREFIX} No therapeutic duplications detected`);
+      logger.info(`${LOG_PREFIX} No therapeutic duplications detected`);
     }
 
     return result;

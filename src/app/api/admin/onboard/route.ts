@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { randomBytes } from "crypto";
 import { rateLimitByIp } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 
@@ -172,10 +173,5 @@ export async function POST(request: Request) {
 }
 
 function generateTempPassword(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
-  let password = "";
-  for (let i = 0; i < 12; i++) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return password;
+  return randomBytes(12).toString("base64url").slice(0, 16);
 }

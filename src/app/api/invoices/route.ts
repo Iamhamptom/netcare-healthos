@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { isDemoMode } from "@/lib/is-demo";
 import { guardRoute, isErrorResponse } from "@/lib/api-helpers";
 import { demoStore } from "@/lib/demo-data";
-import { sanitize } from "@/lib/validate";
+import { sanitize, clampInt } from "@/lib/validate";
 
 export async function GET(request: Request) {
   const guard = await guardRoute(request, "invoices");
@@ -12,13 +12,23 @@ export async function GET(request: Request) {
     return NextResponse.json({ invoices: demoStore.getInvoices() });
   }
 
+  const { searchParams } = new URL(request.url);
+  const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
+  const limit = clampInt(parseInt(searchParams.get("limit") || "100", 10) || 100, 1, 100) ?? 100;
+  const skip = (page - 1) * limit;
+
   const { prisma } = await import("@/lib/prisma");
-  const invoices = await prisma.invoice.findMany({
-    where: { practiceId: guard.practiceId },
-    include: { payments: true },
-    orderBy: { createdAt: "desc" },
-  });
-  return NextResponse.json({ invoices });
+  const [invoices, total] = await Promise.all([
+    prisma.invoice.findMany({
+      where: { practiceId: guard.practiceId },
+      include: { payments: true },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      skip,
+    }),
+    prisma.invoice.count({ where: { practiceId: guard.practiceId } }),
+  ]);
+  return NextResponse.json({ invoices, total, page, limit });
 }
 
 export async function POST(request: Request) {

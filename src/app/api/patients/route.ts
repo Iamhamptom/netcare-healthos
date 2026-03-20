@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { isDemoMode } from "@/lib/is-demo";
 import { demoStore } from "@/lib/demo-data";
 import { guardRoute, isErrorResponse } from "@/lib/api-helpers";
-import { sanitize, validateRequired } from "@/lib/validate";
+import { sanitize, validateRequired, clampInt } from "@/lib/validate";
 
 export async function GET(request: Request) {
   const guard = await guardRoute(request, "patients");
@@ -32,6 +32,9 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const search = url.searchParams.get("search") || "";
   const status = url.searchParams.get("status") || "";
+  const page = Math.max(1, parseInt(url.searchParams.get("page") || "1", 10) || 1);
+  const limit = clampInt(parseInt(url.searchParams.get("limit") || "100", 10) || 100, 1, 100) ?? 100;
+  const skip = (page - 1) * limit;
 
   const where: Record<string, unknown> = { practiceId: guard.practiceId };
   if (search) {
@@ -43,12 +46,17 @@ export async function GET(request: Request) {
   }
   if (status) where.status = status;
 
-  const patients = await prisma.patient.findMany({
-    where,
-    include: { allergies: true, medications: { where: { active: true } } },
-    orderBy: { updatedAt: "desc" },
-  });
-  return NextResponse.json({ patients });
+  const [patients, total] = await Promise.all([
+    prisma.patient.findMany({
+      where,
+      include: { allergies: true, medications: { where: { active: true } } },
+      orderBy: { updatedAt: "desc" },
+      take: limit,
+      skip,
+    }),
+    prisma.patient.count({ where }),
+  ]);
+  return NextResponse.json({ patients, total, page, limit });
 }
 
 export async function POST(request: Request) {

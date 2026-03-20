@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { isDemoMode } from "@/lib/is-demo";
 import { guardRoute, isErrorResponse } from "@/lib/api-helpers";
 import { demoStore } from "@/lib/demo-data";
-import { sanitize } from "@/lib/validate";
+import { sanitize, clampInt } from "@/lib/validate";
 
 export async function GET(request: Request) {
   const guard = await guardRoute(request, "consent");
@@ -15,14 +15,23 @@ export async function GET(request: Request) {
     return NextResponse.json({ consents: demoStore.getConsents(patientId) });
   }
 
+  const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
+  const limit = clampInt(parseInt(searchParams.get("limit") || "100", 10) || 100, 1, 100) ?? 100;
+  const skip = (page - 1) * limit;
+
   const { prisma } = await import("@/lib/prisma");
   const where: Record<string, unknown> = { practiceId: guard.practiceId };
   if (patientId) where.patientId = patientId;
-  const consents = await prisma.consentRecord.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-  });
-  return NextResponse.json({ consents });
+  const [consents, total] = await Promise.all([
+    prisma.consentRecord.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      skip,
+    }),
+    prisma.consentRecord.count({ where }),
+  ]);
+  return NextResponse.json({ consents, total, page, limit });
 }
 
 export async function POST(request: Request) {

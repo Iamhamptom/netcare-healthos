@@ -12,7 +12,28 @@ interface Message {
   timestamp: Date;
 }
 
-const bold = (t: string) => `<b>${t}</b>`;
+const bold = (t: string) => `**${t}**`;
+
+/** Safely render message text: handles **bold**, \n line breaks — no innerHTML */
+function SafeMessage({ text }: { text: string }) {
+  const normalized = text.replace(/\\n/g, "\n");
+  const lines = normalized.split("\n");
+  return (
+    <>
+      {lines.map((line, li) => {
+        const parts = line.split(/\*\*(.*?)\*\*/g);
+        return (
+          <span data-idx={li}>
+            {li > 0 && <br />}
+            {parts.map((part, pi) =>
+              pi % 2 === 1 ? <strong data-seg={pi}>{part}</strong> : <span data-seg={pi}>{part}</span>
+            )}
+          </span>
+        );
+      })}
+    </>
+  );
+}
 
 // ─── COMPREHENSIVE KNOWLEDGE BASE ──────
 // Covers: product, Netcare integration, Sara's pain points, competitors, pricing, tech
@@ -260,8 +281,9 @@ export default function NetcareAssistant() {
                     className={`max-w-[85%] rounded-xl px-3.5 py-2.5 text-[13px] leading-relaxed ${
                       msg.role === "user" ? "bg-[#1D3443] text-white" : "bg-gray-100 text-gray-700"
                     }`}
-                    dangerouslySetInnerHTML={{ __html: msg.content.replace(/\\n/g, "<br/>").replace(/\n/g, "<br/>") }}
-                  />
+                  >
+                    <SafeMessage text={msg.content} />
+                  </div>
                 </div>
               ))}
               {typing && (

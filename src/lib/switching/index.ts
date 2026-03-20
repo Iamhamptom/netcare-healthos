@@ -25,7 +25,7 @@ export {
   edifactToClaim,
 } from "./edifact";
 
-// Multi-Switch Router
+// Multi-Switch Router + Health Monitoring
 export {
   routeClaim,
   submitRoutedClaim,
@@ -33,9 +33,12 @@ export {
   getSwitchStatus,
   getSwitchConfigs,
   updateSwitchHealth,
+  getSwitchHealthReport,
+  resetSwitchHealth,
+  HEALTH_THRESHOLDS,
   SCHEME_ROUTING_TABLE,
 } from "./router";
-export type { SchemeRoute } from "./router";
+export type { SchemeRoute, SwitchHealthStatus } from "./router";
 
 // MediKredit Client
 export {
@@ -51,7 +54,7 @@ export {
   checkSwitchOnEligibility,
 } from "./switchon-client";
 
-// Pre-Authorization Engine
+// Pre-Authorization Engine (9 procedure categories + PMB/CDL exemptions)
 export {
   checkPreAuthRequired,
   createPreAuthRequest,
@@ -60,7 +63,7 @@ export {
   applyPreAuthResponse,
   isPreAuthValid,
 } from "./preauth";
-export type { PreAuthCheck } from "./preauth";
+export type { PreAuthCheck, PreAuthCategory } from "./preauth";
 
 // Batch Claims Processor
 export {
@@ -72,13 +75,40 @@ export {
 } from "./batch";
 export type { BatchSummary } from "./batch";
 
-// eRA Parser & Reconciliation
+// eRA Parser, Reconciliation & Auto-Dispute Engine
 export {
   parseERAXml,
   reconcileERA,
   generateDisputes,
+  generateDisputeTemplate,
+  getAutoResubmittableDisputes,
+  generateDisputeSummary,
+  BHF_ADJUSTMENT_CODES,
 } from "./era-parser";
-export type { ReconciliationResult, ReconciliationMatch, PaymentDispute } from "./era-parser";
+export type {
+  ReconciliationResult,
+  ReconciliationMatch,
+  PaymentDispute,
+  DisputeTemplate,
+  DisputeCategory,
+} from "./era-parser";
+
+// Transaction Review Agent
+export {
+  evaluateTransaction,
+  getEvaluations,
+  getPendingReviews,
+  markReviewed,
+  getPatternInsights,
+  resetEvaluations,
+} from "./review-agent";
+export type {
+  TransactionEvaluation,
+  TransactionAnomaly,
+  AnomalyType,
+  AnomalySeverity,
+  ReviewPattern,
+} from "./review-agent";
 
 // Claim Resubmission Workflow
 export {

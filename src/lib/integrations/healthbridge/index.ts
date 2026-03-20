@@ -4,6 +4,8 @@
 // Real-time EDI for claims with instant accept/reject responses
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+import { logger } from "@/lib/logger";
+
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export interface HealthbridgeConfig {
@@ -233,8 +235,8 @@ export class HealthbridgeAdapter {
    * Currently returns realistic mock responses for demo/development.
    */
   async submitClaim(claim: HealthbridgeClaim): Promise<HealthbridgeClaimResponse> {
-    console.log(`[healthbridge] Submitting claim for ${claim.patientName} | Scheme: ${claim.schemeName} | Total: R${(claim.totalAmountCents / 100).toFixed(2)}`);
-    console.log(`[healthbridge] Line items: ${claim.lineItems.length} | ICD-10: ${claim.lineItems.map(li => li.icd10Code).join(", ")}`);
+    logger.info(`[healthbridge] Submitting claim | Scheme: [REDACTED] | Total: R${(claim.totalAmountCents / 100).toFixed(2)}`);
+    logger.info(`[healthbridge] Line items: ${claim.lineItems.length} | ICD-10: ${claim.lineItems.map(li => li.icd10Code).join(", ")}`);
 
     if (this.isConfigured()) {
       // TODO: Replace with real Healthbridge API call
@@ -267,7 +269,7 @@ export class HealthbridgeAdapter {
     schemeName: string;
     patientDob?: string;
   }): Promise<HealthbridgeMembershipResult> {
-    console.log(`[healthbridge] Checking membership: ${params.membershipNumber} (dep ${params.dependentCode}) on ${params.schemeName}`);
+    logger.info(`[healthbridge] Checking membership: [REDACTED] (dep ${params.dependentCode}) on [REDACTED]`);
 
     if (this.isConfigured()) {
       // TODO: Replace with real Healthbridge membership API call
@@ -320,7 +322,7 @@ export class HealthbridgeAdapter {
       ];
       const scenario = rejectionScenarios[Math.floor(Math.random() * rejectionScenarios.length)];
 
-      console.log(`[healthbridge] Claim REJECTED: ${scenario.code} — ${scenario.reason}`);
+      logger.info(`[healthbridge] Claim REJECTED: ${scenario.code} — ${scenario.reason}`);
 
       return {
         accepted: false,
@@ -345,7 +347,7 @@ export class HealthbridgeAdapter {
       const schemeTariffRate = Math.round(claim.totalAmountCents * 0.80); // 80% of billed
       const coPayment = claim.totalAmountCents - schemeTariffRate;
 
-      console.log(`[healthbridge] Claim PARTIALLY ACCEPTED: R${(schemeTariffRate / 100).toFixed(2)} of R${(claim.totalAmountCents / 100).toFixed(2)} | Co-pay: R${(coPayment / 100).toFixed(2)}`);
+      logger.info(`[healthbridge] Claim PARTIALLY ACCEPTED: R${(schemeTariffRate / 100).toFixed(2)} of R${(claim.totalAmountCents / 100).toFixed(2)} | Co-pay: R${(coPayment / 100).toFixed(2)}`);
 
       return {
         accepted: true,
@@ -367,7 +369,7 @@ export class HealthbridgeAdapter {
     }
 
     // Fully accepted
-    console.log(`[healthbridge] Claim ACCEPTED: ${transactionRef} | R${(claim.totalAmountCents / 100).toFixed(2)}`);
+    logger.info(`[healthbridge] Claim ACCEPTED: ${transactionRef} | R${(claim.totalAmountCents / 100).toFixed(2)}`);
 
     return {
       accepted: true,
@@ -405,7 +407,7 @@ export class HealthbridgeAdapter {
     const eligible = Math.random() > 0.05;
 
     if (!eligible) {
-      console.log(`[healthbridge] Membership NOT ELIGIBLE: ${params.membershipNumber} on ${params.schemeName}`);
+      logger.info(`[healthbridge] Membership NOT ELIGIBLE: [REDACTED]`);
       return {
         eligible: false,
         memberName: "Unknown",
@@ -421,7 +423,7 @@ export class HealthbridgeAdapter {
       };
     }
 
-    console.log(`[healthbridge] Membership ELIGIBLE: ${params.membershipNumber} on ${params.schemeName} — ${option}`);
+    logger.info(`[healthbridge] Membership ELIGIBLE: [REDACTED] — ${option}`);
 
     return {
       eligible: true,
@@ -546,7 +548,7 @@ export class HealthbridgeAdapter {
 
     const totalPaid = lineItems.reduce((sum, li) => sum + li.paidAmountCents, 0);
 
-    console.log(`[healthbridge] eRA received: ${remittanceRef} | ${scheme} | ${lineItems.length} lines | Total: R${(totalPaid / 100).toFixed(2)}`);
+    logger.info(`[healthbridge] eRA received: ${remittanceRef} | ${scheme} | ${lineItems.length} lines | Total: R${(totalPaid / 100).toFixed(2)}`);
 
     return {
       remittanceRef,

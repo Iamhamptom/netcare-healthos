@@ -5,6 +5,8 @@
 // Per-claim cost: R5.90 excl VAT
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+import { logger } from "@/lib/logger";
+
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export interface SwitchOnConfig {
@@ -460,8 +462,8 @@ export class SwitchOnAdapter {
       bhfNumber: this.config.bhfNumber || claim.bhfNumber,
     });
 
-    console.log(`[switchon] Submitting claim via EDIFACT | Patient: ${claim.patientSurname}, ${claim.patientFirstNames} | Scheme: ${claim.schemeName} | Total: R${(claim.totalAmountCents / 100).toFixed(2)}`);
-    console.log(`[switchon] EDIFACT message size: ${edifactMessage.length} bytes | ${claim.lineItems.length} line items`);
+    logger.info(`[switchon] Submitting claim via EDIFACT | Patient: ${claim.patientSurname}, ${claim.patientFirstNames} | Scheme: ${claim.schemeName} | Total: R${(claim.totalAmountCents / 100).toFixed(2)}`);
+    logger.info(`[switchon] EDIFACT message size: ${edifactMessage.length} bytes | ${claim.lineItems.length} line items`);
 
     if (this.isConfigured()) {
       // TODO: Replace with real SwitchOn API call
@@ -493,7 +495,7 @@ export class SwitchOnAdapter {
     schemeName: string;
     patientIdNumber?: string;
   }): Promise<SwitchOnMembershipResult> {
-    console.log(`[switchon] Validating membership: ${params.membershipNumber} on ${params.schemeName}`);
+    logger.info(`[switchon] Validating membership: ${params.membershipNumber} on ${params.schemeName}`);
 
     if (this.isConfigured()) {
       // TODO: Real SwitchOn membership validation API call
@@ -513,7 +515,7 @@ export class SwitchOnAdapter {
     dependentCode: string;
     schemeName: string;
   }): Promise<SwitchOnBenefitResult> {
-    console.log(`[switchon] Checking benefits: ${params.membershipNumber} (dep ${params.dependentCode}) on ${params.schemeName}`);
+    logger.info(`[switchon] Checking benefits: ${params.membershipNumber} (dep ${params.dependentCode}) on ${params.schemeName}`);
 
     if (this.isConfigured()) {
       // TODO: Real SwitchOn benefits API call
@@ -529,7 +531,7 @@ export class SwitchOnAdapter {
    * Useful for claims that returned "queued" or "pending" initially.
    */
   async getClaimStatus(transactionRef: string): Promise<SwitchOnClaimStatusResult> {
-    console.log(`[switchon] Checking claim status: ${transactionRef}`);
+    logger.info(`[switchon] Checking claim status: ${transactionRef}`);
 
     if (this.isConfigured()) {
       // TODO: Real SwitchOn status query API call
@@ -584,7 +586,7 @@ export class SwitchOnAdapter {
       ];
       const scenario = rejectionScenarios[Math.floor(Math.random() * rejectionScenarios.length)];
 
-      console.log(`[switchon] Claim REJECTED: ${scenario.code} — ${scenario.desc}`);
+      logger.info(`[switchon] Claim REJECTED: ${scenario.code} — ${scenario.desc}`);
 
       return {
         transactionRef,
@@ -611,7 +613,7 @@ export class SwitchOnAdapter {
       const approvedCents = Math.round(claim.totalAmountCents * 0.82);
       const coPay = claim.totalAmountCents - approvedCents;
 
-      console.log(`[switchon] Claim PARTIAL: R${(approvedCents / 100).toFixed(2)} of R${(claim.totalAmountCents / 100).toFixed(2)} approved`);
+      logger.info(`[switchon] Claim PARTIAL: R${(approvedCents / 100).toFixed(2)} of R${(claim.totalAmountCents / 100).toFixed(2)} approved`);
 
       return {
         transactionRef,
@@ -636,7 +638,7 @@ export class SwitchOnAdapter {
     }
 
     if (rand < 0.25) {
-      console.log(`[switchon] Claim QUEUED for processing: ${transactionRef}`);
+      logger.info(`[switchon] Claim QUEUED for processing: ${transactionRef}`);
 
       return {
         transactionRef,
@@ -651,7 +653,7 @@ export class SwitchOnAdapter {
     }
 
     // Accepted
-    console.log(`[switchon] Claim ACCEPTED: ${transactionRef} | R${(claim.totalAmountCents / 100).toFixed(2)}`);
+    logger.info(`[switchon] Claim ACCEPTED: ${transactionRef} | R${(claim.totalAmountCents / 100).toFixed(2)}`);
 
     return {
       transactionRef,
@@ -689,7 +691,7 @@ export class SwitchOnAdapter {
     const option = options[Math.floor(Math.random() * options.length)];
     const eligible = Math.random() > 0.05;
 
-    console.log(`[switchon] Membership ${eligible ? "VALID" : "INVALID"}: ${params.membershipNumber} on ${params.schemeName}`);
+    logger.info(`[switchon] Membership ${eligible ? "VALID" : "INVALID"}: ${params.membershipNumber} on ${params.schemeName}`);
 
     return {
       eligible,
@@ -715,7 +717,7 @@ export class SwitchOnAdapter {
       "Bonitas": "BonFit Select",
     };
 
-    console.log(`[switchon] Benefits retrieved for ${params.membershipNumber} on ${params.schemeName}`);
+    logger.info(`[switchon] Benefits retrieved for ${params.membershipNumber} on ${params.schemeName}`);
 
     return {
       membershipNumber: params.membershipNumber,
@@ -813,7 +815,7 @@ export class SwitchOnAdapter {
       reversed: { approved: 0, paid: 0 },
     };
 
-    console.log(`[switchon] Claim status for ${transactionRef}: ${status}`);
+    logger.info(`[switchon] Claim status for ${transactionRef}: ${status}`);
 
     return {
       transactionRef,

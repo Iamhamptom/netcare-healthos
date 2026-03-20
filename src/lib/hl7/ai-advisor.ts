@@ -2,6 +2,7 @@
 // Uses Gemini 2.5 Flash for: ICD-10 coding from clinical notes,
 // scheme-specific rejection prediction, benefits verification, lab trend analysis
 
+import { logger } from "@/lib/logger";
 import type { HL7Patient, HL7Diagnosis, HL7Observation, BridgeAdvisory } from "./types";
 
 // ── Types ──
@@ -142,7 +143,7 @@ Analyze and suggest any ADDITIONAL or CORRECTED ICD-10-ZA codes.`;
     const parsed = safeParseJSON<{ suggestions: AICodeSuggestion[]; drgImpact?: string; warnings?: string[] }>(response);
     return parsed?.suggestions ?? [];
   } catch (err) {
-    console.error("AI code suggestion failed:", err);
+    logger.error("AI code suggestion failed", { error: String(err) });
     return [];
   }
 }
@@ -201,7 +202,7 @@ Predict rejection probability and suggest preventive actions.`;
     if (!parsed) return null;
     return { ...parsed, scheme };
   } catch (err) {
-    console.error("Rejection prediction failed:", err);
+    logger.error("Rejection prediction failed", { error: String(err) });
     return null;
   }
 }
@@ -259,7 +260,7 @@ Analyze trends, suggest diagnoses, and identify billing opportunities.`;
     const parsed = safeParseJSON<{ trends: LabTrendAnalysis[] }>(response);
     return parsed?.trends ?? [];
   } catch (err) {
-    console.error("Lab trend analysis failed:", err);
+    logger.error("Lab trend analysis failed", { error: String(err) });
     return [];
   }
 }

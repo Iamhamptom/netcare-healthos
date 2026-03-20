@@ -16,6 +16,7 @@
  * via the shared UnifiedPatientRecord type (linked by SA ID number).
  */
 
+import { logger } from "@/lib/logger";
 import type {
   UnifiedPatientRecord,
   GPConsultation,
@@ -90,7 +91,7 @@ class HEALClient {
     await this.authenticate();
     const query = params ? "?" + new URLSearchParams(params).toString() : "";
     const url = `${this.config.apiBaseUrl}${path}${query}`;
-    console.log(`[heal] GET ${url}`);
+    logger.info(`[heal] GET ${url}`);
 
     // STUB: In production:
     // const res = await fetch(url, {
@@ -110,7 +111,7 @@ class HEALClient {
   async post<T>(path: string, body: unknown): Promise<T | null> {
     await this.authenticate();
     const url = `${this.config.apiBaseUrl}${path}`;
-    console.log(`[heal] POST ${url}`);
+    logger.info(`[heal] POST ${url}`);
 
     // STUB: In production:
     // const res = await fetch(url, {
@@ -144,14 +145,14 @@ export class HEALAdapter {
     if (this.useMocks) {
       console.log("[heal] Running in MOCK mode — no live HEAL/A2D24 connection");
     } else {
-      console.log(`[heal] Connecting to ${this.config.apiBaseUrl}`);
+      logger.info(`[heal] Connecting to ${this.config.apiBaseUrl}`);
     }
   }
 
   // ── Patient Demographics ──
 
   async getPatient(patientId: string): Promise<UnifiedPatientRecord | null> {
-    console.log(`[heal] getPatient(${patientId})`);
+    logger.info(`[heal] getPatient(${patientId})`);
 
     if (!this.useMocks) {
       const data = await this.client.get<UnifiedPatientRecord>(`/patients/${patientId}`);
@@ -160,7 +161,7 @@ export class HEALAdapter {
 
     const mock = MOCK_HEAL_PATIENTS[patientId];
     if (!mock) {
-      console.log(`[heal] Patient ${patientId} not found`);
+      logger.info(`[heal] Patient ${patientId} not found`);
       return null;
     }
     return mock;
@@ -169,7 +170,7 @@ export class HEALAdapter {
   // ── GP Consultations ──
 
   async getConsultations(patientId: string): Promise<GPConsultation[]> {
-    console.log(`[heal] getConsultations(${patientId})`);
+    logger.info(`[heal] getConsultations(${patientId})`);
 
     if (!this.useMocks) {
       const data = await this.client.get<{ consultations: GPConsultation[] }>(
@@ -185,7 +186,7 @@ export class HEALAdapter {
   // ── Appointment Bookings ──
 
   async getBookings(patientId: string): Promise<ClinicBooking[]> {
-    console.log(`[heal] getBookings(${patientId})`);
+    logger.info(`[heal] getBookings(${patientId})`);
 
     if (!this.useMocks) {
       const data = await this.client.get<{ bookings: ClinicBooking[] }>(
@@ -206,7 +207,7 @@ export class HEALAdapter {
     recordsUpdated: number;
     conflicts: string[];
   }> {
-    console.log(`[heal] syncPatient(${patientId})`);
+    logger.info(`[heal] syncPatient(${patientId})`);
 
     if (!this.useMocks) {
       // In production: POST to HEAL sync endpoint
@@ -228,7 +229,7 @@ export class HEALAdapter {
       return { success: false, direction: "pull", recordsUpdated: 0, conflicts: ["Patient not found in HEAL"] };
     }
 
-    console.log(`[heal] Sync complete for ${patient.demographics.firstName} ${patient.demographics.lastName}`);
+    logger.info(`[heal] Patient synced:`, { patientId });
     return {
       success: true,
       direction: "both",
@@ -278,7 +279,7 @@ export class HEALAdapter {
   // ── Find patient by SA ID (cross-system lookup) ──
 
   async findBySaId(saIdNumber: string): Promise<UnifiedPatientRecord | null> {
-    console.log(`[heal] findBySaId(${saIdNumber})`);
+    logger.info(`[heal] findBySaId(${saIdNumber})`);
 
     if (!this.useMocks) {
       const data = await this.client.get<{ patients: UnifiedPatientRecord[] }>(

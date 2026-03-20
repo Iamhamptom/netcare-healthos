@@ -29,6 +29,33 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {},
 }));
 
+vi.mock("next/headers", () => ({
+  cookies: () => ({
+    get: () => ({ value: "demo-token" }),
+    set: () => {},
+    delete: () => {},
+  }),
+}));
+
+vi.mock("@/lib/auth", () => ({
+  getSession: () => Promise.resolve({ userId: "demo-admin" }),
+  verifyToken: () => Promise.resolve({ userId: "demo-admin" }),
+  SESSION_COOKIE: "healthops-session",
+}));
+
+vi.mock("@/lib/db", () => ({
+  db: {
+    getUserById: () => Promise.resolve({ id: "demo-admin", role: "platform_admin", name: "Demo Admin", practiceId: "demo-practice" }),
+    listPractices: () => Promise.resolve([
+      { id: "demo-practice", name: "Netcare Primary", type: "primary_care_network", plan: "enterprise", planStatus: "active", createdAt: "2026-01-01" },
+      { id: "prac-2", name: "Medicross Sandton", type: "medicross_gp", plan: "professional", planStatus: "active", createdAt: "2026-02-01" },
+      { id: "prac-3", name: "Akeso Clinic", type: "mental_health", plan: "starter", planStatus: "trial", createdAt: "2026-03-01" },
+    ]),
+    listPatients: () => Promise.resolve([{ id: "p1" }, { id: "p2" }]),
+    listBookings: () => Promise.resolve([{ id: "b1" }]),
+  },
+}));
+
 describe("Admin — Analytics API", () => {
   beforeEach(() => { vi.resetModules(); });
 

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { isDemoMode } from "@/lib/is-demo";
 import { demoStore } from "@/lib/demo-data";
 import { guardRoute, isErrorResponse } from "@/lib/api-helpers";
-import { sanitize } from "@/lib/validate";
+import { sanitize, clampInt } from "@/lib/validate";
 
 export async function GET(request: Request) {
   const guard = await guardRoute(request, "bookings");
@@ -10,9 +10,17 @@ export async function GET(request: Request) {
 
   if (isDemoMode) return NextResponse.json({ bookings: demoStore.getBookings() });
 
+  const { searchParams } = new URL(request.url);
+  const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
+  const limit = clampInt(parseInt(searchParams.get("limit") || "100", 10) || 100, 1, 100) ?? 100;
+  const skip = (page - 1) * limit;
+
   const { prisma } = await import("@/lib/prisma");
-  const bookings = await prisma.booking.findMany({ where: { practiceId: guard.practiceId }, orderBy: { scheduledAt: "asc" } });
-  return NextResponse.json({ bookings });
+  const [bookings, total] = await Promise.all([
+    prisma.booking.findMany({ where: { practiceId: guard.practiceId }, orderBy: { scheduledAt: "asc" }, take: limit, skip }),
+    prisma.booking.count({ where: { practiceId: guard.practiceId } }),
+  ]);
+  return NextResponse.json({ bookings, total, page, limit });
 }
 
 export async function POST(request: Request) {

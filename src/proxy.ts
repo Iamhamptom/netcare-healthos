@@ -1,10 +1,15 @@
+// Next.js 16 proxy.ts — replaces middleware.ts
+// Runs on Node.js runtime (not Edge), supports full Node.js APIs.
+// Export function must be named `proxy` (not `middleware`).
+// See: https://nextjs.org/docs/app/building-your-application/routing/middleware
+
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { verifyToken, SESSION_COOKIE } from "@/lib/auth";
 
 const isDemoMode = process.env.DEMO_MODE === "true";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // In demo mode, allow all access to dashboard
   if (isDemoMode) return NextResponse.next();
 

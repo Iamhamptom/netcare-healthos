@@ -3,6 +3,7 @@
 // Does NOT write back to CareOn — surfaces recommendations in Bridge Console
 // v2: AI-enhanced with Gemini ICD-10 coding, rejection prediction, and anomaly detection
 
+import { logger } from "@/lib/logger";
 import { parseHL7Message, extractPatient, extractEncounter, extractObservations, extractDiagnoses, extractOrders, hl7TimestampToISO, generateACK } from "./hl7/parser";
 import { mapPatientToFHIR, mapEncounterToFHIR, mapObservationToFHIR, mapDiagnosisToFHIR } from "./hl7/fhir-mapper";
 import { DEMO_ADVISORIES, DEMO_MESSAGE_LOG, getDemoCareOnStatus } from "./hl7/demo-messages";
@@ -406,7 +407,7 @@ export async function processHL7MessageWithAI(rawMessage: string): Promise<{
         aiProcessingTimeMs: Date.now() - start,
       });
     } catch (err) {
-      console.error("AI enhancement failed for advisory:", adv.id, err);
+      logger.error("AI enhancement failed for advisory", { advisoryId: adv.id, error: String(err) });
       enhanced.push({ ...adv, aiConfidenceScore: 0, aiModel: "none", aiProcessingTimeMs: Date.now() - start });
     }
   }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { GoogleGenAI, Modality } from "@google/genai";
 import fs from "fs";
 import path from "path";
+import { guardPlatformAdmin, isErrorResponse } from "@/lib/api-helpers";
 
 const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
@@ -41,6 +42,10 @@ const IMAGE_PROMPTS: Record<string, string> = {
 };
 
 export async function POST(request: Request) {
+  // Auth: platform admin only + rate limit 5/min (image gen is expensive)
+  const guard = await guardPlatformAdmin(request, "generate-images", { limit: 5 });
+  if (isErrorResponse(guard)) return guard;
+
   try {
     const { images } = await request.json();
     const imagesToGenerate = images || Object.keys(IMAGE_PROMPTS);
@@ -102,7 +107,10 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const guard = await guardPlatformAdmin(request, "generate-images", { limit: 5 });
+  if (isErrorResponse(guard)) return guard;
+
   return NextResponse.json({
     available: Object.keys(IMAGE_PROMPTS),
     usage: "POST with { images: ['hero-bg', 'intro-bg'] } or omit to generate all",

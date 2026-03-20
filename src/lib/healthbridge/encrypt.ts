@@ -7,7 +7,9 @@ import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from "crypt
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 12; // 96-bit IV for GCM
 const AUTH_TAG_LENGTH = 16;
-const SALT = "healthbridge-v1"; // static salt for deterministic key derivation
+// IMPORTANT: HEALTHBRIDGE_ENCRYPTION_SALT MUST be set in production to a unique, random value.
+// A static fallback is provided for development only.
+const SALT = process.env.HEALTHBRIDGE_ENCRYPTION_SALT || "healthbridge-default-salt-change-in-production";
 
 /**
  * Derive a 32-byte key from the env var or fallback dev key.

@@ -219,6 +219,110 @@ export function reconcileERA(
   };
 }
 
+// ─── BHF Adjustment Reason Codes ────────────────────────────────────────────
+
+/** Standard BHF/PHISC adjustment reason codes used across SA switches */
+export const BHF_ADJUSTMENT_CODES: Record<string, {
+  description: string;
+  category: DisputeCategory;
+  disputeWorthy: boolean;
+  autoResubmit: boolean;
+  resubmitAction?: string;
+}> = {
+  "01": { description: "Member not found on scheme", category: "member_data", disputeWorthy: false, autoResubmit: false },
+  "02": { description: "Membership number incorrect", category: "member_data", disputeWorthy: false, autoResubmit: false },
+  "03": { description: "Dependent code invalid", category: "member_data", disputeWorthy: false, autoResubmit: false },
+  "04": { description: "Member suspended — arrear contributions", category: "member_status", disputeWorthy: false, autoResubmit: false },
+  "05": { description: "Duplicate claim submitted", category: "duplicate", disputeWorthy: false, autoResubmit: false },
+  "06": { description: "Claim already reversed", category: "duplicate", disputeWorthy: false, autoResubmit: false },
+  "07": { description: "Benefit exhausted for category", category: "benefit_limit", disputeWorthy: true, autoResubmit: true, resubmitAction: "Resubmit with PMB motivation if diagnosis qualifies" },
+  "08": { description: "Pre-authorisation not obtained", category: "auth_missing", disputeWorthy: true, autoResubmit: true, resubmitAction: "Obtain retrospective pre-auth and resubmit" },
+  "09": { description: "Service not covered under option", category: "benefit_limit", disputeWorthy: true, autoResubmit: false },
+  "10": { description: "Provider not on scheme network", category: "provider", disputeWorthy: true, autoResubmit: false },
+  "11": { description: "Claim past filing deadline", category: "timing", disputeWorthy: false, autoResubmit: false },
+  "12": { description: "ICD-10 code invalid or unspecified", category: "clinical_coding", disputeWorthy: false, autoResubmit: true, resubmitAction: "Correct ICD-10 code to 4th character specificity" },
+  "13": { description: "Above scheme tariff — reduced to scheme rate", category: "tariff", disputeWorthy: true, autoResubmit: false },
+  "14": { description: "Co-payment applied", category: "co_payment", disputeWorthy: false, autoResubmit: false },
+  "15": { description: "Paid at scheme tariff rate (lower than billed)", category: "tariff", disputeWorthy: true, autoResubmit: false },
+  "16": { description: "PMB condition — paid at cost", category: "pmb", disputeWorthy: false, autoResubmit: false },
+  "17": { description: "Waiting period applies", category: "member_status", disputeWorthy: false, autoResubmit: false },
+  "18": { description: "CPT code invalid for diagnosis", category: "clinical_coding", disputeWorthy: false, autoResubmit: true, resubmitAction: "Correct CPT code to match ICD-10 diagnosis" },
+  "19": { description: "Quantity exceeds limit", category: "clinical_coding", disputeWorthy: false, autoResubmit: true, resubmitAction: "Adjust quantity or add clinical motivation" },
+  "20": { description: "Date of service outside benefit year", category: "timing", disputeWorthy: false, autoResubmit: false },
+  "21": { description: "Referring provider required", category: "provider", disputeWorthy: false, autoResubmit: true, resubmitAction: "Add referring provider details" },
+  "22": { description: "Procedure not covered under option", category: "benefit_limit", disputeWorthy: true, autoResubmit: false },
+  "23": { description: "Medical savings account depleted", category: "benefit_limit", disputeWorthy: false, autoResubmit: false },
+  "24": { description: "Above-threshold — case management referral", category: "threshold", disputeWorthy: true, autoResubmit: false },
+  "25": { description: "Therapeutic substitution available", category: "clinical_coding", disputeWorthy: false, autoResubmit: false },
+};
+
+export type DisputeCategory =
+  | "tariff"
+  | "benefit_limit"
+  | "auth_missing"
+  | "clinical_coding"
+  | "member_data"
+  | "member_status"
+  | "provider"
+  | "timing"
+  | "co_payment"
+  | "pmb"
+  | "duplicate"
+  | "threshold"
+  | "unknown";
+
+// ─── Scheme Contact Details (for dispute templates) ─────────────────────────
+
+const SCHEME_CONTACTS: Record<string, {
+  disputeEmail: string;
+  disputeFax: string;
+  disputePhone: string;
+  portalUrl: string;
+  disputeAddress: string;
+  turnaroundDays: number;
+}> = {
+  "Discovery Health": {
+    disputeEmail: "claims@discovery.co.za",
+    disputeFax: "011 539 2950",
+    disputePhone: "0860 99 88 77",
+    portalUrl: "https://www.discovery.co.za/medical-aid/provider-portal",
+    disputeAddress: "PO Box 786722, Sandton, 2146",
+    turnaroundDays: 30,
+  },
+  "GEMS": {
+    disputeEmail: "enquiries@gems.gov.za",
+    disputeFax: "012 431 0500",
+    disputePhone: "0860 004 367",
+    portalUrl: "https://www.gems.gov.za",
+    disputeAddress: "Private Bag X782, Cape Town, 8000",
+    turnaroundDays: 60,
+  },
+  "Bonitas": {
+    disputeEmail: "bonclaim@medscheme.co.za",
+    disputeFax: "086 100 1645",
+    disputePhone: "0860 002 108",
+    portalUrl: "https://www.bonitas.co.za",
+    disputeAddress: "PO Box 74, Roodepoort, 1725",
+    turnaroundDays: 30,
+  },
+  "Momentum Health": {
+    disputeEmail: "healthclaims@momentum.co.za",
+    disputeFax: "012 675 3911",
+    disputePhone: "0860 11 78 59",
+    portalUrl: "https://www.momentumhealth.co.za",
+    disputeAddress: "PO Box 7400, Centurion, 0046",
+    turnaroundDays: 30,
+  },
+  "Medihelp": {
+    disputeEmail: "claims@medihelp.co.za",
+    disputeFax: "012 334 2700",
+    disputePhone: "086 010 2010",
+    portalUrl: "https://www.medihelp.co.za",
+    disputeAddress: "PO Box 26004, Arcadia, 0007",
+    turnaroundDays: 30,
+  },
+};
+
 // ─── Dispute Generator ──────────────────────────────────────────────────────
 
 export interface PaymentDispute {
@@ -228,15 +332,51 @@ export interface PaymentDispute {
   claimedAmount: number;
   paidAmount: number;
   shortfall: number;
+  /** BHF adjustment reason code */
   adjustmentCode?: string;
   adjustmentReason?: string;
+  /** Dispute categorization based on BHF code */
+  category: DisputeCategory;
   disputeReason: string;
   suggestedAction: string;
+  /** Whether this item can be auto-resubmitted */
+  autoResubmittable: boolean;
+  /** Auto-resubmission action if applicable */
+  resubmitAction?: string;
+  /** Priority ranking (1=highest) */
+  priority: number;
+  /** Estimated recovery value in cents */
+  estimatedRecovery: number;
 }
 
+export interface DisputeTemplate {
+  /** Pre-filled dispute letter content */
+  letterContent: string;
+  /** Scheme contact for submission */
+  schemeContact: {
+    email: string;
+    fax: string;
+    phone: string;
+    portalUrl: string;
+    address: string;
+  } | null;
+  /** Expected turnaround in days */
+  expectedTurnaroundDays: number;
+  /** Deadline to submit dispute */
+  submissionDeadline: string;
+}
+
+/** Minimum shortfall in cents to generate a dispute (R50 = 5000 cents) */
+const DISPUTE_THRESHOLD_CENTS = 5_000;
+
 /**
- * Generate disputes for underpaid claims that should have been fully covered.
- * Focuses on PMB conditions and scheme tariff violations.
+ * Generate disputes for underpaid claims with comprehensive BHF categorization.
+ *
+ * Rules:
+ * - R50 threshold: shortfalls below R50 are not worth pursuing
+ * - Categorized by BHF adjustment reason code
+ * - Auto-resubmission flagged for correctable items
+ * - Priority ranked by recovery value and dispute-worthiness
  */
 export function generateDisputes(
   reconciliation: ReconciliationResult,
@@ -248,24 +388,70 @@ export function generateDisputes(
     const era = underpayment.eraLine;
     const shortfall = Math.abs(underpayment.variance);
 
-    // Only dispute significant shortfalls (> R50)
-    if (shortfall < 5000) continue;
+    // R50 threshold — below R50 (5000 cents) is not worth the admin cost
+    if (shortfall < DISPUTE_THRESHOLD_CENTS) continue;
+
+    const bhfInfo = era.adjustmentCode
+      ? BHF_ADJUSTMENT_CODES[era.adjustmentCode]
+      : undefined;
+
+    const category: DisputeCategory = bhfInfo?.category ?? "unknown";
+    const autoResubmittable = bhfInfo?.autoResubmit ?? false;
+    const resubmitAction = bhfInfo?.resubmitAction;
 
     let disputeReason = "";
     let suggestedAction = "";
+    let priority = 3; // Default medium priority
 
-    if (era.adjustmentCode === "15" || era.adjustmentReason?.includes("tariff")) {
-      disputeReason = `Paid at scheme tariff rate instead of charged amount. Shortfall: ${formatZAR(shortfall)}`;
-      suggestedAction = "Submit tariff dispute to scheme. If provider is contracted, scheme must pay contracted rate.";
-    } else if (era.adjustmentCode === "07") {
-      disputeReason = `Benefit exhausted but claim may qualify as PMB. Shortfall: ${formatZAR(shortfall)}`;
-      suggestedAction = "Check if ICD-10 code qualifies as PMB condition. If yes, resubmit with PMB motivation.";
-    } else if (era.adjustmentCode === "14") {
-      disputeReason = `Co-payment applied. Patient liable for ${formatZAR(era.coPayment || shortfall)}`;
-      suggestedAction = "Inform patient of co-payment. If PMB condition, dispute co-payment with scheme.";
-    } else {
-      disputeReason = `Underpaid by ${formatZAR(shortfall)}. Adjustment: ${era.adjustmentReason || "Not specified"}`;
-      suggestedAction = "Review claim and resubmit with additional motivation if warranted.";
+    // Generate reason and action based on BHF category
+    switch (category) {
+      case "tariff":
+        disputeReason = `Paid at scheme tariff rate instead of charged amount. Shortfall: ${formatZAR(shortfall)}. BHF code: ${era.adjustmentCode}`;
+        suggestedAction = "Submit tariff dispute to scheme. If provider is contracted, scheme must pay contracted rate. Include fee schedule evidence.";
+        priority = 2;
+        break;
+
+      case "benefit_limit":
+        disputeReason = `Benefit exhausted or not covered (BHF code ${era.adjustmentCode}). Shortfall: ${formatZAR(shortfall)}`;
+        suggestedAction = "Check if ICD-10 code qualifies as PMB condition. If yes, resubmit with PMB motivation — scheme must cover PMBs regardless of benefit limits.";
+        priority = 1; // PMB disputes are highest value
+        break;
+
+      case "auth_missing":
+        disputeReason = `Pre-authorisation not obtained. Shortfall: ${formatZAR(shortfall)}`;
+        suggestedAction = "Apply for retrospective pre-authorization. If emergency admission, submit with emergency motivation — schemes must cover emergencies.";
+        priority = 2;
+        break;
+
+      case "clinical_coding":
+        disputeReason = `Clinical coding issue (BHF code ${era.adjustmentCode}): ${bhfInfo?.description}. Shortfall: ${formatZAR(shortfall)}`;
+        suggestedAction = resubmitAction || "Correct coding and resubmit claim.";
+        priority = 2;
+        break;
+
+      case "co_payment":
+        disputeReason = `Co-payment applied. Patient liable for ${formatZAR(era.coPayment || shortfall)}`;
+        suggestedAction = "Inform patient of co-payment. If PMB condition, dispute co-payment with scheme — PMBs should have no co-payment.";
+        priority = 3;
+        break;
+
+      case "threshold":
+        disputeReason = `Above-threshold case management referral (BHF code 24). Shortfall: ${formatZAR(shortfall)}`;
+        suggestedAction = "Submit clinical motivation to case management. Request threshold increase if treatment is evidence-based.";
+        priority = 1;
+        break;
+
+      case "provider":
+        disputeReason = `Provider/network issue (BHF code ${era.adjustmentCode}). Shortfall: ${formatZAR(shortfall)}`;
+        suggestedAction = "Verify network status. If emergency or no in-network provider available, submit out-of-network motivation.";
+        priority = 2;
+        break;
+
+      default:
+        disputeReason = `Underpaid by ${formatZAR(shortfall)}. Adjustment: ${era.adjustmentReason || bhfInfo?.description || "Not specified"} (code: ${era.adjustmentCode || "N/A"})`;
+        suggestedAction = "Review claim and resubmit with additional motivation if warranted.";
+        priority = 3;
+        break;
     }
 
     disputes.push({
@@ -277,12 +463,184 @@ export function generateDisputes(
       shortfall,
       adjustmentCode: era.adjustmentCode,
       adjustmentReason: era.adjustmentReason,
+      category,
       disputeReason,
       suggestedAction,
+      autoResubmittable,
+      resubmitAction,
+      priority,
+      estimatedRecovery: shortfall,
     });
   }
 
+  // Sort by priority (1=highest) then by recovery value (descending)
+  disputes.sort((a, b) => a.priority - b.priority || b.estimatedRecovery - a.estimatedRecovery);
+
   return disputes;
+}
+
+/**
+ * Generate a formal dispute letter template for a specific dispute.
+ * Includes scheme contact details and submission deadline.
+ */
+export function generateDisputeTemplate(
+  dispute: PaymentDispute,
+  practiceDetails: {
+    practiceName: string;
+    bhfNumber: string;
+    contactPerson: string;
+    email: string;
+    phone: string;
+  },
+): DisputeTemplate {
+  const contact = SCHEME_CONTACTS[dispute.scheme] || null;
+  const turnaroundDays = contact?.turnaroundDays || 30;
+
+  // Schemes generally allow 4 months from payment date to dispute
+  const deadline = new Date();
+  deadline.setMonth(deadline.getMonth() + 4);
+
+  const letterContent = `
+PAYMENT DISPUTE — MEDICAL AID CLAIM
+====================================
+
+Date: ${new Date().toISOString().slice(0, 10)}
+Practice: ${practiceDetails.practiceName}
+BHF Number: ${practiceDetails.bhfNumber}
+Contact: ${practiceDetails.contactPerson}
+Email: ${practiceDetails.email}
+Phone: ${practiceDetails.phone}
+
+To: ${dispute.scheme} Claims Department
+${contact ? `Email: ${contact.disputeEmail}` : ""}
+${contact ? `Fax: ${contact.disputeFax}` : ""}
+
+RE: DISPUTE OF CLAIM ${dispute.claimRef}
+eRA Reference: ${dispute.eraRef}
+
+Dear Claims Department,
+
+We hereby dispute the payment of the above-referenced claim on the following grounds:
+
+CLAIM DETAILS:
+- Claim Reference: ${dispute.claimRef}
+- Amount Billed: ${formatZAR(dispute.claimedAmount)}
+- Amount Paid: ${formatZAR(dispute.paidAmount)}
+- Shortfall: ${formatZAR(dispute.shortfall)}
+- Adjustment Code: ${dispute.adjustmentCode || "N/A"}
+- Adjustment Reason: ${dispute.adjustmentReason || "Not specified"}
+
+DISPUTE REASON:
+${dispute.disputeReason}
+
+REQUESTED ACTION:
+${dispute.suggestedAction}
+
+We request that this claim be reviewed and the shortfall of ${formatZAR(dispute.shortfall)} be paid in full. If the claim was reduced due to tariff adjustments, we request payment at the contracted rate.
+
+${dispute.category === "benefit_limit" ? "NOTE: If the diagnosis qualifies as a Prescribed Minimum Benefit (PMB) condition under the Medical Schemes Act, the scheme is legally obligated to cover this treatment regardless of benefit limits.\n" : ""}
+Please respond within ${turnaroundDays} days as per CMS regulations.
+
+Yours sincerely,
+${practiceDetails.contactPerson}
+${practiceDetails.practiceName}
+BHF: ${practiceDetails.bhfNumber}
+`.trim();
+
+  return {
+    letterContent,
+    schemeContact: contact ? {
+      email: contact.disputeEmail,
+      fax: contact.disputeFax,
+      phone: contact.disputePhone,
+      portalUrl: contact.portalUrl,
+      address: contact.disputeAddress,
+    } : null,
+    expectedTurnaroundDays: turnaroundDays,
+    submissionDeadline: deadline.toISOString().slice(0, 10),
+  };
+}
+
+/**
+ * Get all auto-resubmittable disputes from a dispute list.
+ * These are items where the BHF code indicates a correctable error
+ * (e.g., missing pre-auth, coding error, missing referral).
+ */
+export function getAutoResubmittableDisputes(disputes: PaymentDispute[]): {
+  resubmittable: PaymentDispute[];
+  manualOnly: PaymentDispute[];
+  totalResubmitValue: number;
+  totalManualValue: number;
+} {
+  const resubmittable = disputes.filter(d => d.autoResubmittable);
+  const manualOnly = disputes.filter(d => !d.autoResubmittable);
+
+  return {
+    resubmittable,
+    manualOnly,
+    totalResubmitValue: resubmittable.reduce((sum, d) => sum + d.estimatedRecovery, 0),
+    totalManualValue: manualOnly.reduce((sum, d) => sum + d.estimatedRecovery, 0),
+  };
+}
+
+/**
+ * Generate a dispute summary report for a batch of disputes.
+ */
+export function generateDisputeSummary(disputes: PaymentDispute[]): {
+  totalDisputes: number;
+  totalValue: number;
+  byCategory: Record<string, { count: number; value: number }>;
+  byPriority: Record<number, { count: number; value: number }>;
+  autoResubmitCount: number;
+  autoResubmitValue: number;
+  summary: string;
+} {
+  const byCategory: Record<string, { count: number; value: number }> = {};
+  const byPriority: Record<number, { count: number; value: number }> = {};
+  let autoResubmitCount = 0;
+  let autoResubmitValue = 0;
+
+  for (const d of disputes) {
+    // By category
+    if (!byCategory[d.category]) byCategory[d.category] = { count: 0, value: 0 };
+    byCategory[d.category].count++;
+    byCategory[d.category].value += d.estimatedRecovery;
+
+    // By priority
+    if (!byPriority[d.priority]) byPriority[d.priority] = { count: 0, value: 0 };
+    byPriority[d.priority].count++;
+    byPriority[d.priority].value += d.estimatedRecovery;
+
+    // Auto-resubmit
+    if (d.autoResubmittable) {
+      autoResubmitCount++;
+      autoResubmitValue += d.estimatedRecovery;
+    }
+  }
+
+  const totalValue = disputes.reduce((sum, d) => sum + d.estimatedRecovery, 0);
+
+  const categoryBreakdown = Object.entries(byCategory)
+    .sort(([, a], [, b]) => b.value - a.value)
+    .map(([cat, info]) => `  ${cat}: ${info.count} disputes, ${formatZAR(info.value)}`)
+    .join("\n");
+
+  const summary = [
+    `Dispute Summary: ${disputes.length} disputes totalling ${formatZAR(totalValue)}`,
+    `Auto-resubmittable: ${autoResubmitCount} (${formatZAR(autoResubmitValue)})`,
+    `Manual review required: ${disputes.length - autoResubmitCount} (${formatZAR(totalValue - autoResubmitValue)})`,
+    `\nBy category:\n${categoryBreakdown}`,
+  ].join("\n");
+
+  return {
+    totalDisputes: disputes.length,
+    totalValue,
+    byCategory,
+    byPriority,
+    autoResubmitCount,
+    autoResubmitValue,
+    summary,
+  };
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────

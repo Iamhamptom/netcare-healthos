@@ -1,0 +1,11 @@
+icd10_code,patient_name,patient_gender,patient_age,tariff_code,nappi_code,amount,date_of_service,secondary_icd10,scheme
+J06.9,Lindiwe Mkhize,F,29,0190,,480.00,2026-03-18,,Discovery Health
+E11,Pieter van der Merwe,M,54,0190,7041220,720.00,2026-03-18,,GEMS
+I10,Nomvula Dlamini,F,61,0190,,480.00,2026-03-17,,Bonitas
+S72.0,Ravi Naidoo,M,45,0290,,3200.00,2026-03-17,,Discovery Health
+N40,Grace Moloi,F,38,0190,,550.00,2026-03-16,,Medshield
+O80,Thabo Motaung,M,32,0190,,1450.00,2026-03-16,,Momentum Health
+W19,Fatima Ismail,F,72,0190,,480.00,2026-03-15,,Bestmed
+,Sipho Zulu,M,44,0190,,480.00,2026-03-15,,Discovery Health
+XYZ99,Anna Botha,F,56,0190,,480.00,2026-03-14,,GEMS
+J45.9,Keisha Williams,F,8,0190,7076060,650.00,2026-03-14,,Bonitas

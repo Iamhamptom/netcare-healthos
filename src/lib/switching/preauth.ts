@@ -23,48 +23,159 @@ interface PreAuthRule {
   turnaroundDays: number;
 }
 
+/** Procedure category identifiers for the 9 pre-auth categories */
+export type PreAuthCategory =
+  | "specialist_referral"
+  | "mri_ct_scan"
+  | "hospital_admission"
+  | "surgery"
+  | "physiotherapy"
+  | "psychology"
+  | "high_cost"
+  | "chronic_medication"
+  | "oncology";
+
+interface PreAuthRule {
+  /** CPT code patterns that require pre-auth */
+  cptPatterns: string[];
+  /** ICD-10 code patterns that require pre-auth */
+  icd10Patterns?: string[];
+  /** Always requires auth regardless of scheme */
+  mandatory: boolean;
+  /** Description */
+  description: string;
+  /** Estimated turnaround time */
+  turnaroundDays: number;
+  /** Category for grouping and reporting */
+  category: PreAuthCategory;
+  /** Session threshold — pre-auth needed only after this many sessions */
+  sessionThreshold?: number;
+}
+
+/**
+ * Comprehensive pre-auth rules covering ALL 9 procedure categories.
+ * Based on standard SA medical aid scheme requirements.
+ */
 const PRE_AUTH_RULES: PreAuthRule[] = [
+  // 1. Specialist Referrals
   {
     cptPatterns: ["0141", "0142", "0143", "0144", "0145", "0146", "0147", "0148", "0149"],
     mandatory: false,
-    description: "Specialist consultations — some schemes require pre-auth",
+    description: "Specialist referral — some schemes require pre-auth for specialist consultations",
     turnaroundDays: 1,
+    category: "specialist_referral",
   },
+
+  // 2. MRI/CT Scans
   {
     cptPatterns: ["0500", "0501", "0502", "0503", "0504", "0505"],
     mandatory: true,
     description: "MRI scans — all schemes require pre-auth",
     turnaroundDays: 2,
+    category: "mri_ct_scan",
   },
   {
     cptPatterns: ["0510", "0511", "0512", "0513", "0514", "0515"],
     mandatory: true,
     description: "CT scans — all schemes require pre-auth",
     turnaroundDays: 2,
+    category: "mri_ct_scan",
   },
+
+  // 3. Hospital Admissions
   {
-    cptPatterns: ["3600", "3601", "3602", "3603", "3604", "3605"],
+    cptPatterns: ["3600", "3601", "3602", "3603", "3604", "3605", "3610", "3611", "3612"],
     mandatory: true,
-    description: "Hospital admission — all schemes require pre-auth",
+    description: "Hospital admission — all schemes require pre-auth (elective and planned)",
     turnaroundDays: 1,
+    category: "hospital_admission",
   },
+
+  // 4. Surgeries
   {
-    cptPatterns: ["0800", "0801", "0802", "0803"],
+    cptPatterns: ["0800", "0801", "0802", "0803", "0804", "0805", "0810", "0811", "0820", "0821"],
     mandatory: true,
-    description: "Surgical procedures — pre-auth required",
+    description: "Surgical procedures — pre-auth required for all elective and planned surgeries",
     turnaroundDays: 3,
+    category: "surgery",
   },
+
+  // 5. Physiotherapy (>6 sessions)
   {
-    cptPatterns: ["0600", "0601", "0602"],
+    cptPatterns: ["0600", "0601", "0602", "0603", "0604", "0605"],
     mandatory: false,
-    description: "Physiotherapy — some schemes require pre-auth after 6 visits",
+    description: "Physiotherapy — pre-auth required after 6 sessions per condition",
     turnaroundDays: 1,
+    category: "physiotherapy",
+    sessionThreshold: 6,
   },
+
+  // 6. Psychology (>6 sessions)
   {
-    cptPatterns: ["0700", "0701"],
+    cptPatterns: ["0700", "0701", "0702", "0703", "0710", "0711"],
     mandatory: false,
-    description: "Psychology/Psychiatry — some schemes require pre-auth",
+    description: "Psychology/Psychiatry — pre-auth required after 6 sessions per year",
     turnaroundDays: 2,
+    category: "psychology",
+    sessionThreshold: 6,
+  },
+
+  // 7. High-cost procedures (>R5,000) — handled via estimatedCost in checkPreAuthRequired
+
+  // 8. Chronic Medication Initiation
+  {
+    cptPatterns: ["0191", "0193"], // GP consultations where chronic is initiated
+    icd10Patterns: [
+      "E10", "E11", // Diabetes
+      "I10",        // Hypertension
+      "J45",        // Asthma
+      "E78",        // Hyperlipidaemia
+      "I50",        // Cardiac failure
+      "G40",        // Epilepsy
+      "B20",        // HIV
+      "F20",        // Schizophrenia
+      "F31",        // Bipolar
+      "H40",        // Glaucoma
+      "J44",        // COPD
+      "N18",        // Chronic renal
+      "M05",        // Rheumatoid arthritis
+      "G20",        // Parkinson's
+      "E03",        // Hypothyroidism
+      "E27.1",      // Addison's
+      "I25",        // Coronary artery disease
+      "I42",        // Cardiomyopathy
+      "J47",        // Bronchiectasis
+      "K50",        // Crohn's
+      "E23.2",      // Diabetes insipidus
+      "I49",        // Dysrhythmias
+      "D66",        // Haemophilia
+      "G35",        // Multiple sclerosis
+      "K51",        // Ulcerative colitis
+    ],
+    mandatory: false,
+    description: "Chronic medication initiation — CDL conditions require chronic authorization application",
+    turnaroundDays: 5,
+    category: "chronic_medication",
+  },
+
+  // 9. Oncology Treatment Plans
+  {
+    cptPatterns: ["0900", "0901", "0902", "0903", "0910", "0911", "0920"],
+    icd10Patterns: [
+      "C00", "C01", "C02", "C03", "C04", "C05", "C06", "C07", "C08", "C09",
+      "C10", "C11", "C12", "C13", "C14", "C15", "C16", "C17", "C18", "C19",
+      "C20", "C21", "C22", "C23", "C24", "C25", "C26", "C30", "C31", "C32",
+      "C33", "C34", "C37", "C38", "C39", "C40", "C41", "C43", "C44", "C45",
+      "C46", "C47", "C48", "C49", "C50", "C51", "C52", "C53", "C54", "C55",
+      "C56", "C57", "C58", "C60", "C61", "C62", "C63", "C64", "C65", "C66",
+      "C67", "C68", "C69", "C70", "C71", "C72", "C73", "C74", "C75", "C76",
+      "C77", "C78", "C79", "C80", "C81", "C82", "C83", "C84", "C85", "C86",
+      "C88", "C90", "C91", "C92", "C93", "C94", "C95", "C96", "C97",
+    ],
+    mandatory: true,
+    description: "Oncology treatment plan — all chemotherapy, radiation, and oncology procedures require pre-auth",
+    turnaroundDays: 5,
+    category: "oncology",
   },
 ];
 
@@ -74,69 +185,158 @@ export interface PreAuthCheck {
   required: boolean;
   reason: string;
   rules: string[];
+  /** Which pre-auth categories were triggered */
+  categories: PreAuthCategory[];
   estimatedTurnaroundDays: number;
   pmbExempt: boolean;
   cdlExempt: boolean;
+  /** If PMB exempt, the specific PMB conditions found */
+  pmbConditions: string[];
+  /** If CDL, the chronic conditions found */
+  cdlConditions: string[];
+  /** Whether chronic medication authorization is needed (separate from procedure pre-auth) */
+  chronicAuthRequired: boolean;
+  /** Whether this is an oncology case requiring treatment plan auth */
+  oncologyCase: boolean;
 }
 
 /**
  * Check if a procedure requires pre-authorization based on codes and scheme.
+ * Covers all 9 procedure categories:
+ * 1. Specialist referrals
+ * 2. MRI/CT scans
+ * 3. Hospital admissions
+ * 4. Surgeries
+ * 5. Physiotherapy (>6 sessions)
+ * 6. Psychology (>6 sessions)
+ * 7. High-cost procedures (>R5,000)
+ * 8. Chronic medication initiation
+ * 9. Oncology treatment plans
+ *
+ * Also checks PMB/CDL exemptions — if the diagnosis is a PMB condition,
+ * pre-auth for treatment may not be required as the scheme MUST cover it.
  */
 export function checkPreAuthRequired(data: {
   cptCodes: string[];
   icd10Codes: string[];
   scheme: string;
   estimatedCost: number;
+  /** Number of sessions already used for physio/psych (optional) */
+  sessionsUsed?: number;
+  /** Whether this is a new chronic medication initiation */
+  isChronicInitiation?: boolean;
 }): PreAuthCheck {
   const matchedRules: PreAuthRule[] = [];
+  const categories = new Set<PreAuthCategory>();
   let pmbExempt = false;
   let cdlExempt = false;
+  const pmbConditions: string[] = [];
+  const cdlConditions: string[] = [];
+  let chronicAuthRequired = false;
+  let oncologyCase = false;
 
   // Check PMB/CDL exemptions — PMB conditions must be treated regardless of auth
   for (const code of data.icd10Codes) {
     if (isPMBCondition(code)) {
       pmbExempt = true;
+      pmbConditions.push(code);
     }
-    if (isCDLCondition(code).found) {
+    const cdlResult = isCDLCondition(code);
+    if (cdlResult.found) {
       cdlExempt = true;
+      cdlConditions.push(`${code}: ${cdlResult.condition}`);
     }
   }
 
   // Check CPT codes against pre-auth rules
   for (const rule of PRE_AUTH_RULES) {
+    let matched = false;
+
+    // Match by CPT code
     for (const cpt of data.cptCodes) {
       if (rule.cptPatterns.some(p => cpt.startsWith(p.slice(0, 2)) || cpt === p)) {
-        matchedRules.push(rule);
+        matched = true;
         break;
+      }
+    }
+
+    // Match by ICD-10 code (for chronic medication and oncology)
+    if (!matched && rule.icd10Patterns) {
+      for (const icd of data.icd10Codes) {
+        if (rule.icd10Patterns.some(p => icd.startsWith(p))) {
+          matched = true;
+          break;
+        }
+      }
+    }
+
+    if (matched) {
+      // For session-threshold rules (physio/psych), only trigger if threshold exceeded
+      if (rule.sessionThreshold && data.sessionsUsed !== undefined) {
+        if (data.sessionsUsed < rule.sessionThreshold) {
+          continue; // Under threshold — no pre-auth needed yet
+        }
+      }
+
+      // For chronic medication, only trigger if explicitly flagged as initiation
+      if (rule.category === "chronic_medication" && !data.isChronicInitiation) {
+        // Still flag it but don't make it required
+        chronicAuthRequired = cdlExempt; // CDL conditions need chronic auth application
+        continue;
+      }
+
+      matchedRules.push(rule);
+      categories.add(rule.category);
+
+      if (rule.category === "oncology") {
+        oncologyCase = true;
       }
     }
   }
 
-  // High-cost threshold — many schemes require pre-auth for amounts > R5,000
-  const highCost = data.estimatedCost > 500000;
+  // 7. High-cost threshold — many schemes require pre-auth for amounts > R5,000 (500000 cents)
+  const highCost = data.estimatedCost > 500_000;
   if (highCost && matchedRules.length === 0) {
     matchedRules.push({
       cptPatterns: [],
       mandatory: false,
       description: `High-cost procedure (R${(data.estimatedCost / 100).toFixed(2)}) — many schemes require pre-auth above R5,000`,
       turnaroundDays: 2,
+      category: "high_cost",
     });
+    categories.add("high_cost");
+  }
+
+  // If CDL condition detected and this looks like a chronic initiation visit, flag it
+  if (cdlExempt && !chronicAuthRequired) {
+    chronicAuthRequired = true;
   }
 
   const required = matchedRules.some(r => r.mandatory) || (matchedRules.length > 0 && !pmbExempt);
   const maxTurnaround = matchedRules.reduce((max, r) => Math.max(max, r.turnaroundDays), 0);
 
+  // PMB exemption logic:
+  // - For PMB conditions, the PROCEDURE itself may not need pre-auth (scheme must cover)
+  // - BUT the scheme can still require notification/pre-auth for PLANNING purposes
+  // - Oncology is always pre-auth even if PMB (for treatment plan approval)
+  const pmbOverride = pmbExempt && !oncologyCase;
+
   return {
-    required: required && !pmbExempt,
-    reason: pmbExempt
-      ? "PMB condition — pre-auth not required (scheme must cover)"
+    required: pmbOverride ? false : required,
+    reason: pmbOverride
+      ? `PMB condition (${pmbConditions.join(", ")}) — pre-auth not required, scheme must cover at PMB level of care`
       : matchedRules.length > 0
         ? matchedRules.map(r => r.description).join("; ")
         : "No pre-authorization required for these procedures",
     rules: matchedRules.map(r => r.description),
+    categories: [...categories],
     estimatedTurnaroundDays: maxTurnaround,
     pmbExempt,
     cdlExempt,
+    pmbConditions,
+    cdlConditions,
+    chronicAuthRequired,
+    oncologyCase,
   };
 }
 

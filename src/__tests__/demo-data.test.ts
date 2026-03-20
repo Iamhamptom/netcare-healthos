@@ -8,12 +8,12 @@ describe("Demo Data — Integrity", () => {
     expect(demoPractice.address).toBeTruthy();
     expect(demoPractice.phone).toBeTruthy();
     expect(demoPractice.hours).toBeTruthy();
-    expect(demoPractice.subdomain).toBe("smiledental");
+    expect(demoPractice.subdomain).toBe("netcare-primarycare");
   });
 
   it("practice has booking settings", () => {
     expect(demoPractice.bookingEnabled).toBe(true);
-    expect(demoPractice.bookingRequiresApproval).toBe(true);
+    expect(demoPractice.bookingRequiresApproval).toBe(false);
     expect(typeof demoPractice.bookingDepositAmount).toBe("number");
     const services = JSON.parse(demoPractice.bookingServices);
     expect(services.length).toBeGreaterThan(0);

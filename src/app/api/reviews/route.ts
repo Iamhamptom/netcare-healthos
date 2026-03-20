@@ -10,9 +10,17 @@ export async function GET(request: Request) {
 
   if (isDemoMode) return NextResponse.json({ reviews: demoStore.getReviews() });
 
+  const { searchParams } = new URL(request.url);
+  const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
+  const limit = clampInt(parseInt(searchParams.get("limit") || "100", 10) || 100, 1, 100) ?? 100;
+  const skip = (page - 1) * limit;
+
   const { prisma } = await import("@/lib/prisma");
-  const reviews = await prisma.review.findMany({ where: { practiceId: guard.practiceId }, orderBy: { createdAt: "desc" } });
-  return NextResponse.json({ reviews });
+  const [reviews, total] = await Promise.all([
+    prisma.review.findMany({ where: { practiceId: guard.practiceId }, orderBy: { createdAt: "desc" }, take: limit, skip }),
+    prisma.review.count({ where: { practiceId: guard.practiceId } }),
+  ]);
+  return NextResponse.json({ reviews, total, page, limit });
 }
 
 export async function POST(request: Request) {
