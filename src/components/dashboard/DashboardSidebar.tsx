@@ -55,6 +55,7 @@ import {
   BookOpen,
   TestTube,
   Workflow,
+  Cloud,
 } from "lucide-react";
 
 /* ─── Types ─── */
@@ -146,6 +147,7 @@ const navSections: NavSection[] = [
       { href: "/dashboard/board-pack", icon: FileBarChart, label: "Board Pack", roles: ["admin", "platform_admin"] },
       { href: "/dashboard/pilot", icon: Rocket, label: "Start Pilot", roles: ["admin", "platform_admin"] },
       { href: "/dashboard/settings", icon: Settings, label: "Settings", roles: ["admin"] },
+      { href: "/dashboard/settings/microsoft", icon: Cloud, label: "Microsoft 365", roles: ["admin", "platform_admin"] },
     ],
   },
 ];

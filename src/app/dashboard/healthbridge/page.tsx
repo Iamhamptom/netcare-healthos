@@ -177,7 +177,9 @@ export default function HealthbridgePage() {
       const res = await fetch(`/api/healthbridge/claims?${params}`);
       const data = await res.json();
       setClaims(data.claims || []);
-    } catch { /* empty */ }
+    } catch (err) {
+      console.error("[healthbridge] Failed to load claims:", err);
+    }
   }, [statusFilter]);
 
   const loadAnalytics = useCallback(async () => {
@@ -185,7 +187,9 @@ export default function HealthbridgePage() {
       const res = await fetch("/api/healthbridge/analytics");
       const data = await res.json();
       setAnalytics(data);
-    } catch { /* empty */ }
+    } catch (err) {
+      console.error("[healthbridge] Failed to load analytics:", err);
+    }
   }, []);
 
   useEffect(() => {
@@ -264,7 +268,9 @@ export default function HealthbridgePage() {
       const res = await fetch(`/api/healthbridge/nappi?q=${encodeURIComponent(nappiQuery)}`);
       const data = await res.json();
       setNappiResults(data.medicines || []);
-    } catch { /* empty */ }
+    } catch (err) {
+      console.error("[healthbridge] Failed to search NAPPI:", err);
+    }
     setNappiLoading(false);
   }
 
@@ -286,7 +292,9 @@ export default function HealthbridgePage() {
       });
       const data = await res.json();
       setAiSuggestion(data.suggestion || null);
-    } catch { /* empty */ }
+    } catch (err) {
+      console.error("[healthbridge] Failed to get AI suggestion:", err);
+    }
     setAiLoading(false);
   }
 
@@ -302,7 +310,9 @@ export default function HealthbridgePage() {
       const data = await res.json();
       setBatchResult(data);
       if (action === "submit") { loadClaims(); loadAnalytics(); }
-    } catch { /* empty */ }
+    } catch (err) {
+      console.error("[healthbridge] Failed to process batch:", err);
+    }
     setBatchLoading(false);
   }
 

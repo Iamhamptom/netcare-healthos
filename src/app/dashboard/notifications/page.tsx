@@ -68,6 +68,14 @@ export default function NotificationsPage() {
 
   const markAsRead = (id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    // Persist to server — best-effort, UI stays responsive even if PATCH is not yet supported
+    fetch("/api/notifications", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, read: true }),
+    }).catch(() => {
+      // PATCH not yet implemented on the API — local state is sufficient for demo
+    });
   };
 
   const markAllRead = () => {

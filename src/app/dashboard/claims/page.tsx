@@ -133,6 +133,7 @@ export default function ClaimsAnalyzerPage() {
   const [activeTab, setActiveTab] = useState<"upload" | "search" | "history" | "realtime">("upload");
   const [scheme, setScheme] = useState("");
   const [saved, setSaved] = useState(false);
+  const [popiaConsented, setPopiaConsented] = useState(false);
 
   // Search
   const [searchQuery, setSearchQuery] = useState("");
@@ -686,8 +687,44 @@ export default function ClaimsAnalyzerPage() {
       {/* ═══ TAB: BATCH UPLOAD & RESULTS ═══ */}
       {activeTab === "upload" && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+          {/* POPIA consent gate — required before upload */}
+          {!result && !popiaConsented && (
+            <div className="mx-auto max-w-2xl">
+              <div className="rounded-xl border border-[#3DA9D1]/20 bg-white p-6 shadow-sm">
+                <div className="mb-5 flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#3DA9D1]/10">
+                    <Shield className="h-5 w-5 text-[#3DA9D1]" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-semibold text-gray-900">POPIA Compliance — Data Processing Consent</h3>
+                    <p className="text-xs text-gray-500">Required before claims data can be uploaded</p>
+                  </div>
+                </div>
+                <div className="mb-4 rounded-lg bg-gray-50 p-4">
+                  <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#3DA9D1]">Data Handling</h4>
+                  <ul className="space-y-1.5 text-xs leading-relaxed text-gray-600">
+                    <li>Data is processed server-side only. Patient names are anonymized before storage.</li>
+                    <li>Raw CSV data is not retained after analysis.</li>
+                    <li>AI suggestions use diagnosis codes only — no patient names are sent to external services.</li>
+                  </ul>
+                </div>
+                <label className="mb-5 flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 transition-colors hover:border-[#3DA9D1]/40">
+                  <input
+                    type="checkbox"
+                    id="popia-consent"
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-[#3DA9D1]"
+                    onChange={(e) => { if (e.target.checked) setPopiaConsented(true); }}
+                  />
+                  <span className="text-xs leading-relaxed text-gray-700">
+                    I confirm this data is being processed in accordance with POPIA Section 15 and consent has been obtained from data subjects for medical aid claims processing.
+                  </span>
+                </label>
+              </div>
+            </div>
+          )}
+
           {/* Scheme selector + upload zone */}
-          {!result && (
+          {!result && popiaConsented && (
             <>
               {/* Scheme selector */}
               <div className="bg-white rounded-xl border border-gray-200 p-4">

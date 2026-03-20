@@ -76,10 +76,10 @@ export default function SwitchingDashboard() {
       }
     } catch { /* silent */ }
 
-    // Demo stats
-    setClaimsToday(Math.floor(Math.random() * 80) + 40);
-    setAcceptanceRate(Math.floor(Math.random() * 8) + 88);
-    setTotalPending(Math.floor(Math.random() * 12) + 3);
+    // Demo stats — fixed values for consistent demo presentation
+    setClaimsToday(342);
+    setAcceptanceRate(87);
+    setTotalPending(18);
 
     // Demo pre-auths
     setPreAuths([
