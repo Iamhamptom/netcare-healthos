@@ -111,6 +111,7 @@ const navSections: NavSection[] = [
         { href: "/dashboard/bridge/careon", icon: Gauge, label: "Bridge Console" },
         { href: "/dashboard/bridge/roi", icon: BarChart3, label: "ROI Calculator" },
         { href: "/dashboard/bridge/research", icon: FileBarChart, label: "Research Paper" },
+        { href: "/dashboard/bridge/business-model", icon: DollarSign, label: "Business Model" },
       ] },
       { href: "/dashboard/whatsapp", icon: MessageSquare, label: "WhatsApp Router", roles: ["admin", "platform_admin"] },
       { href: "/dashboard/agents", icon: Bot, label: "AI Agents", roles: ["admin", "doctor"] },
