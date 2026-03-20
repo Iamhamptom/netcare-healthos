@@ -93,6 +93,7 @@ const navSections: NavSection[] = [
       { href: "/dashboard/analytics", icon: BarChart3, label: "Analytics", roles: ["admin", "doctor"] },
       { href: "/dashboard/intel", icon: Globe, label: "Visio Intel", roles: ["admin"] },
       { href: "/dashboard/insights", icon: TrendingUp, label: "Practice Insights", roles: ["admin", "doctor"] },
+      { href: "/dashboard/performance", icon: Gauge, label: "Performance", roles: ["admin", "platform_admin"] },
     ],
   },
   {
@@ -134,6 +135,7 @@ const navSections: NavSection[] = [
       { href: "/dashboard/reviews", icon: Star, label: "Reviews", roles: ["admin"] },
       { href: "/dashboard/approvals", icon: Bell, label: "Approvals", roles: ["admin", "doctor", "receptionist"] },
       { href: "/dashboard/import", icon: Upload, label: "Import Data", roles: ["admin", "receptionist"] },
+      { href: "/dashboard/reports", icon: FileBarChart, label: "Reports", roles: ["admin", "platform_admin"] },
     ],
   },
   {

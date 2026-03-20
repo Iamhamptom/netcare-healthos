@@ -66,20 +66,27 @@ export const demoUsers: Record<string, { id: string; name: string; email: string
     id: "demo-user-thirushen",
     name: "Thirushen Pillay",
     email: "thirushen.pillay@netcare.co.za",
-    role: "admin",
+    role: "platform_admin",
     practice: demoPractice,
   },
   "sara.nayager@netcare.co.za": {
     id: "demo-user-sara",
     name: "Sara Nayager",
     email: "sara.nayager@netcare.co.za",
-    role: "admin",
+    role: "platform_admin",
     practice: demoPractice,
   },
   "chris.mathew@netcare.co.za": {
     id: "demo-user-chris",
     name: "Dr Chris Mathew",
     email: "chris.mathew@netcare.co.za",
+    role: "admin",
+    practice: demoPractice,
+  },
+  "demo@netcare.co.za": {
+    id: "demo-user-generic",
+    name: "Demo User",
+    email: "demo@netcare.co.za",
     role: "admin",
     practice: demoPractice,
   },
@@ -452,6 +459,25 @@ let _conversations = [...demoConversations.map(c => ({ ...c, messages: [...c.mes
 let _bookings = [...demoBookings];
 let _reviews = [...demoReviews];
 let _recallItems = [...demoRecallItems];
+let _teamMembers = [
+  { id: "demo-user-sara", name: "Sara Nayager", email: "sara.nayager@netcare.co.za", role: "platform_admin", status: "active" as const, lastLogin: new Date(now.getTime() - 2 * 3600000).toISOString(), practiceId: "demo-practice", createdAt: new Date(now.getTime() - 365 * day).toISOString(), updatedAt: new Date(now.getTime() - 2 * 3600000).toISOString() },
+  { id: "demo-user-thirushen", name: "Thirushen Pillay", email: "thirushen.pillay@netcare.co.za", role: "platform_admin", status: "active" as const, lastLogin: new Date(now.getTime() - 1 * 3600000).toISOString(), practiceId: "demo-practice", createdAt: new Date(now.getTime() - 365 * day).toISOString(), updatedAt: new Date(now.getTime() - 1 * 3600000).toISOString() },
+  { id: "demo-user-chris", name: "Dr Chris Mathew", email: "chris.mathew@netcare.co.za", role: "admin", status: "active" as const, lastLogin: new Date(now.getTime() - 4 * 3600000).toISOString(), practiceId: "demo-practice", createdAt: new Date(now.getTime() - 300 * day).toISOString(), updatedAt: new Date(now.getTime() - 4 * 3600000).toISOString() },
+  { id: "demo-user-nurse1", name: "Nurse Botha", email: "nurse.botha@netcare.co.za", role: "nurse", status: "active" as const, lastLogin: new Date(now.getTime() - 6 * 3600000).toISOString(), practiceId: "demo-practice", createdAt: new Date(now.getTime() - 200 * day).toISOString(), updatedAt: new Date(now.getTime() - 6 * 3600000).toISOString() },
+  { id: "demo-user-recep1", name: "Lindiwe Moyo", email: "lindiwe.moyo@netcare.co.za", role: "receptionist", status: "active" as const, lastLogin: new Date(now.getTime() - 3 * 3600000).toISOString(), practiceId: "demo-practice", createdAt: new Date(now.getTime() - 150 * day).toISOString(), updatedAt: new Date(now.getTime() - 3 * 3600000).toISOString() },
+  { id: "demo-user-doc2", name: "Dr Priya Govender", email: "priya.govender@netcare.co.za", role: "doctor", status: "active" as const, lastLogin: new Date(now.getTime() - 8 * 3600000).toISOString(), practiceId: "demo-practice", createdAt: new Date(now.getTime() - 250 * day).toISOString(), updatedAt: new Date(now.getTime() - 8 * 3600000).toISOString() },
+  { id: "demo-user-inactive1", name: "Dr James Patel", email: "james.patel@netcare.co.za", role: "doctor", status: "inactive" as const, lastLogin: new Date(now.getTime() - 60 * day).toISOString(), practiceId: "demo-practice", createdAt: new Date(now.getTime() - 400 * day).toISOString(), updatedAt: new Date(now.getTime() - 30 * day).toISOString() },
+];
+let _auditLogs = [
+  { id: "log-1", action: "login", details: "Logged in from Sandton office", userId: "demo-user-sara", userName: "Sara Nayager", ipAddress: "196.21.45.100", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 2 * 3600000).toISOString() },
+  { id: "log-2", action: "patient_view", details: "Viewed patient record: Thandi Mkhize", userId: "demo-user-chris", userName: "Dr Chris Mathew", ipAddress: "196.21.45.101", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 4 * 3600000).toISOString() },
+  { id: "log-3", action: "invoice_create", details: "Created invoice INV-2026-001 for Maria Santos", userId: "demo-user-thirushen", userName: "Thirushen Pillay", ipAddress: "196.21.45.100", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 5 * 3600000).toISOString() },
+  { id: "log-4", action: "booking_confirm", details: "Confirmed booking for Lerato Phiri", userId: "demo-user-recep1", userName: "Lindiwe Moyo", ipAddress: "196.21.45.102", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 6 * 3600000).toISOString() },
+  { id: "log-5", action: "settings_update", details: "Updated notification preferences", userId: "demo-user-sara", userName: "Sara Nayager", ipAddress: "196.21.45.100", practiceId: "demo-practice", createdAt: new Date(now.getTime() - day).toISOString() },
+  { id: "log-6", action: "login", details: "Logged in via mobile", userId: "demo-user-thirushen", userName: "Thirushen Pillay", ipAddress: "105.18.22.45", practiceId: "demo-practice", createdAt: new Date(now.getTime() - day).toISOString() },
+  { id: "log-7", action: "patient_create", details: "Added new patient: Sipho Dlamini", userId: "demo-user-nurse1", userName: "Nurse Botha", ipAddress: "196.21.45.103", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 2 * day).toISOString() },
+  { id: "log-8", action: "prescription_create", details: "Prescribed Metformin 500mg to David Moloi", userId: "demo-user-doc2", userName: "Dr Priya Govender", ipAddress: "196.21.45.104", practiceId: "demo-practice", createdAt: new Date(now.getTime() - 2 * day).toISOString() },
+];
 let _counter = 100;
 
 export const demoStore = {
@@ -794,6 +820,59 @@ export const demoStore = {
     return t;
   },
   deleteDailyTask: (id: string) => { _dailyTasks = _dailyTasks.filter(x => x.id !== id); },
+
+  // === Team Management ===
+  getTeamMembers: () => _teamMembers,
+  getTeamMember: (id: string) => _teamMembers.find(m => m.id === id) || null,
+  addTeamMember: (data: Record<string, string>) => {
+    const m = {
+      id: `user-${_counter++}`,
+      name: data.name || "",
+      email: data.email || "",
+      role: data.role || "receptionist",
+      status: "active" as const,
+      lastLogin: "",
+      practiceId: "demo-practice",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    _teamMembers.push(m);
+    return m;
+  },
+  updateTeamMember: (id: string, data: Record<string, unknown>) => {
+    const m = _teamMembers.find(x => x.id === id);
+    if (!m) return null;
+    if (data.role !== undefined) m.role = String(data.role);
+    if (data.status !== undefined) m.status = String(data.status) as "active" | "inactive";
+    if (data.name !== undefined) m.name = String(data.name);
+    m.updatedAt = new Date().toISOString();
+    return m;
+  },
+  deleteTeamMember: (id: string) => {
+    const m = _teamMembers.find(x => x.id === id);
+    if (m) { m.status = "inactive"; m.updatedAt = new Date().toISOString(); }
+    return m;
+  },
+
+  // === Audit Logs ===
+  getAuditLogs: (userId?: string) => {
+    if (userId) return _auditLogs.filter(l => l.userId === userId);
+    return _auditLogs;
+  },
+  addAuditLog: (data: Record<string, string>) => {
+    const l = {
+      id: `log-${_counter++}`,
+      action: data.action || "",
+      details: data.details || "",
+      userId: data.userId || "",
+      userName: data.userName || "",
+      ipAddress: data.ipAddress || "",
+      practiceId: "demo-practice",
+      createdAt: new Date().toISOString(),
+    };
+    _auditLogs.unshift(l);
+    return l;
+  },
 
   // === Analytics ===
   getAnalytics: () => {

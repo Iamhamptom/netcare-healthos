@@ -7,6 +7,10 @@
     {
       "path": "/api/claims/retention",
       "schedule": "0 3 1 * *"
+    },
+    {
+      "path": "/api/reports/run",
+      "schedule": "0 5 * * *"
     }
   ]
 }
