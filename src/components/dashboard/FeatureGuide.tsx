@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Shield, Sparkles, ArrowRight, ChevronRight, Volume2, VolumeX, Minimize2, Maximize2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import GuidedTour from "./GuidedTour";
 
 // ─── Jess's Welcome Sequence (plays once on first login) ──────
 const WELCOME_SEQUENCE = [
@@ -367,7 +368,7 @@ export default function FeatureGuide() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {ndaAccepted && !welcomeDone && <JessWelcome onComplete={handleWelcomeComplete} />}
+        {ndaAccepted && !welcomeDone && <GuidedTour onComplete={handleWelcomeComplete} />}
       </AnimatePresence>
 
       <AnimatePresence>
