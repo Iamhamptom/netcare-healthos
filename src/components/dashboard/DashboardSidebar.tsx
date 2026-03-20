@@ -34,10 +34,8 @@ import {
   Stethoscope,
   Target,
   TrendingUp,
-  Newspaper,
 } from "lucide-react";
 
-// Grouped nav sections
 const navSections = [
   {
     label: "",
@@ -95,16 +93,7 @@ const navSections = [
   },
 ];
 
-// Flatten for role filtering
 const allNavItems = navSections.flatMap(s => s.items);
-
-interface PracticeBranding {
-  name: string;
-  primaryColor: string;
-  secondaryColor: string;
-  tagline: string;
-  plan: string;
-}
 
 export default function DashboardSidebar() {
   const pathname = usePathname();
@@ -112,33 +101,20 @@ export default function DashboardSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [userRole, setUserRole] = useState("admin");
   const [pendingReferrals, setPendingReferrals] = useState(0);
-  const [branding, setBranding] = useState<PracticeBranding | null>(null);
+  const [practiceName, setPracticeName] = useState("");
 
   useEffect(() => {
     fetch("/api/auth/me").then(r => r.json()).then(data => {
       if (data.user?.role) setUserRole(data.user.role);
       if (data.user?.practice) {
         const p = data.user.practice;
-        setBranding({
-          name: p.name || p.practiceName || "",
-          primaryColor: p.primaryColor || p.primary_color || "#1D3443",
-          secondaryColor: p.secondaryColor || p.secondary_color || "#E3964C",
-          tagline: p.tagline || "",
-          plan: p.plan || "starter",
-        });
-        // Inject practice CSS variables into document root
-        const root = document.documentElement;
-        root.style.setProperty("--practice-primary", p.primaryColor || p.primary_color || "#1D3443");
-        root.style.setProperty("--practice-secondary", p.secondaryColor || p.secondary_color || "#E3964C");
+        setPracticeName(p.name || p.practiceName || "");
       }
     }).catch(() => {});
     fetch("/api/referrals").then(r => r.json()).then(data => {
       if (data.pendingCount) setPendingReferrals(data.pendingCount);
     }).catch(() => {});
   }, []);
-
-  // Filter nav items by user role
-  const navItems = allNavItems.filter(item => item.roles.includes(userRole));
 
   async function handleSignOut() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -149,10 +125,10 @@ export default function DashboardSidebar() {
     <motion.aside
       animate={{ width: collapsed ? 64 : 240 }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
-      className="shrink-0 border-r border-[var(--border)] flex flex-col bg-[var(--charcoal)]/50 overflow-hidden"
+      className="shrink-0 border-r border-white/[0.06] flex flex-col bg-gray-950 overflow-hidden"
     >
-      <div className="h-14 flex items-center gap-2 px-4 border-b border-[var(--border)]" style={branding ? { borderBottomColor: `${branding.primaryColor}33` } : {}}>
-        {/* Netcare Logo — shown on dark sidebar bg */}
+      {/* Logo */}
+      <div className="h-14 flex items-center gap-2.5 px-4 border-b border-white/[0.06]">
         <img
           src="/images/netcare-logo.png"
           alt="Netcare"
@@ -165,53 +141,39 @@ export default function DashboardSidebar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="font-semibold text-[12px] whitespace-nowrap tracking-wide text-[var(--ivory)] leading-tight"
-             
+              className="font-semibold text-[11px] whitespace-nowrap tracking-[0.15em] text-white/40"
             >
-              NETCARE
+              HEALTH OS
             </motion.span>
           )}
         </AnimatePresence>
       </div>
-
-      {/* Plan badge */}
-      {!collapsed && (
-        <div className="px-4 py-2 border-b border-[var(--border)]">
-          <span
-            className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full"
-            style={branding ? { color: branding.secondaryColor, backgroundColor: `${branding.secondaryColor}15` } : { color: "#E3964C", backgroundColor: "rgba(227,150,76,0.1)" }}
-          >
-            {branding?.plan || userRole}
-          </span>
-        </div>
-      )}
 
       <nav className="flex-1 py-2 px-2 overflow-y-auto">
         {navSections.map((section) => {
           const sectionItems = section.items.filter(item => item.roles.includes(userRole));
           if (sectionItems.length === 0) return null;
           return (
-            <div key={section.label || "home"} className="mb-1">
+            <div key={section.label || "home"} className="mb-0.5">
               {!collapsed && section.label && (
-                <div className="px-3 pt-3 pb-1">
-                  <span className="text-[9px] uppercase tracking-[0.15em] text-[var(--text-dim)] font-semibold">{section.label}</span>
+                <div className="px-3 pt-4 pb-1.5">
+                  <span className="text-[9px] uppercase tracking-[0.15em] text-white/20 font-semibold">{section.label}</span>
                 </div>
               )}
-              {collapsed && section.label && <div className="h-px mx-2 my-2 bg-[var(--border)]" />}
+              {collapsed && section.label && <div className="h-px mx-2 my-2 bg-white/[0.04]" />}
               {sectionItems.map((item) => {
                 const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-200 ${
+                    className={`w-full flex items-center gap-3 px-3 py-[7px] rounded-lg text-[13px] font-medium transition-all duration-200 ${
                       isActive
-                        ? "text-white"
-                        : "text-[var(--text-secondary)] hover:bg-[var(--obsidian)]/50"
+                        ? "bg-white/[0.08] text-white"
+                        : "text-white/40 hover:text-white/60 hover:bg-white/[0.04]"
                     }`}
-                    style={isActive && branding ? { backgroundColor: `${branding.secondaryColor}20`, color: branding.secondaryColor } : isActive ? { backgroundColor: "rgba(227,150,76,0.12)", color: "#E3964C" } : {}}
                   >
-                    <item.icon className="w-[18px] h-[18px] shrink-0" />
+                    <item.icon className="w-[16px] h-[16px] shrink-0" />
                     <AnimatePresence>
                       {!collapsed && (
                         <motion.span
@@ -225,7 +187,7 @@ export default function DashboardSidebar() {
                       )}
                     </AnimatePresence>
                     {!collapsed && item.href === "/dashboard/referrals" && pendingReferrals > 0 && (
-                      <span className="ml-auto px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/20 text-amber-400 min-w-[18px] text-center">
+                      <span className="ml-auto px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-white/10 text-white/60 min-w-[18px] text-center">
                         {pendingReferrals}
                       </span>
                     )}
@@ -237,11 +199,11 @@ export default function DashboardSidebar() {
         })}
       </nav>
 
-      {/* Emergency line indicator */}
+      {/* Emergency line */}
       {!collapsed && (
-        <div className="px-4 py-2 border-t border-[var(--border)]">
-          <div className="flex items-center gap-2 text-[11px] text-[var(--text-tertiary)]">
-            <Phone className="w-3.5 h-3.5 text-[var(--crimson)]" />
+        <div className="px-4 py-2 border-t border-white/[0.04]">
+          <div className="flex items-center gap-2 text-[11px] text-white/20">
+            <Phone className="w-3.5 h-3.5" />
             <span>Emergency line active</span>
           </div>
         </div>
@@ -249,7 +211,7 @@ export default function DashboardSidebar() {
 
       <button
         onClick={handleSignOut}
-        className="flex items-center gap-3 px-5 py-3 text-[13px] text-[var(--text-secondary)] hover:text-[var(--crimson)] transition-colors border-t border-[var(--border)]"
+        className="flex items-center gap-3 px-5 py-3 text-[13px] text-white/30 hover:text-red-400 transition-colors border-t border-white/[0.04]"
       >
         <LogOut className="w-4 h-4 shrink-0" />
         <AnimatePresence>
@@ -263,7 +225,7 @@ export default function DashboardSidebar() {
 
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="p-3 text-[var(--text-tertiary)] hover:text-[var(--gold)] transition-colors border-t border-[var(--border)]"
+        className="p-3 text-white/20 hover:text-white/40 transition-colors border-t border-white/[0.04]"
       >
         <ChevronDown className={`w-4 h-4 mx-auto transition-transform ${collapsed ? "-rotate-90" : "rotate-90"}`} />
       </button>

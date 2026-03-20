@@ -9,7 +9,7 @@ import Features from "@/components/Features";
 import Verticals from "@/components/Verticals";
 import HowItWorks from "@/components/HowItWorks";
 import Testimonials from "@/components/Testimonials";
-import Pricing from "@/components/Pricing";
+// Pricing removed from home page
 import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
 import ChatbotWidget from "@/components/chatbot/ChatbotWidget";
@@ -74,12 +74,6 @@ const jessSections = [
     narration: "But this is just the beginning. Netcare Health OS is designed to scale across the entire Netcare network — primary healthcare today, hospital groups tomorrow. Every clinic added multiplies the intelligence of the system. Network effects mean better claims processing, better analytics, and better patient outcomes for everyone.",
   },
   {
-    id: "home-pricing",
-    label: "Plans",
-    color: "#3DA9D1",
-    narration: "Netcare Health OS is available in three tiers — Clinic for individual practices, Network for multi-site management, and Enterprise for the full Netcare Primary Healthcare organization. Each tier includes AI claims intelligence, financial dashboards, and POPIA compliance.",
-  },
-  {
     id: "home-cta",
     label: "Get Started",
     color: "#E3964C",
@@ -116,7 +110,6 @@ export default function Home() {
             <VoiceAgentSection />
             <div data-jess="home-nextlevel"><NextLevel /></div>
             <Testimonials />
-            <div data-jess="home-pricing"><Pricing /></div>
             <GetInTouch />
             <div data-jess="home-cta"><CTA /></div>
             <JessPresenter sections={jessSections} />

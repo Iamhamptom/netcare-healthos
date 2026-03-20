@@ -29,14 +29,6 @@ const sellingPoints = [
     ),
   },
   {
-    label: "Set up in under 1 hour — live before your next patient",
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-  },
-  {
     label: "POPIA compliant with full audit logging",
     icon: (
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -126,8 +118,8 @@ export default function GetInTouch() {
           variants={fadeUp}
           className="text-4xl md:text-5xl font-light tracking-[-0.03em] text-white mt-8 text-center leading-[1.2]"
         >
-          Let&apos;s get you set up in{" "}
-          <span className="text-[#3DA9D1]">under an hour</span>
+          Let&apos;s talk about{" "}
+          <span className="text-[#3DA9D1]">your network</span>
         </motion.h2>
 
         {/* Subtitle */}
