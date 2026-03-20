@@ -34,6 +34,27 @@ import {
   Stethoscope,
   Target,
   TrendingUp,
+  Shield,
+  ShieldCheck,
+  Network,
+  Router,
+  Layers,
+  Inbox,
+  BadgeCheck,
+  FileCode,
+  Brain,
+  Pill,
+  Download,
+  Send,
+  Clock,
+  ChevronRight,
+  Cable,
+  FileJson,
+  Microscope,
+  DollarSign,
+  BookOpen,
+  TestTube,
+  Workflow,
 } from "lucide-react";
 
 const navSections = [
@@ -47,6 +68,7 @@ const navSections = [
     label: "INTELLIGENCE",
     items: [
       { href: "/dashboard/network", icon: Building2, label: "Network Finance", roles: ["admin", "platform_admin"] },
+      { href: "/dashboard/claims-network", icon: Building2, label: "Claims Network", roles: ["platform_admin"] },
       { href: "/dashboard/kpi", icon: Gauge, label: "KPI Dashboard", roles: ["admin", "platform_admin"] },
       { href: "/dashboard/gaps", icon: Target, label: "12 Gaps We Fill", roles: ["admin", "platform_admin"] },
       { href: "/dashboard/savings", icon: Zap, label: "Savings Tracker", roles: ["admin", "platform_admin"] },
@@ -58,7 +80,11 @@ const navSections = [
   {
     label: "AI PRODUCTS",
     items: [
-      { href: "/dashboard/bridge", icon: Zap, label: "CareOn Bridge", roles: ["admin", "platform_admin"] },
+      { href: "/dashboard/bridge", icon: Zap, label: "CareOn Bridge", roles: ["admin", "platform_admin"], children: [
+        { href: "/dashboard/bridge/careon", icon: Gauge, label: "Bridge Console" },
+        { href: "/dashboard/bridge/roi", icon: BarChart3, label: "ROI Calculator" },
+        { href: "/dashboard/bridge/research", icon: FileBarChart, label: "Research Paper" },
+      ] },
       { href: "/dashboard/whatsapp", icon: MessageSquare, label: "WhatsApp Router", roles: ["admin", "platform_admin"] },
       { href: "/dashboard/agents", icon: Bot, label: "AI Agents", roles: ["admin", "doctor"] },
       { href: "/dashboard/practitioners", icon: Users, label: "Practitioners", roles: ["admin", "platform_admin"] },
@@ -71,6 +97,8 @@ const navSections = [
       { href: "/dashboard/daily", icon: ClipboardList, label: "Daily Tasks", roles: ["admin", "receptionist", "nurse"] },
       { href: "/dashboard/patients", icon: Users, label: "Patients", roles: ["admin", "doctor", "nurse"] },
       { href: "/dashboard/billing", icon: Receipt, label: "Billing", roles: ["admin", "receptionist"] },
+      { href: "/dashboard/claims", icon: ShieldCheck, label: "Claims Analyzer", roles: ["admin", "receptionist"] },
+      { href: "/dashboard/switching", icon: Network, label: "Switch Engine", roles: ["admin", "platform_admin"] },
       { href: "/dashboard/bookings", icon: CalendarCheck, label: "Bookings", roles: ["admin", "receptionist"] },
       { href: "/dashboard/checkin", icon: UserCheck, label: "Check-In", roles: ["admin", "receptionist", "nurse"] },
       { href: "/dashboard/calendar", icon: Calendar, label: "Schedule", roles: ["admin", "doctor", "receptionist"] },
@@ -93,12 +121,35 @@ const navSections = [
   },
 ];
 
-const allNavItems = navSections.flatMap(s => s.items);
+const healthbridgeItems = [
+  { href: "/dashboard/healthbridge", icon: Shield, label: "Claims Dashboard", roles: ["admin", "receptionist"] as string[] },
+  { href: "/dashboard/healthbridge/submit", icon: Send, label: "Submit Claim", roles: ["admin", "receptionist"] as string[] },
+  { href: "/dashboard/healthbridge/eligibility", icon: Heart, label: "Benefit Check", roles: ["admin", "receptionist"] as string[] },
+  { href: "/dashboard/healthbridge/analytics", icon: BarChart3, label: "Scheme Analytics", roles: ["admin", "receptionist"] as string[] },
+  { href: "/dashboard/healthbridge/ai-coder", icon: Brain, label: "AI Coder", roles: ["admin", "receptionist"] as string[] },
+  { href: "/dashboard/healthbridge/batch", icon: Upload, label: "Batch Upload", roles: ["admin", "receptionist"] as string[] },
+  { href: "/dashboard/healthbridge/nappi", icon: Pill, label: "NAPPI Lookup", roles: ["admin", "receptionist"] as string[] },
+  { href: "/dashboard/healthbridge/followups", icon: Clock, label: "Follow-ups", roles: ["admin", "receptionist"] as string[] },
+  { href: "/dashboard/healthbridge/export", icon: Download, label: "Export Data", roles: ["admin", "receptionist"] as string[] },
+];
+
+const fhirHubItems = [
+  { href: "/dashboard/fhir-hub", icon: Cable, label: "Overview", roles: ["admin", "platform_admin"] as string[] },
+  { href: "/dashboard/fhir-hub/architecture", icon: Workflow, label: "Architecture", roles: ["admin", "platform_admin"] as string[] },
+  { href: "/dashboard/fhir-hub/impact", icon: DollarSign, label: "Netcare Impact", roles: ["admin", "platform_admin"] as string[] },
+  { href: "/dashboard/fhir-hub/research", icon: Microscope, label: "VRL Research", roles: ["admin", "platform_admin"] as string[] },
+  { href: "/dashboard/fhir-hub/explorer", icon: TestTube, label: "API Explorer", roles: ["admin", "platform_admin"] as string[] },
+];
+
+const allNavItems = [...navSections.flatMap(s => s.items), ...healthbridgeItems, ...fhirHubItems];
 
 export default function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const [healthbridgeOpen, setHealthbridgeOpen] = useState(true);
+  const [fhirHubOpen, setFhirHubOpen] = useState(true);
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [userRole, setUserRole] = useState("admin");
   const [pendingReferrals, setPendingReferrals] = useState(0);
   const [practiceName, setPracticeName] = useState("");
@@ -152,47 +203,231 @@ export default function DashboardSidebar() {
         {navSections.map((section) => {
           const sectionItems = section.items.filter(item => item.roles.includes(userRole));
           if (sectionItems.length === 0) return null;
+
+          const filteredHbItems = healthbridgeItems.filter(item => item.roles.includes(userRole));
+          const showHealthbridge = section.label === "OPERATIONS" && filteredHbItems.length > 0;
+
           return (
-            <div key={section.label || "home"} className="mb-0.5">
-              {!collapsed && section.label && (
-                <div className="px-3 pt-4 pb-1.5">
-                  <span className="text-[9px] uppercase tracking-[0.15em] text-white/20 font-semibold">{section.label}</span>
+            <div key={section.label || "home"}>
+              <div className="mb-0.5">
+                {!collapsed && section.label && (
+                  <div className="px-3 pt-4 pb-1.5">
+                    <span className="text-[9px] uppercase tracking-[0.15em] text-white/20 font-semibold">{section.label}</span>
+                  </div>
+                )}
+                {collapsed && section.label && <div className="h-px mx-2 my-2 bg-white/[0.04]" />}
+                {sectionItems.map((item) => {
+                  const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+                  const hasChildren = "children" in item && Array.isArray((item as any).children);
+                  const isExpanded = expandedItems[item.href] || (hasChildren && pathname.startsWith(item.href));
+                  const children = hasChildren ? (item as any).children as Array<{href: string; icon: any; label: string}> : [];
+
+                  return (
+                    <div key={item.href}>
+                      {hasChildren ? (
+                        <button
+                          onClick={() => setExpandedItems(prev => ({ ...prev, [item.href]: !prev[item.href] }))}
+                          className={`w-full flex items-center gap-3 px-3 py-[7px] rounded-lg text-[13px] font-medium transition-all duration-200 ${
+                            isActive
+                              ? "bg-white/[0.08] text-white"
+                              : "text-white/40 hover:text-white/60 hover:bg-white/[0.04]"
+                          }`}
+                        >
+                          <item.icon className="w-[16px] h-[16px] shrink-0" />
+                          {!collapsed && <span className="whitespace-nowrap flex-1 text-left">{item.label}</span>}
+                          {!collapsed && (
+                            <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? "rotate-0" : "-rotate-90"}`} />
+                          )}
+                        </button>
+                      ) : (
+                        <Link
+                          href={item.href}
+                          className={`w-full flex items-center gap-3 px-3 py-[7px] rounded-lg text-[13px] font-medium transition-all duration-200 ${
+                            isActive
+                              ? "bg-white/[0.08] text-white"
+                              : "text-white/40 hover:text-white/60 hover:bg-white/[0.04]"
+                          }`}
+                        >
+                          <item.icon className="w-[16px] h-[16px] shrink-0" />
+                          <AnimatePresence>
+                            {!collapsed && (
+                              <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="whitespace-nowrap flex-1">
+                                {item.label}
+                              </motion.span>
+                            )}
+                          </AnimatePresence>
+                          {!collapsed && item.href === "/dashboard/referrals" && pendingReferrals > 0 && (
+                            <span className="ml-auto px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-white/10 text-white/60 min-w-[18px] text-center">
+                              {pendingReferrals}
+                            </span>
+                          )}
+                        </Link>
+                      )}
+                      {/* Expandable children */}
+                      <AnimatePresence>
+                        {hasChildren && isExpanded && !collapsed && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="ml-4 pl-3 border-l border-white/[0.06] space-y-0.5 py-1">
+                              {children.map((child: any) => {
+                                const childActive = pathname === child.href;
+                                const ChildIcon = child.icon;
+                                return (
+                                  <Link
+                                    key={child.href}
+                                    href={child.href}
+                                    className={`flex items-center gap-2.5 px-2.5 py-[6px] rounded-md text-[12px] font-medium transition-all ${
+                                      childActive
+                                        ? "bg-white/[0.08] text-white"
+                                        : "text-white/30 hover:text-white/50 hover:bg-white/[0.03]"
+                                    }`}
+                                  >
+                                    <ChildIcon className="w-[14px] h-[14px] shrink-0" />
+                                    <span className="whitespace-nowrap">{child.label}</span>
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* FHIR INTEGRATION HUB — rendered after AI PRODUCTS */}
+              {section.label === "AI PRODUCTS" && fhirHubItems.filter(i => i.roles.includes(userRole)).length > 0 && (
+                <div className="mb-0.5">
+                  {!collapsed ? (
+                    <button
+                      onClick={() => setFhirHubOpen(!fhirHubOpen)}
+                      className="w-full flex items-center gap-1.5 px-3 pt-4 pb-1.5 group cursor-pointer"
+                    >
+                      <ChevronRight
+                        className={`w-3 h-3 text-white/20 transition-transform duration-200 ${fhirHubOpen ? "rotate-90" : ""}`}
+                      />
+                      <span className="text-[9px] uppercase tracking-[0.15em] text-white/20 font-semibold group-hover:text-white/40 transition-colors">
+                        FHIR INTEGRATION HUB
+                      </span>
+                      <span className="ml-1 px-1.5 py-[1px] text-[8px] font-bold uppercase tracking-wider rounded-full bg-emerald-500/20 text-emerald-400 leading-tight">
+                        NEW
+                      </span>
+                    </button>
+                  ) : (
+                    <div className="h-px mx-2 my-2 bg-white/[0.04]" />
+                  )}
+                  <AnimatePresence initial={false}>
+                    {(fhirHubOpen || collapsed) && (
+                      <motion.div
+                        initial={collapsed ? false : { height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={collapsed ? undefined : { height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                        className="overflow-hidden"
+                      >
+                        {fhirHubItems.filter(i => i.roles.includes(userRole)).map((item) => {
+                          const isActive = pathname === item.href;
+                          return (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              className={`w-full flex items-center gap-3 px-3 py-[7px] rounded-lg text-[13px] font-medium transition-all duration-200 ${
+                                isActive
+                                  ? "bg-white/[0.08] text-white"
+                                  : "text-white/40 hover:text-white/60 hover:bg-white/[0.04]"
+                              }`}
+                            >
+                              <item.icon className="w-[16px] h-[16px] shrink-0" />
+                              <AnimatePresence>
+                                {!collapsed && (
+                                  <motion.span
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="whitespace-nowrap flex-1"
+                                  >
+                                    {item.label}
+                                  </motion.span>
+                                )}
+                              </AnimatePresence>
+                            </Link>
+                          );
+                        })}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               )}
-              {collapsed && section.label && <div className="h-px mx-2 my-2 bg-white/[0.04]" />}
-              {sectionItems.map((item) => {
-                const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`w-full flex items-center gap-3 px-3 py-[7px] rounded-lg text-[13px] font-medium transition-all duration-200 ${
-                      isActive
-                        ? "bg-white/[0.08] text-white"
-                        : "text-white/40 hover:text-white/60 hover:bg-white/[0.04]"
-                    }`}
-                  >
-                    <item.icon className="w-[16px] h-[16px] shrink-0" />
-                    <AnimatePresence>
-                      {!collapsed && (
-                        <motion.span
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="whitespace-nowrap flex-1"
-                        >
-                          {item.label}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                    {!collapsed && item.href === "/dashboard/referrals" && pendingReferrals > 0 && (
-                      <span className="ml-auto px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-white/10 text-white/60 min-w-[18px] text-center">
-                        {pendingReferrals}
+
+              {/* HEALTHBRIDGE collapsible submenu — rendered after OPERATIONS */}
+              {showHealthbridge && (
+                <div className="mb-0.5">
+                  {!collapsed ? (
+                    <button
+                      onClick={() => setHealthbridgeOpen(!healthbridgeOpen)}
+                      className="w-full flex items-center gap-1.5 px-3 pt-4 pb-1.5 group cursor-pointer"
+                    >
+                      <ChevronRight
+                        className={`w-3 h-3 text-white/20 transition-transform duration-200 ${healthbridgeOpen ? "rotate-90" : ""}`}
+                      />
+                      <span className="text-[9px] uppercase tracking-[0.15em] text-white/20 font-semibold group-hover:text-white/40 transition-colors">
+                        HEALTHBRIDGE
                       </span>
+                      <span className="ml-1 px-1.5 py-[1px] text-[8px] font-bold uppercase tracking-wider rounded-full bg-teal-500/20 text-teal-400 leading-tight">
+                        AI
+                      </span>
+                    </button>
+                  ) : (
+                    <div className="h-px mx-2 my-2 bg-white/[0.04]" />
+                  )}
+                  <AnimatePresence initial={false}>
+                    {(healthbridgeOpen || collapsed) && (
+                      <motion.div
+                        initial={collapsed ? false : { height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={collapsed ? undefined : { height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                        className="overflow-hidden"
+                      >
+                        {filteredHbItems.map((item) => {
+                          const isActive = pathname === item.href || (item.href !== "/dashboard/healthbridge" && pathname.startsWith(item.href));
+                          return (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              className={`w-full flex items-center gap-3 px-3 py-[7px] rounded-lg text-[13px] font-medium transition-all duration-200 ${
+                                isActive
+                                  ? "bg-white/[0.08] text-white"
+                                  : "text-white/40 hover:text-white/60 hover:bg-white/[0.04]"
+                              }`}
+                            >
+                              <item.icon className="w-[16px] h-[16px] shrink-0" />
+                              <AnimatePresence>
+                                {!collapsed && (
+                                  <motion.span
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="whitespace-nowrap flex-1"
+                                  >
+                                    {item.label}
+                                  </motion.span>
+                                )}
+                              </AnimatePresence>
+                            </Link>
+                          );
+                        })}
+                      </motion.div>
                     )}
-                  </Link>
-                );
-              })}
+                  </AnimatePresence>
+                </div>
+              )}
             </div>
           );
         })}
