@@ -120,7 +120,7 @@ export default function CareOnBridgePage() {
         setSelectedAdvisory(data.advisory);
       }
     } catch (err) {
-      console.error("Failed to resolve advisory:", err);
+      void err;
     } finally {
       setResolving(null);
     }
@@ -144,7 +144,7 @@ export default function CareOnBridgePage() {
       setMessages(msgData.messages ?? []);
       setFacilities(connData.facilities ?? []);
     } catch (err) {
-      console.error("Failed to fetch bridge data:", err);
+      void err;
     } finally {
       setLoading(false);
     }

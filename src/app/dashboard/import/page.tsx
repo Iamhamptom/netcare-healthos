@@ -45,7 +45,14 @@ export default function ImportPage() {
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState<{ imported: number; skipped: number; errors: string[] } | null>(null);
 
+  const [fileError, setFileError] = useState("");
+
   const handleFile = useCallback((file: File) => {
+    setFileError("");
+    if (file.size > 5 * 1024 * 1024) {
+      setFileError("File too large. Maximum size is 5MB.");
+      return;
+    }
     setFileName(file.name);
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -147,6 +154,9 @@ export default function ImportPage() {
             <Upload className="w-10 h-10 text-gray-300 mx-auto mb-4" />
             <p className="text-sm font-medium text-gray-700 mb-1">Drop your CSV file here, or click to browse</p>
             <p className="text-xs text-gray-400">Supports .csv files exported from GoodX, Healthbridge, Elixir, or any spreadsheet</p>
+            {fileError && (
+              <p className="text-xs text-red-500 mt-2 font-medium">{fileError}</p>
+            )}
             <input
               id="file-input"
               type="file"

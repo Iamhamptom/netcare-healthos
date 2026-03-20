@@ -1,12 +1,13 @@
-import { Loader2 } from "lucide-react";
-
 export default function DashboardLoading() {
   return (
-    <div className="flex-1 flex items-center justify-center p-8">
-      <div className="text-center">
-        <Loader2 className="w-8 h-8 text-[#D4AF37] animate-spin mx-auto mb-3" />
-        <p className="text-white/30 text-xs uppercase tracking-wider">Loading...</p>
+    <div className="p-6 space-y-6">
+      <div className="h-8 w-64 bg-gray-200 rounded-lg animate-pulse" />
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        {Array.from({length: 5}).map((_, i) => (
+          <div key={i} className="h-24 bg-gray-200 rounded-xl animate-pulse" />
+        ))}
       </div>
+      <div className="h-64 bg-gray-200 rounded-xl animate-pulse" />
     </div>
   );
 }

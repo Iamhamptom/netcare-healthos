@@ -254,8 +254,9 @@ export default function SettingsPage() {
     setSubLoading(null);
   }
 
-  async function handleCancel() {
-    if (!confirm("Are you sure you want to cancel your subscription? Your access will continue until the end of the billing period.")) return;
+  const [confirmCancel, setConfirmCancel] = useState(false);
+
+  async function executeCancelSubscription() {
     setCancelLoading(true);
     await fetch("/api/subscription", { method: "PATCH" });
     setSubscription(prev => prev ? { ...prev, status: "cancelled" } : null);
@@ -471,7 +472,7 @@ export default function SettingsPage() {
               {subscription.status === "active" && (
                 <div className="mt-4 pt-3 border-t border-[var(--border)] flex justify-end">
                   <button
-                    onClick={handleCancel}
+                    onClick={() => setConfirmCancel(true)}
                     disabled={cancelLoading}
                     className="text-[11px] text-[var(--text-tertiary)] hover:text-[#ef4444] transition-colors"
                   >
@@ -829,6 +830,20 @@ export default function SettingsPage() {
               features={["Send link via WhatsApp 24h before", "Medical history, allergies, medications", "Data flows directly into patient record", "POPIA consent included"]}
             />
           </IntegrationSection>
+        </div>
+      )}
+
+      {/* Cancel Subscription Confirmation Modal */}
+      {confirmCancel && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-900">Are you sure?</h3>
+            <p className="text-[13px] text-gray-500 mt-2">Your access will continue until the end of the current billing period. You can resubscribe at any time.</p>
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setConfirmCancel(false)} className="flex-1 px-4 py-2 rounded-xl border border-gray-200 text-gray-600 text-[13px] font-medium hover:bg-gray-50">Cancel</button>
+              <button onClick={() => { executeCancelSubscription(); setConfirmCancel(false); }} className="flex-1 px-4 py-2 rounded-xl bg-red-500 text-white text-[13px] font-medium hover:bg-red-600">Confirm</button>
+            </div>
+          </div>
         </div>
       )}
 

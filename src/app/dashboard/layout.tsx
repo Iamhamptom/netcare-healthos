@@ -30,6 +30,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* Mobile close button */}
           <button
             onClick={() => setMobileOpen(false)}
+            aria-label="Close menu"
             className="absolute top-3 right-3 z-10 p-1.5 rounded-lg bg-white/10 text-white/60 hover:text-white hover:bg-white/20 transition-colors lg:hidden"
           >
             <X className="w-4 h-4" />
@@ -43,6 +44,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="relative">
           <button
             onClick={() => setMobileOpen(true)}
+            aria-label="Open menu"
             className="absolute left-3 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-lg text-[#1D3443]/40 hover:text-[#1D3443]/70 hover:bg-[#1D3443]/5 transition-colors lg:hidden"
           >
             <Menu className="w-5 h-5" />

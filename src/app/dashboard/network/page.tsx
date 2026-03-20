@@ -54,7 +54,6 @@ export default function NetworkFinancialPage() {
         case "schemes": setSchemes(data); break;
       }
     } catch (err) {
-      console.error(`Failed to fetch ${tab}:`, err);
       setError(`Failed to load data. The database may not be seeded yet.`);
     } finally {
       setLoading(false);
@@ -245,7 +244,7 @@ export default function NetworkFinancialPage() {
       {selectedTab === "clinics" && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           {loading && clinics.length === 0 ? <LoadingSkeleton rows={6} /> : (
-            <div className="rounded-xl border border-gray-200 overflow-hidden">
+            <div className="rounded-xl border border-gray-200 overflow-x-auto">
               <table className="w-full text-[13px]">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">
@@ -327,7 +326,7 @@ export default function NetworkFinancialPage() {
                 </div>
               </div>
 
-              <div className="rounded-xl border border-gray-200 overflow-hidden">
+              <div className="rounded-xl border border-gray-200 overflow-x-auto">
                 <div className="p-4 bg-gray-50 border-b border-gray-200">
                   <h3 className="text-[14px] font-semibold text-gray-900">Top Rejection Reasons — AI Action Plan</h3>
                   <p className="text-[12px] text-gray-500">Claims rejected via switching — ranked by recoverable value</p>
@@ -376,7 +375,7 @@ export default function NetworkFinancialPage() {
       {selectedTab === "schemes" && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           {loading && schemes.length === 0 ? <LoadingSkeleton rows={6} /> : (
-            <div className="rounded-xl border border-gray-200 overflow-hidden">
+            <div className="rounded-xl border border-gray-200 overflow-x-auto">
               <div className="p-4 bg-gray-50 border-b border-gray-200">
                 <h3 className="text-[14px] font-semibold text-gray-900">Medical Scheme Performance — Netcare Primary Healthcare</h3>
                 <p className="text-[12px] text-gray-500">Claims volume, rejection rates, and payment turnaround by scheme</p>

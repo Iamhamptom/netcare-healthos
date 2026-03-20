@@ -67,7 +67,11 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/auth/me").then(r => r.json()).then(data => {
+    fetch("/api/auth/me").then(r => {
+      if (!r.ok) { window.location.href = "/login"; return null; }
+      return r.json();
+    }).then(data => {
+      if (!data) return;
       if (data.user?.practice) {
         const p = data.user.practice;
         setBranding({

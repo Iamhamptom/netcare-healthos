@@ -34,6 +34,8 @@ export default function PatientsPage() {
   const [filter, setFilter] = useState("active");
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [error, setError] = useState("");
   const [form, setForm] = useState(emptyForm);
 
   async function fetchPatients() {
@@ -45,7 +47,7 @@ export default function PatientsPage() {
     setPatients(data.patients || []);
   }
 
-  useEffect(() => { fetchPatients(); }, [filter]);
+  useEffect(() => { fetchPatients().catch(() => setError("Unable to load data. Check your connection.")).finally(() => setInitialLoading(false)); }, [filter]);
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -55,19 +57,31 @@ export default function PatientsPage() {
   async function createPatient(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    await fetch("/api/patients", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    setForm(emptyForm);
-    setModalOpen(false);
-    await fetchPatients();
+    setError("");
+    try {
+      const res = await fetch("/api/patients", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Failed to save. Please try again.");
+        setLoading(false);
+        return;
+      }
+      setForm(emptyForm);
+      setModalOpen(false);
+      await fetchPatients();
+    } catch {
+      setError("Failed to save. Please try again.");
+    }
     setLoading(false);
   }
 
-  async function deletePatient(id: string) {
-    if (!confirm("Delete this patient and all their records?")) return;
+  const [confirmAction, setConfirmAction] = useState<{ type: string; id: string } | null>(null);
+
+  async function executeDeletePatient(id: string) {
     await fetch(`/api/patients/${id}`, { method: "DELETE" });
     await fetchPatients();
   }
@@ -79,8 +93,21 @@ export default function PatientsPage() {
     "life-threatening": "text-red-600",
   };
 
+  if (initialLoading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="w-6 h-6 animate-spin text-[var(--teal)]" />
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
+      {error && (
+        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+          {error}
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Users className="w-5 h-5 text-[var(--teal)]" />
@@ -177,13 +204,27 @@ export default function PatientsPage() {
                   >
                     <Eye className="w-3 h-3" /> View
                   </Link>
-                  <button onClick={() => deletePatient(patient.id)} className="p-1 text-[var(--text-secondary)] hover:text-red-400 transition-colors">
+                  <button aria-label="Delete patient" onClick={() => setConfirmAction({ type: "delete", id: patient.id })} className="p-1 text-[var(--text-secondary)] hover:text-red-400 transition-colors">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
             </motion.div>
           ))}
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {confirmAction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-900">Are you sure?</h3>
+            <p className="text-[13px] text-gray-500 mt-2">This will permanently delete this patient and all their records. This action cannot be undone.</p>
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setConfirmAction(null)} className="flex-1 px-4 py-2 rounded-xl border border-gray-200 text-gray-600 text-[13px] font-medium hover:bg-gray-50">Cancel</button>
+              <button onClick={() => { executeDeletePatient(confirmAction.id); setConfirmAction(null); }} className="flex-1 px-4 py-2 rounded-xl bg-red-500 text-white text-[13px] font-medium hover:bg-red-600">Confirm</button>
+            </div>
+          </div>
         </div>
       )}
 

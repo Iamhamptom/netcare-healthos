@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Receipt, CreditCard, DollarSign, AlertCircle,
   Plus, Search, FileText, ChevronDown, ChevronUp,
-  Banknote, Building2, ArrowUpRight,
+  Banknote, Building2, ArrowUpRight, Loader2,
 } from "lucide-react";
 
 interface Invoice {
@@ -72,38 +72,53 @@ export default function BillingPage() {
     invoiceId: "", notes: "",
   });
 
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [error, setError] = useState("");
+
   useEffect(() => {
-    fetch("/api/invoices").then(r => r.json()).then(d => setInvoices(d.invoices || []));
-    fetch("/api/payments").then(r => r.json()).then(d => {
-      setPayments(d.payments || []);
-      setTodayRevenue(d.todayRevenue || 0);
-    });
+    Promise.all([
+      fetch("/api/invoices").then(r => r.json()).then(d => setInvoices(d.invoices || [])),
+      fetch("/api/payments").then(r => r.json()).then(d => {
+        setPayments(d.payments || []);
+        setTodayRevenue(d.todayRevenue || 0);
+      }),
+    ]).catch(() => setError("Unable to load data. Check your connection.")).finally(() => setInitialLoading(false));
   }, []);
 
   async function createInvoice(e: React.FormEvent) {
     e.preventDefault();
+    setError("");
     const price = parseFloat(invForm.unitPrice) || 0;
     const tax = Math.round(price * 0.15 * 100) / 100;
     const maClaim = parseFloat(invForm.medicalAidClaim) || 0;
 
-    const res = await fetch("/api/invoices", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        patientName: invForm.patientName,
-        lineItems: [{ description: invForm.description, icd10Code: invForm.icd10Code, quantity: 1, unitPrice: price, total: price }],
-        subtotal: price,
-        tax,
-        total: price + tax,
-        medicalAidClaim: maClaim,
-        patientPortion: (price + tax) - maClaim,
-        notes: invForm.notes,
-      }),
-    });
-    const data = await res.json();
-    setInvoices(prev => [data.invoice, ...prev]);
-    setInvForm({ patientName: "", description: "", icd10Code: "", unitPrice: "", medicalAidClaim: "", notes: "" });
-    setShowNew(false);
+    try {
+      const res = await fetch("/api/invoices", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          patientName: invForm.patientName,
+          lineItems: [{ description: invForm.description, icd10Code: invForm.icd10Code, quantity: 1, unitPrice: price, total: price }],
+          subtotal: price,
+          tax,
+          total: price + tax,
+          medicalAidClaim: maClaim,
+          patientPortion: (price + tax) - maClaim,
+          notes: invForm.notes,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Failed to save. Please try again.");
+        return;
+      }
+      const data = await res.json();
+      setInvoices(prev => [data.invoice, ...prev]);
+      setInvForm({ patientName: "", description: "", icd10Code: "", unitPrice: "", medicalAidClaim: "", notes: "" });
+      setShowNew(false);
+    } catch {
+      setError("Failed to save. Please try again.");
+    }
   }
 
   async function recordPayment(e: React.FormEvent) {
@@ -138,8 +153,21 @@ export default function BillingPage() {
     ? invoices.filter(i => i.patientName.toLowerCase().includes(search.toLowerCase()) || i.invoiceNo.toLowerCase().includes(search.toLowerCase()))
     : invoices;
 
+  if (initialLoading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="w-6 h-6 animate-spin text-[var(--gold)]" />
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-5">
+      {error && (
+        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+          {error}
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">

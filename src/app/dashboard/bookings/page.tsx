@@ -34,6 +34,8 @@ export default function BookingsPage() {
   const [filter, setFilter] = useState("all");
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [error, setError] = useState("");
   const [form, setForm] = useState({ patientName: "", service: "", scheduledAt: "", notes: "" });
 
   async function fetchBookings() {
@@ -42,21 +44,32 @@ export default function BookingsPage() {
     setBookings(data.bookings || []);
   }
 
-  useEffect(() => { fetchBookings(); }, []);
+  useEffect(() => { fetchBookings().catch(() => setError("Unable to load data. Check your connection.")).finally(() => setInitialLoading(false)); }, []);
 
   const filtered = filter === "all" ? bookings : bookings.filter((b) => b.status === filter);
 
   async function createBooking(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    await fetch("/api/bookings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    setForm({ patientName: "", service: "", scheduledAt: "", notes: "" });
-    setModalOpen(false);
-    await fetchBookings();
+    setError("");
+    try {
+      const res = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Failed to save. Please try again.");
+        setLoading(false);
+        return;
+      }
+      setForm({ patientName: "", service: "", scheduledAt: "", notes: "" });
+      setModalOpen(false);
+      await fetchBookings();
+    } catch {
+      setError("Failed to save. Please try again.");
+    }
     setLoading(false);
   }
 
@@ -69,8 +82,21 @@ export default function BookingsPage() {
     await fetchBookings();
   }
 
+  if (initialLoading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="w-6 h-6 animate-spin text-[var(--teal)]" />
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
+      {error && (
+        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+          {error}
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <CalendarCheck className="w-5 h-5 text-[var(--teal)]" />

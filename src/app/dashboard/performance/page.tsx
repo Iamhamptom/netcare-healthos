@@ -112,7 +112,7 @@ export default function PerformancePage() {
       const d = await res.json();
       setData(d);
     } catch (err) {
-      console.error("Failed to fetch performance data:", err);
+      void err;
       setError("Failed to load performance data. Please try again.");
     } finally {
       setLoading(false);

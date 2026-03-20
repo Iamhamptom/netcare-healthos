@@ -31,7 +31,7 @@ export default function Modal({ open, onClose, title, children }: ModalProps) {
             <div className="w-full max-w-lg glass-panel-strong rounded-xl shadow-2xl roman-border">
               <div className="flex items-center justify-between p-5 border-b border-[var(--border)]">
                 <h2 className="text-[15px] font-semibold text-[var(--ivory)]">{title}</h2>
-                <button onClick={onClose} className="p-1 text-[var(--text-tertiary)] hover:text-[var(--gold)] transition-colors">
+                <button aria-label="Close" onClick={onClose} className="p-1 text-[var(--text-tertiary)] hover:text-[var(--gold)] transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>

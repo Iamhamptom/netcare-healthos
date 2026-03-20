@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -366,10 +367,12 @@ export default function DashboardSidebar() {
     >
       {/* Logo */}
       <div className="h-14 flex items-center gap-2.5 px-4 border-b border-white/[0.06]">
-        <img
+        <Image
           src="/images/netcare-logo.png"
           alt="Netcare"
-          className="h-5 shrink-0 brightness-[10] saturate-0 opacity-80"
+          width={80}
+          height={20}
+          className="h-5 w-auto shrink-0 brightness-[10] saturate-0 opacity-80"
         />
         <AnimatePresence>
           {!collapsed && (

@@ -20,6 +20,8 @@ export default function RecallPage() {
   const [filter, setFilter] = useState("due");
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [error, setError] = useState("");
   const [form, setForm] = useState({ patientName: "", reason: "", dueDate: "", phone: "" });
 
   async function fetchItems() {
@@ -28,7 +30,7 @@ export default function RecallPage() {
     setItems(data.recallItems || []);
   }
 
-  useEffect(() => { fetchItems(); }, []);
+  useEffect(() => { fetchItems().catch(() => setError("Unable to load data. Check your connection.")).finally(() => setInitialLoading(false)); }, []);
 
   const filtered = filter === "all" ? items
     : filter === "due" ? items.filter((i) => !i.contacted)
@@ -39,14 +41,25 @@ export default function RecallPage() {
   async function createItem(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    await fetch("/api/recall", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    setForm({ patientName: "", reason: "", dueDate: "", phone: "" });
-    setModalOpen(false);
-    await fetchItems();
+    setError("");
+    try {
+      const res = await fetch("/api/recall", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Failed to save. Please try again.");
+        setLoading(false);
+        return;
+      }
+      setForm({ patientName: "", reason: "", dueDate: "", phone: "" });
+      setModalOpen(false);
+      await fetchItems();
+    } catch {
+      setError("Failed to save. Please try again.");
+    }
     setLoading(false);
   }
 
@@ -64,8 +77,21 @@ export default function RecallPage() {
     await fetchItems();
   }
 
+  if (initialLoading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="w-6 h-6 animate-spin text-purple-400" />
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
+      {error && (
+        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+          {error}
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <RotateCcw className="w-5 h-5 text-purple-400" />
@@ -141,7 +167,7 @@ export default function RecallPage() {
                       Mark Contacted
                     </button>
                   )}
-                  <button onClick={() => deleteItem(item.id)} className="p-1 text-[var(--text-secondary)] hover:text-red-400 transition-colors">
+                  <button aria-label="Delete recall item" onClick={() => deleteItem(item.id)} className="p-1 text-[var(--text-secondary)] hover:text-red-400 transition-colors">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>

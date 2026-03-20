@@ -142,6 +142,7 @@ export default function DashboardHeader() {
         {/* Notification Bell with Dropdown */}
         <div className="relative" ref={dropdownRef}>
           <button
+            aria-label="Notifications"
             onClick={() => setShowDropdown(!showDropdown)}
             className="relative p-2 text-[#1D3443]/30 hover:text-[#1D3443]/60 transition-colors rounded-lg hover:bg-[#1D3443]/[0.03]"
           >

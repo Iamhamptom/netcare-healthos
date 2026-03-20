@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   BarChart3, Users, CalendarCheck, Star, RotateCcw,
-  FileText, Activity, TrendingUp, AlertTriangle,
+  FileText, Activity, TrendingUp, AlertTriangle, Loader2,
 } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
 
@@ -21,10 +21,28 @@ interface Analytics {
 
 export default function AnalyticsPage() {
   const [data, setData] = useState<Analytics | null>(null);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("/api/analytics").then(r => r.json()).then(setData).catch(() => {});
+    fetch("/api/analytics").then(r => r.json()).then(setData).catch(() => setError("Unable to load data. Check your connection.")).finally(() => setInitialLoading(false));
   }, []);
+
+  if (initialLoading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="w-6 h-6 animate-spin text-[var(--gold)]" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">{error}</div>
+      </div>
+    );
+  }
 
   if (!data) return <div className="p-6 text-[var(--text-secondary)]">Loading analytics...</div>;
 

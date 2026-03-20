@@ -27,6 +27,13 @@ export async function POST(request: Request) {
   const guard = await guardRoute(request, "bookings");
   if (isErrorResponse(guard)) return guard;
   const body = await request.json();
+  const patientName = body.patientName?.trim();
+  const service = body.service?.trim();
+  const scheduledAt = body.scheduledAt;
+
+  if (!patientName || !service || !scheduledAt) {
+    return NextResponse.json({ error: "Patient name, service, and date are required" }, { status: 400 });
+  }
 
   if (isDemoMode) {
     const booking = demoStore.addBooking(body);

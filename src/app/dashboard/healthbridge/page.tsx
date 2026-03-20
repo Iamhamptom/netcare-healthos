@@ -178,7 +178,7 @@ export default function HealthbridgePage() {
       const data = await res.json();
       setClaims(data.claims || []);
     } catch (err) {
-      console.error("[healthbridge] Failed to load claims:", err);
+      void err;
     }
   }, [statusFilter]);
 
@@ -188,7 +188,7 @@ export default function HealthbridgePage() {
       const data = await res.json();
       setAnalytics(data);
     } catch (err) {
-      console.error("[healthbridge] Failed to load analytics:", err);
+      void err;
     }
   }, []);
 
@@ -269,7 +269,7 @@ export default function HealthbridgePage() {
       const data = await res.json();
       setNappiResults(data.medicines || []);
     } catch (err) {
-      console.error("[healthbridge] Failed to search NAPPI:", err);
+      void err;
     }
     setNappiLoading(false);
   }
@@ -293,7 +293,7 @@ export default function HealthbridgePage() {
       const data = await res.json();
       setAiSuggestion(data.suggestion || null);
     } catch (err) {
-      console.error("[healthbridge] Failed to get AI suggestion:", err);
+      void err;
     }
     setAiLoading(false);
   }
@@ -311,7 +311,7 @@ export default function HealthbridgePage() {
       setBatchResult(data);
       if (action === "submit") { loadClaims(); loadAnalytics(); }
     } catch (err) {
-      console.error("[healthbridge] Failed to process batch:", err);
+      void err;
     }
     setBatchLoading(false);
   }
