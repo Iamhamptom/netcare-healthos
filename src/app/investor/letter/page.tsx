@@ -53,7 +53,7 @@ export default function FounderLetterPage() {
           Our Vision
         </h2>
         <p className="text-sm text-gray-700 leading-relaxed">
-          Netcare Health OS OS exists to give every medical practice in South Africa — and eventually across
+          Netcare Health OS exists to give every medical practice in South Africa — and eventually across
           Africa — the tools to operate at their best. Not to replace doctors. Not to replace human
           judgment. To remove the friction that stands between a patient and the care they need.
         </p>
@@ -64,7 +64,7 @@ export default function FounderLetterPage() {
           Every second we save in administration is a second returned to patient care.
         </p>
         <p className="text-sm text-gray-700 leading-relaxed">
-          Our six products — Netcare Health OS OS, Placeo Health, Visio Health Integrator, Visio Waiting Room,
+          Our six products — Netcare Health OS, Placeo Health, Visio Health Integrator, Visio Waiting Room,
           Netcare Health OS Payer Connect, and VisioMed AI — form one ecosystem with one goal:
           <strong> to ensure that no patient is failed by a system that could have been better.</strong>
         </p>
@@ -126,7 +126,7 @@ export default function FounderLetterPage() {
             <div>
               <h3 className="font-bold text-gray-900 text-sm">Audit-Ready by Design</h3>
               <p className="text-sm text-gray-600 mt-1">
-                Netcare Health OS OS is built to be cleanly audited at any time by any authority. Our audit trail
+                Netcare Health OS is built to be cleanly audited at any time by any authority. Our audit trail
                 records every patient data access — who viewed it, when, from where, and why. POPIA consent
                 records track exactly when each patient gave consent, for what purpose, and through what method.
                 We welcome scrutiny because we have nothing to hide. Our compliance framework covers:

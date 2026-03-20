@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — Netcare Health OS OS",
+  title: "Terms of Service — Netcare Health OS",
 };
 
 const COMPANY = {
@@ -18,7 +18,7 @@ const sections = [
   {
     title: "1. Introduction & Acceptance",
     content: [
-      `These Terms of Service govern your use of Netcare Health OS OS (the "Platform"), a healthcare practice management system operated by ${COMPANY.legalName} trading as ${COMPANY.tradingAs}.`,
+      `These Terms of Service govern your use of Netcare Health OS (the "Platform"), a healthcare practice management system operated by ${COMPANY.legalName} trading as ${COMPANY.tradingAs}.`,
       `By accessing the Platform, you agree to these Terms. The Platform is intended for use by licensed healthcare practitioners and their authorised staff.`,
       `These Terms are governed by ECTA, CPA, POPIA, the Health Professions Act, and applicable HPCSA guidelines.`,
     ],
@@ -36,7 +36,7 @@ const sections = [
   {
     title: "3. Service Description",
     content: [
-      `Netcare Health OS OS is an AI-powered healthcare practice management platform offering patient records management, appointment scheduling, billing (ICD-10 coding), AI clinical decision support, voice interaction, and multi-practice administration.`,
+      `Netcare Health OS is an AI-powered healthcare practice management platform offering patient records management, appointment scheduling, billing (ICD-10 coding), AI clinical decision support, voice interaction, and multi-practice administration.`,
       `The Platform is designed for South African healthcare practices and complies with POPIA, HPCSA, and ICD-10 SA standards.`,
     ],
   },

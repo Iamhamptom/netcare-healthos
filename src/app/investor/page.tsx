@@ -11,7 +11,7 @@ import {
 const products = [
   {
     id: "visiohealth-os",
-    name: "Netcare Health OS OS",
+    name: "Netcare Health OS",
     tagline: "The Core — AI-Powered Practice Management",
     icon: HeartPulse,
     status: "Market Ready",
@@ -62,7 +62,7 @@ const products = [
     solution: "A smart directory and referral engine. Patients find verified, HPCSA-registered practitioners filtered by specialty, location, medical aid acceptance, and real-time availability. Doctors refer within the network with full patient handoff.",
     features: [
       "HPCSA-verified practitioner directory",
-      "Real-time availability from Netcare Health OS OS",
+      "Real-time availability from Netcare Health OS",
       "Medical aid compatibility matching",
       "Structured referral workflow (GP → Specialist)",
       "Patient reviews (compliant — no canvassing/touting)",
@@ -119,7 +119,7 @@ const products = [
     image: "/images/investor/product-waiting-room.png",
     description: "Transform the waiting room experience. Patients check in digitally, see their queue position in real-time, complete intake forms on their phone, and get notified when it's their turn.",
     problem: "SA waiting rooms are overcrowded, patients wait 2+ hours with no updates, paper intake forms are filled out every visit, and practices can't manage queue flow efficiently.",
-    solution: "QR code check-in → digital intake forms (pre-filled from Netcare Health OS OS records) → real-time queue display → SMS/WhatsApp notification when doctor is ready. Waiting time analytics for practice optimization.",
+    solution: "QR code check-in → digital intake forms (pre-filled from Netcare Health OS records) → real-time queue display → SMS/WhatsApp notification when doctor is ready. Waiting time analytics for practice optimization.",
     features: [
       "QR code self-check-in (no receptionist bottleneck)",
       "Digital intake forms (pre-filled from patient history)",
@@ -456,7 +456,7 @@ export default function InvestorEcosystem() {
           </div>
           <ChevronRight className="w-4 h-4 text-gray-400" />
           <div className="bg-[#3DA9D1] text-[#152736] px-4 py-2 rounded-lg font-medium border border-[#3DA9D1]">
-            Managed in Netcare Health OS OS
+            Managed in Netcare Health OS
           </div>
           <ChevronRight className="w-4 h-4 text-gray-400" />
           <div className="bg-pink-100 text-pink-800 px-4 py-2 rounded-lg font-medium border border-pink-200">

@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Cookie Policy — Netcare Health OS OS",
+  title: "Cookie Policy — Netcare Health OS",
 };
 
 export default function CookiesPage() {

@@ -22,7 +22,7 @@ export const metadata: Metadata = {
       "Submit digital referrals to specialist practices across South Africa. Track status, receive feedback. Free for GPs.",
     type: "website",
     locale: "en_ZA",
-    siteName: "Netcare Health OS OS",
+    siteName: "Netcare Health OS",
   },
   twitter: {
     card: "summary_large_image",

@@ -52,7 +52,7 @@ const researchCategories = [
       },
       {
         title: "ENT Practice Growth Strategy — Joburg",
-        description: "10-channel patient acquisition plan covering GP referral networks, paediatric pipeline, hospital strategy, compliant digital marketing, and Netcare Health OS OS integration.",
+        description: "10-channel patient acquisition plan covering GP referral networks, paediatric pipeline, hospital strategy, compliant digital marketing, and Netcare Health OS integration.",
         type: "Strategy Document",
         date: "March 2026",
         status: "Complete",
@@ -128,7 +128,7 @@ const researchCategories = [
         status: "Planned",
       },
       {
-        title: "Netcare Health OS OS — Clinical Outcomes Whitepaper",
+        title: "Netcare Health OS — Clinical Outcomes Whitepaper",
         description: "First 6-month impact report from Netcare Health OS client practices. Time savings, patient throughput, billing accuracy, and compliance improvements.",
         type: "Whitepaper",
         date: "Q3 2026",

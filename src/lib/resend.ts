@@ -213,12 +213,12 @@ export function onboardingWelcomeEmail(opts: {
     .join("");
 
   const content = `
-    <h2 style="margin:0 0 8px;color:#333;font-size:22px;font-weight:700;">Welcome to Netcare Health OS OS</h2>
+    <h2 style="margin:0 0 8px;color:#333;font-size:22px;font-weight:700;">Welcome to Netcare Health OS</h2>
     <p style="color:#16a34a;font-size:14px;font-weight:600;margin:0 0 20px;">Your practice is live. Let's transform how you operate.</p>
 
     <p style="color:#555;font-size:14px;line-height:1.6;">Dear Dr. ${opts.doctorName},</p>
     <p style="color:#555;font-size:14px;line-height:1.6;">
-      Welcome to Netcare Health OS OS — South Africa's first AI-powered healthcare practice management platform.
+      Welcome to Netcare Health OS — South Africa's first AI-powered healthcare practice management platform.
       Your practice <strong>${opts.practiceName}</strong> has been onboarded to the <strong>${planNames[opts.plan] || opts.plan}</strong> plan.
     </p>
 
@@ -299,7 +299,7 @@ export function onboardingWelcomeEmail(opts: {
     </p>`;
 
   return {
-    subject: `Welcome to Netcare Health OS OS — ${opts.practiceName} is Live`,
+    subject: `Welcome to Netcare Health OS — ${opts.practiceName} is Live`,
     html: baseTemplate(opts.practiceName, opts.primaryColor || "#16a34a", content),
   };
 }

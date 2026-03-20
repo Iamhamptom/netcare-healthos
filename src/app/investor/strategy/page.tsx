@@ -24,7 +24,7 @@ const staggerContainer = {
 /* ───────────────────── Data ───────────────────── */
 const products = [
   {
-    name: "Netcare Health OS OS",
+    name: "Netcare Health OS",
     mapsTo: "Command + Core Platform",
     memoProduct: "Netcare Health OS Command",
     icon: HeartPulse,
@@ -218,7 +218,7 @@ export default function InvestorStrategyPage() {
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-4">
             <HeartPulse className="w-7 h-7 text-[#8B5CF6]" />
-            <span className="text-[#8B5CF6] font-medium text-sm uppercase tracking-widest">Netcare Health OS OS</span>
+            <span className="text-[#8B5CF6] font-medium text-sm uppercase tracking-widest">Netcare Health OS</span>
             <span className="ml-auto bg-red-500/20 text-red-300 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full border border-red-500/30">
               Confidential
             </span>
@@ -236,7 +236,7 @@ export default function InvestorStrategyPage() {
         <div className="space-y-4">
           <div className="bg-[#8B5CF6]/5 border border-[#8B5CF6]/20 rounded-lg p-4">
             <p className="text-sm text-gray-700 leading-relaxed">
-              Netcare Health OS OS is positioned as a <strong>sovereign, AI-native healthcare intelligence infrastructure company</strong>.
+              Netcare Health OS is positioned as a <strong>sovereign, AI-native healthcare intelligence infrastructure company</strong>.
               Not a telemedicine app or EMR clone — it is the underlying movement layer for healthcare data, permissions,
               workflows, and decision-making. Infrastructure categories own transformation logic, graph relationships, and trust controls.
             </p>
@@ -653,7 +653,7 @@ export default function InvestorStrategyPage() {
           <p className="text-red-400 font-bold text-xs uppercase tracking-wider">Confidential — For Authorised Recipients Only</p>
         </div>
         <p>
-          This document contains confidential and proprietary information belonging to Netcare Health OS OS (Pty) Ltd.
+          This document contains confidential and proprietary information belonging to Netcare Health OS (Pty) Ltd.
           It is intended solely for the use of the individual(s) to whom it is addressed. If you are not the intended
           recipient, you are hereby notified that any disclosure, copying, distribution, or taking of any action in
           reliance on the contents of this document is strictly prohibited and may be unlawful.
@@ -665,7 +665,7 @@ export default function InvestorStrategyPage() {
           subject to risks, uncertainties, and changes in circumstances.
         </p>
         <p className="text-gray-500">
-          &copy; 2026 Netcare Health OS OS. All rights reserved.
+          &copy; 2026 Netcare Health OS. All rights reserved.
         </p>
       </motion.div>
     </div>

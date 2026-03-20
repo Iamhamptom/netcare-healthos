@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Investor Portal — Netcare Health OS Ecosystem",
-  description: "Netcare Health OS OS investor portal. 6 healthcare products, one ecosystem. AI-powered practice management for South African medical practices.",
+  description: "Netcare Health OS investor portal. 6 healthcare products, one ecosystem. AI-powered practice management for South African medical practices.",
   robots: "noindex, nofollow",
 };
 

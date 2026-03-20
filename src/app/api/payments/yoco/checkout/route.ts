@@ -15,8 +15,8 @@ export async function POST(request: Request) {
   const isSetup = type === "setup";
   const amount = isSetup ? SETUP_FEES[plan] : PLAN_AMOUNTS[plan];
   const description = isSetup
-    ? `Netcare Health OS OS — ${PLAN_LABELS[plan]} Setup Fee`
-    : `Netcare Health OS OS — ${PLAN_LABELS[plan]} Monthly Subscription`;
+    ? `Netcare Health OS — ${PLAN_LABELS[plan]} Setup Fee`
+    : `Netcare Health OS — ${PLAN_LABELS[plan]} Monthly Subscription`;
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://healthops-platform.vercel.app";
 

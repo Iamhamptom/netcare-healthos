@@ -26,8 +26,8 @@ const courses = [
   },
   {
     id: "visiohealth-platform-mastery",
-    title: "Netcare Health OS OS — Platform Mastery",
-    description: "Hands-on training for every feature in Netcare Health OS OS. From patient management to billing, AI agents to compliance tools.",
+    title: "Netcare Health OS — Platform Mastery",
+    description: "Hands-on training for every feature in Netcare Health OS. From patient management to billing, AI agents to compliance tools.",
     duration: "4 hours (2 sessions)",
     audience: "All Staff",
     icon: Monitor,

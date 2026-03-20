@@ -16,7 +16,7 @@ const sections = [
   { value: "general", label: "General" },
   { value: "ecosystem", label: "Ecosystem" },
   { value: "compliance", label: "Compliance" },
-  { value: "product:visiohealth-os", label: "Netcare Health OS OS" },
+  { value: "product:visiohealth-os", label: "Netcare Health OS" },
   { value: "product:placeo-health", label: "Placeo Health" },
   { value: "product:visio-health-integrator", label: "Health Integrator" },
   { value: "product:visio-waiting-room", label: "Waiting Room" },

@@ -481,7 +481,7 @@ export default function GPReferralPage({ params }: { params: Promise<{ slug: str
       </main>
 
       <footer className="border-t border-gray-200 py-6 text-center mt-8">
-        <p className="text-xs text-gray-400">Powered by <span className="font-medium text-gray-500">Netcare Health OS OS</span></p>
+        <p className="text-xs text-gray-400">Powered by <span className="font-medium text-gray-500">Netcare Health OS</span></p>
       </footer>
     </div>
   );

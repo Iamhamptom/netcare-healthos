@@ -104,7 +104,7 @@ const strategyPhases = [
         cost: "R0-R5,000 (free listings + optional premium)",
       },
       {
-        title: "Netcare Health OS OS Go-Live",
+        title: "Netcare Health OS Go-Live",
         description: "Platform fully configured: AI agents active, booking page live, WhatsApp reminders on, daily tasks running. 20 patients already loaded.",
         impact: "Operational efficiency from day 1",
         cost: "Included in subscription",

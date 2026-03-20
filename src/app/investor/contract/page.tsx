@@ -8,17 +8,17 @@ const contractSections = [
     title: "1. Parties",
     content: `This Service Agreement ("Agreement") is entered into between:
 
-1.1. VisioCorp (Pty) Ltd, a private company incorporated in the Republic of South Africa, operating the Netcare Health OS OS platform ("VisioCorp", "Service Provider", "we", "us");
+1.1. VisioCorp (Pty) Ltd, a private company incorporated in the Republic of South Africa, operating the Netcare Health OS platform ("VisioCorp", "Service Provider", "we", "us");
 
 AND
 
-1.2. The Client Practice, being the HPCSA-registered healthcare practice subscribing to the Netcare Health OS OS platform ("Client", "Practice", "you").
+1.2. The Client Practice, being the HPCSA-registered healthcare practice subscribing to the Netcare Health OS platform ("Client", "Practice", "you").
 
 1.3. Together referred to as the "Parties" and individually as a "Party".`,
   },
   {
     title: "2. Service Description",
-    content: `2.1. VisioCorp provides the Netcare Health OS OS platform ("Platform"), an AI-powered healthcare practice management system that includes:
+    content: `2.1. VisioCorp provides the Netcare Health OS platform ("Platform"), an AI-powered healthcare practice management system that includes:
   (a) Patient management (records, allergies, medications, vitals, medical history);
   (b) Appointment scheduling and calendar management;
   (c) AI-powered agents (triage, intake, follow-up, billing, scheduling);
@@ -316,7 +316,7 @@ export default function InvestorContract() {
           Service Agreement
         </h1>
         <p className="text-sm text-gray-500 mt-1">
-          Netcare Health OS OS client subscription agreement template. This document
+          Netcare Health OS client subscription agreement template. This document
           outlines the terms under which healthcare practices subscribe to and
           use the Platform.
         </p>
@@ -402,7 +402,7 @@ export default function InvestorContract() {
             <FileCheck className="w-6 h-6 text-[#8B5CF6]" />
             <div>
               <h2 className="text-lg font-bold text-gray-900">
-                Netcare Health OS OS Service Agreement
+                Netcare Health OS Service Agreement
               </h2>
               <p className="text-xs text-gray-500">
                 Template version 1.0 | Last updated: 14 March 2026 | Governed

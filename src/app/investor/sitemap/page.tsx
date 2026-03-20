@@ -20,7 +20,7 @@ type SitemapNode = {
 
 const sitemap: SitemapNode[] = [
   {
-    name: "Netcare Health OS OS",
+    name: "Netcare Health OS",
     icon: HeartPulse,
     description: "Core practice management platform",
     status: "live",
@@ -137,7 +137,7 @@ const sitemap: SitemapNode[] = [
       { name: "Practitioner Directory", icon: Users, description: "HPCSA-verified doctor search", status: "concept" },
       { name: "Smart Matching", icon: Zap, description: "Specialty + location + medical aid matching", status: "concept" },
       { name: "Referral Workflow", icon: MessageSquare, description: "GP → Specialist structured referrals", status: "concept" },
-      { name: "Availability Feed", icon: Calendar, description: "Real-time slots from Netcare Health OS OS", status: "concept" },
+      { name: "Availability Feed", icon: Calendar, description: "Real-time slots from Netcare Health OS", status: "concept" },
     ],
   },
   {

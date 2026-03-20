@@ -44,7 +44,7 @@ const investorSteps: Step[] = [
       "Review HPCSA Compliance Statement",
       "Examine compliance mapping across all 7 SA regulations",
       "Access research portal — market intelligence and competitive analysis",
-      "Product demo — full walkthrough of Netcare Health OS OS",
+      "Product demo — full walkthrough of Netcare Health OS",
     ],
     status: "current",
   },

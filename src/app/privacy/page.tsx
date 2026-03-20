@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — Netcare Health OS OS",
+  title: "Privacy Policy — Netcare Health OS",
 };
 
 const COMPANY = {
@@ -19,7 +19,7 @@ const sections = [
     title: "1. Introduction",
     content: [
       `${COMPANY.legalName} trading as ${COMPANY.tradingAs} is committed to protecting personal information — especially patient health information — in accordance with POPIA.`,
-      `This Privacy Policy applies to all users of the Netcare Health OS OS platform, including practice administrators, healthcare practitioners, staff, and patients whose data is processed through the Platform.`,
+      `This Privacy Policy applies to all users of the Netcare Health OS platform, including practice administrators, healthcare practitioners, staff, and patients whose data is processed through the Platform.`,
     ],
   },
   {

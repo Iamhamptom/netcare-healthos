@@ -234,7 +234,7 @@ export default function ENTPage() {
       <footer className="border-t border-white/5 py-12 px-6">
         <div className="max-w-5xl mx-auto text-center">
           <p className="text-[#3DA9D1]/20 text-xs leading-relaxed max-w-2xl mx-auto">
-            Netcare Health OS OS is South Africa&apos;s leading AI-powered practice management software for ENT specialists
+            Netcare Health OS is South Africa&apos;s leading AI-powered practice management software for ENT specialists
             and otolaryngologists. Serving practices in Johannesburg, Cape Town, Durban, Pretoria, and across
             Gauteng, Western Cape, and KwaZulu-Natal. POPIA-compliant healthcare software with ICD-10 billing,
             medical aid integration, and WhatsApp patient communication.
