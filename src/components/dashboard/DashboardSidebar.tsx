@@ -157,6 +157,8 @@ const healthbridgeItems: NavItem[] = [
   { href: "/dashboard/healthbridge/nappi", icon: Pill, label: "NAPPI Lookup", roles: ["admin", "receptionist"] },
   { href: "/dashboard/healthbridge/followups", icon: Clock, label: "Follow-ups", roles: ["admin", "receptionist"] },
   { href: "/dashboard/healthbridge/export", icon: Download, label: "Export Data", roles: ["admin", "receptionist"] },
+  { href: "/dashboard/healthbridge/about", icon: FileBarChart, label: "Product Overview", roles: ["admin", "platform_admin"] },
+  { href: "/dashboard/healthbridge/research", icon: TrendingUp, label: "Research Paper", roles: ["admin", "platform_admin"] },
 ];
 
 const fhirHubItems: NavItem[] = [
