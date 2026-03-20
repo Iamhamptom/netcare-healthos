@@ -222,8 +222,17 @@ async function getReportData(
       reportType,
       error: err instanceof Error ? err.message : String(err),
     });
-    // Fallback to demo data
-    return getReportData(reportType);
+    // Fallback to demo data directly (no recursive call to avoid infinite loop)
+    switch (reportType) {
+      case "claims_summary":
+        return getDemoClaimsSummary();
+      case "revenue_by_clinic":
+        return getDemoRevenueByClinic();
+      case "rejection_analysis":
+        return getDemoRejectionAnalysis();
+      case "scheme_performance":
+        return getDemoSchemePerformance();
+    }
   }
 }
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isDemoMode } from "@/lib/is-demo";
+import { db } from "@/lib/db";
 import {
   exchangeCodeForTokens,
   getMicrosoftUserProfile,
@@ -36,6 +37,12 @@ export async function GET(request: Request) {
     );
   }
 
+  if (!process.env.MICROSOFT_CLIENT_ID || !process.env.MICROSOFT_CLIENT_SECRET) {
+    return NextResponse.redirect(
+      `${settingsUrl}?error=${encodeURIComponent("Microsoft 365 not configured")}`,
+    );
+  }
+
   try {
     // Exchange code for tokens
     const tokens = await exchangeCodeForTokens(code);
@@ -46,13 +53,9 @@ export async function GET(request: Request) {
     const email = profile.mail || profile.userPrincipalName;
 
     // Store tokens in the practice's integrations JSON
-    const { prisma } = await import("@/lib/prisma");
-    const practice = await prisma.practice.findUnique({
-      where: { id: practiceId },
-      select: { integrations: true },
-    });
+    const practice = await db.getPractice(practiceId) as Record<string, unknown> | null;
 
-    const integrations = parseIntegrations(practice?.integrations ?? "{}");
+    const integrations = parseIntegrations((practice?.integrations as string) ?? "{}");
 
     const updated = {
       ...integrations,
@@ -68,10 +71,7 @@ export async function GET(request: Request) {
       microsoftTeamsNotifications: true,
     };
 
-    await prisma.practice.update({
-      where: { id: practiceId },
-      data: { integrations: JSON.stringify(updated) },
-    });
+    await db.updatePractice(practiceId, { integrations: JSON.stringify(updated) });
 
     logger.info("[microsoft] Connected successfully", {
       practiceId,

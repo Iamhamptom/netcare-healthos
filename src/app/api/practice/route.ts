@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { isDemoMode } from "@/lib/is-demo";
 import { demoPractice } from "@/lib/demo-data";
 import { rateLimitByIp } from "@/lib/rate-limit";
+import { db } from "@/lib/db";
+import { parseIntegrations } from "@/lib/microsoft";
 
 export async function GET(request: Request) {
   const rl = rateLimitByIp(request, "practice", { limit: 30 });
@@ -72,4 +74,46 @@ export async function PUT(request: Request) {
 
   const practice = await prisma.practice.update({ where: { id: user.practiceId }, data: allowed });
   return NextResponse.json({ practice });
+}
+
+/** PATCH /api/practice — Update integrations JSON (used by Microsoft settings) */
+export async function PATCH(request: Request) {
+  const rl = rateLimitByIp(request, "practice/patch", { limit: 20 });
+  if (!rl.allowed) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+
+  if (isDemoMode) return NextResponse.json({ practice: demoPractice });
+
+  const { getSession } = await import("@/lib/auth");
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const user = await db.getUserById(session.userId) as Record<string, unknown> | null;
+  if (!user?.practiceId) return NextResponse.json({ error: "No practice" }, { status: 400 });
+
+  const practiceId = user.practiceId as string;
+
+  try {
+    const body = await request.json();
+
+    // Load current integrations
+    const practice = await db.getPractice(practiceId) as Record<string, unknown> | null;
+    const current = parseIntegrations((practice?.integrations as string) ?? "{}");
+
+    // Merge updates into integrations
+    if (body.integrations && typeof body.integrations === "object") {
+      const merged = { ...current, ...body.integrations };
+      await db.updatePractice(practiceId, { integrations: JSON.stringify(merged) });
+      return NextResponse.json({ success: true, integrations: merged });
+    }
+
+    // Clear integrations (disconnect)
+    if (body.clearIntegrations === true) {
+      await db.updatePractice(practiceId, { integrations: JSON.stringify({}) });
+      return NextResponse.json({ success: true, integrations: {} });
+    }
+
+    return NextResponse.json({ error: "No valid update provided" }, { status: 400 });
+  } catch {
+    return NextResponse.json({ error: "Failed to update practice" }, { status: 500 });
+  }
 }

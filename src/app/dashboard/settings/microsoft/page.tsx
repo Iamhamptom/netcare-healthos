@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -34,7 +34,7 @@ const POWERBI_REPORTS = [
   { type: "scheme_performance", label: "Scheme Performance", description: "Medical scheme payment rates and processing times" },
 ];
 
-export default function MicrosoftSettingsPage() {
+function MicrosoftSettingsContent() {
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<MicrosoftStatus | null>(null);
   const [loading, setLoading] = useState(true);
@@ -108,7 +108,15 @@ export default function MicrosoftSettingsPage() {
   async function handleDisconnect() {
     setSaving(true);
     try {
-      // In production, this would clear Microsoft tokens from the practice integrations
+      // Clear Microsoft tokens from the practice integrations on the server
+      const res = await fetch("/api/practice", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clearIntegrations: true }),
+      });
+      if (!res.ok) {
+        throw new Error("Failed to clear integrations");
+      }
       showToast("success", "Microsoft 365 disconnected");
       setStatus({ connected: false, email: "", displayName: "", connectedAt: "", calendarSync: false, teamsNotifications: false });
       setCalendarSync(false);
@@ -120,10 +128,25 @@ export default function MicrosoftSettingsPage() {
     }
   }
 
-  async function handleToggleSave() {
+  async function handleToggleSave(overrides?: { calendarSync?: boolean; teamsNotifications?: boolean }) {
     setSaving(true);
     try {
-      // In production, this would PATCH the practice integrations
+      const updates: Record<string, boolean> = {};
+      if (overrides?.calendarSync !== undefined) {
+        updates.microsoftCalendarSync = overrides.calendarSync;
+      }
+      if (overrides?.teamsNotifications !== undefined) {
+        updates.microsoftTeamsNotifications = overrides.teamsNotifications;
+      }
+
+      const res = await fetch("/api/practice", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ integrations: updates }),
+      });
+      if (!res.ok) {
+        throw new Error("Failed to save settings");
+      }
       showToast("success", "Settings saved");
     } catch {
       showToast("error", "Failed to save settings");
@@ -253,8 +276,9 @@ export default function MicrosoftSettingsPage() {
           <span className="text-sm text-white/60">Calendar sync</span>
           <button
             onClick={() => {
-              setCalendarSync(!calendarSync);
-              handleToggleSave();
+              const newVal = !calendarSync;
+              setCalendarSync(newVal);
+              handleToggleSave({ calendarSync: newVal });
             }}
             disabled={!status?.connected}
             className={`relative w-11 h-6 rounded-full transition-colors ${
@@ -291,8 +315,9 @@ export default function MicrosoftSettingsPage() {
           <span className="text-sm text-white/60">Teams notifications</span>
           <button
             onClick={() => {
-              setTeamsNotifications(!teamsNotifications);
-              handleToggleSave();
+              const newVal = !teamsNotifications;
+              setTeamsNotifications(newVal);
+              handleToggleSave({ teamsNotifications: newVal });
             }}
             disabled={!status?.connected}
             className={`relative w-11 h-6 rounded-full transition-colors ${
@@ -404,5 +429,13 @@ export default function MicrosoftSettingsPage() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function MicrosoftSettingsPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 animate-spin text-white/30" /></div>}>
+      <MicrosoftSettingsContent />
+    </Suspense>
   );
 }

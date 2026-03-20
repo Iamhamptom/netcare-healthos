@@ -116,7 +116,7 @@ export async function POST(request: Request) {
             Authorization: `Bearer ${RESEND_API_KEY}`,
           },
           body: JSON.stringify({
-            from: "Netcare Health OS <noreply@netcare-healthos.vercel.app>",
+            from: process.env.RESEND_FROM_EMAIL || "Netcare Health OS Ops <noreply@healthops.co.za>",
             to: email,
             subject: "Welcome to Netcare Health OS",
             html: `

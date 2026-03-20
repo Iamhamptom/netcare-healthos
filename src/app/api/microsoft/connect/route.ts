@@ -19,6 +19,13 @@ export async function GET(request: Request) {
       });
     }
 
+    if (!process.env.MICROSOFT_CLIENT_ID) {
+      return NextResponse.json(
+        { error: "Microsoft 365 not configured. Contact your administrator to set up Microsoft integration." },
+        { status: 501 },
+      );
+    }
+
     const authUrl = getMicrosoftAuthUrl(guard.practiceId);
     logger.info("[microsoft] OAuth flow started", { practiceId: guard.practiceId });
 

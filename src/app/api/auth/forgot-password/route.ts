@@ -30,7 +30,7 @@ export async function POST(request: Request) {
         // Generate a demo token
         const crypto = await import("crypto");
         const token = crypto.randomBytes(32).toString("hex");
-        resetTokens.set(token, {
+        await resetTokens.set(token, {
           email: normalizedEmail,
           expiresAt: Date.now() + 3600000, // 1 hour
         });
@@ -52,8 +52,8 @@ export async function POST(request: Request) {
       const token = crypto.randomBytes(32).toString("hex");
       const expiresAt = Date.now() + 3600000; // 1 hour
 
-      // Store token (in production, store in DB)
-      resetTokens.set(token, { email: normalizedEmail, expiresAt });
+      // Store token (persisted in Supabase on serverless, in-memory for local dev)
+      await resetTokens.set(token, { email: normalizedEmail, expiresAt });
 
       // Send email via Resend
       const RESEND_API_KEY = process.env.RESEND_API_KEY;
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
             Authorization: `Bearer ${RESEND_API_KEY}`,
           },
           body: JSON.stringify({
-            from: "Netcare Health OS <noreply@netcare-healthos.vercel.app>",
+            from: process.env.RESEND_FROM_EMAIL || "Netcare Health OS Ops <noreply@healthops.co.za>",
             to: normalizedEmail,
             subject: "Reset your Netcare Health OS password",
             html: `

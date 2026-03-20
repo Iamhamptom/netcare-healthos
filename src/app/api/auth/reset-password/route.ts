@@ -20,19 +20,19 @@ export async function POST(request: Request) {
     }
 
     // Look up the token
-    const tokenData = resetTokens.get(token);
+    const tokenData = await resetTokens.get(token);
     if (!tokenData) {
       return NextResponse.json({ error: "Invalid or expired reset token" }, { status: 400 });
     }
 
     if (tokenData.expiresAt < Date.now()) {
-      resetTokens.delete(token);
+      await resetTokens.delete(token);
       return NextResponse.json({ error: "Reset token has expired. Please request a new one." }, { status: 400 });
     }
 
     // Demo mode — just delete the token and return success
     if (isDemoMode) {
-      resetTokens.delete(token);
+      await resetTokens.delete(token);
       console.log(`[auth/reset-password] Demo password reset for ${tokenData.email}`);
       return NextResponse.json({ message: "Password updated successfully. You can now log in." });
     }
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     }
 
     // Invalidate the token
-    resetTokens.delete(token);
+    await resetTokens.delete(token);
 
     return NextResponse.json({ message: "Password updated successfully. You can now log in." });
   } catch {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { guardRoute, isErrorResponse } from "@/lib/api-helpers";
 import { isDemoMode } from "@/lib/is-demo";
+import { db } from "@/lib/db";
 import {
   graphRequest,
   getValidAccessToken,
@@ -80,11 +81,7 @@ const DEMO_EVENTS: OutlookEvent[] = [
 // ---------------------------------------------------------------------------
 
 async function savePracticeIntegrations(practiceId: string, integrations: Record<string, unknown>) {
-  const { prisma } = await import("@/lib/prisma");
-  await prisma.practice.update({
-    where: { id: practiceId },
-    data: { integrations: JSON.stringify(integrations) },
-  });
+  await db.updatePractice(practiceId, { integrations: JSON.stringify(integrations) });
 }
 
 // ---------------------------------------------------------------------------
@@ -102,13 +99,9 @@ export async function GET(request: Request) {
       return NextResponse.json({ events: DEMO_EVENTS, demo: true });
     }
 
-    const { prisma } = await import("@/lib/prisma");
-    const practice = await prisma.practice.findUnique({
-      where: { id: guard.practiceId },
-      select: { integrations: true },
-    });
+    const practice = await db.getPractice(guard.practiceId) as Record<string, unknown> | null;
 
-    const integrations = parseIntegrations(practice?.integrations ?? "{}");
+    const integrations = parseIntegrations((practice?.integrations as string) ?? "{}");
     const msConfig = getMicrosoftConfig(integrations);
 
     if (!msConfig) {
@@ -192,13 +185,9 @@ export async function POST(request: Request) {
       });
     }
 
-    const { prisma } = await import("@/lib/prisma");
-    const practice = await prisma.practice.findUnique({
-      where: { id: guard.practiceId },
-      select: { integrations: true },
-    });
+    const practice = await db.getPractice(guard.practiceId) as Record<string, unknown> | null;
 
-    const integrations = parseIntegrations(practice?.integrations ?? "{}");
+    const integrations = parseIntegrations((practice?.integrations as string) ?? "{}");
     const { accessToken, updatedIntegrations, didRefresh } =
       await getValidAccessToken(integrations);
 
@@ -286,13 +275,9 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ deleted: eventId, demo: true });
     }
 
-    const { prisma } = await import("@/lib/prisma");
-    const practice = await prisma.practice.findUnique({
-      where: { id: guard.practiceId },
-      select: { integrations: true },
-    });
+    const practice = await db.getPractice(guard.practiceId) as Record<string, unknown> | null;
 
-    const integrations = parseIntegrations(practice?.integrations ?? "{}");
+    const integrations = parseIntegrations((practice?.integrations as string) ?? "{}");
     const { accessToken, updatedIntegrations, didRefresh } =
       await getValidAccessToken(integrations);
 

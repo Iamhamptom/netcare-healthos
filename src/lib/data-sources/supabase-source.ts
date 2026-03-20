@@ -52,14 +52,18 @@ export class SupabaseDataSource
       .select("*, clinic:ho_clinics(id, name, region, province, type, practitioner_count)")
       .order("revenue", { ascending: false });
 
-    if (filters?.region) {
-      query = query.eq("clinic.region", filters.region);
-    }
-
     const { data } = await query;
     if (!data) return [];
 
-    return data.map((row) => {
+    // Filter by region in JS — PostgREST doesn't support .eq() on embedded resource fields
+    const filtered = filters?.region
+      ? data.filter((row) => {
+          const clinic = row.clinic as Record<string, unknown> | null;
+          return clinic?.region === filters.region;
+        })
+      : data;
+
+    return filtered.map((row) => {
       const clinic = row.clinic as Record<string, unknown> | null;
       return {
         id: (clinic?.id as string) || row.clinic_id,
