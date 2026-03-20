@@ -10,6 +10,7 @@ import {
   Boxes,
   Gauge,
   Zap,
+  Heart,
   FileBarChart,
   MessageSquare,
   CalendarCheck,
@@ -85,6 +86,7 @@ const navSections = [
   {
     label: "BUSINESS",
     items: [
+      { href: "/dashboard/partnership", icon: Heart, label: "Partnership", roles: ["admin", "platform_admin"] },
       { href: "/dashboard/suite", icon: Boxes, label: "Your Suite", roles: ["admin", "platform_admin"] },
       { href: "/dashboard/board-pack", icon: FileBarChart, label: "Board Pack", roles: ["admin", "platform_admin"] },
       { href: "/dashboard/pilot", icon: Rocket, label: "Start Pilot", roles: ["admin", "platform_admin"] },
