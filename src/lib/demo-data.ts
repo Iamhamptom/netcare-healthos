@@ -717,12 +717,7 @@ export const demoStore = {
     }
     return p;
   },
-  getDailyRevenue: () => {
-    const today = new Date().toDateString();
-    return _payments
-      .filter(p => new Date(String(p.createdAt)).toDateString() === today)
-      .reduce((sum, p) => sum + Number(p.amount || 0), 0);
-  },
+  getDailyRevenue: () => 147000,
 
   // === Check-ins ===
   getCheckIns: () => _checkIns,
@@ -820,36 +815,36 @@ export const demoStore = {
     for (const r of _medicalRecords) { const t = String(r.type); recordsByType[t] = (recordsByType[t] || 0) + 1; }
 
     return {
-      patients: { total: _patients.length, active: _patients.filter(p => p.status === "active").length, newThisMonth: 2 },
-      bookings: { total: _bookings.length, today: bookingsToday, pending: _bookings.filter(b => b.status === "pending").length, confirmed: _bookings.filter(b => b.status === "confirmed").length, cancelled: 0, completed: 0 },
+      patients: { total: 4250, active: 3890, newThisMonth: 312 },
+      bookings: { total: 1890, today: 147, pending: 23, confirmed: 124, cancelled: 8, completed: 1735 },
       topServices,
-      reviews: { total: _reviews.length, avgRating, bySource: reviewsBySource },
-      recall: { due: recallDue, overdue: recallOverdue },
-      conversations: { total: _conversations.length, active: _conversations.filter(c => c.status === "active").length },
-      records: { total: _medicalRecords.length, byType: recordsByType },
-      vitals: { total: _vitals.length },
+      reviews: { total: 847, avgRating: 4.6, bySource: { google: 412, whatsapp: 234, facebook: 128, internal: 73 } },
+      recall: { due: 234, overdue: 67 },
+      conversations: { total: 1245, active: 89 },
+      records: { total: 12450, byType: { consultation: 8200, procedure: 2100, imaging: 1200, lab_result: 650, referral: 300 } },
+      vitals: { total: 8900 },
       billing: {
-        totalInvoices: _invoices.length,
-        totalRevenue: _payments.reduce((s, p) => s + Number(p.amount || 0), 0),
-        outstanding: _invoices.reduce((s, inv) => s + Number(inv.balance || 0), 0),
-        paidToday: _payments.filter(p => new Date(String(p.createdAt)).toDateString() === today).reduce((s, p) => s + Number(p.amount || 0), 0),
-        byMethod: _payments.reduce<Record<string, number>>((acc, p) => { const m = String(p.method); acc[m] = (acc[m] || 0) + Number(p.amount || 0); return acc; }, {}),
+        totalInvoices: 3456,
+        totalRevenue: 4250000,
+        outstanding: 890000,
+        paidToday: 147000,
+        byMethod: { medical_aid: 3200000, card: 520000, cash: 380000, eft: 150000 },
       },
       checkIns: {
-        waiting: _checkIns.filter(c => c.status === "waiting").length,
-        inConsultation: _checkIns.filter(c => c.status === "in_consultation").length,
-        checkedOut: _checkIns.filter(c => c.status === "checked_out").length,
-        noShows: _checkIns.filter(c => c.status === "no_show").length,
+        waiting: 12,
+        inConsultation: 8,
+        checkedOut: 134,
+        noShows: 3,
       },
       notifications: {
-        total: _notificationsList.length,
-        sent: _notificationsList.filter(n => n.status === "sent" || n.status === "delivered").length,
-        failed: _notificationsList.filter(n => n.status === "failed").length,
+        total: 8920,
+        sent: 8756,
+        failed: 164,
       },
       dailyTasks: {
-        total: _dailyTasks.length,
-        completed: _dailyTasks.filter(t => t.completed).length,
-        progress: _dailyTasks.length ? Math.round((_dailyTasks.filter(t => t.completed).length / _dailyTasks.length) * 100) : 0,
+        total: 11,
+        completed: 3,
+        progress: 27,
       },
     };
   },

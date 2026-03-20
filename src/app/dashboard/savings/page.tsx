@@ -66,7 +66,7 @@ export default function SavingsPage() {
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
         className="p-8 rounded-2xl bg-gradient-to-br from-[#1D3443] to-[#152736] text-center">
         <div className="text-[11px] text-white/40 uppercase tracking-widest font-semibold mb-2">
-          Cumulative Savings Since Implementation
+          Projected Annual Savings — Addressable
         </div>
         <div className="text-5xl md:text-7xl font-bold text-white mb-2 font-metric">
           R{animatedTotal.toLocaleString()}
@@ -81,7 +81,7 @@ export default function SavingsPage() {
           </span>
         </div>
         <p className="text-[10px] text-white/25 mt-4">
-          This is the number you present to Keith Gibson. Every Rand is auditable.
+          Projections based on Netcare FY2025 data, industry benchmarks, and verified gap analysis. Every assumption is documented.
         </p>
       </motion.div>
 
