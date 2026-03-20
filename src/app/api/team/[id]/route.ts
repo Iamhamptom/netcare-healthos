@@ -50,6 +50,12 @@ export async function PATCH(
     const body = await request.json();
     const { role, status, name } = body;
 
+    // Prevent privilege escalation — validate role against whitelist
+    const validRoles = ["admin", "doctor", "receptionist", "nurse"];
+    if (role && !validRoles.includes(role)) {
+      return NextResponse.json({ error: "Invalid role. Allowed: " + validRoles.join(", ") }, { status: 400 });
+    }
+
     if (isDemoMode) {
       const updates: Record<string, unknown> = {};
       if (role) updates.role = role;
