@@ -12,7 +12,23 @@ export async function GET(request: Request) {
     return NextResponse.json({ patients: demoStore.getPatients() });
   }
 
+  // POPIA: Verify data_processing consent exists for this practice before returning patient data
   const { prisma } = await import("@/lib/prisma");
+  const consentCount = await prisma.consentRecord.count({
+    where: {
+      practiceId: guard.practiceId,
+      consentType: "data_processing",
+      granted: true,
+      revokedAt: null,
+    },
+  });
+  if (consentCount === 0) {
+    return NextResponse.json(
+      { error: "POPIA consent required before accessing patient data" },
+      { status: 403 }
+    );
+  }
+
   const url = new URL(request.url);
   const search = url.searchParams.get("search") || "";
   const status = url.searchParams.get("status") || "";

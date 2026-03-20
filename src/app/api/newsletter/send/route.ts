@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimitByIp } from "@/lib/rate-limit";
+// Direct prisma import: Newsletter model is Prisma-only, not yet in Supabase db abstraction
 import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
 

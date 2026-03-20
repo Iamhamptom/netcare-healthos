@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
+// Direct prisma import: Paystack webhook models are Prisma-only, not yet in Supabase db abstraction
 import { prisma } from "@/lib/prisma";
 import { isDemoMode } from "@/lib/is-demo";
 import { rateLimitByIp } from "@/lib/rate-limit";

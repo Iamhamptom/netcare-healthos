@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { rateLimitByIp } from "@/lib/rate-limit";
 import { isDemoMode } from "@/lib/is-demo";
+// Direct prisma import: Payment/deposit models are Prisma-only, not yet in Supabase db abstraction
 import { prisma } from "@/lib/prisma";
 
 /** POST /api/public/deposit — Initialize Paystack deposit payment (no auth required) */

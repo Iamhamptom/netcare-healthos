@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { guardRoute, isErrorResponse } from "@/lib/api-helpers";
 import { isDemoMode } from "@/lib/is-demo";
+// Direct prisma import: Paystack billing models are Prisma-only, not yet in Supabase db abstraction
 import { prisma } from "@/lib/prisma";
 
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY!;

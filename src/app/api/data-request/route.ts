@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimitByIp } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
 const VALID_TYPES = ["access", "correction", "deletion", "objection"];
 
 export async function POST(req: NextRequest) {
+  const rl = rateLimitByIp(req, "data-request", { limit: 5 });
+  if (!rl.allowed) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   try {
     const body = await req.json();
     const { name, email, requestType, details, idNumber } = body;

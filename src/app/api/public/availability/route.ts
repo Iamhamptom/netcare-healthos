@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { rateLimitByIp } from "@/lib/rate-limit";
 import { isDemoMode } from "@/lib/is-demo";
+// Direct prisma import: Booking/availability models are Prisma-only, not yet in Supabase db abstraction
 import { prisma } from "@/lib/prisma";
 import { getAvailability } from "@/lib/booking-engine";
 

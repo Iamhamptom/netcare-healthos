@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { guardRoute, isErrorResponse } from "@/lib/api-helpers";
 import { isDemoMode } from "@/lib/is-demo";
+// Direct prisma import: OpsDocument model is Prisma-only, not yet in Supabase db abstraction
 import { prisma } from "@/lib/prisma";
 
 /** GET /api/ops — Fetch operations documents */

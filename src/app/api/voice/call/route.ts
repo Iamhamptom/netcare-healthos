@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { guardRoute } from "@/lib/api-helpers";
 import { isDemoMode } from "@/lib/is-demo";
+// Direct prisma import: Voice/Twilio models are Prisma-only, not yet in Supabase db abstraction
 import { prisma } from "@/lib/prisma";
 
 /** POST /api/voice/call — Initiate an AI voice call to a patient

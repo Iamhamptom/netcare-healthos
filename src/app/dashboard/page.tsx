@@ -6,7 +6,7 @@ import {
   MessageSquare, CalendarCheck, Star, RotateCcw, Users, FileText,
   DollarSign, UserCheck, ClipboardList, Receipt, Shield,
   TrendingUp, ArrowUpRight, Building2, Zap, Activity, Layers,
-  BarChart3, ArrowRight,
+  BarChart3, ArrowRight, Loader2,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -64,6 +64,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [branding, setBranding] = useState<PracticeBranding | null>(null);
   const [activeTab, setActiveTab] = useState<"overview" | "operations">("overview");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/auth/me").then(r => r.json()).then(data => {
@@ -110,7 +111,8 @@ export default function DashboardPage() {
         waitingPatients: (checkins.checkIns || []).filter((c: { status: string }) => c.status === "waiting").length,
         taskProgress: dailyTasks.progress?.percent ?? 0,
       });
-    }).catch(() => {});
+      setLoading(false);
+    }).catch(() => { setLoading(false); });
   }, []);
 
   const firstName = branding?.userName?.split(" ")[0] || "there";
@@ -194,7 +196,7 @@ export default function DashboardPage() {
               <span className="text-[10px] text-white/25 uppercase tracking-[0.2em] font-semibold">Network Overview</span>
               <span className="ml-auto text-[10px] text-white/15 font-mono">FY2026</span>
             </div>
-            <div className="grid grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
               {[
                 { label: "Annual Savings", value: "R95M+", sub: "addressable" },
                 { label: "Claims Processing", value: "50%", sub: "faster" },
@@ -240,38 +242,50 @@ export default function DashboardPage() {
         </div>
 
         {/* ─── Stats Grid ─── */}
-        <div className="grid grid-cols-5 gap-3">
-          {currentStats.map((item, i) => (
-            <TiltCard
-              key={item.label}
-              className="group cursor-default"
-            >
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.08 + i * 0.04, type: "spring", stiffness: 200, damping: 22 }}
-                className="relative p-5 rounded-2xl bg-white/70 backdrop-blur-sm border border-white overflow-hidden transition-shadow duration-500 shadow-[0_2px_8px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.8)] group-hover:shadow-[0_12px_40px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,1)]"
-              >
-                {/* Shine sweep */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none bg-gradient-to-r from-transparent via-white/60 to-transparent -translate-x-full group-hover:translate-x-full" style={{ transition: "transform 0.8s ease, opacity 0.3s ease" }} />
-
-                <div className="relative">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          {loading
+            ? Array.from({ length: 5 }).map((_, i) => (
+                <div key={`skeleton-${i}`} className="relative p-5 rounded-2xl bg-white/70 backdrop-blur-sm border border-white overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.8)]">
                   <div className="flex items-center justify-between mb-3">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#f0f2f5] to-[#e8eaef] flex items-center justify-center shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.04)]">
-                      <item.icon className="w-[15px] h-[15px] text-[#1D3443]/45" />
-                    </div>
-                    {item.change && (
-                      <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-100/60">
-                        {item.change}
-                      </span>
-                    )}
+                    <div className="w-9 h-9 rounded-xl bg-[#1D3443]/[0.06] animate-pulse" />
+                    <div className="w-10 h-4 rounded-md bg-[#1D3443]/[0.04] animate-pulse" />
                   </div>
-                  <div className="text-[24px] font-semibold text-[#1D3443] font-metric tracking-tight leading-none">{item.value}</div>
-                  <div className="text-[11px] text-[#1D3443]/35 mt-1.5 font-medium">{item.label}</div>
+                  <div className="h-7 w-16 rounded-lg bg-[#1D3443]/[0.08] animate-pulse mb-2" />
+                  <div className="h-3 w-20 rounded bg-[#1D3443]/[0.04] animate-pulse" />
                 </div>
-              </motion.div>
-            </TiltCard>
-          ))}
+              ))
+            : currentStats.map((item, i) => (
+                <TiltCard
+                  key={item.label}
+                  className="group cursor-default"
+                >
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.08 + i * 0.04, type: "spring", stiffness: 200, damping: 22 }}
+                    className="relative p-5 rounded-2xl bg-white/70 backdrop-blur-sm border border-white overflow-hidden transition-shadow duration-500 shadow-[0_2px_8px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.8)] group-hover:shadow-[0_12px_40px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,1)]"
+                  >
+                    {/* Shine sweep */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none bg-gradient-to-r from-transparent via-white/60 to-transparent -translate-x-full group-hover:translate-x-full" style={{ transition: "transform 0.8s ease, opacity 0.3s ease" }} />
+
+                    <div className="relative">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#f0f2f5] to-[#e8eaef] flex items-center justify-center shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.04)]">
+                          <item.icon className="w-[15px] h-[15px] text-[#1D3443]/45" />
+                        </div>
+                        {item.change && (
+                          <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-100/60">
+                            {item.change}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[24px] font-semibold text-[#1D3443] font-metric tracking-tight leading-none">{item.value}</div>
+                      <div className="text-[11px] text-[#1D3443]/35 mt-1.5 font-medium">{item.label}</div>
+                    </div>
+                  </motion.div>
+                </TiltCard>
+              ))
+          }
         </div>
 
         {/* ─── Quick Access ─── */}
@@ -285,7 +299,7 @@ export default function DashboardPage() {
               All modules <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             {quickLinks.map((item, i) => (
               <Link key={item.label} href={item.href}>
                 <motion.div

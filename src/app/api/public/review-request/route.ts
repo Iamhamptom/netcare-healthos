@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+// Direct prisma import: Review models are Prisma-only, not yet in Supabase db abstraction
 import { prisma } from "@/lib/prisma";
 import { isDemoMode } from "@/lib/is-demo";
 

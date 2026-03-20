@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { guardRoute, isErrorResponse } from "@/lib/api-helpers";
+// Direct prisma import: Referral models are Prisma-only, not yet in Supabase db abstraction
 import { prisma } from "@/lib/prisma";
 
 /** GET /api/referrals/[id] — Get referral details */

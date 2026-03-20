@@ -1,8 +1,14 @@
 import { NextResponse, NextRequest } from "next/server";
+import { rateLimitByIp } from "@/lib/rate-limit";
 import { getClaimsSource } from "@/lib/data-sources";
 import { searchICD10 as searchStatic } from "@/lib/icd10-data";
 
 export async function GET(request: NextRequest) {
+  const rl = rateLimitByIp(request, "icd10", { limit: 60 });
+  if (!rl.allowed) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   const url = new URL(request.url);
   const query = url.searchParams.get("q") || "";
   const code = url.searchParams.get("code");
