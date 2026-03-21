@@ -42,3 +42,14 @@ export {
   exportAsJSONL,
 } from "./training-data";
 export type { TrainingExample, FineTuneDataset } from "./training-data";
+
+// Reinforcement Learning Loop
+export {
+  recordClaimOutcome,
+  analyzePatterns,
+  generateLearningExamples,
+  getLearningMetrics,
+  runLearningCycle,
+  resetLearning,
+} from "./reinforcement";
+export type { LearningEvent, LearningEventType, LearningMetrics } from "./reinforcement";
