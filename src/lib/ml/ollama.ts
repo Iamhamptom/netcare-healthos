@@ -12,11 +12,18 @@ const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434";
 
 // Model selection by task
 const MODELS = {
-  /** Med42 — best for clinical coding and diagnosis */
+  /** HealthOS Med — VisioCorp fine-tuned model (primary for ALL tasks) */
+  clinical: "healthos-med:latest",
+  /** HealthOS Med — also primary for knowledge Q&A */
+  knowledge: "healthos-med:latest",
+  /** HealthOS Med — also primary for reasoning (falls back to qwen3 if needed) */
+  reasoning: "healthos-med:latest",
+} as const;
+
+/** Fallback models if healthos-med is not available */
+const FALLBACK_MODELS = {
   clinical: "thewindmom/llama3-med42-8b:latest",
-  /** MedLlama2 — best for medical knowledge Q&A */
   knowledge: "medllama2:latest",
-  /** Qwen3 — best for structured reasoning and JSON output */
   reasoning: "qwen3:8b",
 } as const;
 
@@ -119,14 +126,19 @@ async function selectModel(role: ModelRole): Promise<string> {
   const preferred = MODELS[role];
   const available = await getAvailableModels();
 
+  // Try primary (healthos-med)
   if (available.some(m => m.includes(preferred.split(":")[0]))) return preferred;
 
-  // Fallback chain
-  for (const fallback of Object.values(MODELS)) {
-    if (available.some(m => m.includes(fallback.split(":")[0]))) return fallback;
+  // Try role-specific fallback
+  const fallback = FALLBACK_MODELS[role];
+  if (available.some(m => m.includes(fallback.split(":")[0]))) return fallback;
+
+  // Try any available model
+  for (const fb of Object.values(FALLBACK_MODELS)) {
+    if (available.some(m => m.includes(fb.split(":")[0]))) return fb;
   }
 
-  throw new Error("No Ollama models available. Run: ollama pull thewindmom/llama3-med42-8b");
+  throw new Error("No Ollama models available. Run: ollama pull healthos-med");
 }
 
 // ─── Medical AI Tasks ───────────────────────────────────────────────────────

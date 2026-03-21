@@ -42,9 +42,9 @@ export interface RAGOptions {
 // ─── Model Selection ────────────────────────────────────────────────────────
 
 const MODEL_MAP = {
-  clinical: "thewindmom/llama3-med42-8b:latest",
-  knowledge: "medllama2:latest",
-  reasoning: "qwen3:8b",
+  clinical: "healthos-med:latest",
+  knowledge: "healthos-med:latest",
+  reasoning: "healthos-med:latest",
 };
 
 // ─── RAG Pipeline ───────────────────────────────────────────────────────────
