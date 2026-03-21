@@ -14,6 +14,10 @@
 // - File watcher: re-embeds when docs/knowledge/ files change
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+import { readdirSync, statSync } from "fs";
+import { join } from "path";
+import { scrubJSON, scrubTrainingExample } from "./pii-scrubber";
+
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 export interface LearningEvent {
@@ -80,11 +84,14 @@ export function recordClaimOutcome(data: {
   /** What did our validator say before submission? */
   validationIssues?: string[];
 }): LearningEvent {
+  // PII scrub claim data before storing in learning log
+  const { data: scrubbedData } = scrubJSON(data as Record<string, unknown>);
+
   const event: LearningEvent = {
     id: `learn-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     type: data.status === "rejected" ? "claim_rejected" : "claim_accepted",
     timestamp: new Date().toISOString(),
-    data,
+    data: scrubbedData,
     outcome: data.status === "accepted" ? "positive" : "negative",
     applied: false,
   };
@@ -215,12 +222,12 @@ export function generateLearningExamples(): {
 }[] {
   const examples: { instruction: string; input: string; output: string; category: string }[] = [];
 
-  // Learn from rejections we DIDN'T predict
+  // Learn from rejections we DIDN'T predict — PII-scrubbed
   const missedRejections = learningLog.filter(e => e.type === "rejection_predicted_incorrectly");
 
   for (const event of missedRejections.slice(-50)) {
     const d = event.data as Record<string, unknown>;
-    examples.push({
+    const raw = {
       instruction: "Predict whether this SA medical aid claim will be accepted or rejected.",
       input: JSON.stringify({
         icd10: d.icd10Codes,
@@ -235,7 +242,9 @@ export function generateLearningExamples(): {
         note: "This rejection was NOT predicted by the validator — learned from outcome",
       }),
       category: "rejection_prediction_learned",
-    });
+    };
+    const scrubbed = scrubTrainingExample(raw);
+    examples.push(scrubbed);
   }
 
   // Learn from scheme-specific patterns
@@ -257,21 +266,63 @@ export function generateLearningExamples(): {
 
 // ─── 4. RE-EMBED — Refresh Knowledge Base ───────────────────────────────────
 
+// Track last known file modification times for KB change detection
+const kbFileTimestamps = new Map<string, number>();
+
 /**
  * Check if knowledge base files have been updated and need re-embedding.
- * Returns list of files that have changed since last embedding.
+ * Stats all files in docs/knowledge/ and compares modification times.
  */
 export function checkForKBUpdates(lastEmbedTimestamp: string): {
   needsReembed: boolean;
   changedFiles: string[];
   newFiles: string[];
 } {
-  // In a real implementation, this would stat the files
-  // For now, return the interface for the cron job to use
+  const changedFiles: string[] = [];
+  const newFiles: string[] = [];
+  const cutoff = new Date(lastEmbedTimestamp).getTime();
+
+  // Scan knowledge base directories
+  const kbDirs = [
+    join(process.cwd(), "docs/knowledge"),
+    join(process.cwd(), "docs/knowledge/extracted"),
+  ];
+
+  for (const dir of kbDirs) {
+    try {
+      const files = readdirSync(dir);
+      for (const file of files) {
+        if (!file.endsWith(".md") && !file.endsWith(".csv")) continue;
+        const fullPath = join(dir, file);
+        try {
+          const stat = statSync(fullPath);
+          const mtime = stat.mtimeMs;
+          const prevMtime = kbFileTimestamps.get(fullPath);
+
+          if (!prevMtime) {
+            // First time seeing this file
+            if (mtime > cutoff) {
+              newFiles.push(fullPath);
+            }
+          } else if (mtime > prevMtime) {
+            // File was modified since last check
+            changedFiles.push(fullPath);
+          }
+
+          kbFileTimestamps.set(fullPath, mtime);
+        } catch {
+          // File stat failed — skip
+        }
+      }
+    } catch {
+      // Directory doesn't exist — skip (may be running in deployed env)
+    }
+  }
+
   return {
-    needsReembed: false,
-    changedFiles: [],
-    newFiles: [],
+    needsReembed: changedFiles.length > 0 || newFiles.length > 0,
+    changedFiles,
+    newFiles,
   };
 }
 
@@ -355,8 +406,22 @@ export async function runLearningCycle(): Promise<{
         }),
       });
     }
-  } catch {
-    // Non-blocking — learning persists in memory even if DB write fails
+  } catch (dbError) {
+    // Persistence fallback: write to local JSONL file so learning data survives restarts
+    console.warn("[Learning Cycle] Supabase write failed, falling back to local file:", dbError instanceof Error ? dbError.message : "unknown");
+    try {
+      const { appendFileSync, mkdirSync } = await import("fs");
+      const fallbackDir = join(process.cwd(), "ml/learning-fallback");
+      mkdirSync(fallbackDir, { recursive: true });
+      const fallbackPath = join(fallbackDir, `learning-${new Date().toISOString().slice(0, 10)}.jsonl`);
+      for (const ex of newExamples) {
+        appendFileSync(fallbackPath, JSON.stringify({ ...ex, source: "reinforcement_learning", timestamp: new Date().toISOString() }) + "\n");
+      }
+      appendFileSync(fallbackPath, JSON.stringify({ type: "metrics", accuracy: analysis.predictionAccuracy, patterns: analysis.newPatterns.length, timestamp: new Date().toISOString() }) + "\n");
+      console.log(`[Learning Cycle] Fallback: saved ${newExamples.length} examples to ${fallbackPath}`);
+    } catch (fileError) {
+      console.error("[Learning Cycle] Local fallback also failed:", fileError instanceof Error ? fileError.message : "unknown");
+    }
   }
 
   // Log the learning cycle

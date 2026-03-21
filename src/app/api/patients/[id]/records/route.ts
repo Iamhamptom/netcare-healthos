@@ -3,6 +3,7 @@ import { isDemoMode } from "@/lib/is-demo";
 import { demoStore } from "@/lib/demo-data";
 import { guardRoute, isErrorResponse } from "@/lib/api-helpers";
 import { sanitize, validateRequired } from "@/lib/validate";
+import { recordHealthEvent } from "@/lib/ml/system-hooks";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await guardRoute(request, "records");
@@ -60,5 +61,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       practiceId: guard.practiceId,
     },
   });
+
+  // Learning hook: track diagnosis patterns for model improvement
+  recordHealthEvent("patient_records", "record_created", {
+    recordType: body.type,
+    hasDiagnosis: !!body.diagnosis,
+    practiceId: guard.practiceId,
+  });
+
   return NextResponse.json({ record }, { status: 201 });
 }

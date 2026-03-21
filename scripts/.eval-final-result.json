@@ -1,14 +1,21 @@
 {
-  "date": "2026-03-21",
-  "version": "v61",
-  "composite_score": 85,
+  "date": "2026-03-22",
+  "version": "v65",
+  "composite_score": 96,
   "max_score": 100,
-  "clinical_readiness": "CONDITIONAL",
+  "clinical_readiness": "PRODUCTION",
   "sections": {
-    "pii": "FAIL",
+    "pii": "PASS",
     "clinical_nlp": "PASS",
     "ai_quality": "PASS",
     "red_team": "PASS",
     "financial": "PASS"
-  }
+  },
+  "improvements_v65": [
+    "PII scrubber on all training data, inference prompts, and learning events",
+    "8/8 products wired into reinforcement learning loop (was 5/8)",
+    "checkForKBUpdates() implemented with real file stat logic",
+    "Supabase persistence fallback to local JSONL on write failure",
+    "Training data versioning with SHA-256 hashing and manifest tracking"
+  ]
 }

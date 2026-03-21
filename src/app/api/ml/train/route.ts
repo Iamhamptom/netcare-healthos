@@ -4,6 +4,7 @@
 import { NextResponse } from "next/server";
 import { guardRoute, isErrorResponse } from "@/lib/api-helpers";
 import { generateFullDataset, exportAsJSONL } from "@/lib/ml";
+import { createVersion, getCurrentVersion, listVersions } from "@/lib/ml/versioning";
 import { join } from "path";
 
 export async function GET(req: Request) {
@@ -42,6 +43,30 @@ export async function POST(req: Request) {
 
     if (format === "jsonl") {
       const jsonl = exportAsJSONL(dataset);
+
+      // Auto-version the training data export
+      try {
+        createVersion({
+          jsonlContent: jsonl,
+          dataStats: {
+            totalExamples: dataset.metadata.totalExamples,
+            byCategory: dataset.metadata.byCategory,
+            sources: dataset.metadata.sources,
+          },
+          config: {
+            baseModel: "m42-health/med42-v2-8b",
+            loraRank: 8,
+            learningRate: 0.00001,
+            iterations: 500,
+            batchSize: 2,
+          },
+          adapterPath: join(process.cwd(), "ml/models/healthos-adapter"),
+          notes: `Export ${new Date().toISOString().slice(0, 10)} — ${dataset.metadata.totalExamples} examples`,
+        });
+      } catch {
+        // Versioning is non-blocking
+      }
+
       return new NextResponse(jsonl, {
         headers: {
           "Content-Type": "application/jsonl",
@@ -57,6 +82,8 @@ export async function POST(req: Request) {
         generatedAt: dataset.metadata.generatedAt,
         sources: dataset.metadata.sources,
       },
+      currentVersion: getCurrentVersion(),
+      allVersions: listVersions(),
       examples: dataset.examples,
       exportFormats: ["jsonl"],
       instructions: {

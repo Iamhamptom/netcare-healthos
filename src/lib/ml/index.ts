@@ -66,3 +66,23 @@ export {
   getSystemLearningHealth,
 } from "./system-hooks";
 export type {} from "./system-hooks";
+
+// PII Scrubber (POPIA 2026 compliance)
+export {
+  scrubPII,
+  scrubTrainingExample,
+  scrubJSON,
+  isPIIFree,
+} from "./pii-scrubber";
+export type { ScrubResult, PIIMatch, PIIType } from "./pii-scrubber";
+
+// Training Data Versioning
+export {
+  createVersion,
+  attachEvaluation,
+  getCurrentVersion,
+  listVersions,
+  rollbackTo,
+  hashTrainingData,
+} from "./versioning";
+export type { TrainingVersion, VersionManifest } from "./versioning";

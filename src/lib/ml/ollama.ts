@@ -8,6 +8,8 @@
 // - Fraud pattern explanation
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+import { scrubPII } from "./pii-scrubber";
+
 const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434";
 
 // Model selection by task
@@ -96,12 +98,15 @@ async function generate(
   system?: string,
   options?: { temperature?: number; maxTokens?: number },
 ): Promise<string> {
+  // PII scrub: ensure no patient data leaks into model prompts
+  const scrubbedPrompt = scrubPII(prompt).text;
+
   const response = await fetch(`${OLLAMA_URL}/api/generate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       model,
-      prompt,
+      prompt: scrubbedPrompt,
       system: system || "",
       stream: false,
       options: {

@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { isDemoMode } from "@/lib/is-demo";
 import { rateLimitByIp } from "@/lib/rate-limit";
+import { recordHealthEvent } from "@/lib/ml/system-hooks";
 
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY!;
 
@@ -64,6 +65,13 @@ export async function POST(request: Request) {
             },
           });
           console.log(`[billing/webhook] charge.success → practice ${practiceId} activated on ${plan}`);
+          // Learning hook: track payment success patterns
+          recordHealthEvent("billing", "payment_success", {
+            plan,
+            practiceId,
+            amount: data.amount,
+            channel: data.channel,
+          });
         }
         break;
       }
@@ -105,6 +113,12 @@ export async function POST(request: Request) {
               data: { planStatus: "cancelled" },
             });
             console.log(`[billing/webhook] subscription.not_renew → practice ${practice.id} cancelled`);
+            // Learning hook: track churn patterns
+            recordHealthEvent("billing", "subscription_churn", {
+              practiceId: practice.id,
+              plan: practice.plan,
+              reason: "not_renew",
+            });
           }
         }
         break;

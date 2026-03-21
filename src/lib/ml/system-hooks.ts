@@ -83,6 +83,15 @@ export function recordHealthEvent(
       case "ai_agents":
         handleAgentEvent(type, data);
         break;
+      case "whatsapp_router":
+        handleWhatsAppEvent(type, data);
+        break;
+      case "patient_records":
+        handlePatientRecordsEvent(type, data);
+        break;
+      case "billing":
+        handleBillingEvent(type, data);
+        break;
       case "knowledge_base":
         handleKBUpdateEvent(type, data);
         break;
@@ -222,6 +231,83 @@ function handleAgentEvent(type: string, data: Record<string, unknown>): void {
       category: "billing_suggestion",
       quality: data.accepted ? 1.0 : 0.0,
     });
+  }
+}
+
+// ─── WhatsApp Router Hooks ─────────────────────────────────────────────────
+
+function handleWhatsAppEvent(type: string, data: Record<string, unknown>): void {
+  if (type === "message_received") {
+    // Track intent distribution — which intents are patients sending?
+    trackPattern("whatsapp_intent", data.intent as string || "unknown", data.service as string || "");
+  }
+
+  if (type === "triage_completed") {
+    // Track triage urgency distribution
+    trackTrainingSignal({
+      instruction: "Assess WhatsApp message urgency for clinic triage",
+      input: JSON.stringify({ intent: data.intent }),
+      output: JSON.stringify({ urgency: data.triageUrgency }),
+      category: "whatsapp_triage",
+      quality: 0.8,
+    });
+  }
+
+  if (type === "emergency_detected") {
+    trackPattern("whatsapp_emergency", "detected", data.practiceId as string || "");
+  }
+
+  if (type === "booking_completed") {
+    trackPattern("whatsapp_booking", data.service as string || "GP", data.practiceId as string || "");
+  }
+}
+
+// ─── Patient Records Hooks ────────────────────────────────────────────────
+
+function handlePatientRecordsEvent(type: string, data: Record<string, unknown>): void {
+  if (type === "record_created") {
+    // Track which record types practices create most — informs training data priorities
+    trackPattern("record_type", data.recordType as string || "unknown", data.practiceId as string || "");
+
+    if (data.hasDiagnosis) {
+      trackTrainingSignal({
+        instruction: "What type of medical record is being created?",
+        input: JSON.stringify({ recordType: data.recordType }),
+        output: JSON.stringify({ hasDiagnosis: true, practiceActivity: "active" }),
+        category: "record_pattern",
+        quality: 0.7,
+      });
+    }
+  }
+
+  if (type === "diagnosis_added") {
+    // Track diagnosis patterns across practices
+    trackPattern("diagnosis", data.diagnosisCode as string || "unknown", data.practiceId as string || "");
+  }
+}
+
+// ─── Billing Hooks ────────────────────────────────────────────────────────
+
+function handleBillingEvent(type: string, data: Record<string, unknown>): void {
+  if (type === "payment_success") {
+    // Track which plans practices choose — informs pricing model
+    trackPattern("billing_plan", data.plan as string || "unknown", data.channel as string || "");
+  }
+
+  if (type === "subscription_churn") {
+    // Track churn reasons — critical for business intelligence
+    trackPattern("billing_churn", data.reason as string || "unknown", data.plan as string || "");
+    trackTrainingSignal({
+      instruction: "Predict subscription churn risk for this practice profile",
+      input: JSON.stringify({ plan: data.plan, reason: data.reason }),
+      output: JSON.stringify({ churned: true }),
+      category: "churn_prediction",
+      quality: 1.0,
+    });
+  }
+
+  if (type === "subscription_created") {
+    trackPattern("billing_activation", data.plan as string || "unknown", data.practiceId as string || "");
   }
 }
 

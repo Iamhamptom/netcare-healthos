@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { rateLimitByIp } from "@/lib/rate-limit";
 import { isDemoMode } from "@/lib/is-demo";
+import { recordHealthEvent } from "@/lib/ml/system-hooks";
 
 const WEBHOOK_SECRET = process.env.WHATSAPP_WEBHOOK_SECRET || "";
 
@@ -294,8 +295,20 @@ export async function POST(request: Request) {
 
     // ─── Intent-Based Routing ───────────────────────
 
+    // ─── Learning Hook: Record WhatsApp interaction ───
+    recordHealthEvent("whatsapp_router", "message_received", {
+      intent: detected.intent,
+      service: detected.service,
+      hasPatientRecord: !!patient,
+      practiceId: practice.id,
+    });
+
     // EMERGENCY — immediate response, bypass AI
     if (detected.intent === "emergency") {
+      recordHealthEvent("whatsapp_router", "emergency_detected", {
+        practiceId: practice.id,
+        intent: "emergency",
+      });
       const reply = emergencyResponse(patient.name);
       await sendAndLog(prisma, conversation.id, phone, patient.name, reply, practice.id, "emergency");
       return NextResponse.json({
@@ -363,6 +376,13 @@ export async function POST(request: Request) {
     // 5. Run triage agent to assess urgency
     const { triageMessage } = await import("@/lib/agents");
     const triage = await triageMessage(incomingMessage.text, patient.name).catch(() => null);
+
+    // ─── Learning Hook: Record triage outcome ───
+    recordHealthEvent("whatsapp_router", "triage_completed", {
+      intent: detected.intent,
+      triageUrgency: triage?.response?.includes("EMERGENCY") ? "EMERGENCY" : "ROUTINE",
+      practiceId: practice.id,
+    });
 
     const isEmergency = triage?.actions?.some((a) => a.type === "flag_urgent");
     if (isEmergency) {

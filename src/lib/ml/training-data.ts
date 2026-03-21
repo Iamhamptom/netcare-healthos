@@ -9,6 +9,7 @@
 
 import { readFileSync } from "fs";
 import { join } from "path";
+import { scrubTrainingExample, scrubPII } from "./pii-scrubber";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -218,17 +219,30 @@ export function generateFullDataset(icd10CsvPath?: string): FineTuneDataset {
 
 /**
  * Export dataset in Ollama fine-tuning format (JSONL).
+ * All examples are PII-scrubbed before export.
  */
 export function exportAsJSONL(dataset: FineTuneDataset): string {
-  return dataset.examples
-    .map(ex => JSON.stringify({
-      messages: [
-        { role: "system", content: "You are a South African medical coding and claims expert. Use ICD-10-ZA (WHO variant), CCSA tariff codes, NAPPI codes, and SA Medical Schemes Act rules." },
-        { role: "user", content: `${ex.instruction}\n\n${ex.input}` },
-        { role: "assistant", content: ex.output },
-      ],
-    }))
+  let piiStrippedTotal = 0;
+  const lines = dataset.examples
+    .map(ex => {
+      // PII scrub every training example before export
+      const scrubbed = scrubTrainingExample(ex);
+      piiStrippedTotal += scrubbed.piiStripped;
+      return JSON.stringify({
+        messages: [
+          { role: "system", content: "You are a South African medical coding and claims expert. Use ICD-10-ZA (WHO variant), CCSA tariff codes, NAPPI codes, and SA Medical Schemes Act rules." },
+          { role: "user", content: `${scrubbed.instruction}\n\n${scrubbed.input}` },
+          { role: "assistant", content: scrubbed.output },
+        ],
+      });
+    })
     .join("\n");
+
+  if (piiStrippedTotal > 0) {
+    console.log(`[PII Scrubber] Stripped ${piiStrippedTotal} PII instances from ${dataset.examples.length} training examples`);
+  }
+
+  return lines;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
