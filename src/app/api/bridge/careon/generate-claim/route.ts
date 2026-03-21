@@ -16,7 +16,7 @@ const ENCOUNTER_CPT: Record<string, { code: string; description: string; amount:
 };
 
 export async function POST(request: NextRequest) {
-  const guard = await guardRoute(request, "bridge-generate-claim");
+  const guard = await guardRoute(request, "bridge-generate-claim", { limit: 60 });
   if (isErrorResponse(guard)) return guard;
 
   try {

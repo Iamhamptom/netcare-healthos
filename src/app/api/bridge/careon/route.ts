@@ -15,7 +15,7 @@ import { fetchAuditLog } from "@/lib/hl7/bridge-store";
 import type { AdvisorySeverity, AdvisoryCategory, AdvisoryAction } from "@/lib/hl7/types";
 
 export async function GET(request: NextRequest) {
-  const guard = await guardRoute(request, "bridge-careon");
+  const guard = await guardRoute(request, "bridge-careon", { limit: 120 }); // Higher limit — console polls frequently
   if (isErrorResponse(guard)) return guard;
 
   const { searchParams } = new URL(request.url);
@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const guard = await guardRoute(request, "bridge-careon-resolve");
+  const guard = await guardRoute(request, "bridge-careon-resolve", { limit: 60 });
   if (isErrorResponse(guard)) return guard;
 
   try {
