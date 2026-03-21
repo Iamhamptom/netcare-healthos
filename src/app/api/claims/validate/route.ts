@@ -226,6 +226,19 @@ export async function POST(req: NextRequest) {
     // Auto-corrections for deterministic fixes
     const autoCorrections = generateAutoCorrections(claimLines, result.issues);
 
+    // Reinforcement learning — record validation event
+    try {
+      const { recordHealthEvent } = await import("@/lib/ml/system-hooks");
+      recordHealthEvent("claims_analyzer", "validation_complete", {
+        totalClaims: result.totalClaims,
+        validClaims: result.validClaims,
+        invalidClaims: result.invalidClaims,
+        scheme: schemeCode,
+        issues: result.issues.slice(0, 20).map(i => ({ code: i.code, severity: i.severity })),
+        rejectionRate: result.summary.estimatedRejectionRate,
+      });
+    } catch { /* Non-blocking */ }
+
     return NextResponse.json({
       ...result,
       detectedFormat,

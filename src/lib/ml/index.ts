@@ -53,3 +53,16 @@ export {
   resetLearning,
 } from "./reinforcement";
 export type { LearningEvent, LearningEventType, LearningMetrics } from "./reinforcement";
+
+// System-Wide Learning Hooks (connects ALL health products)
+export {
+  recordHealthEvent,
+  notifyKBUpdate,
+  getPendingReembeds,
+  clearPendingReembeds,
+  getTrainingSignals,
+  getSystemPatterns,
+  getProductEvents,
+  getSystemLearningHealth,
+} from "./system-hooks";
+export type {} from "./system-hooks";

@@ -191,6 +191,23 @@ export async function POST(request: Request) {
     },
   });
 
+  // Reinforcement learning — record claim outcome for system-wide learning
+  try {
+    const { recordHealthEvent } = await import("@/lib/ml/system-hooks");
+    recordHealthEvent("healthbridge", "claim_response", {
+      transactionRef: switchResponse?.transactionRef,
+      scheme: body.medicalAidScheme,
+      icd10Codes: lineItems.map((li: ClaimLineItem) => li.icd10Code).filter(Boolean),
+      tariffCodes: lineItems.map((li: ClaimLineItem) => li.cptCode).filter(Boolean),
+      status: switchResponse?.status || "draft",
+      rejectionCode: switchResponse?.rejectionCode,
+      rejectionReason: switchResponse?.rejectionReason,
+      approvedAmount: switchResponse?.approvedAmount,
+      claimedAmount: totalAmount,
+      switchProvider: "healthbridge",
+    });
+  } catch { /* Non-blocking */ }
+
   return NextResponse.json({ claim, switchResponse }, { status: 201 });
 }
 
