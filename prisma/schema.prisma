@@ -866,6 +866,84 @@ model SwitchingERA {
   @@index([reconciliationStatus])
 }
 
+// === Multi-Tenant Platform ===
+
+model Tenant {
+  id              String   @id @default(cuid())
+  slug            String   @unique // subdomain: "healthbridge" → healthbridge.healthos.co
+  name            String   // Display name: "Healthbridge"
+  industryType    String   @default("billing_bureau") // billing_bureau | hospital | enterprise_funder | software_platform | practice_group
+  status          String   @default("trial") // trial | active | suspended | churned
+
+  // ── Branding (skin) ──
+  logoUrl         String   @default("")
+  faviconUrl      String   @default("")
+  primaryColor    String   @default("#D4AF37")
+  secondaryColor  String   @default("#2DD4BF")
+  accentColor     String   @default("#6C5CE7")
+  tagline         String   @default("")
+  supportEmail    String   @default("")
+  supportPhone    String   @default("")
+  websiteUrl      String   @default("")
+
+  // ── Feature Flags (products on/off) ──
+  featureClaimsAnalyzer   Boolean @default(true)
+  featureFhirHub          Boolean @default(false)
+  featureSwitchingEngine  Boolean @default(false)
+  featureWhatsapp         Boolean @default(false)
+  featurePlaceo           Boolean @default(false)
+  featureCareonBridge     Boolean @default(false)
+  featurePatientPortal    Boolean @default(true)
+  featureBilling          Boolean @default(true)
+  featureBookings         Boolean @default(true)
+  featureRecall           Boolean @default(true)
+  featureReferrals        Boolean @default(false)
+  featureOpsHub           Boolean @default(false)
+  featureInvestorPortal   Boolean @default(false)
+  featureOutreach         Boolean @default(false)
+  featureMlPipeline       Boolean @default(false)
+
+  // ── Business / Billing ──
+  pricingModel    String   @default("monthly") // per_claim | monthly | enterprise | revenue_share
+  rate            Float    @default(0) // R/claim or R/month depending on model
+  commissionSplit Float    @default(0) // 0-100 for revenue_share model
+  paymentTerms    Int      @default(30) // days
+  billingEmail    String   @default("")
+  vatNumber       String   @default("")
+  paystackSubId   String   @default("")
+
+  // ── Legal ──
+  agreementTemplate String @default("bureau") // bureau | hospital | enterprise
+  customTerms       String @default("") // markdown — overrides/additions to template
+  signedAt          DateTime?
+  signedBy          String   @default("")
+
+  // ── Metadata ──
+  trialEndsAt     DateTime?
+  onboardedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  practices       TenantPractice[]
+
+  @@index([status])
+}
+
+// Links tenants to their practices (a tenant can manage many practices)
+model TenantPractice {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  practiceId  String
+  role        String   @default("managed") // managed | owned | demo
+  addedAt     DateTime @default(now())
+
+  @@unique([tenantId, practiceId])
+  @@index([tenantId])
+  @@index([practiceId])
+}
+
 model SwitchingVendor {
   id              String   @id @default(cuid())
   vendorName      String

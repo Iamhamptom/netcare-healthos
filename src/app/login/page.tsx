@@ -5,9 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Shield, Bot, CalendarCheck } from "lucide-react";
+import { useTenant } from "@/lib/tenant-context";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { brand, labels } = useTenant();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -50,21 +52,23 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.03%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')] opacity-50" />
 
         <div className="relative z-10">
-          {/* Netcare Logo */}
-          <img
-            src="/images/netcare-logo.png"
-            alt="Netcare"
-            className="h-8 mb-2"
-          />
-          <span className="text-[#3DA9D1]/80 text-[11px] font-semibold uppercase tracking-widest">Primary Healthcare Operations</span>
+          {/* Tenant Logo */}
+          {brand.logoUrl ? (
+            <img src={brand.logoUrl} alt={brand.name} className="h-8 mb-2" />
+          ) : (
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-xl mb-2" style={{ backgroundColor: brand.primaryColor }}>
+              {brand.name.charAt(0)}
+            </div>
+          )}
+          <span className="text-[#3DA9D1]/80 text-[11px] font-semibold uppercase tracking-widest">{brand.tagline || "AI Healthcare Operations"}</span>
         </div>
 
         <div className="relative z-10 space-y-6">
           <h2 className="text-2xl font-semibold text-white leading-snug">
-            88 clinics.<br />One command center.
+            {labels.welcomeMessage.split(".")[0]}.<br />One command center.
           </h2>
           <p className="text-[#3DA9D1]/80 text-sm leading-relaxed max-w-xs">
-            AI-powered claims intelligence, financial dashboards, and operational analytics across your entire Netcare Primary Healthcare network.
+            AI-powered claims intelligence, financial dashboards, and operational analytics. Powered by proprietary ML from Visio Research Labs.
           </p>
 
           <div className="space-y-3 pt-2">
@@ -105,16 +109,18 @@ export default function LoginPage() {
         >
           {/* Mobile logo */}
           <div className="text-center mb-10 lg:hidden">
-            <img
-              src="/images/netcare-logo.png"
-              alt="Netcare"
-              className="h-7 mx-auto mb-2"
-            />
+            {brand.logoUrl ? (
+              <img src={brand.logoUrl} alt={brand.name} className="h-7 mx-auto mb-2" />
+            ) : (
+              <div className="w-10 h-10 rounded-xl mx-auto flex items-center justify-center text-white font-bold text-xl mb-2" style={{ backgroundColor: brand.primaryColor }}>
+                {brand.name.charAt(0)}
+              </div>
+            )}
           </div>
 
           <div className="mb-10">
             <h1 className="text-2xl font-semibold text-gray-900 tracking-tight mb-2">Welcome back</h1>
-            <p className="text-sm text-gray-500">Sign in to your Netcare operations dashboard</p>
+            <p className="text-sm text-gray-500">Sign in to your {brand.name} dashboard</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -137,7 +143,7 @@ export default function LoginPage() {
                 aria-invalid={!!error}
                 aria-describedby={error ? "login-error" : undefined}
                 className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 focus:bg-white focus:border-[#3DA9D1] focus:outline-none focus:ring-2 focus:ring-[#3DA9D1]/20 transition-all"
-                placeholder="you@netcare.co.za"
+                placeholder={`you@${brand.websiteUrl ? new URL(brand.websiteUrl).hostname.replace("www.", "") : "company.co.za"}`}
               />
             </div>
 

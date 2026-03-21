@@ -20,7 +20,7 @@ async function notifyViaNtfy(info: SignupInfo) {
         Priority: "high",
         Tags: "tada,health",
       },
-      body: `${info.name} (${info.email}) just signed up for Netcare Health OS`,
+      body: `${info.name} (${info.email}) just signed up for Health OS`,
     });
   } catch {
     console.error("[signup-alert] ntfy.sh failed");
@@ -34,7 +34,7 @@ async function notifyViaEmail(info: SignupInfo) {
     const { sendEmail } = await import("@/lib/resend");
     await sendEmail({
       to: OWNER_EMAIL,
-      subject: `New Signup: ${info.name} — Netcare Health OS`,
+      subject: `New Signup: ${info.name} — Health OS`,
       html: `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;padding:24px;">
           <h2 style="color:#1a1a1a;margin:0 0 16px;">New User Registered</h2>
@@ -44,7 +44,7 @@ async function notifyViaEmail(info: SignupInfo) {
             <p style="margin:4px 0;color:#333;"><strong>User ID:</strong> ${info.userId}</p>
             <p style="margin:4px 0;color:#999;font-size:12px;"><strong>Time:</strong> ${new Date().toISOString()}</p>
           </div>
-          <p style="color:#555;font-size:13px;">— Netcare Health OS Signup Alert</p>
+          <p style="color:#555;font-size:13px;">— Health OS Signup Alert</p>
         </div>`,
     });
   } catch {

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, MapPin, Calendar, CheckCircle2, Phone, Clock, Zap } from "lucide-react";
+import { useBrand } from "@/lib/tenant-context";
 
 // Simulated conversations showing the intended patient experience
 const DEMO_CONVERSATIONS = [
@@ -88,7 +89,7 @@ export default function WhatsAppPage() {
           {/* WhatsApp header */}
           <div className="bg-[#1D3443] px-4 py-3 flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-[#3DA9D1]/20 flex items-center justify-center">
-              <img src="/images/netcare-logo.png" alt="Netcare" className="h-4" />
+              <span className="text-[10px] font-bold tracking-wider opacity-60">HEALTH OS</span>
             </div>
             <div>
               <div className="text-white text-[13px] font-semibold">Netcare Medicross</div>

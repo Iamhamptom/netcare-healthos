@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import Link from "next/link";
+import { useBrand } from "@/lib/tenant-context";
 
 const swapWords = ["claims intelligence", "financial analytics", "operational efficiency", "network oversight"];
 
@@ -25,6 +26,7 @@ const fadeUp = {
 };
 
 export default function Hero() {
+  const brand = useBrand();
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -153,15 +155,17 @@ export default function Hero() {
         initial="hidden"
         animate="visible"
       >
-        {/* Netcare logo top */}
+        {/* Tenant logo */}
         <motion.div variants={fadeUp} className="mb-8">
-          <img
-            src="/images/netcare-logo.png"
-            alt="Netcare"
-            className="h-8 mx-auto mb-4"
-          />
+          {brand.logoUrl ? (
+            <img src={brand.logoUrl} alt={brand.name} className="h-8 mx-auto mb-4" />
+          ) : (
+            <div className="w-12 h-12 rounded-xl mx-auto mb-4 flex items-center justify-center text-white font-bold text-2xl" style={{ backgroundColor: brand.primaryColor }}>
+              {brand.name.charAt(0)}
+            </div>
+          )}
           <span className="uppercase tracking-[0.3em] text-xs text-white/70 font-semibold">
-            Primary Healthcare Operations
+            {brand.tagline || "AI Healthcare Operations"}
           </span>
         </motion.div>
 
@@ -207,7 +211,7 @@ export default function Hero() {
           variants={fadeUp}
           className="text-lg text-white/60 font-light max-w-2xl mx-auto mt-8 leading-relaxed"
         >
-          Netcare Health OS is an AI-powered operations platform that unifies
+          {brand.name} is an AI-powered operations platform that unifies
           claims intelligence, financial analytics, and practice management
           across your entire primary healthcare network.
         </motion.p>

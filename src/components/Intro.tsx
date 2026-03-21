@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useBrand } from "@/lib/tenant-context";
 
 interface IntroProps {
   onEnter: () => void;
@@ -68,6 +69,7 @@ function seeded(seed: number) {
 }
 
 export default function Intro({ onEnter }: IntroProps) {
+  const brand = useBrand();
   const [ready, setReady] = useState(false);
   const [hovering, setHovering] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
@@ -162,18 +164,20 @@ export default function Intro({ onEnter }: IntroProps) {
 
       {/* Content */}
       <div className="relative z-10 text-center px-6">
-        {/* Netcare logo */}
+        {/* Tenant logo */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.2 }}
           className="mb-6"
         >
-          <img
-            src="/images/netcare-logo.png"
-            alt="Netcare"
-            className="h-12 md:h-16 mx-auto"
-          />
+          {brand.logoUrl ? (
+            <img src={brand.logoUrl} alt={brand.name} className="h-12 md:h-16 mx-auto" />
+          ) : (
+            <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl mx-auto flex items-center justify-center text-white font-bold text-3xl" style={{ backgroundColor: brand.primaryColor }}>
+              {brand.name.charAt(0)}
+            </div>
+          )}
         </motion.div>
 
         {/* Title */}

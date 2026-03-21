@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useBrand } from "@/lib/tenant-context";
 
 const footerLinks = {
   Product: [
@@ -28,20 +29,23 @@ const footerLinks = {
 };
 
 export default function Footer() {
+  const brand = useBrand();
   return (
     <footer className="bg-[#1D3443] border-t border-white/[0.04] py-16">
       <div className="max-w-6xl mx-auto px-6 md:px-12 lg:px-24">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-10 mb-14">
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="inline-block mb-5">
-              <img
-                src="/images/netcare-logo.png"
-                alt="Netcare"
-                className="h-6"
-              />
+              {brand.logoUrl ? (
+                <img src={brand.logoUrl} alt={brand.name} className="h-6" />
+              ) : (
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold" style={{ backgroundColor: brand.primaryColor }}>
+                  {brand.name.charAt(0)}
+                </div>
+              )}
             </Link>
             <p className="text-xs text-white/70 leading-relaxed font-light">
-              AI-powered operations platform for Netcare Primary Healthcare across South Africa.
+              AI-powered operations platform. {brand.tagline}
             </p>
           </div>
 
@@ -69,7 +73,7 @@ export default function Footer() {
 
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-[11px] text-white/70 font-medium">
-            &copy; 2026 Netcare Limited. All rights reserved.
+            &copy; 2026 {brand.name}. Powered by Visio Research Labs.
           </p>
           <p className="text-[11px] text-white/70 font-medium">
             Sandton, Gauteng, South Africa

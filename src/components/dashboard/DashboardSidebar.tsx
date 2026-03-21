@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
+import { useTenant } from "@/lib/tenant-context";
+import type { TenantFeatures } from "@/lib/tenant";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Activity,
@@ -179,9 +181,41 @@ const fhirHubItems: NavItem[] = [
 
 const allNavItems = [...navSections.flatMap(s => s.items), ...healthbridgeItems, ...fhirHubItems];
 
+/* ─── Feature gate mapping: route prefix → required feature ─── */
+
+const ROUTE_FEATURE_MAP: Record<string, keyof TenantFeatures> = {
+  "/dashboard/claims": "claimsAnalyzer",
+  "/dashboard/claims-network": "claimsAnalyzer",
+  "/dashboard/bridge": "careonBridge",
+  "/dashboard/whatsapp": "whatsapp",
+  "/dashboard/switching": "switchingEngine",
+  "/dashboard/healthbridge": "billing",
+  "/dashboard/fhir-hub": "fhirHub",
+  "/dashboard/billing": "billing",
+  "/dashboard/bookings": "bookings",
+  "/dashboard/recall": "recall",
+  "/dashboard/referrals": "referrals",
+  "/dashboard/intel": "opsHub",
+  "/dashboard/board-pack": "opsHub",
+  "/dashboard/pilot": "opsHub",
+  "/dashboard/partnership": "opsHub",
+  "/dashboard/suite": "opsHub",
+  "/dashboard/import": "opsHub",
+  "/dashboard/reports": "opsHub",
+};
+
+function isFeatureEnabled(href: string, features: TenantFeatures): boolean {
+  for (const [prefix, feature] of Object.entries(ROUTE_FEATURE_MAP)) {
+    if (href === prefix || href.startsWith(prefix + "/")) {
+      return features[feature] ?? true;
+    }
+  }
+  return true; // No gate = always show
+}
+
 /* ─── Section persistence ─── */
 
-const STORAGE_KEY = "netcare-sidebar-sections";
+const STORAGE_KEY = "healthos-sidebar-sections";
 
 function itemMatchesPath(item: NavItem, pathname: string): boolean {
   return pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
@@ -250,6 +284,8 @@ function loadSections(pathname: string): Record<string, boolean> {
 export default function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const tenant = useTenant();
+  const { brand, features } = tenant;
   const [collapsed, setCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [userRole, setUserRole] = useState("admin");
@@ -295,7 +331,9 @@ export default function DashboardSidebar() {
 
   /* Reusable renderer for sub-sections (Healthbridge, FHIR Hub) */
   function renderSubsection(label: string, badge: string, badgeColor: string, items: NavItem[]) {
-    const filtered = items.filter(item => item.roles.includes(userRole));
+    const filtered = items
+      .filter(item => item.roles.includes(userRole))
+      .filter(item => isFeatureEnabled(item.href, features));
     if (filtered.length === 0) return null;
     const open = isSectionOpen(label);
     const colorClasses = badgeColor === "emerald"
@@ -367,15 +405,24 @@ export default function DashboardSidebar() {
       transition={{ duration: 0.3, ease: "easeInOut" }}
       className="shrink-0 border-r border-white/[0.06] flex flex-col bg-[#1D3443] overflow-hidden"
     >
-      {/* Logo */}
+      {/* Logo — tenant-branded */}
       <div className="h-14 flex items-center gap-2.5 px-4 border-b border-white/[0.06]">
-        <Image
-          src="/images/netcare-logo.png"
-          alt="Netcare"
-          width={80}
-          height={20}
-          className="h-5 w-auto shrink-0 brightness-[10] saturate-0 opacity-80"
-        />
+        {brand.logoUrl ? (
+          <Image
+            src={brand.logoUrl}
+            alt={brand.name}
+            width={80}
+            height={20}
+            className="h-5 w-auto shrink-0 brightness-[10] saturate-0 opacity-80"
+          />
+        ) : (
+          <div
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0"
+            style={{ backgroundColor: brand.primaryColor }}
+          >
+            {brand.name.charAt(0)}
+          </div>
+        )}
         <AnimatePresence>
           {!collapsed && (
             <motion.span
@@ -384,7 +431,7 @@ export default function DashboardSidebar() {
               exit={{ opacity: 0 }}
               className="font-semibold text-[11px] whitespace-nowrap tracking-[0.15em] text-white/60"
             >
-              HEALTH OS
+              {brand.name.toUpperCase()}
             </motion.span>
           )}
         </AnimatePresence>
@@ -392,7 +439,9 @@ export default function DashboardSidebar() {
 
       <nav className="flex-1 py-2 px-2 overflow-y-auto">
         {navSections.map((section) => {
-          const sectionItems = section.items.filter(item => item.roles.includes(userRole));
+          const sectionItems = section.items
+            .filter(item => item.roles.includes(userRole))
+            .filter(item => isFeatureEnabled(item.href, features));
           if (sectionItems.length === 0) return null;
 
           const isHomeSection = !section.label;

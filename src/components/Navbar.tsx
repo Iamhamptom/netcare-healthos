@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { useBrand } from "@/lib/tenant-context";
 
 const links = [
   { href: "/about", label: "About" },
@@ -29,6 +30,8 @@ export default function Navbar() {
     };
   }, [menuOpen]);
 
+  const brand = useBrand();
+
   return (
     <>
       <motion.nav
@@ -42,15 +45,17 @@ export default function Navbar() {
         }`}
       >
         <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
-          {/* Logo */}
+          {/* Logo — tenant branded */}
           <Link href="/" className="flex items-center gap-3">
-            <img
-              src="/images/netcare-logo.png"
-              alt="Netcare"
-              className="h-6"
-            />
+            {brand.logoUrl ? (
+              <img src={brand.logoUrl} alt={brand.name} className="h-6" />
+            ) : (
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold text-sm" style={{ backgroundColor: brand.primaryColor }}>
+                {brand.name.charAt(0)}
+              </div>
+            )}
             <span className="text-[11px] text-white/70 font-semibold uppercase tracking-widest">
-              Health OS
+              {brand.name}
             </span>
           </Link>
 

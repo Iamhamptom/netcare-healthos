@@ -328,9 +328,9 @@ export default function FeatureGuide() {
   const [dismissedPages, setDismissedPages] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    const accepted = localStorage.getItem("netcare-nda-accepted");
-    const welcomed = localStorage.getItem("netcare-welcome-done");
-    const jessPref = localStorage.getItem("netcare-jess-open");
+    const accepted = localStorage.getItem("healthos-nda-accepted");
+    const welcomed = localStorage.getItem("healthos-welcome-done");
+    const jessPref = localStorage.getItem("healthos-jess-open");
     setNdaAccepted(accepted === "true");
     setWelcomeDone(welcomed === "true");
     if (jessPref === "false") setJessOpen(false);
@@ -338,12 +338,12 @@ export default function FeatureGuide() {
 
   const handleAcceptNDA = () => {
     setNdaAccepted(true);
-    localStorage.setItem("netcare-nda-accepted", "true");
+    localStorage.setItem("healthos-nda-accepted", "true");
   };
 
   const handleWelcomeComplete = () => {
     setWelcomeDone(true);
-    localStorage.setItem("netcare-welcome-done", "true");
+    localStorage.setItem("healthos-welcome-done", "true");
   };
 
   const handleDismissJess = () => {
@@ -353,7 +353,7 @@ export default function FeatureGuide() {
   const toggleJess = () => {
     const next = !jessOpen;
     setJessOpen(next);
-    localStorage.setItem("netcare-jess-open", String(next));
+    localStorage.setItem("healthos-jess-open", String(next));
   };
 
   const handleNavigate = (path: string) => {

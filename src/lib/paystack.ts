@@ -93,7 +93,7 @@ export async function createPlans() {
     const data = await paystackFetch("/plan", {
       method: "POST",
       body: JSON.stringify({
-        name: `Netcare Health OS Ops — ${PLAN_NAMES[key]}`,
+        name: `Health OS — ${PLAN_NAMES[key]}`,
         amount,
         interval: "monthly",
         currency: "ZAR",

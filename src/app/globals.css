@@ -8,18 +8,18 @@
   --bg-surface: #152736;
   --bg-elevated: #1A2F3E;
 
-  /* Netcare spectrum */
-  --netcare-50: #F0F9FF;
-  --netcare-100: #E0F2FE;
-  --netcare-200: #BAE6FD;
-  --netcare-300: #7DD3FC;
-  --netcare-400: #3DA9D1;
-  --netcare-500: #1D8AB5;
-  --netcare-600: #1D3443;
-  --netcare-700: #162A37;
-  --netcare-800: #0F1F2A;
-  --netcare-900: #0A1620;
-  --netcare-950: #1D3443;
+  /* Platform spectrum (default — overridden per tenant via CSS vars) */
+  --healthos-50: #F0F9FF;
+  --healthos-100: #E0F2FE;
+  --healthos-200: #BAE6FD;
+  --healthos-300: #7DD3FC;
+  --healthos-400: #3DA9D1;
+  --healthos-500: #1D8AB5;
+  --healthos-600: #1D3443;
+  --healthos-700: #162A37;
+  --healthos-800: #0F1F2A;
+  --healthos-900: #0A1620;
+  --healthos-950: #1D3443;
 
   /* Warm spectrum */
   --amber-400: #E3964C;
