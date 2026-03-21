@@ -76,8 +76,10 @@ export async function POST(req: NextRequest) {
       csvLines.push(values.join(","));
     }
 
-    // Return corrected CSV as a separate download-ready string
-    const csvString = csvLines.join("\r\n");
+    // Sanitize each line: strip any control chars that would break JSON encoding
+    const csvString = csvLines
+      .map(line => line.replace(/[\x00-\x09\x0B\x0C\x0E-\x1F]/g, ""))
+      .join("\n");
 
     return NextResponse.json({
       corrections,

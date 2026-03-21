@@ -29,6 +29,44 @@ describe("AI Coder — Fallback ICD-10 Suggestions", () => {
     expect(result.icd10Codes.some(c => c.code === "Z23")).toBe(true);
   });
 
+  // ── Negation-Aware Coding (CRITICAL — prevents false positives) ──
+
+  it("should NOT suggest R50.9 (fever) when negated: 'no fever'", async () => {
+    const result = await suggestCodes("Patient denies fever, no cough, no SOB. Presents with lower back pain.");
+    expect(result.icd10Codes.some(c => c.code === "R50.9")).toBe(false); // fever negated
+    expect(result.icd10Codes.some(c => c.code === "M54.5")).toBe(true); // back pain IS present
+  });
+
+  it("should NOT suggest J45.9 (asthma) when negated: 'denies wheezing'", async () => {
+    const result = await suggestCodes("Patient denies wheezing, no asthma history. Complains of headache.");
+    expect(result.icd10Codes.some(c => c.code === "J45.9")).toBe(false); // asthma negated
+    expect(result.icd10Codes.some(c => c.code === "R51")).toBe(true); // headache IS present
+  });
+
+  it("should NOT suggest I10 when negated: 'without hypertension'", async () => {
+    const result = await suggestCodes("45yo female without hypertension or diabetes. Presents with acute bronchitis.");
+    expect(result.icd10Codes.some(c => c.code === "I10")).toBe(false); // hypertension negated
+    expect(result.icd10Codes.some(c => c.code === "E11.9")).toBe(false); // diabetes negated
+    expect(result.icd10Codes.some(c => c.code === "J20.9")).toBe(true); // bronchitis IS present
+  });
+
+  it("should NOT suggest codes for 'ruled out' conditions", async () => {
+    const result = await suggestCodes("Chest pain evaluated. ECG normal. Ruled out cardiac. Diagnosis: gastritis.");
+    expect(result.icd10Codes.some(c => c.code === "K29.7")).toBe(true); // gastritis IS present
+  });
+
+  it("should NOT suggest R50.9 for 'negative for fever'", async () => {
+    const result = await suggestCodes("Child with ear pain. Negative for fever. Diagnosis: otitis media.");
+    expect(result.icd10Codes.some(c => c.code === "R50.9")).toBe(false); // fever negated
+    expect(result.icd10Codes.some(c => c.code === "H66.9")).toBe(true); // otitis IS present
+  });
+
+  it("should still suggest fever when NOT negated", async () => {
+    const result = await suggestCodes("Child presents with fever 38.5C and ear pain.");
+    expect(result.icd10Codes.some(c => c.code === "R50.9")).toBe(true); // fever IS present
+    expect(result.icd10Codes.some(c => c.code === "H66.9")).toBe(true); // otitis IS present
+  });
+
   it("should suggest Z00.0 for unknown text (general exam default)", async () => {
     const result = await suggestCodes("xyzzy blorp nothing medical here");
     expect(result.icd10Codes.some(c => c.code === "Z00.0")).toBe(true);

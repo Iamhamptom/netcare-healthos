@@ -13,7 +13,13 @@ export async function GET(request: Request) {
   if (isErrorResponse(guard)) return guard;
 
   if (isDemoMode) {
-    return NextResponse.json({ claims: demoClaims });
+    // Mask PII in demo data too (POPIA Section 19)
+    const masked = demoClaims.map((c) => ({
+      ...c,
+      patientIdNumber: c.patientIdNumber ? maskIdNumber(c.patientIdNumber) : "",
+      membershipNumber: maskMembership(c.membershipNumber),
+    }));
+    return NextResponse.json({ claims: masked });
   }
 
   const { prisma } = await import("@/lib/prisma");
