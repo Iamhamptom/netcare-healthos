@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
+  Activity,
   LayoutDashboard,
   Building2,
   Boxes,
@@ -115,6 +116,7 @@ const navSections: NavSection[] = [
         { href: "/dashboard/bridge/roi", icon: BarChart3, label: "ROI Calculator" },
         { href: "/dashboard/bridge/research", icon: FileBarChart, label: "Research Paper" },
         { href: "/dashboard/bridge/business-model", icon: DollarSign, label: "Business Model" },
+        { href: "/dashboard/bridge/health", icon: Activity, label: "System Health" },
       ] },
       { href: "/dashboard/whatsapp", icon: MessageSquare, label: "WhatsApp Router", roles: ["admin", "platform_admin"] },
       { href: "/dashboard/agents", icon: Bot, label: "AI Agents", roles: ["admin", "doctor"] },
