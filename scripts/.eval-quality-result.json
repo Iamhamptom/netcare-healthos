@@ -1,0 +1,1 @@
+{"pass": true, "accuracy": 0.857, "precision": 0.862, "recall": 0.962, "f1": 0.909, "completeness": 0.95, "specificity_rate": 1.0, "pmb_accuracy": 1.0, "cdl_accuracy": 1.0, "false_positives": 4, "false_negatives": 1, "composite_score": 95.4}

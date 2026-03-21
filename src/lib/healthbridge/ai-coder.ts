@@ -150,10 +150,20 @@ function fallbackSuggestion(notes: string): CodingSuggestion {
     if (kw.terms.some((t) => {
       const idx = lower.indexOf(t);
       if (idx === -1) return false;
-      // Negation-aware: check if preceded by negation words within 30 chars
-      const prefix = lower.slice(Math.max(0, idx - 30), idx);
+      // Negation-aware: find the clause boundary (sentence or comma) then check for negation
+      // Look back to the nearest sentence/clause break (. , ; :) or start of string
+      const beforeMatch = lower.slice(0, idx);
+      const breaks = [
+        beforeMatch.lastIndexOf(". "),
+        beforeMatch.lastIndexOf(", "),
+        beforeMatch.lastIndexOf("; "),
+        beforeMatch.lastIndexOf(": "),
+      ].filter((i) => i >= 0).map((i) => i + 2);
+      const clauseStart = breaks.length > 0 ? Math.max(...breaks) : 0;
+      // Include trailing space so negation words at end of clause are caught
+      const clause = lower.slice(clauseStart, idx);
       const negations = ["no ", "not ", "denies ", "denied ", "without ", "absent ", "negative for ", "rules out ", "ruled out ", "unlikely ", "no evidence of "];
-      if (negations.some((neg) => prefix.includes(neg))) return false;
+      if (negations.some((neg) => clause.includes(neg))) return false;
       return true;
     })) {
       const cdl = isCDLCondition(kw.code);

@@ -1,0 +1,1 @@
+{"pass": true, "icd10_accuracy": 100.0, "negation_accuracy": 100.0, "historical_accuracy": 100.0, "medication_accuracy": 100.0, "fallback_accuracy": 100.0, "fallback_false_positives": 1, "overall_score": 100.0}

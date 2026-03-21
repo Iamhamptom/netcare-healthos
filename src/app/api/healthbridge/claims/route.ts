@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     // Mask PII in demo data too (POPIA Section 19)
     const masked = demoClaims.map((c) => ({
       ...c,
-      patientIdNumber: c.patientIdNumber ? maskIdNumber(c.patientIdNumber) : "",
+      patientIdNumber: String((c as Record<string, unknown>).patientIdNumber || "") ? maskIdNumber(String((c as Record<string, unknown>).patientIdNumber || "")) : "",
       membershipNumber: maskMembership(c.membershipNumber),
     }));
     return NextResponse.json({ claims: masked });
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
   // Mask PII in list responses (POPIA Section 19)
   const masked = claims.map((c: Record<string, unknown>) => ({
     ...c,
-    patientIdNumber: maskIdNumber(String(c.patientIdNumber || "")),
+    patientIdNumber: maskIdNumber(String(String((c as Record<string, unknown>).patientIdNumber || "") || "")),
     membershipNumber: maskMembership(String(c.membershipNumber || "")),
     requestXml: "", // Strip XML from list view (contains PII)
     responseXml: "", // Strip XML from list view
