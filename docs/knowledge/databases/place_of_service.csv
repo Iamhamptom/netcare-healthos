@@ -1,0 +1,14 @@
+code,name,description,tariff_impact
+11,Office/Rooms,Doctor's consulting rooms or surgery,Standard rate
+12,Home visit,Service at patient's home,+30% loading typically
+21,Hospital inpatient,Patient admitted to hospital,Hospital tariff applies
+22,Hospital outpatient,Hospital outpatient department,Outpatient tariff
+23,Emergency room,Hospital casualty/emergency department,Emergency tariff + modifier 0018
+31,Nursing facility,Sub-acute/step-down facility,Reduced rate
+41,Ambulance,Emergency medical services vehicle,Ambulance tariff codes
+49,Independent clinic,Standalone clinic (not hospital),Standard rate
+50,Community health centre,Public sector CHC,State tariff
+65,Day clinic/hospital,Day procedure unit,Day case tariff
+72,Rural/remote,Remote area consultation,May qualify for rural loading
+81,Laboratory,Pathology laboratory,Pathology tariff codes
+99,Other/unspecified,Location not classified elsewhere,Standard rate

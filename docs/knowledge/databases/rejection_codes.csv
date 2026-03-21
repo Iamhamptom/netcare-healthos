@@ -1,0 +1,34 @@
+code,category,description,common_cause,fix_suggestion
+01,documentation,Script/prescription required,Medication dispensed without valid script,Attach original prescription
+02,documentation,Doctor's account required,Claim submitted without supporting account,Attach doctor's account/invoice
+03,documentation,Medical aid statement required,No statement of account from medical aid,Attach scheme statement
+04,documentation,Authorisation letter required,Procedure requires pre-authorisation,Obtain and attach pre-auth letter
+05,documentation,Hospital account required,Hospital claim without hospital account,Attach hospital account
+06,coding,Invalid ICD-10 code,Code not in SA MIT or wrong format,Verify code against ICD-10 MIT
+07,coding,Non-specific ICD-10 code,3-character code when 4th/5th required,Use maximum specificity code
+08,coding,Invalid tariff code,Tariff not in scheme's active table,Verify against CCSA/NHRPL
+09,coding,ICD-10/tariff mismatch,Procedure not justified by diagnosis,Review diagnosis-procedure alignment
+10,coding,Missing external cause code,S/T injury code without V/W/X/Y secondary,Add appropriate ECC (W19/V89.2/X59)
+11,eligibility,Member not active,Membership lapsed or suspended,Verify member status before claiming
+12,eligibility,Dependent not registered,Dependant code incorrect or not on plan,Check dependant registration
+13,eligibility,Waiting period applies,Condition subject to waiting period (except PMB),Check PMB status — PMBs override waiting
+14,benefit,Benefits exhausted,Day-to-day or annual limit depleted,Check if PMB — PMBs continue above limits
+15,benefit,Not on formulary,Medicine not on scheme's approved formulary,Request Section 21 motivation or use generic
+16,benefit,Savings account depleted,PMSA empty and no risk benefit available,PMBs may NOT be from savings (Reg 10(6))
+17,preauth,No pre-authorisation,Procedure requires pre-auth not obtained,Obtain pre-auth before or within 48hrs
+18,preauth,Pre-auth expired,Authorisation validity period passed,Request new authorisation
+19,preauth,Pre-auth amount exceeded,Claimed amount exceeds authorised amount,Request additional authorisation
+20,duplicate,Duplicate claim,Same service already claimed,Remove duplicate submission
+21,duplicate,Within global period,Follow-up within surgical global period,Not separately billable — included in surgical fee
+22,provider,Provider not contracted,Claim from non-network provider,Refer to DSP or motivate non-DSP
+23,provider,Discipline mismatch,Provider billing outside scope,Ensure correct provider type
+24,provider,Practice number invalid,BHF practice number not registered,Verify at pcns.co.za
+25,amount,Exceeds scheme rate,Amount above scheme's tariff maximum,Claim at scheme tariff rate
+54,documentation,Illegible documents,Documents unreadable,Resubmit clear copies
+55,documentation,Doctor account + medical aid statement required,Both documents missing,Attach both documents
+56,documentation,Medical aid statement + pre-auth letter required,Both documents missing,Attach both documents
+57,documentation,Doctor account + pre-auth letter required,Both documents missing,Attach both documents
+58,documentation,Pre-auth letter + hospital account required,Both documents missing,Attach both documents
+70,documentation,Specialist account required,Specialist claim without account,Attach specialist account
+87,preauth,Hospital pre-authorisation required,Hospital admission without pre-auth,Obtain hospital pre-auth
+110,documentation,Payment receipt required,Proof of payment needed,Attach payment receipt

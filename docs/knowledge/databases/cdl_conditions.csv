@@ -1,0 +1,28 @@
+number,condition,primary_icd10,extended_codes,key_medications,monitoring
+1,Addison's disease,E27.1,"E27.2,E27.9","Hydrocortisone,fludrocortisone","Cortisol,electrolytes"
+2,Asthma,J45,"J45.0,J45.1,J45.9,J46","SABA,ICS,LABA","Peak flow,spirometry"
+3,Bipolar mood disorder,F31,"F31.0,F31.1,F31.2,F31.3,F31.4,F31.5,F31.6,F31.7,F31.8,F31.9","Lithium,valproate,carbamazepine",Lithium levels
+4,Bronchiectasis,J47,"J47.0,J47.1,J47.9","Antibiotics,bronchodilators",Sputum culture
+5,Cardiac failure,I50,"I50.0,I50.1,I50.9","ACE-i/ARB,beta-blocker,diuretic","Echo,BNP"
+6,Cardiomyopathy,I42,"I42.0,I42.1,I42.2,I42.5,I42.8,I42.9","As cardiac failure",Echo
+7,COPD,J44,"J43,J44.0,J44.1,J44.8,J44.9","SABA,LABA,anticholinergics,ICS",Spirometry
+8,Chronic renal disease,N18,"N03,N11,N18.1,N18.2,N18.3,N18.4,N18.5,N18.9","ACE-i,EPO","Creatinine,eGFR"
+9,Coronary artery disease,I25,"I20,I21,I22,I23,I24,I25.0,I25.1,I25.5,I25.8,I25.9","Antiplatelet,statin,beta-blocker","Lipids,stress test"
+10,Crohn's disease,K50,"K50.0,K50.1,K50.8,K50.9","5-ASA,steroids,azathioprine",Colonoscopy
+11,Diabetes insipidus,E23.2,N25.1,Desmopressin,Fluid balance
+12,Diabetes mellitus Type 1,E10,"E10.0,E10.1,E10.2,E10.3,E10.4,E10.5,E10.6,E10.7,E10.8,E10.9","Insulin (basal-bolus/pump)","HbA1c q3-6mo,annual screen"
+13,Diabetes mellitus Type 2,E11,"E11.0,E11.1,E11.2,E11.3,E11.4,E11.5,E11.6,E11.7,E11.8,E11.9","Metformin,SU,DPP4i,SGLT2i,insulin","HbA1c q3-6mo,annual screen"
+14,Dysrhythmias,I49,"I44,I45,I46,I47,I48,I49.0,I49.1,I49.3,I49.5,I49.8,I49.9","Amiodarone,beta-blocker","ECG,Holter"
+15,Epilepsy,G40,"G40.0,G40.1,G40.2,G40.3,G40.4,G40.5,G40.6,G40.7,G40.8,G40.9,G41","Valproate,carbamazepine,lamotrigine","Drug levels,EEG"
+16,Glaucoma,H40,"H40.0,H40.1,H40.2,H40.3,H40.4,H40.5,H40.8,H40.9","Beta-blocker drops,prostaglandin","IOP,visual fields"
+17,Haemophilia,D66,"D67,D68.0,D68.1,D68.2,D68.3,D68.4",Factor replacement,Factor levels
+18,HIV/AIDS,B20,"B21,B22,B23,B24,Z21","ART per national guidelines (TLD)","CD4,viral load"
+19,Hyperlipidaemia,E78,"E78.0,E78.1,E78.2,E78.3,E78.4,E78.5","Statins,ezetimibe",Lipid panel annually
+20,Hypertension,I10,"I11,I12,I13,I15","ACE-i/ARB,CCB,thiazide","BP,renal function,K+"
+21,Hypothyroidism,E03,"E02,E03.0,E03.1,E03.2,E03.3,E03.4,E03.5,E03.8,E03.9",Levothyroxine,TSH q6-12mo
+22,Multiple sclerosis,G35,,"Interferons,glatiramer,fingolimod",MRI
+23,Parkinson's disease,G20,G21,"Levodopa/carbidopa,dopamine agonists",Specialist review
+24,Rheumatoid arthritis,M05,"M06,M05.0,M05.1,M05.2,M05.3,M05.8,M05.9,M06.0,M06.8,M06.9","NSAIDs,methotrexate,biologics","ESR,CRP,LFTs"
+25,Schizophrenia,F20,"F20.0,F20.1,F20.2,F20.3,F20.4,F20.5,F20.6,F20.8,F20.9",Antipsychotics,Metabolic monitoring
+26,Systemic lupus erythematosus,M32,"M32.0,M32.1,M32.8,M32.9","Hydroxychloroquine,steroids","ANA,anti-dsDNA,renal"
+27,Ulcerative colitis,K51,"K51.0,K51.2,K51.3,K51.4,K51.5,K51.8,K51.9","5-ASA,steroids,biologics",Colonoscopy

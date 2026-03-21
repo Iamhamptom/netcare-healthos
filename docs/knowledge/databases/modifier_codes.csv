@@ -1,0 +1,24 @@
+code,description,rate_impact,category,notes
+0001,Reduced service,-50%,general,Service less than described
+0002,Increased complexity,+25-50%,general,Procedure more complex than usual
+0003,Multiple procedures — 2nd,-50%,surgical,Second procedure same session
+0004,Multiple procedures — 3rd,-75%,surgical,Third procedure same session
+0005,Multiple procedures — 4th+,-80%,surgical,Fourth and subsequent procedures
+0006,Bilateral,+50%,surgical,Procedure performed on both sides
+0007,With contrast,+25-40%,radiology,Radiology with contrast agent
+0008,Professional component only,40% of global,split billing,Interpretation only
+0009,Technical/facility component only,60% of global,split billing,Equipment and facility only
+0010,After-hours evening,+25-50%,time,Service after normal hours (evening)
+0011,After-hours night,+50-100%,time,Service during night hours
+0012,After-hours Saturday,+25-50%,time,Service on Saturday
+0013,After-hours Sunday,+50-100%,time,Service on Sunday
+0014,Public holiday,+100%,time,Service on public holiday
+0015,Assistant surgeon,20% of primary,surgical,Surgeon assisting primary surgeon
+0016,Co-surgeon,62.5% each,surgical,Two surgeons of equal status
+0017,Team surgery,each bills own,surgical,Multi-specialty team
+0018,Repeat procedure,-20%,general,Same procedure repeated
+0019,Distinct procedure,100%,surgical,Clearly separate procedure
+0021,Decision for surgery,consult billable,surgical,Consultation leading to surgery decision
+0024,Monitored anaesthesia care (MAC),60-80%,anaesthesia,Sedation with monitoring
+0025,Conscious sedation,40-50%,anaesthesia,Moderate sedation
+0026,Telehealth,80-100%,consultation,Service via video/audio technology

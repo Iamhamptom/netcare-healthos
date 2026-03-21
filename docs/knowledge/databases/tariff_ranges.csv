@@ -1,0 +1,38 @@
+range_start,range_end,section,discipline,description
+0100,0199,Consultations — GP,gp,General practitioner consultations and visits
+0200,0299,Consultations — Specialist,specialist,Specialist consultations and visits
+0300,0399,Consultations — Procedures,gp,Minor procedures during consultation (ECG/spirometry)
+0400,0499,Anaesthesia,anaesthetist,General and regional anaesthesia
+0500,0599,Surgery — General,surgeon,General surgical procedures
+0600,0699,Surgery — General (cont),surgeon,General surgery continued
+0700,0799,Surgery — Integumentary,surgeon,Skin and subcutaneous procedures
+0800,0899,Surgery — Musculoskeletal,orthopaedics,Bone and joint procedures
+0900,0999,Surgery — Musculoskeletal (cont),orthopaedics,Musculoskeletal continued
+1000,1199,Surgery — Cardiovascular,cardiology,Heart and vascular procedures
+1200,1399,Surgery — Digestive,surgeon,GI tract procedures
+1400,1599,Surgery — Urological,urologist,Urinary and male genital procedures
+1600,1799,Surgery — Gynaecology,gynaecology,Female reproductive procedures
+1800,1999,Surgery — Neurosurgery,neurologist,Brain and spinal procedures
+2000,2199,Surgery — ENT,ent,Ear nose and throat procedures
+2200,2399,Surgery — Ophthalmology,ophthalmology,Eye procedures
+2400,2599,Surgery — Orthopaedic,orthopaedics,Orthopaedic specific procedures
+2600,2799,Surgery — Plastic,surgeon,Reconstructive and plastic surgery
+2800,2999,Surgery — Dental,dental,Dental surgery procedures
+3000,3499,Pathology — Haematology,pathology,Blood tests and haematology
+3500,3999,Pathology — Chemistry,pathology,Chemical pathology and biochemistry
+4000,4099,Nuclear medicine,specialist,Nuclear imaging and therapy
+4100,4499,Pathology — Microbiology,pathology,Cultures and serology
+4500,4999,Pathology — Specialised,pathology,Genetics and tumour markers and histology
+5000,5099,Radiology — Plain,radiology,X-rays
+5100,5199,Radiology — Ultrasound,radiology,Diagnostic ultrasound
+5200,5299,Radiology — CT,radiology,Computed tomography
+5300,5399,Radiology — MRI,radiology,Magnetic resonance imaging
+5400,5499,Radiology — Special,radiology,Mammography and DEXA and fluoroscopy
+6000,6499,Allied health — Physiotherapy,physiotherapy,Physiotherapy treatments
+6500,6999,Allied health — Other,allied,OT and dietetics and social work
+7000,7499,Psychology/Psychiatry,psychology,Psychological and psychiatric services
+7500,7999,Dental,dental,Dental procedures (non-surgical)
+8000,8499,Nursing,nursing,Nursing procedures and observations
+8500,8999,Emergency medicine,emergency,Emergency and casualty codes
+9000,9499,Other,specialist,Miscellaneous specialist codes
+9500,9999,Administration,admin,Administrative and transport codes
