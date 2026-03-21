@@ -5,6 +5,7 @@ import { lookupTariff, findUnbundlingViolations, isDisciplineAllowed, isTariffVa
 import { requireClaimsAuth, validateFileSize } from "@/lib/claims/auth-guard";
 import { isHealthbridgeFormat, parseHealthbridgeClaims } from "@/lib/claims/healthbridge-parser";
 import { generateAutoCorrections } from "@/lib/claims/auto-correct";
+import { runAdvancedValidation } from "@/lib/claims/advanced-rules";
 import type { ColumnMapping, ValidationIssue, ClaimLineItem } from "@/lib/claims/types";
 
 // Max rows to prevent O(n²) timeout
@@ -180,6 +181,9 @@ export async function POST(req: NextRequest) {
 
     // Tariff validation
     mergeIssues(result, validateTariffs(claimLines));
+
+    // Advanced rules (modifiers, place-of-service, clinical appropriateness)
+    mergeIssues(result, runAdvancedValidation(claimLines));
 
     // Scheme-specific rules
     if (schemeCode) {

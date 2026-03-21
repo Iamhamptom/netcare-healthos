@@ -8,7 +8,7 @@ import {
   ArrowRight, TrendingDown, Zap, AlertCircle, Sparkles,
   FileWarning, BadgeCheck, History, Brain, FileDown,
   BarChart3, ArrowUpRight, RefreshCw, Save, Clock,
-  Building2, ChevronRight,
+  Building2, ChevronRight, Copy, Clipboard, Send,
 } from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────
@@ -130,7 +130,7 @@ export default function ClaimsAnalyzerPage() {
   const [fileName, setFileName] = useState<string | null>(null);
   const [expandedLines, setExpandedLines] = useState<Set<number>>(new Set());
   const [filter, setFilter] = useState<"all" | "error" | "warning" | "valid">("all");
-  const [activeTab, setActiveTab] = useState<"upload" | "search" | "history" | "realtime">("upload");
+  const [activeTab, setActiveTab] = useState<"upload" | "search" | "history" | "realtime" | "code">("upload");
   const [scheme, setScheme] = useState("");
   const [saved, setSaved] = useState(false);
   const [popiaConsented, setPopiaConsented] = useState(false);
@@ -157,6 +157,45 @@ export default function ClaimsAnalyzerPage() {
   const [rtAge, setRtAge] = useState("");
   const [rtResult, setRtResult] = useState<ValidationIssue[] | null>(null);
   const [rtLoading, setRtLoading] = useState(false);
+
+  // Code & Submit
+  const [codeNotes, setCodeNotes] = useState("");
+  const [codePatientName, setCodePatientName] = useState("");
+  const [codeGender, setCodeGender] = useState("");
+  const [codeAge, setCodeAge] = useState("");
+  const [codeScheme, setCodeScheme] = useState("");
+  const [codePractitioner, setCodePractitioner] = useState("gp");
+  const [codeDate, setCodeDate] = useState(new Date().toISOString().split("T")[0]);
+  const [codeLoading, setCodeLoading] = useState(false);
+  const [codeResult, setCodeResult] = useState<{
+    codedClaim: {
+      primaryICD10: string;
+      primaryDescription: string;
+      secondaryICD10: string[];
+      secondaryDescriptions: string[];
+      tariffCode: string;
+      tariffDescription: string;
+      nappiCode?: string;
+      nappiDescription?: string;
+      modifier?: string;
+      confidence: "high" | "medium" | "low";
+      reasoning: string;
+      clinicalSummary: string;
+    };
+    validation: ValidationResult;
+    isClean: boolean;
+    issues: string[];
+    submissionReady: boolean;
+    healthbridgeFormat?: string;
+  } | null>(null);
+  const [codeCopied, setCodeCopied] = useState(false);
+  const [codeReasoningOpen, setCodeReasoningOpen] = useState(false);
+
+  // Rejection feedback
+  const [rejectionCode, setRejectionCode] = useState("");
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [rejectionSubmitting, setRejectionSubmitting] = useState(false);
+  const [rejectionSent, setRejectionSent] = useState(false);
 
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -380,6 +419,102 @@ export default function ClaimsAnalyzerPage() {
     setRtLoading(false);
   }
 
+  // ── Code from notes ──
+  async function codeFromNotes() {
+    if (!codeNotes.trim()) return;
+    setCodeLoading(true);
+    setCodeResult(null);
+    setError(null);
+    setCodeCopied(false);
+    setCodeReasoningOpen(false);
+    setRejectionSent(false);
+    setRejectionCode("");
+    setRejectionReason("");
+    try {
+      const res = await fetch("/api/claims/code-from-notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: codeNotes,
+          patientName: codePatientName || undefined,
+          patientGender: codeGender || undefined,
+          patientAge: codeAge ? Number(codeAge) : undefined,
+          schemeCode: codeScheme || undefined,
+          practitionerType: codePractitioner || "gp",
+          dateOfService: codeDate || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || "Clinical coding failed"); return; }
+      setCodeResult(data);
+    } catch {
+      setError("Clinical coding request failed — check your connection.");
+    } finally {
+      setCodeLoading(false);
+    }
+  }
+
+  function copyHealthbridgeLine() {
+    if (!codeResult?.healthbridgeFormat) return;
+    navigator.clipboard.writeText(codeResult.healthbridgeFormat);
+    setCodeCopied(true);
+    setTimeout(() => setCodeCopied(false), 2000);
+  }
+
+  function downloadClaimCSV() {
+    if (!codeResult?.healthbridgeFormat) return;
+    const blob = new Blob([codeResult.healthbridgeFormat], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `claim-${codeResult.codedClaim.primaryICD10}-${codeDate || "today"}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function resetCodeForm() {
+    setCodeNotes("");
+    setCodePatientName("");
+    setCodeGender("");
+    setCodeAge("");
+    setCodeScheme("");
+    setCodePractitioner("gp");
+    setCodeDate(new Date().toISOString().split("T")[0]);
+    setCodeResult(null);
+    setCodeCopied(false);
+    setCodeReasoningOpen(false);
+    setRejectionSent(false);
+    setRejectionCode("");
+    setRejectionReason("");
+    setError(null);
+  }
+
+  async function submitRejectionFeedback() {
+    if (!rejectionCode.trim() || !codeResult) return;
+    setRejectionSubmitting(true);
+    try {
+      const res = await fetch("/api/claims/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          primaryICD10: codeResult.codedClaim.primaryICD10,
+          tariffCode: codeResult.codedClaim.tariffCode,
+          rejectionCode: rejectionCode.trim(),
+          rejectionReason: rejectionReason.trim(),
+          schemeCode: codeScheme || undefined,
+          confidence: codeResult.codedClaim.confidence,
+          notes: codeNotes.substring(0, 200),
+        }),
+      });
+      if (res.ok) setRejectionSent(true);
+      else setError("Failed to submit rejection feedback.");
+    } catch {
+      setError("Feedback submission failed — network error.");
+    } finally {
+      setRejectionSubmitting(false);
+    }
+  }
+
   // ── Toggle line detail ──
   const toggleLine = (ln: number) => {
     setExpandedLines(prev => {
@@ -408,9 +543,9 @@ export default function ClaimsAnalyzerPage() {
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          {(["upload", "realtime", "search", "history"] as const).map(tab => {
-            const icons = { upload: Upload, realtime: Zap, search: Search, history: History };
-            const labels = { upload: "Batch Analyze", realtime: "Quick Check", search: "Code Lookup", history: "History" };
+          {(["upload", "realtime", "code", "search", "history"] as const).map(tab => {
+            const icons = { upload: Upload, realtime: Zap, code: Sparkles, search: Search, history: History };
+            const labels = { upload: "Batch Analyze", realtime: "Quick Check", code: "Code & Submit", search: "Code Lookup", history: "History" };
             const Icon = icons[tab];
             return (
               <button key={tab} onClick={() => setActiveTab(tab)}
@@ -520,6 +655,336 @@ export default function ClaimsAnalyzerPage() {
               </motion.div>
             )}
           </div>
+        </motion.div>
+      )}
+
+      {/* ═══ TAB: CODE & SUBMIT ═══ */}
+      {activeTab === "code" && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          {/* Form card */}
+          {!codeResult && (
+            <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
+              <h3 className="text-[13px] font-semibold text-gray-800 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#E3964C]" />
+                AI Clinical Coder — Notes to Claim
+              </h3>
+              <p className="text-[12px] text-gray-500">Paste your consultation notes below and we&apos;ll generate a fully coded, validated claim line ready for submission.</p>
+
+              {/* Notes textarea */}
+              <div>
+                <label className="text-[11px] text-gray-500 font-medium mb-1 block">Consultation Notes *</label>
+                <textarea
+                  value={codeNotes}
+                  onChange={e => setCodeNotes(e.target.value)}
+                  rows={4}
+                  placeholder="e.g. 45M presents with 3-day history of sore throat, runny nose, mild cough. No fever. Examination: pharynx mildly erythematous, no exudate. Lungs clear. Dx: Acute URTI. Rx: Symptomatic — paracetamol 500mg qid x 5 days."
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-[13px] focus:border-[#3DA9D1] focus:ring-2 focus:ring-[#3DA9D1]/20 outline-none resize-y min-h-[100px] leading-relaxed"
+                />
+              </div>
+
+              {/* Patient details grid */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                <div>
+                  <label className="text-[11px] text-gray-500 font-medium mb-1 block">Patient Name</label>
+                  <input type="text" value={codePatientName} onChange={e => setCodePatientName(e.target.value)}
+                    placeholder="Optional"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] focus:border-[#3DA9D1] outline-none" />
+                </div>
+                <div>
+                  <label className="text-[11px] text-gray-500 font-medium mb-1 block">Gender</label>
+                  <select value={codeGender} onChange={e => setCodeGender(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] focus:border-[#3DA9D1] outline-none">
+                    <option value="">Not specified</option>
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[11px] text-gray-500 font-medium mb-1 block">Age</label>
+                  <input type="number" value={codeAge} onChange={e => setCodeAge(e.target.value)}
+                    placeholder="e.g. 45" min={0} max={120}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] focus:border-[#3DA9D1] outline-none" />
+                </div>
+                <div>
+                  <label className="text-[11px] text-gray-500 font-medium mb-1 block">Scheme</label>
+                  <select value={codeScheme} onChange={e => setCodeScheme(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] focus:border-[#3DA9D1] outline-none">
+                    {SCHEMES.map(s => <option key={s.code} value={s.code}>{s.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[11px] text-gray-500 font-medium mb-1 block">Practitioner</label>
+                  <select value={codePractitioner} onChange={e => setCodePractitioner(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] focus:border-[#3DA9D1] outline-none">
+                    <option value="gp">General Practitioner</option>
+                    <option value="specialist">Specialist</option>
+                    <option value="dentist">Dentist</option>
+                    <option value="physio">Physiotherapist</option>
+                    <option value="optometrist">Optometrist</option>
+                    <option value="psychologist">Psychologist</option>
+                    <option value="psychiatrist">Psychiatrist</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[11px] text-gray-500 font-medium mb-1 block">Date of Service</label>
+                  <input type="date" value={codeDate} onChange={e => setCodeDate(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] focus:border-[#3DA9D1] outline-none" />
+                </div>
+              </div>
+
+              <button onClick={codeFromNotes} disabled={codeLoading || !codeNotes.trim()}
+                className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#1D3443] to-[#3DA9D1] text-white text-[13px] font-medium hover:opacity-90 disabled:opacity-50 transition-all flex items-center gap-2 shadow-sm">
+                {codeLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                {codeLoading ? "Coding claim..." : "Code This Claim"}
+              </button>
+            </div>
+          )}
+
+          {/* Error */}
+          {error && activeTab === "code" && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-[13px] font-medium text-red-800">{error}</p>
+                <button onClick={() => setError(null)}
+                  className="text-[12px] text-red-600 hover:text-red-800 mt-1 underline">Dismiss</button>
+              </div>
+            </div>
+          )}
+
+          {/* Results */}
+          {codeResult && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+              {/* Coded claim card */}
+              <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-[13px] font-semibold text-gray-800 flex items-center gap-2">
+                    <Brain className="w-4 h-4 text-[#3DA9D1]" />
+                    AI-Coded Claim
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    {/* Confidence badge */}
+                    <span className={`text-[11px] px-2.5 py-1 rounded-full font-semibold ${
+                      codeResult.codedClaim.confidence === "high"
+                        ? "bg-green-100 text-green-700"
+                        : codeResult.codedClaim.confidence === "medium"
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-red-100 text-red-700"
+                    }`}>
+                      {codeResult.codedClaim.confidence === "high" ? "High" : codeResult.codedClaim.confidence === "medium" ? "Medium" : "Low"} confidence
+                    </span>
+                    {/* Submission Ready badge */}
+                    <span className={`text-[11px] px-2.5 py-1 rounded-full font-semibold flex items-center gap-1 ${
+                      codeResult.submissionReady
+                        ? "bg-green-50 text-green-700 border border-green-200"
+                        : "bg-red-50 text-red-700 border border-red-200"
+                    }`}>
+                      {codeResult.submissionReady
+                        ? <><CheckCircle2 className="w-3 h-3" /> Submission Ready</>
+                        : <><XCircle className="w-3 h-3" /> Has Issues</>
+                      }
+                    </span>
+                  </div>
+                </div>
+
+                {/* Primary ICD-10 — big and bold */}
+                <div className="bg-gradient-to-r from-[#1D3443]/5 to-[#3DA9D1]/5 rounded-xl p-4 border border-[#3DA9D1]/10">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-[#1D3443] text-white rounded-xl px-4 py-3 text-center shrink-0">
+                      <div className="text-[22px] font-bold font-mono tracking-wide">{codeResult.codedClaim.primaryICD10}</div>
+                      <div className="text-[9px] uppercase tracking-wider opacity-70 mt-0.5">Primary ICD-10</div>
+                    </div>
+                    <div className="flex-1 min-w-0 pt-1">
+                      <p className="text-[14px] font-semibold text-gray-800">{codeResult.codedClaim.primaryDescription}</p>
+                      {codeResult.codedClaim.secondaryICD10.length > 0 && (
+                        <div className="flex items-center gap-2 mt-2 flex-wrap">
+                          <span className="text-[10px] text-gray-400 uppercase tracking-wider">Secondary:</span>
+                          {codeResult.codedClaim.secondaryICD10.map((code, idx) => (
+                            <span key={idx} className="font-mono text-[12px] font-medium text-[#1D3443] bg-gray-100 px-2 py-0.5 rounded">
+                              {code}{codeResult.codedClaim.secondaryDescriptions[idx] ? ` — ${codeResult.codedClaim.secondaryDescriptions[idx]}` : ""}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tariff, NAPPI, Modifier grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Tariff Code</div>
+                    <div className="text-[14px] font-bold font-mono text-[#1D3443]">{codeResult.codedClaim.tariffCode || "—"}</div>
+                    <div className="text-[11px] text-gray-500 mt-0.5">{codeResult.codedClaim.tariffDescription || "Not specified"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">NAPPI Code</div>
+                    <div className="text-[14px] font-bold font-mono text-[#1D3443]">{codeResult.codedClaim.nappiCode || "—"}</div>
+                    <div className="text-[11px] text-gray-500 mt-0.5">{codeResult.codedClaim.nappiDescription || "No medication"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Modifier</div>
+                    <div className="text-[14px] font-bold font-mono text-[#1D3443]">{codeResult.codedClaim.modifier || "—"}</div>
+                    <div className="text-[11px] text-gray-500 mt-0.5">{codeResult.codedClaim.modifier ? "Applied" : "None"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Clinical Summary</div>
+                    <div className="text-[12px] text-gray-700 leading-relaxed">{codeResult.codedClaim.clinicalSummary}</div>
+                  </div>
+                </div>
+
+                {/* AI Reasoning — expandable */}
+                <div className="border border-gray-100 rounded-lg overflow-hidden">
+                  <button onClick={() => setCodeReasoningOpen(!codeReasoningOpen)}
+                    className="w-full flex items-center justify-between p-3 hover:bg-gray-50/50 transition-colors text-left">
+                    <span className="text-[12px] font-medium text-gray-600 flex items-center gap-1.5">
+                      <Brain className="w-3.5 h-3.5 text-[#E3964C]" />AI Reasoning
+                    </span>
+                    {codeReasoningOpen ? <ChevronUp className="w-4 h-4 text-gray-300" /> : <ChevronDown className="w-4 h-4 text-gray-300" />}
+                  </button>
+                  <AnimatePresence>
+                    {codeReasoningOpen && (
+                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                        <div className="px-3 pb-3">
+                          <p className="text-[12px] text-gray-600 leading-relaxed whitespace-pre-line bg-gray-50 rounded-lg p-3">
+                            {codeResult.codedClaim.reasoning}
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+
+              {/* Validation results */}
+              {codeResult.issues.length > 0 && (
+                <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
+                  <h3 className="text-[13px] font-semibold text-gray-800 flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-amber-500" />
+                    Validation Issues ({codeResult.issues.length})
+                  </h3>
+                  <div className="space-y-2">
+                    {codeResult.issues.map((issue, idx) => {
+                      const isError = issue.startsWith("ERROR:");
+                      const isWarning = issue.startsWith("WARNING:");
+                      const config = isError ? severityConfig.error : isWarning ? severityConfig.warning : severityConfig.info;
+                      const Icon = config.icon;
+                      return (
+                        <div key={idx} className="rounded-lg p-3" style={{ backgroundColor: config.bg }}>
+                          <div className="flex items-start gap-2">
+                            <Icon className="w-4 h-4 shrink-0 mt-0.5" style={{ color: config.color }} />
+                            <p className="text-[12px] text-gray-700">{issue}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {/* Validation engine line results if present */}
+                  {codeResult.validation.lineResults?.length > 0 && codeResult.validation.lineResults[0].issues.length > 0 && (
+                    <div className="space-y-2 pt-2 border-t border-gray-100">
+                      <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Detailed Validation</p>
+                      {codeResult.validation.lineResults[0].issues.map((vi, idx) => {
+                        const config = severityConfig[vi.severity];
+                        const Icon = config.icon;
+                        return (
+                          <div key={idx} className="rounded-lg p-3" style={{ backgroundColor: config.bg }}>
+                            <div className="flex items-start gap-2">
+                              <Icon className="w-4 h-4 shrink-0 mt-0.5" style={{ color: config.color }} />
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-0.5">
+                                  <span className="text-[11px] font-semibold" style={{ color: config.color }}>{config.label}</span>
+                                  <span className="text-[10px] font-mono text-gray-400">{vi.code}</span>
+                                </div>
+                                <p className="text-[12px] text-gray-700">{vi.message}</p>
+                                {vi.suggestion && (
+                                  <div className="flex items-start gap-1.5 mt-1.5">
+                                    <ArrowRight className="w-3 h-3 text-[#3DA9D1] shrink-0 mt-0.5" />
+                                    <p className="text-[11px] text-[#3DA9D1]">{vi.suggestion}</p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* No issues — clean */}
+              {codeResult.issues.length === 0 && (
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  <div>
+                    <p className="text-[13px] font-medium text-green-800">Claim is clean — no validation issues detected</p>
+                    <p className="text-[11px] text-green-600">Ready to submit via Healthbridge or your practice management system.</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Action buttons */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <button onClick={copyHealthbridgeLine}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-[12px] font-medium transition-all ${
+                    codeCopied
+                      ? "bg-green-50 text-green-700 border border-green-200"
+                      : "bg-[#1D3443] text-white hover:bg-[#2a4a5e]"
+                  }`}>
+                  {codeCopied ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                  {codeCopied ? "Copied!" : "Copy Healthbridge Line"}
+                </button>
+                <button onClick={downloadClaimCSV}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gray-100 text-gray-600 text-[12px] font-medium hover:bg-gray-200 transition-colors">
+                  <Download className="w-3.5 h-3.5" />Download Claim CSV
+                </button>
+                <button onClick={resetCodeForm}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gray-100 text-gray-600 text-[12px] font-medium hover:bg-gray-200 transition-colors">
+                  <RefreshCw className="w-3.5 h-3.5" />Code Another
+                </button>
+              </div>
+
+              {/* Report Rejection mini-form */}
+              <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
+                <h3 className="text-[13px] font-semibold text-gray-800 flex items-center gap-2">
+                  <FileWarning className="w-4 h-4 text-red-400" />
+                  Report Rejection — Help Us Improve
+                </h3>
+                <p className="text-[11px] text-gray-500">
+                  If this claim was rejected by your scheme, enter the rejection code and reason below. This helps our engine learn from real-world outcomes.
+                </p>
+                {rejectionSent ? (
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-green-50 border border-green-100">
+                    <CheckCircle2 className="w-4 h-4 text-green-600" />
+                    <span className="text-[12px] text-green-700 font-medium">Feedback recorded — thank you.</span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[11px] text-gray-500 font-medium mb-1 block">Rejection Code *</label>
+                        <input type="text" value={rejectionCode} onChange={e => setRejectionCode(e.target.value)}
+                          placeholder="e.g. 300, E01, NAPPI_INVALID"
+                          className="w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] font-mono focus:border-[#3DA9D1] outline-none" />
+                      </div>
+                      <div>
+                        <label className="text-[11px] text-gray-500 font-medium mb-1 block">Rejection Reason</label>
+                        <input type="text" value={rejectionReason} onChange={e => setRejectionReason(e.target.value)}
+                          placeholder="e.g. ICD-10 code not covered under this plan option"
+                          className="w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] focus:border-[#3DA9D1] outline-none" />
+                      </div>
+                    </div>
+                    <button onClick={submitRejectionFeedback} disabled={rejectionSubmitting || !rejectionCode.trim()}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-50 text-red-700 text-[12px] font-medium hover:bg-red-100 border border-red-200 transition-colors disabled:opacity-50">
+                      {rejectionSubmitting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                      Submit Rejection Feedback
+                    </button>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          )}
         </motion.div>
       )}
 
