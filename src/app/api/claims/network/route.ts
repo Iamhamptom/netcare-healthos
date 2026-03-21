@@ -1,80 +1,55 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimitByIp } from "@/lib/rate-limit";
 import { isDemoMode } from "@/lib/is-demo";
-
-// Network-wide claims analytics — aggregated across all practices
-// Accessible to platform_admin only (Thirushen's view)
+import { supabaseAdmin } from "@/lib/supabase";
 
 export async function GET(req: NextRequest) {
   const rl = await rateLimitByIp(req, "claims/network", { limit: 15 });
   if (!rl.allowed) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
-  // Auth — platform_admin only
   if (!isDemoMode) {
     const { getSession } = await import("@/lib/auth");
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const { prisma } = await import("@/lib/prisma");
-    const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { role: true } });
-    if (!user || user.role !== "platform_admin") {
-      return NextResponse.json({ error: "Platform admin access required" }, { status: 403 });
-    }
   }
 
   try {
-    const { prisma } = await import("@/lib/prisma");
+    // All analyses
+    const { data: analyses, error } = await supabaseAdmin
+      .from("claims_analysis")
+      .select("practice_id, total_claims, valid_claims, invalid_claims, rejection_rate, estimated_savings, scheme_code, period, created_at")
+      .order("created_at", { ascending: false });
 
-    // All practices
-    const practices = await prisma.practice.findMany({
-      select: { id: true, name: true, type: true, subdomain: true },
-    });
-
-    // All analyses — grouped by practice
-    const analyses = await prisma.claimsAnalysis.findMany({
-      select: {
-        practiceId: true, totalClaims: true, validClaims: true,
-        invalidClaims: true, rejectionRate: true, estimatedSavings: true,
-        schemeCode: true, period: true, createdAt: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    if (error) throw error;
+    const rows = analyses || [];
 
     // Aggregate per practice
     const practiceStats: Record<string, {
-      practiceId: string; practiceName: string; practiceType: string;
-      totalAnalyses: number; totalClaims: number; totalRejected: number;
-      avgRejectionRate: number; totalSavings: number; lastAnalysis: string;
-      topScheme: string;
+      practiceId: string; totalAnalyses: number; totalClaims: number;
+      totalRejected: number; avgRejectionRate: number; totalSavings: number;
+      lastAnalysis: string;
     }> = {};
-
-    for (const p of practices) {
-      practiceStats[p.id] = {
-        practiceId: p.id,
-        practiceName: p.name,
-        practiceType: p.type,
-        totalAnalyses: 0, totalClaims: 0, totalRejected: 0,
-        avgRejectionRate: 0, totalSavings: 0, lastAnalysis: "",
-        topScheme: "",
-      };
-    }
 
     const schemeCounts: Record<string, number> = {};
 
-    for (const a of analyses) {
-      const stat = practiceStats[a.practiceId];
-      if (stat) {
-        stat.totalAnalyses++;
-        stat.totalClaims += a.totalClaims;
-        stat.totalRejected += a.invalidClaims;
-        stat.totalSavings += a.estimatedSavings;
-        stat.avgRejectionRate += a.rejectionRate;
-        if (!stat.lastAnalysis) stat.lastAnalysis = a.createdAt.toISOString();
+    for (const a of rows) {
+      const pid = a.practice_id || "unknown";
+      if (!practiceStats[pid]) {
+        practiceStats[pid] = {
+          practiceId: pid, totalAnalyses: 0, totalClaims: 0,
+          totalRejected: 0, avgRejectionRate: 0, totalSavings: 0, lastAnalysis: "",
+        };
       }
-      if (a.schemeCode) schemeCounts[a.schemeCode] = (schemeCounts[a.schemeCode] || 0) + 1;
+      const stat = practiceStats[pid];
+      stat.totalAnalyses++;
+      stat.totalClaims += a.total_claims;
+      stat.totalRejected += a.invalid_claims;
+      stat.totalSavings += a.estimated_savings;
+      stat.avgRejectionRate += a.rejection_rate;
+      if (!stat.lastAnalysis) stat.lastAnalysis = a.created_at;
+      if (a.scheme_code) schemeCounts[a.scheme_code] = (schemeCounts[a.scheme_code] || 0) + 1;
     }
 
-    // Finalize averages
     const clinicStats = Object.values(practiceStats)
       .map(s => ({
         ...s,
@@ -82,22 +57,19 @@ export async function GET(req: NextRequest) {
       }))
       .sort((a, b) => b.avgRejectionRate - a.avgRejectionRate);
 
-    // Network totals
-    const totalClinics = practices.length;
-    const clinicsWithData = clinicStats.filter(s => s.totalAnalyses > 0).length;
-    const networkTotalClaims = analyses.reduce((s, a) => s + a.totalClaims, 0);
-    const networkTotalRejected = analyses.reduce((s, a) => s + a.invalidClaims, 0);
+    const networkTotalClaims = rows.reduce((s, a) => s + a.total_claims, 0);
+    const networkTotalRejected = rows.reduce((s, a) => s + a.invalid_claims, 0);
     const networkAvgRate = networkTotalClaims > 0 ? Math.round((networkTotalRejected / networkTotalClaims) * 100) : 0;
-    const networkTotalSavings = analyses.reduce((s, a) => s + a.estimatedSavings, 0);
+    const networkTotalSavings = rows.reduce((s, a) => s + a.estimated_savings, 0);
 
-    // Monthly trend (network-wide)
+    // Monthly trend
     const monthlyTrend: Record<string, { claims: number; rejected: number; savings: number; count: number }> = {};
-    for (const a of analyses) {
-      const month = a.period || a.createdAt.toISOString().substring(0, 7);
+    for (const a of rows) {
+      const month = a.period || (a.created_at as string).substring(0, 7);
       if (!monthlyTrend[month]) monthlyTrend[month] = { claims: 0, rejected: 0, savings: 0, count: 0 };
-      monthlyTrend[month].claims += a.totalClaims;
-      monthlyTrend[month].rejected += a.invalidClaims;
-      monthlyTrend[month].savings += a.estimatedSavings;
+      monthlyTrend[month].claims += a.total_claims;
+      monthlyTrend[month].rejected += a.invalid_claims;
+      monthlyTrend[month].savings += a.estimated_savings;
       monthlyTrend[month].count++;
     }
     const trend = Object.entries(monthlyTrend)
@@ -111,17 +83,11 @@ export async function GET(req: NextRequest) {
       }))
       .sort((a, b) => a.month.localeCompare(b.month));
 
-    // Top 3 worst clinics
-    const worstClinics = clinicStats.filter(s => s.totalAnalyses > 0).slice(0, 5);
-
-    // Top 3 best clinics
-    const bestClinics = clinicStats.filter(s => s.totalAnalyses > 0).slice(-5).reverse();
-
     return NextResponse.json({
       network: {
-        totalClinics,
-        clinicsWithData,
-        totalAnalyses: analyses.length,
+        totalClinics: Object.keys(practiceStats).length,
+        clinicsWithData: clinicStats.filter(s => s.totalAnalyses > 0).length,
+        totalAnalyses: rows.length,
         totalClaims: networkTotalClaims,
         totalRejected: networkTotalRejected,
         avgRejectionRate: networkAvgRate,
@@ -129,8 +95,8 @@ export async function GET(req: NextRequest) {
         topSchemes: Object.entries(schemeCounts).sort((a, b) => b[1] - a[1]).slice(0, 5),
       },
       clinicStats,
-      worstClinics,
-      bestClinics,
+      worstClinics: clinicStats.filter(s => s.totalAnalyses > 0).slice(0, 5),
+      bestClinics: clinicStats.filter(s => s.totalAnalyses > 0).slice(-5).reverse(),
       trend,
     });
   } catch (error) {

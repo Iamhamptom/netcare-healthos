@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireClaimsAuth } from "@/lib/claims/auth-guard";
 import { extractPatterns, predictRejection, generateInsights } from "@/lib/claims/pattern-learning";
+import { supabaseAdmin } from "@/lib/supabase";
 
-// GET — Get rejection patterns + insights for the practice
 export async function GET(req: NextRequest) {
   const auth = await requireClaimsAuth(req, "patterns", { limit: 20 });
   if (!auth.authorized) return auth.response!;
@@ -12,53 +12,52 @@ export async function GET(req: NextRequest) {
     const schemeCode = searchParams.get("scheme") || "";
     const predictCode = searchParams.get("predict") || "";
 
-    const { prisma } = await import("@/lib/prisma");
+    const { data: analyses, error } = await supabaseAdmin
+      .from("claims_analysis")
+      .select("result_json, scheme_code, created_at, rejection_rate, total_claims")
+      .eq("practice_id", auth.practiceId)
+      .order("created_at", { ascending: false })
+      .limit(100);
 
-    // Get all analyses for this practice
-    const analyses = await prisma.claimsAnalysis.findMany({
-      where: { practiceId: auth.practiceId },
-      select: { resultJson: true, schemeCode: true, createdAt: true, rejectionRate: true, totalClaims: true },
-      orderBy: { createdAt: "desc" },
-      take: 100, // Last 100 analyses
-    });
+    if (error) throw error;
+    const rows = analyses || [];
 
-    const analysesForPatterns = analyses.map(a => ({
-      resultJson: a.resultJson,
-      schemeCode: a.schemeCode,
-      createdAt: a.createdAt.toISOString(),
+    const analysesForPatterns = rows.map(a => ({
+      resultJson: a.result_json,
+      schemeCode: a.scheme_code,
+      createdAt: a.created_at,
     }));
 
-    // Extract patterns
     const patterns = extractPatterns(analysesForPatterns);
 
-    // Practice stats
-    const practiceRate = analyses.length > 0
-      ? Math.round(analyses.reduce((s, a) => s + a.rejectionRate, 0) / analyses.length)
+    const practiceRate = rows.length > 0
+      ? Math.round(rows.reduce((s, a) => s + a.rejection_rate, 0) / rows.length)
       : 0;
-    const totalClaims = analyses.reduce((s, a) => s + a.totalClaims, 0);
+    const totalClaims = rows.reduce((s, a) => s + a.total_claims, 0);
 
-    // Network average for comparison
-    const networkStats = await prisma.claimsAnalysis.aggregate({
-      _avg: { rejectionRate: true },
-    });
-    const networkAvgRate = Math.round(networkStats._avg.rejectionRate || 0);
+    // Network average
+    const { data: networkData } = await supabaseAdmin
+      .from("claims_analysis")
+      .select("rejection_rate");
+    const allRates = (networkData || []).map(r => r.rejection_rate);
+    const networkAvgRate = allRates.length > 0
+      ? Math.round(allRates.reduce((s, r) => s + r, 0) / allRates.length)
+      : 0;
 
-    // Generate insights
     const insights = generateInsights(patterns, networkAvgRate, practiceRate, totalClaims);
 
-    // Prediction if requested
     let prediction = null;
     if (predictCode) {
       prediction = predictRejection(predictCode, schemeCode, patterns);
     }
 
     return NextResponse.json({
-      patterns: patterns.slice(0, 50), // Top 50
+      patterns: patterns.slice(0, 50),
       insights,
       prediction,
       practiceRate,
       networkAvgRate,
-      dataPoints: analyses.length,
+      dataPoints: rows.length,
     });
   } catch (error) {
     console.error("Patterns error:", error);

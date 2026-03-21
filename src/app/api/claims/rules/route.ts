@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireClaimsAuth } from "@/lib/claims/auth-guard";
+import { supabaseAdmin } from "@/lib/supabase";
 
 // GET — List all rules for the practice (global + practice-specific)
 export async function GET(req: NextRequest) {
@@ -7,16 +8,27 @@ export async function GET(req: NextRequest) {
   if (!auth.authorized) return auth.response!;
 
   try {
-    const { prisma } = await import("@/lib/prisma");
-    const rules = await prisma.claimsRule.findMany({
-      where: {
-        OR: [
-          { practiceId: "" },              // Global rules
-          { practiceId: auth.practiceId }, // Practice-specific
-        ],
-      },
-      orderBy: [{ category: "asc" }, { ruleCode: "asc" }],
-    });
+    const { data, error } = await supabaseAdmin
+      .from("claims_rule")
+      .select("*")
+      .or(`practice_id.eq.,practice_id.eq.${auth.practiceId}`)
+      .order("category", { ascending: true });
+
+    if (error) throw error;
+
+    const rules = (data || []).map(r => ({
+      id: r.id,
+      practiceId: r.practice_id,
+      ruleCode: r.rule_code,
+      name: r.name,
+      description: r.description,
+      severity: r.severity,
+      enabled: r.enabled,
+      category: r.category,
+      metadata: r.metadata,
+      createdAt: r.created_at,
+      updatedAt: r.updated_at,
+    }));
 
     return NextResponse.json({ rules });
   } catch (error) {
@@ -38,34 +50,46 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "ruleCode and name are required" }, { status: 400 });
     }
 
-    const { prisma } = await import("@/lib/prisma");
-    const rule = await prisma.claimsRule.upsert({
-      where: {
-        practiceId_ruleCode: {
-          practiceId: auth.practiceId,
-          ruleCode,
-        },
-      },
-      create: {
-        practiceId: auth.practiceId,
-        ruleCode,
-        name,
-        description: description || "",
-        severity: severity || "error",
-        enabled: enabled !== false,
-        category: category || "custom",
-        metadata: metadata ? JSON.stringify(metadata) : "{}",
-      },
-      update: {
-        name,
-        description: description || undefined,
-        severity: severity || undefined,
-        enabled: enabled !== undefined ? enabled : undefined,
-        metadata: metadata ? JSON.stringify(metadata) : undefined,
-      },
-    });
+    // Check if exists
+    const { data: existing } = await supabaseAdmin
+      .from("claims_rule")
+      .select("id")
+      .eq("practice_id", auth.practiceId)
+      .eq("rule_code", ruleCode)
+      .single();
 
-    return NextResponse.json({ rule, saved: true });
+    if (existing) {
+      // Update
+      const { error } = await supabaseAdmin
+        .from("claims_rule")
+        .update({
+          name,
+          description: description || "",
+          severity: severity || "error",
+          enabled: enabled !== false,
+          metadata: metadata ? JSON.stringify(metadata) : "{}",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", existing.id);
+      if (error) throw error;
+    } else {
+      // Create
+      const { error } = await supabaseAdmin
+        .from("claims_rule")
+        .insert({
+          practice_id: auth.practiceId,
+          rule_code: ruleCode,
+          name,
+          description: description || "",
+          severity: severity || "error",
+          enabled: enabled !== false,
+          category: category || "custom",
+          metadata: metadata ? JSON.stringify(metadata) : "{}",
+        });
+      if (error) throw error;
+    }
+
+    return NextResponse.json({ saved: true });
   } catch (error) {
     console.error("Rule save error:", error);
     return NextResponse.json({ error: "Failed to save rule" }, { status: 500 });
@@ -82,10 +106,13 @@ export async function DELETE(req: NextRequest) {
     const ruleCode = searchParams.get("ruleCode");
     if (!ruleCode) return NextResponse.json({ error: "ruleCode required" }, { status: 400 });
 
-    const { prisma } = await import("@/lib/prisma");
-    await prisma.claimsRule.deleteMany({
-      where: { practiceId: auth.practiceId, ruleCode },
-    });
+    const { error } = await supabaseAdmin
+      .from("claims_rule")
+      .delete()
+      .eq("practice_id", auth.practiceId)
+      .eq("rule_code", ruleCode);
+
+    if (error) throw error;
 
     return NextResponse.json({ deleted: true });
   } catch (error) {
