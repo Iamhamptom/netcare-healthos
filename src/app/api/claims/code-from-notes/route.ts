@@ -49,8 +49,9 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ error: "Provide 'text' for single note or 'notes' array for batch" }, { status: 400 });
-  } catch (error) {
-    console.error("Clinical coding error:", error);
-    return NextResponse.json({ error: "Clinical coding failed" }, { status: 500 });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("Clinical coding error:", msg);
+    return NextResponse.json({ error: `Clinical coding failed: ${msg}` }, { status: 500 });
   }
 }

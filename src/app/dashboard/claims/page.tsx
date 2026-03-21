@@ -8,7 +8,7 @@ import {
   ArrowRight, TrendingDown, Zap, AlertCircle, Sparkles,
   FileWarning, BadgeCheck, History, Brain, FileDown,
   BarChart3, ArrowUpRight, RefreshCw, Save, Clock,
-  Building2, ChevronRight, Copy, Clipboard, Send,
+  Building2, ChevronRight, Copy, Send,
 } from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────
@@ -501,9 +501,8 @@ export default function ClaimsAnalyzerPage() {
           tariffCode: codeResult.codedClaim.tariffCode,
           rejectionCode: rejectionCode.trim(),
           rejectionReason: rejectionReason.trim(),
-          schemeCode: codeScheme || undefined,
-          confidence: codeResult.codedClaim.confidence,
-          notes: codeNotes.substring(0, 200),
+          schemeCode: codeScheme || "UNKNOWN",
+          dateOfService: codeDate || undefined,
         }),
       });
       if (res.ok) setRejectionSent(true);

@@ -4,6 +4,7 @@
 import { NextResponse } from "next/server";
 import { guardRoute, isErrorResponse } from "@/lib/api-helpers";
 import { routeClaim, submitRoutedClaim, getSwitchStatus, validateClinicalRules, runFraudScan } from "@/lib/switching";
+import { recordClaimOutcome } from "@/lib/ml/reinforcement";
 
 export async function GET(req: Request) {
   const guard = await guardRoute(req, "switching-route");
@@ -93,6 +94,25 @@ export async function POST(req: Request) {
     } catch (dbErr) {
       console.error("[switching/route] DB persistence failed:", dbErr instanceof Error ? dbErr.message : dbErr);
     }
+
+    // Reinforcement learning — record outcome for automatic learning
+    try {
+      recordClaimOutcome({
+        claimRef: response.transactionRef,
+        scheme: claim.medicalAidScheme || "",
+        icd10Codes: claim.lineItems?.map((li: { icd10Code: string }) => li.icd10Code).filter(Boolean) || [],
+        tariffCodes: claim.lineItems?.map((li: { cptCode: string }) => li.cptCode).filter(Boolean) || [],
+        status: response.status as "accepted" | "rejected" | "partial",
+        rejectionCode: response.rejectionCode,
+        rejectionReason: response.rejectionReason,
+        approvedAmount: response.approvedAmount,
+        claimedAmount: claim.lineItems?.reduce((s: number, li: { amount: number; quantity: number }) => s + li.amount * li.quantity, 0) || 0,
+        switchProvider: response.routedTo,
+        latencyMs: 0,
+        wasPredicted: clinicalErrors.length > 0,
+        validationIssues: clinicalIssues.map(i => i.message),
+      });
+    } catch { /* Non-blocking */ }
 
     return NextResponse.json({
       routing,
