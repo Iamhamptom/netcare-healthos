@@ -5,7 +5,7 @@ import {
   BookOpen, Zap, Shield, Building2, Brain, BarChart3,
   ArrowRight, CheckCircle2, AlertTriangle, Server,
   Database, Heart, TrendingUp, Globe, Users, Clock,
-  FileText, Radio, Layers, Target,
+  FileText, Radio, Layers, Target, Download,
 } from "lucide-react";
 
 const fadeIn = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 } };
@@ -37,6 +37,13 @@ export default function ResearchPaperPage() {
           <span>|</span>
           <span>v1.0</span>
         </div>
+        <a
+          href="/api/bridge/careon/export-pdf"
+          className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 rounded-lg bg-[#1D3443] text-white text-[12px] font-medium hover:bg-[#1D3443]/90 transition-colors"
+        >
+          <Download className="w-4 h-4" />
+          Download Executive Summary PDF
+        </a>
       </motion.div>
 
       {/* Executive Summary */}

@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   Calculator, TrendingUp, Building2, DollarSign,
-  Users, Zap, AlertTriangle, ArrowRight,
+  Users, Zap, AlertTriangle, ArrowRight, Download,
 } from "lucide-react";
 
 // ── Netcare Primary Care constants (from FY2025 audited results) ──
@@ -91,10 +91,21 @@ export default function ROICalculatorPage() {
           <Calculator className="w-4 h-4 text-[#E3964C]" />
           <span className="text-[11px] text-gray-400 uppercase tracking-widest font-semibold">Business Case</span>
         </div>
-        <h1 className="text-2xl font-semibold text-gray-900">CareOn Bridge — ROI Calculator</h1>
-        <p className="text-[13px] text-gray-500 mt-1">
-          Pre-populated with Netcare Primary Care FY2025 actuals. Adjust the inputs to model your pilot scope.
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900">CareOn Bridge — ROI Calculator</h1>
+            <p className="text-[13px] text-gray-500 mt-1">
+              Pre-populated with Netcare Primary Care FY2025 actuals. Adjust the inputs to model your pilot scope.
+            </p>
+          </div>
+          <a
+            href="/api/bridge/careon/export-pdf"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1D3443] text-white text-[12px] font-medium hover:bg-[#1D3443]/90 transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            Download PDF Report
+          </a>
+        </div>
       </div>
 
       <div className="grid grid-cols-3 gap-6">
