@@ -1,0 +1,14 @@
+{
+  "date": "2026-03-21",
+  "version": "v61",
+  "composite_score": 85,
+  "max_score": 100,
+  "clinical_readiness": "CONDITIONAL",
+  "sections": {
+    "pii": "FAIL",
+    "clinical_nlp": "PASS",
+    "ai_quality": "PASS",
+    "red_team": "PASS",
+    "financial": "PASS"
+  }
+}

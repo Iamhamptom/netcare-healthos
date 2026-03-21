@@ -13,16 +13,21 @@ import re
 import spacy
 import medspacy
 from medspacy.ner import TargetMatcher, TargetRule
-from medspacy.context import ConTextComponent
 
 # ── Build the clinical NLP pipeline ────────────────────────────────────
 
 def build_nlp():
     """Build a medspacy pipeline with SA primary care clinical entities."""
-    nlp = medspacy.load(enable=["medspacy_pyrush", "medspacy_context"])
+    from spacy.tokens import Span
+    # Register custom extension attributes
+    for attr in ["icd10", "nappi_prefix", "cpt"]:
+        if not Span.has_extension(attr):
+            Span.set_extension(attr, default=None)
 
-    # Add target matcher for clinical conditions
-    target_matcher = nlp.add_pipe("medspacy_target_matcher")
+    nlp = medspacy.load(enable=["medspacy_pyrush", "medspacy_target_matcher", "medspacy_context"])
+
+    # Get the target matcher component
+    target_matcher = nlp.get_pipe("medspacy_target_matcher")
 
     # ICD-10 condition rules — map clinical terms to ICD-10 codes
     target_rules = [
@@ -38,8 +43,13 @@ def build_nlp():
 
         # Diabetes
         TargetRule("diabetes type 2", "CONDITION",
-                   pattern=[{"LOWER": "diabetes"}, {"LOWER": {"IN": ["type", "mellitus"]}, "OP": "?"},
-                            {"LOWER": {"IN": ["2", "ii"]}, "OP": "?"}],
+                   pattern=[{"LOWER": "diabetes"}, {"LOWER": "type"}, {"LOWER": "2"}],
+                   attributes={"icd10": "E11.9"}),
+        TargetRule("diabetes mellitus", "CONDITION",
+                   pattern=[{"LOWER": "diabetes"}, {"LOWER": "mellitus"}],
+                   attributes={"icd10": "E11.9"}),
+        TargetRule("diabetes", "CONDITION",
+                   pattern=[{"LOWER": "diabetes"}],
                    attributes={"icd10": "E11.9"}),
         TargetRule("type 2 diabetes", "CONDITION",
                    pattern=[{"LOWER": "type"}, {"LOWER": "2"}, {"LOWER": {"IN": ["diabetes", "dm"]}}],
@@ -69,8 +79,7 @@ def build_nlp():
                    pattern=[{"LOWER": {"IN": ["fever", "pyrexia", "febrile"]}}],
                    attributes={"icd10": "R50.9"}),
         TargetRule("temperature elevation", "CONDITION",
-                   pattern=[{"LOWER": {"IN": ["temperature", "temp"]}},
-                            {"LIKE_NUM": True, "OP": "?"}],
+                   pattern=[{"LOWER": {"IN": ["temperature", "temp"]}}],
                    attributes={"icd10": "R50.9"}),
 
         # ENT
@@ -92,8 +101,13 @@ def build_nlp():
                    pattern=[{"LOWER": {"IN": ["headache", "cephalgia"]}}],
                    attributes={"icd10": "R51"}),
         TargetRule("back pain", "CONDITION",
-                   pattern=[{"LOWER": {"IN": ["back", "lower"]}}, {"LOWER": {"IN": ["pain", "back"], "OP": "?"}},
-                            {"LOWER": "pain", "OP": "?"}],
+                   pattern=[{"LOWER": "back"}, {"LOWER": "pain"}],
+                   attributes={"icd10": "M54.5"}),
+        TargetRule("lower back pain", "CONDITION",
+                   pattern=[{"LOWER": "lower"}, {"LOWER": "back"}, {"LOWER": "pain"}],
+                   attributes={"icd10": "M54.5"}),
+        TargetRule("lumbago", "CONDITION",
+                   pattern=[{"LOWER": "lumbago"}],
                    attributes={"icd10": "M54.5"}),
 
         # Shortness of breath
@@ -109,8 +123,10 @@ def build_nlp():
 
         # Wellness
         TargetRule("wellness check", "CONDITION",
-                   pattern=[{"LOWER": {"IN": ["routine", "wellness", "check"]}},
-                            {"LOWER": {"IN": ["check", "examination", "exam"]}, "OP": "?"}],
+                   pattern=[{"LOWER": {"IN": ["routine", "wellness"]}}],
+                   attributes={"icd10": "Z00.0"}),
+        TargetRule("check-up", "CONDITION",
+                   pattern=[{"LOWER": {"IN": ["check-up", "checkup"]}}],
                    attributes={"icd10": "Z00.0"}),
         TargetRule("general examination", "CONDITION",
                    pattern=[{"LOWER": "general"}, {"LOWER": {"IN": ["examination", "exam"]}}],

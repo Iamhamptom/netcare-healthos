@@ -219,6 +219,7 @@ SCENARIOS = [
             "MEDICAL_AID_NUMBER": True,
             "PHONE_NUMBER": True,   # Contact info acceptable in detail
             "EMAIL_ADDRESS": True,
+            "URL": True,            # Email domains detected as URLs — acceptable
             "DATE_TIME": True,
         },
         "critical_pii": [],
@@ -325,6 +326,7 @@ def run_pii_scan():
 
     # Initialize Presidio with English NLP engine (en_core_web_sm)
     nlp_engine = SpacyNlpEngine(models=[{"lang_code": "en", "model_name": "en_core_web_sm"}])
+    nlp_engine.load()
     registry = RecognizerRegistry()
     registry.load_predefined_recognizers(nlp_engine=nlp_engine)
     # Add SA-specific recognizers

@@ -147,7 +147,15 @@ function fallbackSuggestion(notes: string): CodingSuggestion {
   ];
 
   for (const kw of keywords) {
-    if (kw.terms.some((t) => lower.includes(t))) {
+    if (kw.terms.some((t) => {
+      const idx = lower.indexOf(t);
+      if (idx === -1) return false;
+      // Negation-aware: check if preceded by negation words within 30 chars
+      const prefix = lower.slice(Math.max(0, idx - 30), idx);
+      const negations = ["no ", "not ", "denies ", "denied ", "without ", "absent ", "negative for ", "rules out ", "ruled out ", "unlikely ", "no evidence of "];
+      if (negations.some((neg) => prefix.includes(neg))) return false;
+      return true;
+    })) {
       const cdl = isCDLCondition(kw.code);
       icd10Codes.push({
         code: kw.code,

@@ -5,6 +5,7 @@ import { sanitize, validateRequired } from "@/lib/validate";
 import { submitClaim } from "@/lib/healthbridge/client";
 import { buildClaimXML } from "@/lib/healthbridge/xml";
 import { isValidICD10, isValidCPT } from "@/lib/healthbridge/codes";
+import { maskIdNumber, maskMembership } from "@/lib/healthbridge/encrypt";
 import type { ClaimSubmission, ClaimLineItem } from "@/lib/healthbridge/types";
 
 export async function GET(request: Request) {
@@ -29,7 +30,15 @@ export async function GET(request: Request) {
     orderBy: { createdAt: "desc" },
     take: 100,
   });
-  return NextResponse.json({ claims });
+  // Mask PII in list responses (POPIA Section 19)
+  const masked = claims.map((c: Record<string, unknown>) => ({
+    ...c,
+    patientIdNumber: maskIdNumber(String(c.patientIdNumber || "")),
+    membershipNumber: maskMembership(String(c.membershipNumber || "")),
+    requestXml: "", // Strip XML from list view (contains PII)
+    responseXml: "", // Strip XML from list view
+  }));
+  return NextResponse.json({ claims: masked });
 }
 
 export async function POST(request: Request) {

@@ -155,7 +155,7 @@ const ASTERISK_CODES = [
   "G99", "H03", "H06", "H13", "H19", "H22", "H28", "H32", "H45", "H48",
   "H58", "H62", "H67", "H75", "H82", "H94", "I32", "I39", "I41", "I52",
   "I68", "I79", "I98", "J91", "J99", "L14", "L45", "L54", "L62", "L86",
-  "N74", "P75",
+  "P75",
 ];
 
 /**
@@ -335,11 +335,23 @@ export function validateClinicalRules(data: {
   const issues: ClinicalValidationIssue[] = [];
   const allCodes = data.allIcd10Codes || [data.primaryIcd10, ...(data.secondaryIcd10s || [])];
 
-  // Gender restriction
-  if (data.patientGender && data.patientGender !== "U") {
-    const genderCheck = validateGenderForCode(data.primaryIcd10, data.patientGender);
-    if (!genderCheck.valid) {
-      issues.push({ rule: "GENDER_RESTRICTION", severity: "error", message: genderCheck.message!, category: "gender" });
+  // Gender restriction — check primary and ALL secondary codes
+  if (data.patientGender) {
+    const codesToCheck = [data.primaryIcd10, ...(data.secondaryIcd10s || [])];
+    for (const code of codesToCheck) {
+      if (!code) continue;
+      if (data.patientGender === "U") {
+        // Unknown gender — warn if code has a restriction
+        const restriction = getGenderRestriction(code);
+        if (restriction) {
+          issues.push({ rule: "GENDER_UNKNOWN", severity: "warning", message: `Code "${code}" is restricted to ${restriction === "M" ? "male" : "female"} patients but patient gender is unknown — verify before submission`, category: "gender" });
+        }
+      } else {
+        const genderCheck = validateGenderForCode(code, data.patientGender);
+        if (!genderCheck.valid) {
+          issues.push({ rule: "GENDER_RESTRICTION", severity: "error", message: genderCheck.message!, category: "gender" });
+        }
+      }
     }
   }
 

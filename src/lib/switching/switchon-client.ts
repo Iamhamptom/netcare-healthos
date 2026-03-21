@@ -281,6 +281,7 @@ function esc(str: string): string {
 }
 
 function extractTag(xml: string, tag: string): string | null {
-  const match = xml.match(new RegExp(`<${tag}[^>]*>([^<]*)</${tag}>`));
+  const escapedTag = tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = xml.match(new RegExp(`<${escapedTag}[^>]*>([^<]*)</${escapedTag}>`));
   return match ? match[1].trim() : null;
 }

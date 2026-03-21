@@ -84,7 +84,7 @@ export function generateEDIFACT(claim: ClaimSubmission, options?: {
     const amtStr = fmtAmt(item.amount * item.quantity);
     segments.push(`MOA${DATA_SEP}203${COMP_SEP}${amtStr}`);
 
-    const vatAmt = Math.round(item.amount * item.quantity * 0.15);
+    const vatAmt = Math.round((item.amount * item.quantity * 15) / 100);
     segments.push(`TAX${DATA_SEP}7${DATA_SEP}VAT${DATA_SEP}${DATA_SEP}${DATA_SEP}${DATA_SEP}135${COMP_SEP}${fmtAmt(vatAmt)}`);
 
     if (item.modifiers?.length) {

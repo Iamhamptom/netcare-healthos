@@ -113,8 +113,7 @@ async function processClaimWithRetry(
 
     try {
       const response = await submitRoutedClaim(claim);
-      const latency = Date.now() - startTime;
-      updateSwitchHealth(response.routedTo, true, latency);
+      // Note: submitRoutedClaim already calls updateSwitchHealth internally — no double-update
 
       return {
         claimId: `claim-${index}`,
@@ -127,7 +126,7 @@ async function processClaimWithRetry(
     } catch (err) {
       const latency = Date.now() - startTime;
       lastError = err instanceof Error ? err.message : "Unknown error";
-      updateSwitchHealth(claim.medicalAidScheme as never, false, latency);
+      // submitRoutedClaim already calls updateSwitchHealth on error too — no duplicate call needed
 
       if (attempt < maxRetries) {
         // Exponential backoff: 2s, 4s, 8s

@@ -1,3 +1,5 @@
+import { isPMBCondition } from "../healthbridge/pmb";
+
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // Fraud, Waste & Abuse Detection Engine
 // Based on VisioCorp Health Intelligence KB 07 — R22-28B annual SA problem
@@ -39,7 +41,7 @@ export type FraudType =
 const UNBUNDLING_RULES: { components: string[]; bundle: string; description: string }[] = [
   { components: ["3617", "3615", "3610", "3612", "3614"], bundle: "3600", description: "Laparoscopic cholecystectomy billed as separate components" },
   { components: ["3812", "3810", "3814"], bundle: "3800", description: "FBC billed as individual tests (haemoglobin + WCC + platelet)" },
-  { components: ["4052", "4050", "4054"], bundle: "4050", description: "Metabolic panel billed as separate chemistry tests" },
+  { components: ["4052", "4053", "4054"], bundle: "4050", description: "Metabolic panel billed as separate chemistry tests" },
   { components: ["3841", "3843", "3845"], bundle: "3840", description: "Coagulation panel billed as individual tests" },
   { components: ["0401", "0402", "0403"], bundle: "0400", description: "Wound care billed as separate components (clean + suture + dress)" },
 ];
@@ -333,15 +335,15 @@ export function applySchemeSpecificRules(data: {
     });
   }
 
-  // Momentum: PMB letter must be sent by practice
+  // Momentum: PMB letter must be sent by practice (only for actual PMB conditions)
   if (scheme.includes("momentum")) {
     for (const code of data.icd10Codes) {
-      if (/^[COIST]\d{2}/.test(code) || code.startsWith("B20")) {
+      if (isPMBCondition(code)) {
         flags.push({
           scheme: "Momentum Health",
           rule: "MOMENTUM_PMB_LETTER",
           severity: "info",
-          message: "Momentum requires practice to send a PMB motivation letter for this condition",
+          message: `Momentum requires practice to send a PMB motivation letter for "${code}"`,
           suggestion: "Submit PMB motivation letter to Momentum before or alongside the claim",
         });
         break;

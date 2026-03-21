@@ -10,19 +10,6 @@ import { isPMBCondition, isCDLCondition } from "../healthbridge/pmb";
 
 // ─── Pre-Auth Rules (which procedures need pre-authorization) ──────────────
 
-interface PreAuthRule {
-  /** CPT code patterns that require pre-auth */
-  cptPatterns: string[];
-  /** ICD-10 code patterns that require pre-auth */
-  icd10Patterns?: string[];
-  /** Always requires auth regardless of scheme */
-  mandatory: boolean;
-  /** Description */
-  description: string;
-  /** Estimated turnaround time */
-  turnaroundDays: number;
-}
-
 /** Procedure category identifiers for the 9 pre-auth categories */
 export type PreAuthCategory =
   | "specialist_referral"

@@ -3,7 +3,7 @@
 
 import { NextResponse } from "next/server";
 import { guardRoute, isErrorResponse } from "@/lib/api-helpers";
-import { routeClaim, submitRoutedClaim, getSwitchStatus } from "@/lib/switching";
+import { routeClaim, submitRoutedClaim, getSwitchStatus, validateClinicalRules, runFraudScan } from "@/lib/switching";
 
 export async function GET(req: Request) {
   const guard = await guardRoute(req, "switching-route");
@@ -32,6 +32,35 @@ export async function POST(req: Request) {
     if (!claim) {
       return NextResponse.json({ error: "Claim data is required" }, { status: 400 });
     }
+
+    // Pre-submission clinical validation (clinical-rules.ts + fraud-engine.ts)
+    const clinicalIssues = claim.lineItems?.length ? validateClinicalRules({
+      primaryIcd10: claim.lineItems[0]?.icd10Code || "",
+      secondaryIcd10s: claim.lineItems.slice(1).map((li: { icd10Code: string }) => li.icd10Code).filter(Boolean),
+      patientGender: claim.patientGender,
+      patientAge: claim.patientAge,
+      allIcd10Codes: claim.lineItems.map((li: { icd10Code: string }) => li.icd10Code).filter(Boolean),
+    }) : [];
+
+    const clinicalErrors = clinicalIssues.filter(i => i.severity === "error");
+    if (clinicalErrors.length > 0) {
+      return NextResponse.json({
+        error: "Pre-submission validation failed",
+        clinicalIssues: clinicalErrors,
+        message: clinicalErrors.map(e => e.message).join("; "),
+      }, { status: 422 });
+    }
+
+    // Fraud scan (non-blocking — returns warnings alongside response)
+    const fraudResult = runFraudScan({
+      tariffCodes: claim.lineItems?.map((li: { cptCode: string }) => li.cptCode).filter(Boolean) || [],
+      consultationCodes: claim.lineItems?.map((li: { cptCode: string }) => li.cptCode).filter(Boolean) || [],
+      claimsWithModifiers: claim.lineItems?.map((li: { modifiers?: string[]; dateOfService?: string }) => ({
+        modifiers: li.modifiers,
+        dateOfService: claim.dateOfService || "",
+      })) || [],
+      claimsForDuplicateCheck: [],
+    });
 
     const routing = routeClaim(claim.medicalAidScheme);
     const response = await submitRoutedClaim(claim, {
@@ -65,7 +94,13 @@ export async function POST(req: Request) {
       console.error("[switching/route] DB persistence failed:", dbErr instanceof Error ? dbErr.message : dbErr);
     }
 
-    return NextResponse.json({ routing, response, edifact: response.edifact });
+    return NextResponse.json({
+      routing,
+      response,
+      edifact: response.edifact,
+      clinicalWarnings: clinicalIssues.filter(i => i.severity !== "error"),
+      fraudFlags: fraudResult.flags.length > 0 ? fraudResult : undefined,
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });
