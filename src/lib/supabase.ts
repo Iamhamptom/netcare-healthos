@@ -52,4 +52,8 @@ export const tables = {
   integrationStatus: "ho_integration_status",
   // WhatsApp
   clinicDirectory: "ho_clinic_directory",
+  // CareOn Bridge
+  bridgeAdvisories: "ho_bridge_advisories",
+  bridgeMessages: "ho_bridge_messages",
+  bridgeAudit: "ho_bridge_audit",
 } as const;

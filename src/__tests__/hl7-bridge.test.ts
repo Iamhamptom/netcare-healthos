@@ -70,7 +70,7 @@ const MINIMAL_MSG = `MSH|${ENC}|TEST|TEST_FAC|RECV|RECV_FAC|20260320120000||ADT^
 
 describe("HL7v2 Parser", () => {
   describe("parseHL7Message", () => {
-    it("parses MSH header correctly from ADT message", () => {
+    it("parses MSH header correctly from ADT message", async () => {
       const msg = parseHL7Message(ADMIT_MSG);
       expect(msg.messageType).toBe("ADT^A01");
       expect(msg.messageId).toBe("MSG001");
@@ -82,40 +82,40 @@ describe("HL7v2 Parser", () => {
       expect(msg.version).toBe("2.4");
     });
 
-    it("parses MSH header from ORU message", () => {
+    it("parses MSH header from ORU message", async () => {
       const msg = parseHL7Message(LAB_MSG);
       expect(msg.messageType).toBe("ORU^R01");
       expect(msg.messageId).toBe("MSG003");
       expect(msg.sendingFacility).toBe("NETCARE_GARDEN_CITY");
     });
 
-    it("parses MSH header from ORM message", () => {
+    it("parses MSH header from ORM message", async () => {
       const msg = parseHL7Message(ORDER_MSG);
       expect(msg.messageType).toBe("ORM^O01");
       expect(msg.messageId).toBe("MSG005");
     });
 
-    it("handles different line endings (LF, CR, CRLF)", () => {
+    it("handles different line endings (LF, CR, CRLF)", async () => {
       const lfMsg = MINIMAL_MSG.replace(/\r/g, "\n");
       const crlfMsg = MINIMAL_MSG.replace(/\r/g, "\r\n");
       expect(parseHL7Message(lfMsg).messageType).toBe("ADT^A08");
       expect(parseHL7Message(crlfMsg).messageType).toBe("ADT^A08");
     });
 
-    it("throws on invalid message without MSH", () => {
+    it("throws on invalid message without MSH", async () => {
       expect(() => parseHL7Message("PID|||12345")).toThrow("Invalid HL7 message: no MSH segment");
     });
 
-    it("throws on empty string", () => {
+    it("throws on empty string", async () => {
       expect(() => parseHL7Message("")).toThrow();
     });
 
-    it("finds correct number of segments", () => {
+    it("finds correct number of segments", async () => {
       const msg = parseHL7Message(ADMIT_MSG);
       expect(msg.segments.length).toBe(6); // MSH, PID, PV1, IN1, DG1, DG1
     });
 
-    it("parses minimal message with only MSH", () => {
+    it("parses minimal message with only MSH", async () => {
       const msg = parseHL7Message(MINIMAL_MSG);
       expect(msg.messageType).toBe("ADT^A08");
       expect(msg.segments.length).toBe(1);
@@ -123,7 +123,7 @@ describe("HL7v2 Parser", () => {
   });
 
   describe("extractPatient", () => {
-    it("extracts patient demographics from ADT message", () => {
+    it("extracts patient demographics from ADT message", async () => {
       const msg = parseHL7Message(ADMIT_MSG);
       const patient = extractPatient(msg);
       expect(patient).not.toBeNull();
@@ -135,7 +135,7 @@ describe("HL7v2 Parser", () => {
       expect(patient!.gender).toBe("M");
     });
 
-    it("extracts medical aid from IN1 segment", () => {
+    it("extracts medical aid from IN1 segment", async () => {
       const msg = parseHL7Message(ADMIT_MSG);
       const patient = extractPatient(msg);
       expect(patient!.medicalAidScheme).toBe("DISCOVERY");
@@ -143,12 +143,12 @@ describe("HL7v2 Parser", () => {
       expect(patient!.medicalAidNo).toBe("DH-001-4521-88");
     });
 
-    it("returns null when no PID segment", () => {
+    it("returns null when no PID segment", async () => {
       const msg = parseHL7Message(MINIMAL_MSG);
       expect(extractPatient(msg)).toBeNull();
     });
 
-    it("handles patient without IN1 segment", () => {
+    it("handles patient without IN1 segment", async () => {
       const noInsMsg = [
         `MSH|${ENC}|TEST|FAC|R|RF|20260320120000||ADT^A01|M1|P|2.4`,
         `PID|||MRN-999^^^||SMITH^JANE||19900101|F`,
@@ -159,7 +159,7 @@ describe("HL7v2 Parser", () => {
       expect(patient!.medicalAidNo).toBe("");
     });
 
-    it("extracts phone and address correctly", () => {
+    it("extracts phone and address correctly", async () => {
       const msg = parseHL7Message(ADMIT_MSG);
       const patient = extractPatient(msg);
       expect(patient!.phone).toBe("+27824561234");
@@ -169,7 +169,7 @@ describe("HL7v2 Parser", () => {
   });
 
   describe("extractEncounter", () => {
-    it("extracts encounter from PV1 segment", () => {
+    it("extracts encounter from PV1 segment", async () => {
       const msg = parseHL7Message(ADMIT_MSG);
       const enc = extractEncounter(msg);
       expect(enc).not.toBeNull();
@@ -180,27 +180,27 @@ describe("HL7v2 Parser", () => {
       expect(enc!.facility).toBe("MILPARK");
     });
 
-    it("extracts attending doctor name", () => {
+    it("extracts attending doctor name", async () => {
       const msg = parseHL7Message(ADMIT_MSG);
       const enc = extractEncounter(msg);
       expect(enc!.attendingDoctor).toContain("PRIYA");
       expect(enc!.attendingDoctor).toContain("NAIDOO");
     });
 
-    it("returns null when no PV1 segment", () => {
+    it("returns null when no PV1 segment", async () => {
       const noPV1 = `MSH|${ENC}|T|F|R|RF|20260320120000||ADT^A01|M1|P|2.4\rPID|||MRN-1`;
       expect(extractEncounter(parseHL7Message(noPV1))).toBeNull();
     });
   });
 
   describe("extractObservations", () => {
-    it("extracts all OBX segments from lab message", () => {
+    it("extracts all OBX segments from lab message", async () => {
       const msg = parseHL7Message(LAB_MSG);
       const obs = extractObservations(msg);
       expect(obs.length).toBe(3);
     });
 
-    it("parses observation values and flags correctly", () => {
+    it("parses observation values and flags correctly", async () => {
       const msg = parseHL7Message(LAB_MSG);
       const obs = extractObservations(msg);
       
@@ -221,20 +221,20 @@ describe("HL7v2 Parser", () => {
       expect(hgb!.abnormalFlag).toBe("N"); // Normal
     });
 
-    it("returns empty array when no OBX segments", () => {
+    it("returns empty array when no OBX segments", async () => {
       const msg = parseHL7Message(ADMIT_MSG);
       expect(extractObservations(msg)).toEqual([]);
     });
   });
 
   describe("extractDiagnoses", () => {
-    it("extracts all DG1 segments", () => {
+    it("extracts all DG1 segments", async () => {
       const msg = parseHL7Message(ADMIT_MSG);
       const dx = extractDiagnoses(msg);
       expect(dx.length).toBe(2);
     });
 
-    it("parses ICD-10 codes correctly", () => {
+    it("parses ICD-10 codes correctly", async () => {
       const msg = parseHL7Message(ADMIT_MSG);
       const dx = extractDiagnoses(msg);
       expect(dx[0].code).toBe("M17.1");
@@ -246,7 +246,7 @@ describe("HL7v2 Parser", () => {
   });
 
   describe("extractOrders", () => {
-    it("extracts ORC/OBR order pairs", () => {
+    it("extracts ORC/OBR order pairs", async () => {
       const msg = parseHL7Message(ORDER_MSG);
       const orders = extractOrders(msg);
       expect(orders.length).toBe(1);
@@ -257,29 +257,29 @@ describe("HL7v2 Parser", () => {
       expect(orders[0].priority).toBe("S"); // Stat
     });
 
-    it("returns empty when no ORC segments", () => {
+    it("returns empty when no ORC segments", async () => {
       const msg = parseHL7Message(ADMIT_MSG);
       expect(extractOrders(msg)).toEqual([]);
     });
   });
 
   describe("hl7TimestampToISO", () => {
-    it("converts full timestamp", () => {
+    it("converts full timestamp", async () => {
       expect(hl7TimestampToISO("20260320091500")).toBe("2026-03-20T09:15:00+02:00");
     });
 
-    it("handles date-only (8 chars)", () => {
+    it("handles date-only (8 chars)", async () => {
       expect(hl7TimestampToISO("20260320")).toBe("2026-03-20T00:00:00+02:00");
     });
 
-    it("returns empty for short/empty strings", () => {
+    it("returns empty for short/empty strings", async () => {
       expect(hl7TimestampToISO("")).toBe("");
       expect(hl7TimestampToISO("2026")).toBe("");
     });
   });
 
   describe("generateACK", () => {
-    it("generates valid ACK with AA code", () => {
+    it("generates valid ACK with AA code", async () => {
       const msg = parseHL7Message(ADMIT_MSG);
       const ack = generateACK(msg, "AA");
       expect(ack).toContain("MSH|");
@@ -287,7 +287,7 @@ describe("HL7v2 Parser", () => {
       expect(ack).toContain("MSA|AA|MSG001");
     });
 
-    it("generates error ACK with AE code", () => {
+    it("generates error ACK with AE code", async () => {
       const msg = parseHL7Message(ADMIT_MSG);
       const ack = generateACK(msg, "AE");
       expect(ack).toContain("MSA|AE|MSG001");
@@ -306,7 +306,7 @@ describe("FHIR R4 Mapper", () => {
   const diagnoses = extractDiagnoses(msg);
 
   describe("mapPatientToFHIR", () => {
-    it("creates valid FHIR Patient resource", () => {
+    it("creates valid FHIR Patient resource", async () => {
       const fhir = mapPatientToFHIR(patient);
       expect(fhir.resourceType).toBe("Patient");
       expect(fhir.id).toBe("MRN-4521");
@@ -316,14 +316,14 @@ describe("FHIR R4 Mapper", () => {
       expect(fhir.birthDate).toBe("1985-01-01");
     });
 
-    it("includes MRN and SA ID identifiers", () => {
+    it("includes MRN and SA ID identifiers", async () => {
       const fhir = mapPatientToFHIR(patient);
       expect(fhir.identifier.length).toBeGreaterThanOrEqual(2);
       expect(fhir.identifier.find(id => id.system === "urn:netcare:mrn")).toBeDefined();
       expect(fhir.identifier.find(id => id.system === "urn:za:id")).toBeDefined();
     });
 
-    it("includes medical aid identifier", () => {
+    it("includes medical aid identifier", async () => {
       const fhir = mapPatientToFHIR(patient);
       const maId = fhir.identifier.find(id => id.system.includes("medical-aid"));
       expect(maId).toBeDefined();
@@ -332,7 +332,7 @@ describe("FHIR R4 Mapper", () => {
   });
 
   describe("mapEncounterToFHIR", () => {
-    it("creates valid FHIR Encounter", () => {
+    it("creates valid FHIR Encounter", async () => {
       const fhir = mapEncounterToFHIR(encounter, patient.id);
       expect(fhir.resourceType).toBe("Encounter");
       expect(fhir.status).toBe("in-progress"); // No discharge date in admit
@@ -342,7 +342,7 @@ describe("FHIR R4 Mapper", () => {
   });
 
   describe("mapObservationToFHIR", () => {
-    it("maps numeric observation correctly", () => {
+    it("maps numeric observation correctly", async () => {
       const glucose = observations.find(o => o.code === "2339-0")!;
       const fhir = mapObservationToFHIR(glucose, "MRN-3341");
       expect(fhir.resourceType).toBe("Observation");
@@ -350,14 +350,14 @@ describe("FHIR R4 Mapper", () => {
       expect(fhir.valueQuantity?.unit).toBe("mmol/L");
     });
 
-    it("maps abnormal flag to interpretation", () => {
+    it("maps abnormal flag to interpretation", async () => {
       const hba1c = observations.find(o => o.code === "4548-4")!;
       const fhir = mapObservationToFHIR(hba1c, "MRN-3341");
       expect(fhir.interpretation).toBeDefined();
       expect(fhir.interpretation![0].coding[0].code).toBe("HH");
     });
 
-    it("detects LOINC codes correctly", () => {
+    it("detects LOINC codes correctly", async () => {
       const glucose = observations.find(o => o.code === "2339-0")!;
       const fhir = mapObservationToFHIR(glucose, "MRN-3341");
       expect(fhir.code.coding[0].system).toBe("http://loinc.org");
@@ -365,7 +365,7 @@ describe("FHIR R4 Mapper", () => {
   });
 
   describe("mapDiagnosisToFHIR", () => {
-    it("creates valid FHIR Condition", () => {
+    it("creates valid FHIR Condition", async () => {
       const fhir = mapDiagnosisToFHIR(diagnoses[0], patient.id, encounter.visitId);
       expect(fhir.resourceType).toBe("Condition");
       expect(fhir.code.coding[0].code).toBe("M17.1");
@@ -379,15 +379,15 @@ describe("FHIR R4 Mapper", () => {
 
 describe("Security Layer", () => {
   describe("verifyWebhookSignature", () => {
-    it("returns false for null signature", () => {
+    it("returns false for null signature", async () => {
       expect(verifyWebhookSignature("payload", null, "secret")).toBe(false);
     });
 
-    it("returns false for wrong signature", () => {
+    it("returns false for wrong signature", async () => {
       expect(verifyWebhookSignature("payload", "deadbeef", "secret")).toBe(false);
     });
 
-    it("verifies correct HMAC-SHA256 signature", () => {
+    it("verifies correct HMAC-SHA256 signature", async () => {
       const crypto = require("crypto");
       const secret = "test-secret-key";
       const payload = "test-payload";
@@ -395,7 +395,7 @@ describe("Security Layer", () => {
       expect(verifyWebhookSignature(payload, sig, secret)).toBe(true);
     });
 
-    it("rejects tampered payload", () => {
+    it("rejects tampered payload", async () => {
       const crypto = require("crypto");
       const secret = "test-secret-key";
       const sig = crypto.createHmac("sha256", secret).update("original", "utf8").digest("hex");
@@ -404,23 +404,23 @@ describe("Security Layer", () => {
   });
 
   describe("Data De-identification", () => {
-    it("masks SA ID number correctly", () => {
+    it("masks SA ID number correctly", async () => {
       expect(maskIdNumber("8501015800086")).toBe("850101****086");
     });
 
-    it("masks phone number correctly", () => {
+    it("masks phone number correctly", async () => {
       expect(maskPhone("+27824561234")).toBe("+27***1234");
     });
 
-    it("masks patient name correctly", () => {
+    it("masks patient name correctly", async () => {
       expect(maskName("Johan van der Merwe")).toBe("J. v** d** M**");
     });
 
-    it("masks medical aid number", () => {
+    it("masks medical aid number", async () => {
       expect(maskMedicalAidNo("DH-001-4521-88")).toBe("DH-***-****-88");
     });
 
-    it("handles empty/short strings gracefully", () => {
+    it("handles empty/short strings gracefully", async () => {
       expect(maskIdNumber("")).toBe("");
       expect(maskPhone("")).toBe("");
       expect(maskName("")).toBe("");
@@ -430,14 +430,14 @@ describe("Security Layer", () => {
   });
 
   describe("Role-based De-identification", () => {
-    it("platform_admin sees everything", () => {
+    it("platform_admin sees everything", async () => {
       const level = getDeidentLevel("platform_admin");
       expect(level.level).toBe("none");
       expect(level.showPatientName).toBe(true);
       expect(level.showIdNumber).toBe(true);
     });
 
-    it("receptionist gets partial masking", () => {
+    it("receptionist gets partial masking", async () => {
       const level = getDeidentLevel("receptionist");
       expect(level.level).toBe("partial");
       expect(level.showPatientName).toBe(true);
@@ -445,20 +445,20 @@ describe("Security Layer", () => {
       expect(level.showPhone).toBe(false);
     });
 
-    it("unknown role gets full masking", () => {
+    it("unknown role gets full masking", async () => {
       const level = getDeidentLevel("visitor");
       expect(level.level).toBe("full");
       expect(level.showPatientName).toBe(false);
     });
 
-    it("deidentifyAdvisory masks name for full level", () => {
+    it("deidentifyAdvisory masks name for full level", async () => {
       const advisory = { patientName: "Johan van der Merwe", patientMRN: "MRN-4521" };
       const masked = deidentifyAdvisory(advisory, "visitor");
       expect(masked.patientName).toBe("J. v** d** M**");
       expect(masked.patientMRN).toBe("MRN-****");
     });
 
-    it("deidentifyAdvisory preserves name for admin", () => {
+    it("deidentifyAdvisory preserves name for admin", async () => {
       const advisory = { patientName: "Johan van der Merwe", patientMRN: "MRN-4521" };
       const preserved = deidentifyAdvisory(advisory, "admin");
       expect(preserved.patientName).toBe("Johan van der Merwe");
@@ -466,25 +466,25 @@ describe("Security Layer", () => {
   });
 
   describe("Facility Access Control", () => {
-    it("platform_admin always has access", () => {
+    it("platform_admin always has access", async () => {
       expect(hasAccessToFacility([], "Netcare Milpark Hospital", "platform_admin")).toBe(true);
     });
 
-    it("user with matching facility code has access", () => {
+    it("user with matching facility code has access", async () => {
       expect(hasAccessToFacility(["milpark"], "Netcare Milpark Hospital", "admin")).toBe(true);
     });
 
-    it("user without matching facility code denied", () => {
+    it("user without matching facility code denied", async () => {
       expect(hasAccessToFacility(["sandton"], "Netcare Milpark Hospital", "admin")).toBe(false);
     });
 
-    it("empty facility codes allows all (backwards compat)", () => {
+    it("empty facility codes allows all (backwards compat)", async () => {
       expect(hasAccessToFacility([], "Any Facility", "admin")).toBe(true);
     });
   });
 
   describe("Audit Logging", () => {
-    it("logs and retrieves audit entries", () => {
+    it("logs and retrieves audit entries", async () => {
       logBridgeAudit({
         action: "test_action",
         userId: "test-user",
@@ -504,7 +504,7 @@ describe("Security Layer", () => {
 
 describe("CareOn Bridge Adapter", () => {
   describe("processHL7Message", () => {
-    it("processes ADT admit and generates advisories", () => {
+    it("processes ADT admit and generates advisories", async () => {
       const result = processHL7Message(ADMIT_MSG);
       expect(result.ack).toContain("MSA|AA|MSG001");
       expect(result.advisories.length).toBeGreaterThan(0);
@@ -512,19 +512,19 @@ describe("CareOn Bridge Adapter", () => {
       expect(result.logEntry.patientMRN).toBe("MRN-4521");
     });
 
-    it("processes ORU lab results", () => {
+    it("processes ORU lab results", async () => {
       const result = processHL7Message(LAB_MSG);
       expect(result.ack).toContain("MSA|AA|MSG003");
       expect(result.logEntry.messageType).toBe("ORU^R01");
     });
 
-    it("processes ORM orders", () => {
+    it("processes ORM orders", async () => {
       const result = processHL7Message(ORDER_MSG);
       expect(result.ack).toContain("MSA|AA|MSG005");
       expect(result.logEntry.messageType).toBe("ORM^O01");
     });
 
-    it("generates billing advisory for admit with diagnoses", () => {
+    it("generates billing advisory for admit with diagnoses", async () => {
       const result = processHL7Message(ADMIT_MSG);
       const billing = result.advisories.find(a => a.category === "billing");
       expect(billing).toBeDefined();
@@ -532,28 +532,28 @@ describe("CareOn Bridge Adapter", () => {
       expect(billing!.suggestedICD10[0].code).toBe("M17.1");
     });
 
-    it("generates eligibility advisory for patient with scheme", () => {
+    it("generates eligibility advisory for patient with scheme", async () => {
       const result = processHL7Message(ADMIT_MSG);
       const elig = result.advisories.find(a => a.category === "eligibility");
       expect(elig).toBeDefined();
       expect(elig!.title).toContain("DISCOVERY");
     });
 
-    it("generates critical advisory for abnormal lab values", () => {
+    it("generates critical advisory for abnormal lab values", async () => {
       const result = processHL7Message(LAB_MSG);
       const clinical = result.advisories.find(a => a.category === "clinical");
       expect(clinical).toBeDefined();
       expect(clinical!.severity).toBe("critical"); // HH flag present
     });
 
-    it("generates order advisory for pre-auth check", () => {
+    it("generates order advisory for pre-auth check", async () => {
       const result = processHL7Message(ORDER_MSG);
       const compliance = result.advisories.find(a => a.category === "compliance");
       expect(compliance).toBeDefined();
       expect(compliance!.title).toContain("Pre-Authorization");
     });
 
-    it("tracks processing time", () => {
+    it("tracks processing time", async () => {
       const result = processHL7Message(ADMIT_MSG);
       expect(result.logEntry.processingTimeMs).toBeGreaterThanOrEqual(0);
       expect(result.logEntry.processingTimeMs).toBeLessThan(1000); // Should be fast
@@ -561,38 +561,38 @@ describe("CareOn Bridge Adapter", () => {
   });
 
   describe("Advisory Resolution", () => {
-    it("resolves advisory with generate_claim action", () => {
-      const advisories = getAdvisories({ limit: 1 });
+    it("resolves advisory with generate_claim action", async () => {
+      const advisories = await getAdvisories({ limit: 1 });
       if (advisories.length === 0) return; // Skip if no advisories
       const unresolvedAdv = advisories.find(a => !a.resolution);
       if (!unresolvedAdv) return;
 
-      const result = resolveAdvisory(unresolvedAdv.id, "generate_claim", "Test User");
+      const result = await resolveAdvisory(unresolvedAdv.id, "generate_claim", "Test User");
       expect(result.success).toBe(true);
       expect(result.advisory?.resolution?.action).toBe("generate_claim");
       expect(result.advisory?.resolution?.claimDraftId).toBeDefined();
       expect(result.advisory?.resolution?.claimDraftId).toMatch(/^CLM-/);
     });
 
-    it("prevents double resolution", () => {
-      const advisories = getAdvisories({ limit: 10 });
+    it("prevents double resolution", async () => {
+      const advisories = await getAdvisories({ limit: 10 });
       const resolved = advisories.find(a => a.resolution);
       if (!resolved) return;
-      const result = resolveAdvisory(resolved.id, "dismiss", "Test User");
+      const result = await resolveAdvisory(resolved.id, "dismiss", "Test User");
       expect(result.success).toBe(false);
       expect(result.error).toContain("already resolved");
     });
 
-    it("returns error for non-existent advisory", () => {
-      const result = resolveAdvisory("nonexistent-id", "resolve", "Test User");
+    it("returns error for non-existent advisory", async () => {
+      const result = await resolveAdvisory("nonexistent-id", "resolve", "Test User");
       expect(result.success).toBe(false);
       expect(result.error).toContain("not found");
     });
   });
 
   describe("Bridge Stats", () => {
-    it("returns valid stats structure", () => {
-      const stats = getBridgeStats();
+    it("returns valid stats structure", async () => {
+      const stats = await getBridgeStats();
       expect(stats.connection).toBeDefined();
       expect(stats.connection.facilitiesOnline).toBeGreaterThan(0);
       expect(stats.messages).toBeDefined();
@@ -605,7 +605,7 @@ describe("CareOn Bridge Adapter", () => {
 // ── Demo Data Integrity Tests ──
 
 describe("Demo Data Integrity", () => {
-  it("all demo HL7 messages parse without errors", () => {
+  it("all demo HL7 messages parse without errors", async () => {
     for (const [key, raw] of Object.entries(DEMO_HL7_MESSAGES)) {
       expect(() => parseHL7Message(raw)).not.toThrow();
       const msg = parseHL7Message(raw);
@@ -614,7 +614,7 @@ describe("Demo Data Integrity", () => {
     }
   });
 
-  it("all demo advisories have required fields", () => {
+  it("all demo advisories have required fields", async () => {
     for (const adv of DEMO_ADVISORIES) {
       expect(adv.id).toBeTruthy();
       expect(adv.patientMRN).toBeTruthy();
@@ -629,7 +629,7 @@ describe("Demo Data Integrity", () => {
     }
   });
 
-  it("all demo message logs have valid types", () => {
+  it("all demo message logs have valid types", async () => {
     const validTypes = ["ADT^A01", "ADT^A02", "ADT^A03", "ADT^A04", "ADT^A08", "ORU^R01", "ORM^O01"];
     for (const log of DEMO_MESSAGE_LOG) {
       expect(validTypes).toContain(log.messageType);
@@ -637,7 +637,7 @@ describe("Demo Data Integrity", () => {
     }
   });
 
-  it("demo HL7 messages produce correct patient data", () => {
+  it("demo HL7 messages produce correct patient data", async () => {
     const msg = parseHL7Message(DEMO_HL7_MESSAGES.admit_milpark);
     const patient = extractPatient(msg);
     expect(patient).not.toBeNull();
@@ -649,7 +649,7 @@ describe("Demo Data Integrity", () => {
 // ── Anomaly Detection Tests ──
 
 describe("Traffic Anomaly Detection", () => {
-  it("detects volume drop for offline facility", () => {
+  it("detects volume drop for offline facility", async () => {
     const facilities = [
       { name: "Fac A", code: "A", connected: true, messageCount24h: 150 },
       { name: "Fac B", code: "B", connected: true, messageCount24h: 160 },
@@ -662,7 +662,7 @@ describe("Traffic Anomaly Detection", () => {
     expect(drop!.severity).toBe("critical"); // Offline + volume drop
   });
 
-  it("returns empty for normal traffic", () => {
+  it("returns empty for normal traffic", async () => {
     const facilities = [
       { name: "Fac A", code: "A", connected: true, messageCount24h: 100 },
       { name: "Fac B", code: "B", connected: true, messageCount24h: 110 },
@@ -676,7 +676,7 @@ describe("Traffic Anomaly Detection", () => {
 // ── LOINC Code Detection Bug Test ──
 
 describe("LOINC Code Detection (Bug Fix)", () => {
-  it("detects standard LOINC codes with varying lengths", () => {
+  it("detects standard LOINC codes with varying lengths", async () => {
     const codes = ["2339-0", "4548-4", "718-7", "2093-3", "2571-8", "2160-0"];
     for (const code of codes) {
       const obs = { id: "1", code, codeName: "Test", value: "1", unit: "x", referenceRange: "", abnormalFlag: "N", status: "F", observationDate: "" };

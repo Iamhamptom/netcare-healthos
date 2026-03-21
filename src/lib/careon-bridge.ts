@@ -9,13 +9,9 @@ import { mapPatientToFHIR, mapEncounterToFHIR, mapObservationToFHIR, mapDiagnosi
 import { DEMO_ADVISORIES, DEMO_MESSAGE_LOG, getDemoCareOnStatus } from "./hl7/demo-messages";
 import { logBridgeAudit } from "./hl7/security";
 import { aiSuggestCodes, predictRejection, analyzeLabTrends, detectTrafficAnomalies, generateNLAdvisory } from "./hl7/ai-advisor";
+import { storeAdvisory, storeMessage, fetchAdvisories, fetchMessages, resolveAdvisoryInDB, storeAuditEntry, fetchAuditLog, getAdvisoryStats } from "./hl7/bridge-store";
 import type { BridgeAdvisory, BridgeMessageLog, CareOnConnectionStatus, AdvisorySeverity, AdvisoryCategory, AdvisoryAction, AdvisoryResolution } from "./hl7/types";
 import type { EnhancedAdvisory, TrafficAnomaly } from "./hl7/ai-advisor";
-
-// ── In-memory stores (demo mode) ──
-
-let advisories: BridgeAdvisory[] = [...DEMO_ADVISORIES];
-let messageLog: BridgeMessageLog[] = [...DEMO_MESSAGE_LOG];
 
 // ── Advisory Generation Engine ──
 
@@ -85,8 +81,11 @@ export function processHL7Message(rawMessage: string): {
     processingTimeMs: processingTime,
   };
 
-  advisories = [...generatedAdvisories, ...advisories].slice(0, 100);
-  messageLog = [logEntry, ...messageLog].slice(0, 200);
+  // Persist to Supabase (or in-memory fallback)
+  for (const adv of generatedAdvisories) {
+    storeAdvisory(adv).catch(err => console.error("Failed to store advisory:", err));
+  }
+  storeMessage(logEntry).catch(err => console.error("Failed to store message:", err));
 
   return {
     ack: generateACK(msg, "AA"),
@@ -240,24 +239,18 @@ function generateOrderAdvisory(
 // ── Public API ──
 
 /** Get all advisories, optionally filtered */
-export function getAdvisories(filters?: {
+export async function getAdvisories(filters?: {
   severity?: AdvisorySeverity;
   category?: AdvisoryCategory;
   facility?: string;
   limit?: number;
-}): BridgeAdvisory[] {
-  let result = [...advisories];
-
-  if (filters?.severity) result = result.filter((a) => a.severity === filters.severity);
-  if (filters?.category) result = result.filter((a) => a.category === filters.category);
-  if (filters?.facility) result = result.filter((a) => a.facility.toLowerCase().includes(filters.facility!.toLowerCase()));
-
-  return result.slice(0, filters?.limit ?? 50);
+}): Promise<BridgeAdvisory[]> {
+  return fetchAdvisories(filters);
 }
 
 /** Get message processing log */
-export function getMessageLog(limit = 50): BridgeMessageLog[] {
-  return messageLog.slice(0, limit);
+export async function getMessageLog(limit = 50): Promise<BridgeMessageLog[]> {
+  return fetchMessages(limit);
 }
 
 /** Get CareOn connection status */
@@ -268,71 +261,36 @@ export function getCareOnStatus(): CareOnConnectionStatus {
 // ── Advisory Resolution ──
 
 /** Resolve an advisory with an action — creates audit trail */
-export function resolveAdvisory(
+export async function resolveAdvisory(
   advisoryId: string,
   action: AdvisoryAction,
   resolvedBy: string,
   notes?: string,
-): { success: boolean; advisory?: BridgeAdvisory; error?: string } {
-  const idx = advisories.findIndex((a) => a.id === advisoryId);
-  if (idx === -1) return { success: false, error: "Advisory not found" };
+): Promise<{ success: boolean; advisory?: BridgeAdvisory; error?: string }> {
+  const result = await resolveAdvisoryInDB(advisoryId, action, resolvedBy, notes);
 
-  const advisory = advisories[idx];
-  if (advisory.resolution) return { success: false, error: "Advisory already resolved" };
-
-  const resolution: AdvisoryResolution = {
-    action,
-    resolvedBy,
-    resolvedAt: new Date().toISOString(),
-    notes,
-  };
-
-  // Action-specific side effects
-  if (action === "generate_claim") {
-    // In production: call billing module to create a claim draft
-    // For demo: generate a claim draft ID
-    resolution.claimDraftId = `CLM-${Date.now().toString(36).toUpperCase()}`;
+  if (result.success && result.advisory) {
+    // POPIA audit trail
+    const resolution = result.advisory.resolution;
+    storeAuditEntry({
+      action: `advisory_${action}`,
+      userId: resolvedBy,
+      userName: resolvedBy,
+      userRole: "admin",
+      advisoryId,
+      facility: result.advisory.facility,
+      patientMRN: result.advisory.patientMRN,
+      detail: `Advisory "${result.advisory.title}" resolved with action "${action}". ${notes ? `Notes: ${notes}` : ""}${resolution?.claimDraftId ? ` Claim draft: ${resolution.claimDraftId}` : ""}`,
+    }).catch(err => console.error("Audit store error:", err));
   }
 
-  if (action === "notify_doctor") {
-    // In production: send via WhatsApp/email to attending physician
-    // For demo: mark as sent
-    resolution.notificationSent = true;
-  }
-
-  advisories[idx] = { ...advisory, resolution, actionRequired: false };
-
-  // POPIA audit trail
-  logBridgeAudit({
-    action: `advisory_${action}`,
-    userId: resolvedBy,
-    userName: resolvedBy,
-    userRole: "admin",
-    advisoryId,
-    facility: advisory.facility,
-    patientMRN: advisory.patientMRN,
-    detail: `Advisory "${advisory.title}" resolved with action "${action}". ${notes ? `Notes: ${notes}` : ""}${resolution.claimDraftId ? ` Claim draft: ${resolution.claimDraftId}` : ""}`,
-  });
-
-  // Log the resolution in message log
-  const auditEntry: BridgeMessageLog = {
-    id: `audit-${Date.now()}`,
-    receivedAt: new Date().toISOString(),
-    messageType: advisory.sourceMessageType,
-    facility: advisory.facility,
-    patientMRN: advisory.patientMRN,
-    status: "processed",
-    advisoryCount: 0,
-    processingTimeMs: 0,
-  };
-  messageLog = [auditEntry, ...messageLog].slice(0, 200);
-
-  return { success: true, advisory: advisories[idx] };
+  return result;
 }
 
 /** Get resolution statistics */
-export function getResolutionStats() {
-  const resolved = advisories.filter((a) => a.resolution);
+export async function getResolutionStats() {
+  const allAdvisories = await fetchAdvisories({ limit: 200 });
+  const resolved = allAdvisories.filter((a: any) => a.resolution);
   const actionCounts: Record<string, number> = {};
   let claimsGenerated = 0;
   let totalClaimValue = 0;
@@ -350,7 +308,7 @@ export function getResolutionStats() {
 
   return {
     totalResolved: resolved.length,
-    totalPending: advisories.filter((a) => a.actionRequired && !a.resolution).length,
+    totalPending: allAdvisories.filter((a: any) => a.actionRequired && !a.resolution).length,
     actionBreakdown: actionCounts,
     claimsGenerated,
     totalClaimValue,
@@ -422,12 +380,9 @@ export function getTrafficAnomalies(): TrafficAnomaly[] {
 }
 
 /** Get bridge statistics summary */
-export function getBridgeStats() {
+export async function getBridgeStats() {
   const status = getCareOnStatus();
-  const criticalCount = advisories.filter((a) => a.severity === "critical").length;
-  const warningCount = advisories.filter((a) => a.severity === "warning").length;
-  const actionRequired = advisories.filter((a) => a.actionRequired).length;
-  const totalClaimValue = advisories.reduce((sum, a) => sum + a.estimatedValue, 0);
+  const advStats = await getAdvisoryStats();
   const anomalies = getTrafficAnomalies();
 
   return {
@@ -443,13 +398,7 @@ export function getBridgeStats() {
       errorRate: status.errorRate,
       avgProcessingTimeMs: status.avgProcessingTimeMs,
     },
-    advisories: {
-      total: advisories.length,
-      critical: criticalCount,
-      warning: warningCount,
-      actionRequired,
-      totalClaimValue,
-    },
+    advisories: advStats,
     anomalies: anomalies.length > 0 ? anomalies : undefined,
   };
 }

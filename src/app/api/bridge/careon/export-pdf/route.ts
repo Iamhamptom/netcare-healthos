@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   const guard = await guardRoute(request, "bridge-export-pdf");
   if (isErrorResponse(guard)) return guard;
 
-  const stats = getBridgeStats();
+  const stats = await getBridgeStats();
   const dateStr = new Date().toLocaleDateString("en-ZA", { year: "numeric", month: "long", day: "numeric" });
 
   const lines: string[] = [];

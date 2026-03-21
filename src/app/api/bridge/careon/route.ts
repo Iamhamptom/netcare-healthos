@@ -10,7 +10,8 @@ import {
   processHL7Message, processHL7MessageWithAI, resolveAdvisory,
   getResolutionStats, getTrafficAnomalies,
 } from "@/lib/careon-bridge";
-import { validateBridgeAuth, verifyWebhookSignature, deidentifyAdvisory, logBridgeAudit, getBridgeAuditLog } from "@/lib/hl7/security";
+import { validateBridgeAuth, verifyWebhookSignature, deidentifyAdvisory, logBridgeAudit } from "@/lib/hl7/security";
+import { fetchAuditLog } from "@/lib/hl7/bridge-store";
 import type { AdvisorySeverity, AdvisoryCategory, AdvisoryAction } from "@/lib/hl7/types";
 
 export async function GET(request: NextRequest) {
@@ -32,17 +33,17 @@ export async function GET(request: NextRequest) {
   try {
     switch (view) {
       case "stats":
-        return NextResponse.json(getBridgeStats());
+        return NextResponse.json(await getBridgeStats());
 
       case "resolutions":
-        return NextResponse.json(getResolutionStats());
+        return NextResponse.json(await getResolutionStats());
 
       case "advisories": {
         const severity = searchParams.get("severity") as AdvisorySeverity | null;
         const category = searchParams.get("category") as AdvisoryCategory | null;
         const facility = searchParams.get("facility");
         const limit = parseInt(searchParams.get("limit") ?? "50");
-        const raw = getAdvisories({
+        const raw = await getAdvisories({
           severity: severity ?? undefined,
           category: category ?? undefined,
           facility: facility ?? undefined,
@@ -55,7 +56,7 @@ export async function GET(request: NextRequest) {
 
       case "messages":
         return NextResponse.json({
-          messages: getMessageLog(parseInt(searchParams.get("limit") ?? "50")),
+          messages: await getMessageLog(parseInt(searchParams.get("limit") ?? "50")),
         });
 
       case "connection":
@@ -66,7 +67,7 @@ export async function GET(request: NextRequest) {
 
       case "audit":
         return NextResponse.json({
-          entries: getBridgeAuditLog(parseInt(searchParams.get("limit") ?? "50")),
+          entries: await fetchAuditLog(parseInt(searchParams.get("limit") ?? "50")),
         });
 
       default:
@@ -190,7 +191,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: `Invalid action. Use: ${validActions.join(", ")}` }, { status: 400 });
     }
 
-    const result = resolveAdvisory(advisoryId, action, guard.user.name, notes);
+    const result = await resolveAdvisory(advisoryId, action, guard.user.name, notes);
 
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 400 });

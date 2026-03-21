@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Find the advisory
-    const advisories = getAdvisories({ limit: 100 });
+    const advisories = await getAdvisories({ limit: 100 });
     const advisory = advisories.find(a => a.id === advisoryId);
     if (!advisory) {
       return NextResponse.json({ error: "Advisory not found" }, { status: 404 });
