@@ -150,10 +150,47 @@ export default function CareOnBridgePage() {
     }
   }
 
+  // Live simulation — new events arrive every 8 seconds
+  async function fetchSimulatedEvent() {
+    try {
+      const res = await fetch("/api/bridge/careon/simulate");
+      if (!res.ok) return;
+      const event = await res.json();
+      if (event.message) {
+        setMessages((prev) => [event.message, ...prev].slice(0, 50));
+      }
+      if (event.advisory) {
+        setAdvisories((prev) => [event.advisory, ...prev].slice(0, 30));
+        // Update stats count
+        setStats((prev) => prev ? {
+          ...prev,
+          advisories: {
+            ...prev.advisories,
+            total: prev.advisories.total + 1,
+            actionRequired: prev.advisories.actionRequired + (event.advisory.actionRequired ? 1 : 0),
+            totalClaimValue: prev.advisories.totalClaimValue + (event.advisory.estimatedValue ?? 0),
+            critical: prev.advisories.critical + (event.advisory.severity === "critical" ? 1 : 0),
+            warning: prev.advisories.warning + (event.advisory.severity === "warning" ? 1 : 0),
+          },
+          messages: { ...prev.messages, received24h: prev.messages.received24h + 1, processed24h: prev.messages.processed24h + 1 },
+        } : prev);
+      }
+    } catch { /* ignore simulation errors */ }
+  }
+
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 30000); // Refresh every 30s
-    return () => clearInterval(interval);
+    const dataInterval = setInterval(fetchData, 30000); // Full refresh every 30s
+    // Start live simulation after initial load with a slight delay
+    const simTimeout = setTimeout(() => {
+      fetchSimulatedEvent(); // First event after 3s
+    }, 3000);
+    const simInterval = setInterval(fetchSimulatedEvent, 8000); // Then every 8s
+    return () => {
+      clearInterval(dataInterval);
+      clearInterval(simInterval);
+      clearTimeout(simTimeout);
+    };
   }, []);
 
   if (loading) {
