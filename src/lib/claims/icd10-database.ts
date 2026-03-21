@@ -145,6 +145,7 @@ export const ICD10_DATABASE: ICD10Entry[] = [
   { code: "E11.6", description: "Type 2 diabetes mellitus with other specified complications", chapter: 4, chapterTitle: "Endocrine diseases", category: "endocrine", isValid: true, maxSpecificity: 4, isDagger: true, isPMB: true },
   { code: "E11.7", description: "Type 2 diabetes mellitus with multiple complications", chapter: 4, chapterTitle: "Endocrine diseases", category: "endocrine", isValid: true, maxSpecificity: 4, isPMB: true },
   { code: "E11.9", description: "Type 2 diabetes mellitus without complications", chapter: 4, chapterTitle: "Endocrine diseases", category: "endocrine", isValid: true, maxSpecificity: 4, isPMB: true },
+  { code: "E13", description: "Other specified diabetes mellitus", chapter: 4, chapterTitle: "Endocrine diseases", category: "endocrine", isValid: false, maxSpecificity: 4, isPMB: true },
   { code: "E13.9", description: "Other specified diabetes mellitus without complications", chapter: 4, chapterTitle: "Endocrine diseases", category: "endocrine", isValid: true, maxSpecificity: 4, isPMB: true },
   { code: "E14.9", description: "Unspecified diabetes mellitus without complications", chapter: 4, chapterTitle: "Endocrine diseases", category: "endocrine", isValid: true, maxSpecificity: 4, isPMB: true },
   { code: "E22.0", description: "Acromegaly and pituitary gigantism", chapter: 4, chapterTitle: "Endocrine diseases", category: "endocrine", isValid: true, maxSpecificity: 4, isPMB: true },

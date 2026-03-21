@@ -269,6 +269,33 @@ export const ACCREDITATION_TESTS: AccreditationTest[] = [
       validationRules: ["Must detect PMB condition", "Must flag I21.9 as Acute MI"],
     },
   },
+  {
+    id: "EDG-003",
+    name: "Unicode and special character handling",
+    description: "Vendor must handle South African names with diacritics and special characters without data loss",
+    category: "edge_case",
+    testData: {
+      claim: {
+        bhfNumber: "1234567",
+        providerNumber: "MP0123456",
+        treatingProvider: "Dr Müller-van der Merwe",
+        patientName: "N'daba Nkosi-Dlamini",
+        patientDob: "1990-03-15",
+        patientIdNumber: "9003155800080",
+        medicalAidScheme: "Discovery",
+        membershipNumber: "900012346",
+        dependentCode: "00",
+        dateOfService: new Date().toISOString().slice(0, 10),
+        placeOfService: "11",
+        lineItems: [
+          { icd10Code: "J06.9", cptCode: "0190", description: "Acute upper respiratory infection", quantity: 1, amount: 750 },
+        ],
+        practiceId: "test-practice",
+      },
+      expectedResponse: { namePreserved: true },
+      validationRules: ["Must preserve diacritics in provider name", "Must preserve hyphens and apostrophes in patient name"],
+    },
+  },
 ];
 
 // ─── Test Runner ────────────────────────────────────────────────────────────
