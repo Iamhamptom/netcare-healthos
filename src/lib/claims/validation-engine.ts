@@ -11,6 +11,7 @@ import {
   MALE_ONLY_PREFIXES, FEMALE_ONLY_PREFIXES,
 } from "./icd10-database";
 import { lookupNAPPI } from "./nappi-database";
+import { lookupMIT, codeExistsInMIT } from "./mit-loader";
 
 // ─── ICD-10 FORMAT REGEX ─────────────────────────────────────────
 // WHO ICD-10: Letter + 2 digits, optionally dot + 1-4 alphanumeric
@@ -208,10 +209,22 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     return issues;
   }
 
-  // ── Rule 3: Code exists in database ──
-  const entry = lookupICD10(code);
+  // ── Rule 3: Code exists in database (curated 1K + full 41K MIT) ──
+  const entry = lookupICD10(code); // Curated database (deep metadata)
+  const mitEntry = lookupMIT(code); // Full 41K SA Master Industry Table
   const chapter = getChapterForCode(code);
 
+  // If code not in curated DB, check the full MIT
+  if (!entry && !mitEntry && ICD10_FORMAT.test(code)) {
+    issues.push({
+      lineNumber: ln, field: "primaryICD10", code: "UNKNOWN_CODE",
+      severity: "warning", rule: "Code Not in SA Master Industry Table",
+      message: `"${code}" was not found in the SA ICD-10 Master Industry Table (41,009 codes). This code may be invalid or outdated.`,
+      suggestion: "Verify the code against the latest SA ICD-10 MIT. Check for typos or use the Code Lookup tool.",
+    });
+  }
+
+  // Specificity check — from curated DB or MIT
   if (entry && !entry.isValid) {
     issues.push({
       lineNumber: ln, field: "primaryICD10", code: "NON_SPECIFIC",
@@ -219,15 +232,35 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
       message: `"${code}" (${entry.description}) requires greater specificity. This code needs a 4th or 5th character.`,
       suggestion: `Use a more specific code under the ${code} category. For example, ${code}.0 or ${code}.9.`,
     });
+  } else if (!entry && mitEntry && !mitEntry.isValidClinical) {
+    // MIT says code exists but isn't valid for clinical use
+    issues.push({
+      lineNumber: ln, field: "primaryICD10", code: "NON_SPECIFIC",
+      severity: "error", rule: "Insufficient Specificity",
+      message: `"${code}" (${mitEntry.description}) is not valid for clinical use per the SA MIT. A more specific code is required.`,
+      suggestion: `Use a more specific subcategory code under ${code}.`,
+    });
   }
 
-  // ── Rule 4: Asterisk codes cannot be primary ──
-  if (entry?.isAsterisk) {
+  // ── Rule 4: Asterisk codes cannot be primary (check both DBs) ──
+  const isAsterisk = entry?.isAsterisk || mitEntry?.isAsterisk;
+  const desc = entry?.description || mitEntry?.description || code;
+  if (isAsterisk) {
     issues.push({
       lineNumber: ln, field: "primaryICD10", code: "ASTERISK_PRIMARY",
       severity: "error", rule: "Manifestation Code as Primary",
-      message: `"${code}" (${entry.description}) is an asterisk (*) manifestation code and cannot be the primary diagnosis.`,
+      message: `"${code}" (${desc}) is an asterisk (*) manifestation code and cannot be the primary diagnosis.`,
       suggestion: "Move this code to a secondary position and use the underlying etiology (dagger) code as primary.",
+    });
+  }
+
+  // ── Rule 4b: MIT says code is not valid as primary ──
+  if (!isAsterisk && mitEntry && !mitEntry.isValidPrimary && mitEntry.isValidClinical) {
+    issues.push({
+      lineNumber: ln, field: "primaryICD10", code: "NOT_VALID_PRIMARY",
+      severity: "error", rule: "Not Valid as Primary Diagnosis",
+      message: `"${code}" (${mitEntry.description}) cannot be used as a primary diagnosis per the SA MIT.`,
+      suggestion: "This code should be in a secondary position. Use the underlying condition as primary.",
     });
   }
 
@@ -268,8 +301,21 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
       });
     }
 
-    // Check prefix-based gender rules for codes not in database
-    if (!entry) {
+    // Check MIT gender restriction (41K codes — authoritative)
+    if (!entry && mitEntry?.gender && (mitEntry.gender === "M" || mitEntry.gender === "F")) {
+      if (mitEntry.gender !== item.patientGender) {
+        const genderLabel = mitEntry.gender === "M" ? "male" : "female";
+        issues.push({
+          lineNumber: ln, field: "primaryICD10", code: "GENDER_MISMATCH",
+          severity: "error", rule: "Gender Mismatch",
+          message: `"${code}" (${mitEntry.description}) is restricted to ${genderLabel} patients per the SA MIT.`,
+          suggestion: "Verify patient gender and diagnosis code.",
+        });
+      }
+    }
+
+    // Check prefix-based gender rules for codes not in either database
+    if (!entry && !mitEntry) {
       const isMaleOnly = MALE_ONLY_PREFIXES.some(p => code.startsWith(p));
       const isFemaleOnly = FEMALE_ONLY_PREFIXES.some(p => code.startsWith(p));
       if (isMaleOnly && item.patientGender === "F") {
