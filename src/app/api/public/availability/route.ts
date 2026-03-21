@@ -7,7 +7,7 @@ import { getAvailability } from "@/lib/booking-engine";
 
 /** GET /api/public/availability — Public endpoint for checking practice availability */
 export async function GET(request: Request) {
-  const rl = rateLimitByIp(request, "public/availability", { limit: 30, windowMs: 60_000 });
+  const rl = await rateLimitByIp(request, "public/availability", { limit: 30, windowMs: 60_000 });
   if (!rl.allowed) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
   const { searchParams } = new URL(request.url);

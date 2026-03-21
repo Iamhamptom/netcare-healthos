@@ -19,7 +19,7 @@ export async function GET(request: Request) {
 
 /** POST: Capture an error event from client-side */
 export async function POST(request: Request) {
-  const rl = rateLimitByIp(request, "errors/capture", { limit: 50 });
+  const rl = await rateLimitByIp(request, "errors/capture", { limit: 50 });
   if (!rl.allowed) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }

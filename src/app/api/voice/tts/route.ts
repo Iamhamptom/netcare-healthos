@@ -16,7 +16,7 @@ const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || "gsm4lUH9bnZ3pjR1Pw7w"; // C
  * - Speed (0.92) = softer, deliberate, commercial-quality delivery
  */
 export async function POST(request: Request) {
-  const rl = rateLimitByIp(request, "voice/tts", { limit: 30 });
+  const rl = await rateLimitByIp(request, "voice/tts", { limit: 30 });
   if (!rl.allowed) {
     return NextResponse.json({ error: "Rate limited" }, { status: 429 });
   }

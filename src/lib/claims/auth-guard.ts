@@ -24,7 +24,7 @@ export async function requireClaimsAuth(
   rateOpts: { limit?: number; windowMs?: number } = { limit: 20, windowMs: 60_000 },
 ): Promise<AuthResult> {
   // Rate limit first (even before auth)
-  const rl = rateLimitByIp(request, `claims/${routeName}`, rateOpts);
+  const rl = await rateLimitByIp(request, `claims/${routeName}`, rateOpts);
   if (!rl.allowed) {
     return {
       authorized: false,

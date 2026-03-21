@@ -5,7 +5,7 @@ import { supabaseAdmin, tables } from "@/lib/supabase";
 
 /** POST /api/public/refer — GP submits a patient referral (no auth required) */
 export async function POST(request: Request) {
-  const rl = rateLimitByIp(request, "public/refer", { limit: 10, windowMs: 3600_000 });
+  const rl = await rateLimitByIp(request, "public/refer", { limit: 10, windowMs: 3600_000 });
   if (!rl.allowed) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
   const body = await request.json();

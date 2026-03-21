@@ -10,7 +10,7 @@ const ELEVENLABS_AGENT_ID = process.env.ELEVENLABS_AGENT_ID || "";
  * The signed URL approach keeps the agent ID server-side for security.
  */
 export async function POST(request: Request) {
-  const rl = rateLimitByIp(request, "voice/agent", { limit: 10 });
+  const rl = await rateLimitByIp(request, "voice/agent", { limit: 10 });
   if (!rl.allowed) {
     return NextResponse.json({ error: "Too many requests. Please wait a moment." }, { status: 429 });
   }

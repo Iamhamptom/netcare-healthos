@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 
 /** POST /api/public/book — Public booking submission (no auth required) */
 export async function POST(request: Request) {
-  const rl = rateLimitByIp(request, "public/book", { limit: 5, windowMs: 60_000 });
+  const rl = await rateLimitByIp(request, "public/book", { limit: 5, windowMs: 60_000 });
   if (!rl.allowed) return NextResponse.json({ error: "Too many requests. Please wait." }, { status: 429 });
 
   const body = await request.json();

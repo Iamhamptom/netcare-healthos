@@ -4,7 +4,7 @@ import { getClaimsSource } from "@/lib/data-sources";
 import { searchICD10 as searchStatic } from "@/lib/icd10-data";
 
 export async function GET(request: NextRequest) {
-  const rl = rateLimitByIp(request, "icd10", { limit: 60 });
+  const rl = await rateLimitByIp(request, "icd10", { limit: 60 });
   if (!rl.allowed) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }

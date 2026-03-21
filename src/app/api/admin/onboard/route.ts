@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 
 // POST /api/admin/onboard — One-click practice onboarding (platform admin only)
 export async function POST(request: Request) {
-  const rl = rateLimitByIp(request, "admin/onboard", { limit: 10 });
+  const rl = await rateLimitByIp(request, "admin/onboard", { limit: 10 });
   if (!rl.allowed) return NextResponse.json({ error: "Rate limited" }, { status: 429 });
 
   try {

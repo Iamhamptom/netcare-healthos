@@ -4,7 +4,7 @@ import { isDemoMode } from "@/lib/is-demo";
 
 /** POST /api/public/symptom-check — AI symptom assessment → service recommendation */
 export async function POST(request: Request) {
-  const rl = rateLimitByIp(request, "public/symptom-check", { limit: 10, windowMs: 60_000 });
+  const rl = await rateLimitByIp(request, "public/symptom-check", { limit: 10, windowMs: 60_000 });
   if (!rl.allowed) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
   const { symptoms, slug } = await request.json();

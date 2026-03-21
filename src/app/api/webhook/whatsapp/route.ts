@@ -187,7 +187,7 @@ export async function GET(request: Request) {
 
 /** POST /api/webhook/whatsapp — Receive WhatsApp messages and route to conversation system */
 export async function POST(request: Request) {
-  const rl = rateLimitByIp(request, "webhook-whatsapp", { limit: 100, windowMs: 60_000 });
+  const rl = await rateLimitByIp(request, "webhook-whatsapp", { limit: 100, windowMs: 60_000 });
   if (!rl.allowed) return NextResponse.json({ error: "Rate limited" }, { status: 429 });
 
   try {

@@ -4,7 +4,7 @@ import { rateLimitByIp } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   // Rate limit — 5 per minute per IP
-  const rl = rateLimitByIp(request, "gp/register", { limit: 5 });
+  const rl = await rateLimitByIp(request, "gp/register", { limit: 5 });
   if (!rl.allowed) {
     return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
   }

@@ -24,7 +24,7 @@ export function storeTempToken(token: string, userId: string): void {
 
 /** POST: Verify MFA token during login flow */
 export async function POST(request: Request) {
-  const rl = rateLimitByIp(request, "auth/mfa/verify", { limit: 10 });
+  const rl = await rateLimitByIp(request, "auth/mfa/verify", { limit: 10 });
   if (!rl.allowed) {
     return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
   }

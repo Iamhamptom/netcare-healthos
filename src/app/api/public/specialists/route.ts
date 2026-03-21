@@ -14,7 +14,7 @@ const demoPractices = [
 
 export async function GET(request: Request) {
   // Rate limit — 30 per minute per IP
-  const rl = rateLimitByIp(request, "public/specialists", { limit: 30 });
+  const rl = await rateLimitByIp(request, "public/specialists", { limit: 30 });
   if (!rl.allowed) {
     return NextResponse.json({ error: "Too many requests." }, { status: 429 });
   }

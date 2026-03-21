@@ -8,7 +8,7 @@ const resend = new Resend(process.env.RESEND_API_KEY || "");
 
 export async function POST(req: NextRequest) {
   // Rate limit: 5 sends per minute (admin-only, high-impact)
-  const rl = rateLimitByIp(req, "newsletter/send", { limit: 5 });
+  const rl = await rateLimitByIp(req, "newsletter/send", { limit: 5 });
   if (!rl.allowed) {
     return NextResponse.json(
       { error: "Too many requests. Try again later." },

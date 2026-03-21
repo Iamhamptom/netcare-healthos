@@ -17,7 +17,7 @@ interface ImportRow {
 }
 
 export async function POST(request: Request) {
-  const rl = rateLimitByIp(request, "patients/import", { limit: 5 });
+  const rl = await rateLimitByIp(request, "patients/import", { limit: 5 });
   if (!rl.allowed) return NextResponse.json({ error: "Too many attempts" }, { status: 429 });
 
   if (isDemoMode) {

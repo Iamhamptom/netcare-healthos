@@ -26,7 +26,7 @@ function planFromCode(planCode: string): string | null {
 export async function POST(request: Request) {
   try {
     // Rate limit webhook endpoint
-    const rl = rateLimitByIp(request, "billing-webhook", { limit: 100 });
+    const rl = await rateLimitByIp(request, "billing-webhook", { limit: 100 });
     if (!rl.allowed) {
       return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }

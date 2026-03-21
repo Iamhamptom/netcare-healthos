@@ -30,7 +30,7 @@ const demoReferrals = [
 
 // GET — fetch referrals for the logged-in GP
 export async function GET(request: Request) {
-  const rl = rateLimitByIp(request, "gp/referrals/get", { limit: 30 });
+  const rl = await rateLimitByIp(request, "gp/referrals/get", { limit: 30 });
   if (!rl.allowed) {
     return NextResponse.json({ error: "Too many requests." }, { status: 429 });
   }
@@ -77,7 +77,7 @@ export async function GET(request: Request) {
 
 // POST — submit a new referral
 export async function POST(request: Request) {
-  const rl = rateLimitByIp(request, "gp/referrals/post", { limit: 10 });
+  const rl = await rateLimitByIp(request, "gp/referrals/post", { limit: 10 });
   if (!rl.allowed) {
     return NextResponse.json({ error: "Too many requests." }, { status: 429 });
   }

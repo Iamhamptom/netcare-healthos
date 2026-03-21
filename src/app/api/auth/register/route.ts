@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 
 export async function POST(request: Request) {
   // Rate limit registration — 5 per minute per IP
-  const rl = rateLimitByIp(request, "auth/register", { limit: 5 });
+  const rl = await rateLimitByIp(request, "auth/register", { limit: 5 });
   if (!rl.allowed) return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
 
   try {

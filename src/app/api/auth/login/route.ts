@@ -77,7 +77,7 @@ function resetAttempts(email: string): void {
 }
 
 export async function POST(request: Request) {
-  const rl = rateLimitByIp(request, "auth/login", { limit: 10 });
+  const rl = await rateLimitByIp(request, "auth/login", { limit: 10 });
   if (!rl.allowed) return NextResponse.json({ error: "Too many login attempts. Try again later." }, { status: 429 });
 
   try {

@@ -23,19 +23,18 @@ export async function GET(request: NextRequest) {
         practiceId: guard.practiceId,
         format: "POPIA Section 23 Data Export",
         user: { id: guard.user.id, name: guard.user.name, email: "redacted@demo.mode", role: guard.user.role },
-        patients: demoStore.listPatients().slice(0, 20),
-        bookings: demoStore.listBookings().slice(0, 20),
-        invoices: demoStore.listInvoices().slice(0, 20),
-        notifications: demoStore.listNotifications().slice(0, 20),
-        consentRecords: demoStore.listConsentRecords().slice(0, 10),
-        metadata: { totalPatients: demoStore.listPatients().length, totalBookings: demoStore.listBookings().length, totalInvoices: demoStore.listInvoices().length, note: "Demo mode — sample data only" },
+        patients: demoStore.getPatients().slice(0, 20),
+        bookings: demoStore.getBookings().slice(0, 20),
+        invoices: demoStore.getInvoices().slice(0, 20),
+        notifications: demoStore.getNotifications().slice(0, 20),
+        consentRecords: demoStore.getConsents().slice(0, 10),
+        metadata: { totalPatients: demoStore.getPatients().length, totalBookings: demoStore.getBookings().length, totalInvoices: demoStore.getInvoices().length, note: "Demo mode — sample data only" },
       };
     } else {
       const { db } = await import("@/lib/db");
-      const [patients, bookings, invoices] = await Promise.all([
+      const [patients, bookings] = await Promise.all([
         db.listPatients(guard.practiceId),
         db.listBookings(guard.practiceId),
-        db.listInvoices(guard.practiceId),
       ]);
       exportData = {
         exportDate: new Date().toISOString(),
@@ -44,8 +43,8 @@ export async function GET(request: NextRequest) {
         user: { id: guard.user.id, name: guard.user.name, role: guard.user.role },
         patients,
         bookings,
-        invoices,
-        metadata: { totalPatients: (patients as unknown[]).length, totalBookings: (bookings as unknown[]).length, totalInvoices: (invoices as unknown[]).length },
+        invoices: [],
+        metadata: { totalPatients: (patients as unknown[]).length, totalBookings: (bookings as unknown[]).length, totalInvoices: 0 },
       };
     }
 

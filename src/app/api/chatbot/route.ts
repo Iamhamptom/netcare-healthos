@@ -26,7 +26,7 @@ RULES:
 
 /** POST /api/chatbot — Public patient-facing chatbot (no auth required) */
 export async function POST(request: Request) {
-  const rl = rateLimitByIp(request, "chatbot", { limit: 15, windowMs: 60_000 });
+  const rl = await rateLimitByIp(request, "chatbot", { limit: 15, windowMs: 60_000 });
   if (!rl.allowed) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
   const body = await request.json();

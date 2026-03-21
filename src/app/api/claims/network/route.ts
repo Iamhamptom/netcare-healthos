@@ -6,7 +6,7 @@ import { isDemoMode } from "@/lib/is-demo";
 // Accessible to platform_admin only (Thirushen's view)
 
 export async function GET(req: NextRequest) {
-  const rl = rateLimitByIp(req, "claims/network", { limit: 15 });
+  const rl = await rateLimitByIp(req, "claims/network", { limit: 15 });
   if (!rl.allowed) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
   // Auth — platform_admin only

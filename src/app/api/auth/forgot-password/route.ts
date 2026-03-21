@@ -4,7 +4,7 @@ import { isDemoMode } from "@/lib/is-demo";
 import { resetTokens } from "@/lib/reset-tokens";
 
 export async function POST(request: Request) {
-  const rl = rateLimitByIp(request, "auth/forgot-password", { limit: 5 });
+  const rl = await rateLimitByIp(request, "auth/forgot-password", { limit: 5 });
   if (!rl.allowed) {
     return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
   }

@@ -11,7 +11,7 @@ export async function guardRoute(
   opts?: { limit?: number; roles?: string[] }
 ) {
   // Rate limit
-  const rl = rateLimitByIp(request, route, { limit: opts?.limit ?? 30 });
+  const rl = await rateLimitByIp(request, route, { limit: opts?.limit ?? 30 });
   if (!rl.allowed) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
@@ -56,7 +56,7 @@ export async function guardPlatformAdmin(
   route: string,
   opts?: { limit?: number }
 ) {
-  const rl = rateLimitByIp(request, route, { limit: opts?.limit ?? 30 });
+  const rl = await rateLimitByIp(request, route, { limit: opts?.limit ?? 30 });
   if (!rl.allowed) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
@@ -94,7 +94,7 @@ export async function guardInvestor(
   route: string,
   opts?: { limit?: number }
 ) {
-  const rl = rateLimitByIp(request, route, { limit: opts?.limit ?? 30 });
+  const rl = await rateLimitByIp(request, route, { limit: opts?.limit ?? 30 });
   if (!rl.allowed) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }

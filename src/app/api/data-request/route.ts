@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 const VALID_TYPES = ["access", "correction", "deletion", "objection"];
 
 export async function POST(req: NextRequest) {
-  const rl = rateLimitByIp(req, "data-request", { limit: 5 });
+  const rl = await rateLimitByIp(req, "data-request", { limit: 5 });
   if (!rl.allowed) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }

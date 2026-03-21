@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 
 /** POST /api/public/deposit — Initialize Paystack deposit payment (no auth required) */
 export async function POST(request: Request) {
-  const rl = rateLimitByIp(request, "public/deposit", { limit: 10, windowMs: 60_000 });
+  const rl = await rateLimitByIp(request, "public/deposit", { limit: 10, windowMs: 60_000 });
   if (!rl.allowed) return NextResponse.json({ error: "Too many requests. Please wait." }, { status: 429 });
 
   const body = await request.json();

@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 // POST — subscribe to newsletter
 export async function POST(req: NextRequest) {
   // Rate limit: 5 subscribes per minute per IP
-  const rl = rateLimitByIp(req, "newsletter/subscribe", { limit: 5 });
+  const rl = await rateLimitByIp(req, "newsletter/subscribe", { limit: 5 });
   if (!rl.allowed) {
     return NextResponse.json(
       { error: "Too many requests. Try again later." },
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
 // GET — list subscribers (admin only, gateway key auth)
 export async function GET(req: NextRequest) {
   // Rate limit: 30 per minute
-  const rl = rateLimitByIp(req, "newsletter/list", { limit: 30 });
+  const rl = await rateLimitByIp(req, "newsletter/list", { limit: 30 });
   if (!rl.allowed) {
     return NextResponse.json(
       { error: "Too many requests. Try again later." },

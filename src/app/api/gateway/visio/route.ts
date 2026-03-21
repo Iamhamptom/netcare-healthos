@@ -10,7 +10,7 @@ const HEALTHOPS_GATEWAY_KEY = process.env.HEALTHOPS_GATEWAY_KEY || "";
 // POST — sync data to Visio Workspace (chairman view)
 // Reports: practice metrics, revenue, patient counts, usage
 export async function POST(request: Request) {
-  const rl = rateLimitByIp(request, "gateway/visio", { limit: 10 });
+  const rl = await rateLimitByIp(request, "gateway/visio", { limit: 10 });
   if (!rl.allowed) return NextResponse.json({ error: "Rate limited" }, { status: 429 });
 
   // Authenticate — either internal call or Visio Workspace pulling data

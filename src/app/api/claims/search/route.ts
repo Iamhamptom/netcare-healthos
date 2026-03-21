@@ -6,7 +6,7 @@ import { rateLimitByIp } from "@/lib/rate-limit";
 
 export async function GET(req: NextRequest) {
   // Rate limit (lighter auth — search is read-only, no PII)
-  const rl = rateLimitByIp(req, "claims/search", { limit: 60, windowMs: 60_000 });
+  const rl = await rateLimitByIp(req, "claims/search", { limit: 60, windowMs: 60_000 });
   if (!rl.allowed) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
   const { searchParams } = new URL(req.url);

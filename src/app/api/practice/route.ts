@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { parseIntegrations } from "@/lib/microsoft";
 
 export async function GET(request: Request) {
-  const rl = rateLimitByIp(request, "practice", { limit: 30 });
+  const rl = await rateLimitByIp(request, "practice", { limit: 30 });
   if (!rl.allowed) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
   if (isDemoMode) return NextResponse.json({ practice: demoPractice });
@@ -20,7 +20,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const rl = rateLimitByIp(request, "practice/create", { limit: 5 });
+  const rl = await rateLimitByIp(request, "practice/create", { limit: 5 });
   if (!rl.allowed) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
   if (isDemoMode) return NextResponse.json({ practice: demoPractice });
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const rl = rateLimitByIp(request, "practice/update", { limit: 20 });
+  const rl = await rateLimitByIp(request, "practice/update", { limit: 20 });
   if (!rl.allowed) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
   if (isDemoMode) return NextResponse.json({ practice: demoPractice });
@@ -78,7 +78,7 @@ export async function PUT(request: Request) {
 
 /** PATCH /api/practice — Update integrations JSON (used by Microsoft settings) */
 export async function PATCH(request: Request) {
-  const rl = rateLimitByIp(request, "practice/patch", { limit: 20 });
+  const rl = await rateLimitByIp(request, "practice/patch", { limit: 20 });
   if (!rl.allowed) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
   if (isDemoMode) return NextResponse.json({ practice: demoPractice });
