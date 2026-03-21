@@ -63,17 +63,21 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      const values = parsed.headers.map(h => {
-        const val = row[h] || "";
-        return val.includes(",") ? `"${val}"` : val;
-      });
+      const csvEscape = (v: string) => {
+        const s = (v || "").replace(/[\r\n]+/g, " ").replace(/"/g, '""');
+        return s.includes(",") || s.includes('"') || s.includes(";") ? `"${s}"` : s;
+      };
 
+      const values = parsed.headers.map(h => csvEscape(row[h] || ""));
       values.push(lr?.status || "unknown");
       values.push(appliedForLine.length > 0 ? "yes" : "no");
-      values.push(lr?.issues.filter(i => i.severity !== "info").map(i => i.rule).join("; ") || "");
+      values.push(csvEscape(lr?.issues.filter(i => i.severity !== "info").map(i => i.rule).join("; ") || ""));
 
       csvLines.push(values.join(","));
     }
+
+    // Return corrected CSV as a separate download-ready string
+    const csvString = csvLines.join("\r\n");
 
     return NextResponse.json({
       corrections,
@@ -87,7 +91,7 @@ export async function POST(req: NextRequest) {
         afterRejectionRate: correctedResult.summary.estimatedRejectionRate,
         improvement: result.summary.estimatedRejectionRate - correctedResult.summary.estimatedRejectionRate,
       },
-      correctedCSV: csvLines.map(l => l.replace(/[\r\n]+/g, " ")).join("\n"),
+      correctedCSV: csvString,
       beforeResult: result.summary,
       afterResult: correctedResult.summary,
     });
