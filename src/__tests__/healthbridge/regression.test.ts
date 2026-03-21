@@ -317,11 +317,9 @@ describe("REGRESSION: XML Response Parser Edge Cases", () => {
       <ApprovedAmount>0</ApprovedAmount>
     </ClaimResponse>`;
     const result = safeParseClaimResponse(xml);
-    // 0 is falsy but valid — should still be set
-    // Actually parseInt("0") = 0, and 0 is not NaN, so it should be 0
-    // But the code checks: approvedAmount && !isNaN(approvedAmount) — 0 is falsy!
-    // This IS a potential bug: 0 approved amount returns undefined instead of 0
-    expect(result.approvedAmount).toBeUndefined(); // BUG: 0 is falsy in JS
+    // 0 is valid — parseInt("0") = 0, not NaN
+    // Fixed: code now uses !== undefined instead of truthy check
+    expect(result.approvedAmount).toBe(0);
   });
 
   it("should handle response with negative line number", () => {

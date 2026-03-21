@@ -72,13 +72,31 @@ export function routeToSwitch(schemeName: string): SwitchRoute {
   // Exact match first
   let provider = SCHEME_ROUTES[schemeName];
 
-  // Fuzzy match if no exact
-  if (!provider) {
+  // Fuzzy match if no exact — two-pass strategy to avoid partial misrouting
+  // Pass 1: Input contains a known scheme name (strongest match, prefer longest)
+  //   e.g. "sizwe hosmed" contains "hosmed" (6) AND "sizwe hosmed" (12) → prefer 12
+  // Pass 2: Known scheme name contains the input (weaker, for partial input like "discovery")
+  if (!provider && schemeName.trim().length > 0) {
     const lower = schemeName.toLowerCase();
+    let bestMatchLength = 0;
+
+    // Pass 1: Input contains scheme name (prefer longest matching scheme)
     for (const [scheme, route] of Object.entries(SCHEME_ROUTES)) {
-      if (lower.includes(scheme.toLowerCase()) || scheme.toLowerCase().includes(lower)) {
+      const schemeLower = scheme.toLowerCase();
+      if (lower.includes(schemeLower) && scheme.length > bestMatchLength) {
+        bestMatchLength = scheme.length;
         provider = route;
-        break;
+      }
+    }
+
+    // Pass 2: Only if pass 1 found nothing — scheme name contains input
+    if (!provider) {
+      for (const [scheme, route] of Object.entries(SCHEME_ROUTES)) {
+        const schemeLower = scheme.toLowerCase();
+        if (schemeLower.includes(lower) && scheme.length > bestMatchLength) {
+          bestMatchLength = scheme.length;
+          provider = route;
+        }
       }
     }
   }

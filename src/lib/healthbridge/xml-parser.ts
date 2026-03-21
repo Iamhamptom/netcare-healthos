@@ -32,7 +32,7 @@ export function safeParseClaimResponse(xml: string): ClaimResponse {
   return {
     transactionRef,
     status,
-    approvedAmount: approvedAmount && !isNaN(approvedAmount) ? approvedAmount : undefined,
+    approvedAmount: approvedAmount !== undefined && !isNaN(approvedAmount) ? approvedAmount : undefined,
     rejectionCode: rejectionCode || undefined,
     rejectionReason: rejectionReason || undefined,
     lineResponses: lineResponses.length > 0 ? lineResponses : undefined,
