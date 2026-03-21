@@ -10,7 +10,7 @@ import {
   processHL7Message, processHL7MessageWithAI, resolveAdvisory,
   getResolutionStats, getTrafficAnomalies,
 } from "@/lib/careon-bridge";
-import { validateBridgeAuth, deidentifyAdvisory, logBridgeAudit, getBridgeAuditLog } from "@/lib/hl7/security";
+import { validateBridgeAuth, verifyWebhookSignature, deidentifyAdvisory, logBridgeAudit, getBridgeAuditLog } from "@/lib/hl7/security";
 import type { AdvisorySeverity, AdvisoryCategory, AdvisoryAction } from "@/lib/hl7/types";
 
 export async function GET(request: NextRequest) {
@@ -110,6 +110,22 @@ export async function POST(request: NextRequest) {
 
     if (!rawHL7) {
       return NextResponse.json({ error: "No HL7 message provided" }, { status: 400 });
+    }
+
+    // If HMAC auth was used, verify the signature against the actual payload
+    if (authResult.method === "hmac_pending_verify") {
+      const hmacSig = request.headers.get("x-careon-hmac-sha256");
+      const hmacSecret = process.env.CAREON_HMAC_SECRET!;
+      if (!verifyWebhookSignature(rawHL7, hmacSig, hmacSecret)) {
+        logBridgeAudit({
+          action: "webhook_hmac_invalid",
+          userId: "system",
+          userName: "CareOn Bridge",
+          userRole: "system",
+          detail: "HMAC signature verification failed against payload",
+        });
+        return NextResponse.json({ error: "Invalid HMAC signature" }, { status: 401 });
+      }
     }
 
     // Use AI-enhanced processing if Gemini key is available, otherwise fall back to rule-based

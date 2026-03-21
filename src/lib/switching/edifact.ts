@@ -294,6 +294,7 @@ export function parseEDIFACTResponse(raw: string): {
           } else {
             result.rejectionCode = rej[0];
             result.rejectionReason = rej[1];
+            rejCt++;
           }
         }
         break;
@@ -435,6 +436,7 @@ function unesc(str: string): string {
 }
 
 function splitSegments(raw: string): string[] {
+  if (raw.length > 10_000_000) throw new Error("EDIFACT message too large (>10MB)");
   const segs: string[] = [];
   let cur = "";
   let escaped = false;
@@ -443,6 +445,7 @@ function splitSegments(raw: string): string[] {
     if (ch === RELEASE) { escaped = true; cur += ch; continue; }
     if (ch === SEG_TERM) { if (cur.trim()) segs.push(cur.trim()); cur = ""; continue; }
     cur += ch;
+    if (cur.length > 100_000) throw new Error("EDIFACT segment exceeds 100KB — likely malformed");
   }
   if (cur.trim()) segs.push(cur.trim());
   return segs;

@@ -42,7 +42,7 @@ function validateTariffs(lines: ClaimLineItem[]): ValidationIssue[] {
       issues.push({
         lineNumber: ln, field: "tariffCode", code: "DISCIPLINE_MISMATCH",
         severity: "error", rule: "Practitioner Discipline Mismatch",
-        message: `Tariff "${line.tariffCode}" (${tariff.description}) cannot be billed by a "${line.practitionerType}" practitioner.`,
+        message: `Tariff "${line.tariffCode}" (${tariff.description}) cannot be billed by a "${line.practitionerType}" practitioner. Allowed: ${tariff.discipline.join(", ")}.`,
         suggestion: "Only practitioners in the correct discipline can bill this code.",
       });
     }

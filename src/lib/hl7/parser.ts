@@ -29,14 +29,14 @@ export function parseHL7Message(raw: string): HL7Message {
   return {
     raw: normalized,
     segments,
-    messageType: msh.fields[9] ?? "UNKNOWN",
-    messageId: msh.fields[10] ?? "",
-    sendingApp: msh.fields[3] ?? "",
-    sendingFacility: msh.fields[4] ?? "",
-    receivingApp: msh.fields[5] ?? "",
-    receivingFacility: msh.fields[6] ?? "",
-    timestamp: msh.fields[7] ?? "",
-    version: msh.fields[12] ?? "2.4",
+    messageType: msh.fields[8] ?? "UNKNOWN",   // MSH-9 = fields[8] (MSH-1 is the separator itself)
+    messageId: msh.fields[9] ?? "",             // MSH-10
+    sendingApp: msh.fields[2] ?? "",            // MSH-3
+    sendingFacility: msh.fields[3] ?? "",       // MSH-4
+    receivingApp: msh.fields[4] ?? "",          // MSH-5
+    receivingFacility: msh.fields[5] ?? "",     // MSH-6
+    timestamp: msh.fields[6] ?? "",             // MSH-7
+    version: msh.fields[11] ?? "2.4",           // MSH-12
   };
 }
 
@@ -63,8 +63,8 @@ export function extractPatient(msg: HL7Message): HL7Patient | null {
     address: patSeg.fields[11]?.replace(/\^/g, ", ") ?? "",
     phone: patSeg.fields[13]?.replace(/\^/g, "") ?? "",
     medicalAidScheme: insSeg ? component(insSeg.fields[4], 0) : "",
-    medicalAidNo: insSeg ? (insSeg.fields[36] ?? "") : "",
-    medicalAidPlan: insSeg ? (insSeg.fields[35] ?? "") : "",
+    medicalAidNo: insSeg ? (insSeg.fields[38] ?? "") : "",
+    medicalAidPlan: insSeg ? (insSeg.fields[40] ?? "") : "",
   };
 }
 

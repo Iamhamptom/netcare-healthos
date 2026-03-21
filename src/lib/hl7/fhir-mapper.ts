@@ -88,7 +88,7 @@ export function mapObservationToFHIR(obs: HL7Observation, patientId: string): FH
     status: statusMap[obs.status] ?? "final",
     code: {
       coding: [{
-        system: obs.code.match(/^\d+-\d$/) ? "http://loinc.org" : "urn:netcare:local",
+        system: obs.code.match(/^\d+-\d+$/) ? "http://loinc.org" : "urn:netcare:local",
         code: obs.code,
         display: obs.codeName,
       }],

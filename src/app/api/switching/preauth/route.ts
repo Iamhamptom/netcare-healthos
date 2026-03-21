@@ -17,7 +17,8 @@ export async function GET(req: Request) {
   const cptCodes = (searchParams.get("cpt") || "").split(",").filter(Boolean);
   const icd10Codes = (searchParams.get("icd10") || "").split(",").filter(Boolean);
   const scheme = searchParams.get("scheme") || "";
-  const cost = parseInt(searchParams.get("cost") || "0", 10);
+  const costRaw = parseInt(searchParams.get("cost") || "0", 10);
+  const cost = isNaN(costRaw) ? 0 : costRaw;
 
   if (cptCodes.length === 0) {
     return NextResponse.json({ error: "At least one CPT code is required (?cpt=0190,0141)" }, { status: 400 });

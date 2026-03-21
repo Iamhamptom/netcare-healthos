@@ -152,69 +152,77 @@ function formatClaimDate(dateStr: string): string | undefined {
 }
 
 /**
- * Map Healthbridge PROVIDER_TYPE codes to SA discipline names.
+ * Map Healthbridge PROVIDER_TYPE codes to tariff Discipline values.
  * Based on BHF (Board of Healthcare Funders) practice codes.
+ *
+ * IMPORTANT: Returns Discipline-compatible strings that match the tariff
+ * database's discipline array (e.g., "gp", "specialist", "surgeon").
+ * Facility codes (80-89) return undefined since facilities don't have
+ * a practitioner discipline for tariff validation.
  */
 function mapProviderType(code: string): string | undefined {
   if (!code) return undefined;
 
-  const providerTypeMap: Record<string, string> = {
-    "01": "General Practitioner",
-    "02": "Specialist Physician",
-    "03": "Surgeon",
-    "04": "Gynaecologist",
-    "05": "Psychiatrist",
-    "06": "Neurosurgeon",
-    "07": "Anaesthetist",
-    "08": "Radiologist",
-    "09": "Pathologist",
-    "10": "Paediatrician",
-    "11": "Ophthalmologist",
-    "12": "Urologist",
-    "13": "Plastic Surgeon",
-    "14": "Orthopaedic Surgeon",
-    "15": "ENT Specialist",
-    "16": "Cardiologist",
-    "17": "Neurologist",
-    "18": "Cardiothoracic Surgeon",
-    "19": "Dermatologist",
-    "20": "Oncologist",
-    "21": "Nuclear Medicine",
-    "22": "Physical Rehabilitation",
-    "23": "Maxillofacial Surgeon",
-    "24": "Pulmonologist",
-    "25": "Nephrologist",
-    "26": "Gastroenterologist",
-    "27": "Rheumatologist",
-    "28": "Clinical Haematologist",
-    "29": "Endocrinologist",
-    "30": "Geriatrician",
-    "31": "Neonatologist",
-    "32": "Infectious Diseases",
-    "40": "Dentist",
-    "41": "Dental Specialist",
-    "50": "Physiotherapist",
-    "51": "Occupational Therapist",
-    "52": "Speech Therapist",
-    "53": "Audiologist",
-    "54": "Dietitian",
-    "55": "Psychologist",
-    "56": "Social Worker",
-    "57": "Biokineticist",
-    "58": "Chiropractor",
-    "59": "Homeopath",
-    "60": "Optometrist",
-    "61": "Podiatrist",
-    "70": "Pharmacy",
-    "71": "Nursing",
-    "80": "Hospital",
-    "81": "Day Clinic",
-    "82": "Sub-Acute Facility",
-    "83": "Hospice",
-    "90": "Ambulance",
-    "91": "Pathology Laboratory",
-    "92": "Radiology Practice",
+  // Maps BHF provider codes to tariff Discipline values.
+  // Facility codes (80-89) are intentionally omitted — they have no
+  // practitioner discipline, so discipline validation is skipped for them.
+  const providerToDiscipline: Record<string, string> = {
+    "01": "gp",
+    "02": "specialist",
+    "03": "surgeon",
+    "04": "gynaecology",
+    "05": "psychiatry",
+    "06": "surgeon",              // Neurosurgeon
+    "07": "anaesthetist",
+    "08": "radiology",
+    "09": "pathology",
+    "10": "paediatrics",
+    "11": "ophthalmology",
+    "12": "urologist",
+    "13": "surgeon",              // Plastic Surgeon
+    "14": "orthopaedics",
+    "15": "ent",
+    "16": "cardiology",
+    "17": "neurologist",
+    "18": "surgeon",              // Cardiothoracic Surgeon
+    "19": "dermatology",
+    "20": "oncologist",
+    "21": "specialist",           // Nuclear Medicine
+    "22": "physiotherapy",        // Physical Rehabilitation
+    "23": "surgeon",              // Maxillofacial Surgeon
+    "24": "pulmonologist",
+    "25": "specialist",           // Nephrologist
+    "26": "gastroenterologist",
+    "27": "specialist",           // Rheumatologist
+    "28": "specialist",           // Clinical Haematologist
+    "29": "specialist",           // Endocrinologist
+    "30": "specialist",           // Geriatrician
+    "31": "paediatrics",          // Neonatologist
+    "32": "specialist",           // Infectious Diseases
+    "40": "dental",
+    "41": "dental",               // Dental Specialist
+    "50": "physiotherapy",
+    "51": "occupational_therapy",
+    "52": "specialist",           // Speech Therapist
+    "53": "specialist",           // Audiologist
+    "54": "dietetics",
+    "55": "psychology",
+    "56": "specialist",           // Social Worker
+    "57": "specialist",           // Biokineticist
+    "58": "specialist",           // Chiropractor
+    "59": "specialist",           // Homeopath
+    "60": "ophthalmology",        // Optometrist
+    "61": "specialist",           // Podiatrist
+    "70": "specialist",           // Pharmacy
+    "71": "nursing",
+    // 80-89: Facility codes — omitted (no practitioner discipline)
+    "90": "emergency",            // Ambulance
+    "91": "pathology",            // Pathology Laboratory
+    "92": "radiology",            // Radiology Practice
   };
 
-  return providerTypeMap[code.padStart(2, "0")] ?? code;
+  const normalized = code.padStart(2, "0");
+  // Return undefined for facility codes (80-89) and unknown codes
+  // so that discipline validation is skipped for them
+  return providerToDiscipline[normalized] || undefined;
 }

@@ -252,9 +252,9 @@ export function checkPreAuthRequired(data: {
   for (const rule of PRE_AUTH_RULES) {
     let matched = false;
 
-    // Match by CPT code
+    // Match by CPT code — exact 4-digit match only (no prefix matching to avoid false positives)
     for (const cpt of data.cptCodes) {
-      if (rule.cptPatterns.some(p => cpt.startsWith(p.slice(0, 2)) || cpt === p)) {
+      if (rule.cptPatterns.some(p => cpt === p)) {
         matched = true;
         break;
       }

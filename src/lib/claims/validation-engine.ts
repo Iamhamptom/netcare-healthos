@@ -111,6 +111,44 @@ export function autoMapColumns(headers: string[]): ColumnMapping {
   return mapping as ColumnMapping;
 }
 
+// ─── NORMALIZE DISCIPLINE ────────────────────────────────────────
+// Maps common practitioner type labels to tariff Discipline values
+const DISCIPLINE_ALIASES: Record<string, string> = {
+  "general practitioner": "gp", "gp": "gp", "general practice": "gp",
+  "specialist": "specialist", "physician": "specialist",
+  "surgeon": "surgeon", "surgery": "surgeon",
+  "gynaecologist": "gynaecology", "gynaecology": "gynaecology", "gynecologist": "gynaecology",
+  "psychiatrist": "psychiatry", "psychiatry": "psychiatry",
+  "anaesthetist": "anaesthetist", "anesthetist": "anaesthetist", "anaesthetics": "anaesthetist",
+  "radiologist": "radiology", "radiology": "radiology",
+  "pathologist": "pathology", "pathology": "pathology",
+  "paediatrician": "paediatrics", "pediatrician": "paediatrics", "paediatrics": "paediatrics",
+  "ophthalmologist": "ophthalmology", "ophthalmology": "ophthalmology", "optometrist": "ophthalmology",
+  "urologist": "urologist", "urology": "urologist",
+  "orthopaedic": "orthopaedics", "orthopaedics": "orthopaedics", "orthopedic": "orthopaedics",
+  "ent": "ent", "ear nose throat": "ent", "otolaryngologist": "ent",
+  "cardiologist": "cardiology", "cardiology": "cardiology",
+  "dermatologist": "dermatology", "dermatology": "dermatology",
+  "neurologist": "neurologist", "neurology": "neurologist",
+  "pulmonologist": "pulmonologist", "pulmonology": "pulmonologist",
+  "gastroenterologist": "gastroenterologist", "gastroenterology": "gastroenterologist",
+  "oncologist": "oncologist", "oncology": "oncologist",
+  "physiotherapist": "physiotherapy", "physiotherapy": "physiotherapy",
+  "occupational therapist": "occupational_therapy", "occupational therapy": "occupational_therapy",
+  "dietitian": "dietetics", "dietetics": "dietetics",
+  "psychologist": "psychology", "psychology": "psychology",
+  "dentist": "dental", "dental": "dental",
+  "nursing": "nursing", "nurse": "nursing",
+  "emergency": "emergency", "ambulance": "emergency",
+  "midwife": "midwifery", "midwifery": "midwifery",
+};
+
+function normalizeDiscipline(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  const lower = value.toLowerCase().trim();
+  return DISCIPLINE_ALIASES[lower] || lower;
+}
+
 // ─── EXTRACT CLAIM LINE ITEMS ────────────────────────────────────
 export function extractClaimLines(
   rows: Record<string, string>[],
@@ -135,7 +173,7 @@ export function extractClaimLines(
       quantity: mapping.quantity ? parseInt(row[mapping.quantity], 10) || undefined : undefined,
       amount: mapping.amount ? parseFloat(row[mapping.amount]) || undefined : undefined,
       modifier: mapping.modifier ? row[mapping.modifier]?.trim() : undefined,
-      practitionerType: mapping.practitionerType ? row[mapping.practitionerType]?.trim() : undefined,
+      practitionerType: mapping.practitionerType ? normalizeDiscipline(row[mapping.practitionerType]?.trim()) : undefined,
       dateOfService: mapping.dateOfService ? row[mapping.dateOfService]?.trim() : undefined,
     };
   });

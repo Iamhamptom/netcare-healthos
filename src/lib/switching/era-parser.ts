@@ -646,6 +646,7 @@ export function generateDisputeSummary(disputes: PaymentDispute[]): {
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 function extractTag(xml: string, tag: string): string | null {
-  const match = xml.match(new RegExp(`<${tag}[^>]*>([^<]*)</${tag}>`, "i"));
+  const escapedTag = tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = xml.match(new RegExp(`<${escapedTag}[^>]*>([^<]*)</${escapedTag}>`, "i"));
   return match ? match[1].trim() : null;
 }

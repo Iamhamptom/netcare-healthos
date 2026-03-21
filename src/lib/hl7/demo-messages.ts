@@ -16,8 +16,8 @@ export const DEMO_HL7_MESSAGES = {
   admit_milpark: [
     `MSH|${ENC}|CAREON|NETCARE_MILPARK|VISIOHEALTH|NETCARE_OS|20260320091500||ADT${ENC.charAt(0)}A01|MSG001|P|2.4`,
     `PID|||MRN-4521${ENC.charAt(0)}${ENC.charAt(0)}${ENC.charAt(0)}8501015800086||VAN_DER_MERWE${ENC.charAt(0)}JOHAN||19850101|M|||42 Oak Avenue${ENC.charAt(0)}Sandton${ENC.charAt(0)}Gauteng${ENC.charAt(0)}2196||+27824561234`,
-    `PV1||I|ORTHO${ENC.charAt(0)}${ENC.charAt(0)}BED-12${ENC.charAt(0)}MILPARK|||NAIDOO${ENC.charAt(0)}PRIYA${ENC.charAt(0)}DR||||||||||||V-20260320-001|||||||||||||||||||||||20260320091500`,
-    `IN1||||DISCOVERY${ENC.charAt(0)}Discovery Health Medical Scheme||||||||||||||||||||||||||||||||||DH-001-4521-88||Executive Plan`,
+    `PV1||I|ORTHO${ENC.charAt(0)}${ENC.charAt(0)}BED-12${ENC.charAt(0)}MILPARK||||NAIDOO${ENC.charAt(0)}PRIYA${ENC.charAt(0)}DR||||||||||||V-20260320-001|||||||||||||||||||||||20260320091500`,
+    `IN1||||DISCOVERY${ENC.charAt(0)}Discovery Health Medical Scheme|||||||||||||||||||||||||||||||Executive Plan|DH-001-4521-88`,
     `DG1|1|ICD10|M17.1${ENC.charAt(0)}Primary gonarthrosis, unilateral||20260320|A`,
     `DG1|2|ICD10|E11.9${ENC.charAt(0)}Type 2 diabetes mellitus without complications||20260320|W`,
   ].join("\r"),
@@ -26,8 +26,8 @@ export const DEMO_HL7_MESSAGES = {
   discharge_sunninghill: [
     `MSH|${ENC}|CAREON|NETCARE_SUNNINGHILL|VISIOHEALTH|NETCARE_OS|20260320143000||ADT${ENC.charAt(0)}A03|MSG002|P|2.4`,
     `PID|||MRN-7823${ENC.charAt(0)}${ENC.charAt(0)}${ENC.charAt(0)}7403125800089||MOKOENA${ENC.charAt(0)}THABO||19740312|M|||18 Protea Rd${ENC.charAt(0)}Fourways${ENC.charAt(0)}Gauteng${ENC.charAt(0)}2191||+27831234567`,
-    `PV1||I|CARDIO${ENC.charAt(0)}${ENC.charAt(0)}BED-03${ENC.charAt(0)}SUNNINGHILL|||PATEL${ENC.charAt(0)}RAJESH${ENC.charAt(0)}DR||||||||||||V-20260318-042|||||||||||||||||||||||20260318100000|20260320143000`,
-    `IN1||||BONITAS${ENC.charAt(0)}Bonitas Medical Fund||||||||||||||||||||||||||||||||||BON-7823-445||BonComprehensive`,
+    `PV1||I|CARDIO${ENC.charAt(0)}${ENC.charAt(0)}BED-03${ENC.charAt(0)}SUNNINGHILL||||PATEL${ENC.charAt(0)}RAJESH${ENC.charAt(0)}DR||||||||||||V-20260318-042|||||||||||||||||||||||20260318100000|20260320143000`,
+    `IN1||||BONITAS${ENC.charAt(0)}Bonitas Medical Fund|||||||||||||||||||||||||||||||BonComprehensive|BON-7823-445`,
     `DG1|1|ICD10|I25.1${ENC.charAt(0)}Atherosclerotic heart disease of native coronary artery||20260320|F`,
     `DG1|2|ICD10|I10${ENC.charAt(0)}Essential (primary) hypertension||20260320|F`,
     `DG1|3|ICD10|E78.0${ENC.charAt(0)}Pure hypercholesterolaemia||20260320|W`,
@@ -37,7 +37,7 @@ export const DEMO_HL7_MESSAGES = {
   lab_gardencity: [
     `MSH|${ENC}|CAREON|NETCARE_GARDEN_CITY|VISIOHEALTH|NETCARE_OS|20260320110000||ORU${ENC.charAt(0)}R01|MSG003|P|2.4`,
     `PID|||MRN-3341${ENC.charAt(0)}${ENC.charAt(0)}${ENC.charAt(0)}9202280800085||DLAMINI${ENC.charAt(0)}NOMSA||19920228|F|||7 Jacaranda St${ENC.charAt(0)}Mamelodi${ENC.charAt(0)}Gauteng${ENC.charAt(0)}0122||+27769876543`,
-    `PV1||O|PATH${ENC.charAt(0)}${ENC.charAt(0)}${ENC.charAt(0)}GARDEN_CITY|||BOTHA${ENC.charAt(0)}ANNA${ENC.charAt(0)}DR`,
+    `PV1||O|PATH${ENC.charAt(0)}${ENC.charAt(0)}${ENC.charAt(0)}GARDEN_CITY||||BOTHA${ENC.charAt(0)}ANNA${ENC.charAt(0)}DR`,
     `OBX|1|NM|2339-0${ENC.charAt(0)}Glucose [Mass/volume] in Blood||7.8|mmol/L|3.9-5.6|H|||F|||20260320103000`,
     `OBX|2|NM|4548-4${ENC.charAt(0)}Hemoglobin A1c/Hemoglobin.total in Blood||8.2|%|4.0-5.6|HH|||F|||20260320103000`,
     `OBX|3|NM|2093-3${ENC.charAt(0)}Cholesterol [Mass/volume] in Serum||6.4|mmol/L|<5.0|H|||F|||20260320103000`,
@@ -50,8 +50,8 @@ export const DEMO_HL7_MESSAGES = {
   outpatient_medicross: [
     `MSH|${ENC}|CAREON|NETCARE_MEDICROSS_SANDTON|VISIOHEALTH|NETCARE_OS|20260320083000||ADT${ENC.charAt(0)}A04|MSG004|P|2.4`,
     `PID|||MRN-9102${ENC.charAt(0)}${ENC.charAt(0)}${ENC.charAt(0)}0005155800083||SMITH${ENC.charAt(0)}SARAH||20000515|F|||22 Rivonia Rd${ENC.charAt(0)}Sandton${ENC.charAt(0)}Gauteng${ENC.charAt(0)}2196||+27845556789`,
-    `PV1||O|GP${ENC.charAt(0)}${ENC.charAt(0)}${ENC.charAt(0)}MEDICROSS_SANDTON|||MOLEFE${ENC.charAt(0)}DAVID${ENC.charAt(0)}DR||||||||||||V-20260320-088|||||||||||||||||||||||20260320083000`,
-    `IN1||||GEMS${ENC.charAt(0)}Government Employees Medical Scheme||||||||||||||||||||||||||||||||||GEMS-9102-221||Emerald`,
+    `PV1||O|GP${ENC.charAt(0)}${ENC.charAt(0)}${ENC.charAt(0)}MEDICROSS_SANDTON||||MOLEFE${ENC.charAt(0)}DAVID${ENC.charAt(0)}DR||||||||||||V-20260320-088|||||||||||||||||||||||20260320083000`,
+    `IN1||||GEMS${ENC.charAt(0)}Government Employees Medical Scheme|||||||||||||||||||||||||||||||Emerald|GEMS-9102-221`,
     `DG1|1|ICD10|J06.9${ENC.charAt(0)}Acute upper respiratory infection, unspecified||20260320|A`,
   ].join("\r"),
 
@@ -59,9 +59,9 @@ export const DEMO_HL7_MESSAGES = {
   order_cbmh: [
     `MSH|${ENC}|CAREON|NETCARE_CBMH|VISIOHEALTH|NETCARE_OS|20260320120000||ORM${ENC.charAt(0)}O01|MSG005|P|2.4`,
     `PID|||MRN-6678${ENC.charAt(0)}${ENC.charAt(0)}${ENC.charAt(0)}6808235800082||WILLIAMS${ENC.charAt(0)}PETER||19680823|M|||5 Sea Point Main Rd${ENC.charAt(0)}Cape Town${ENC.charAt(0)}WC${ENC.charAt(0)}8005||+27217891234`,
-    `PV1||I|NEURO${ENC.charAt(0)}${ENC.charAt(0)}BED-07${ENC.charAt(0)}CBMH|||KHAN${ENC.charAt(0)}AHMED${ENC.charAt(0)}DR||||||||||||V-20260319-112`,
+    `PV1||I|NEURO${ENC.charAt(0)}${ENC.charAt(0)}BED-07${ENC.charAt(0)}CBMH||||KHAN${ENC.charAt(0)}AHMED${ENC.charAt(0)}DR||||||||||||V-20260319-112`,
     `ORC|NW|ORD-20260320-001`,
-    `OBR||ORD-20260320-001||70553${ENC.charAt(0)}CT Brain without contrast|||20260320120000||||||||KHAN${ENC.charAt(0)}AHMED${ENC.charAt(0)}DR||||||||||S`,
+    `OBR||ORD-20260320-001||70553${ENC.charAt(0)}CT Brain without contrast|||20260320120000|||||||||KHAN${ENC.charAt(0)}AHMED${ENC.charAt(0)}DR||||||||||S`,
   ].join("\r"),
 };
 

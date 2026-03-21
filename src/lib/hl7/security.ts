@@ -47,8 +47,10 @@ export function validateBridgeAuth(
   }
 
   // HMAC takes priority (stronger, used by Deutsche Telekom integrations)
+  // Note: HMAC header presence is checked here; actual signature verification
+  // requires the payload and happens via verifyWebhookSignature() in the route handler
   if (hmacSecret && hmacSig) {
-    return { valid: true, method: "hmac" }; // Actual verification happens in processWebhook with payload
+    return { valid: true, method: "hmac_pending_verify" };
   }
 
   // Bearer token fallback

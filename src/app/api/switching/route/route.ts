@@ -61,7 +61,9 @@ export async function POST(req: Request) {
           requestXml: "",
         },
       });
-    } catch { /* DB write failure shouldn't block response */ }
+    } catch (dbErr) {
+      console.error("[switching/route] DB persistence failed:", dbErr instanceof Error ? dbErr.message : dbErr);
+    }
 
     return NextResponse.json({ routing, response, edifact: response.edifact });
   } catch (err) {

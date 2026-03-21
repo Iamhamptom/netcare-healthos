@@ -25,6 +25,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Maximum 500 claims per batch" }, { status: 400 });
     }
 
+    // Validate each claim has required fields
+    const invalidIdx = claims.findIndex(c => !c.medicalAidScheme || !c.lineItems || !Array.isArray(c.lineItems) || c.lineItems.length === 0);
+    if (invalidIdx >= 0) {
+      return NextResponse.json({ error: `Invalid claim at index ${invalidIdx}: medicalAidScheme and lineItems are required` }, { status: 400 });
+    }
+
     // EDIFACT batch file generation (no submission)
     if (mode === "edifact") {
       const bhf = claims[0].bhfNumber || "0000000";
