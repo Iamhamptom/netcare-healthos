@@ -107,8 +107,9 @@ export async function POST(req: NextRequest) {
     if (error) throw error;
 
     return NextResponse.json({ id: data.id, saved: true });
-  } catch (error) {
-    console.error("Save analysis error:", error);
-    return NextResponse.json({ error: "Failed to save analysis" }, { status: 500 });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("Save analysis error:", msg);
+    return NextResponse.json({ error: `Failed to save analysis: ${msg}` }, { status: 500 });
   }
 }
