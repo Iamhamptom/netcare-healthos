@@ -109,7 +109,9 @@ export function formatZAR(cents: number): string {
 export function parseZARToCents(zar: string | number): number {
   if (typeof zar === "number") return Math.round(zar * 100);
   const cleaned = String(zar).replace(/[R\s,]/g, "");
-  return Math.round(parseFloat(cleaned) * 100);
+  const parsed = parseFloat(cleaned);
+  if (isNaN(parsed)) return 0;
+  return Math.round(parsed * 100);
 }
 
 /** Common claim rejection codes in SA switching */

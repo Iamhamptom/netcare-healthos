@@ -60,5 +60,53 @@ describe("SA Healthcare Code Validation", () => {
       expect(parseZARToCents("R 520.00")).toBe(52000);
       expect(parseZARToCents(520)).toBe(52000);
     });
+    it("should handle comma-separated thousands", () => {
+      expect(parseZARToCents("R 1,520.00")).toBe(152000);
+    });
+    it("should return 0 for empty string (not NaN)", () => {
+      expect(parseZARToCents("")).toBe(0);
+    });
+    it("should return 0 for non-numeric string (not NaN)", () => {
+      expect(parseZARToCents("abc")).toBe(0);
+    });
+    it("should handle zero", () => {
+      expect(parseZARToCents("0")).toBe(0);
+      expect(parseZARToCents(0)).toBe(0);
+    });
+    it("should handle negative amounts", () => {
+      expect(parseZARToCents("-520")).toBe(-52000);
+      expect(parseZARToCents(-520)).toBe(-52000);
+    });
+    it("should handle fractional cents (rounding)", () => {
+      expect(parseZARToCents("1.999")).toBe(200);
+      expect(parseZARToCents(1.999)).toBe(200);
+    });
+  });
+
+  describe("Edge cases for validators", () => {
+    it("should reject empty string for ICD10", () => {
+      expect(isValidICD10("")).toBe(false);
+    });
+    it("should reject lowercase ICD10", () => {
+      expect(isValidICD10("i10")).toBe(false);
+    });
+    it("should reject ICD10 with 3 decimal digits", () => {
+      expect(isValidICD10("J06.123")).toBe(false);
+    });
+    it("should reject empty NAPPI", () => {
+      expect(isValidNAPPI("")).toBe(false);
+    });
+    it("should reject NAPPI with 14 digits", () => {
+      expect(isValidNAPPI("12345678901234")).toBe(false);
+    });
+    it("should reject empty BHF", () => {
+      expect(isValidBHF("")).toBe(false);
+    });
+    it("should reject CPT with leading zeros but 3 chars", () => {
+      expect(isValidCPT("019")).toBe(false);
+    });
+    it("should handle formatZAR with negative", () => {
+      expect(formatZAR(-5000)).toBe("R -50.00");
+    });
   });
 });
