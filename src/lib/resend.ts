@@ -4,7 +4,7 @@
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY || "");
-const fromEmail = process.env.RESEND_FROM_EMAIL || "Netcare Health OS Ops <noreply@healthops.co.za>";
+const fromEmail = process.env.RESEND_FROM_EMAIL || "Health OS <noreply@healthops.co.za>";
 
 interface EmailOptions {
   to: string | string[];
@@ -41,8 +41,8 @@ function baseTemplate(practiceName: string, primaryColor: string, content: strin
       ${content}
     </div>
     <div style="padding:16px 32px;background:#fafafa;border-top:1px solid #eee;text-align:center;">
-      <p style="margin:0;color:#999;font-size:11px;">Powered by Netcare Health OS Ops — Research-backed healthcare technology</p>
-      <p style="margin:4px 0 0;color:#bbb;font-size:10px;">Netcare Technology · 120+ peer-reviewed citations · <a href="https://healthops-platform-corpo1.vercel.app/research" style="color:#16a34a;text-decoration:none;">Read our research</a></p>
+      <p style="margin:0;color:#999;font-size:11px;">Powered by Health OS — Research-backed healthcare technology by Visio Research Labs</p>
+      <p style="margin:4px 0 0;color:#bbb;font-size:10px;">Proprietary AI · 120+ peer-reviewed citations · <a href="https://healthos.visiocorp.co/research" style="color:#16a34a;text-decoration:none;">Read our research</a></p>
     </div>
   </div>
 </body>
@@ -213,12 +213,12 @@ export function onboardingWelcomeEmail(opts: {
     .join("");
 
   const content = `
-    <h2 style="margin:0 0 8px;color:#333;font-size:22px;font-weight:700;">Welcome to Netcare Health OS</h2>
+    <h2 style="margin:0 0 8px;color:#333;font-size:22px;font-weight:700;">Welcome to Health OS</h2>
     <p style="color:#16a34a;font-size:14px;font-weight:600;margin:0 0 20px;">Your practice is live. Let's transform how you operate.</p>
 
     <p style="color:#555;font-size:14px;line-height:1.6;">Dear Dr. ${opts.doctorName},</p>
     <p style="color:#555;font-size:14px;line-height:1.6;">
-      Welcome to Netcare Health OS — South Africa's first AI-powered healthcare practice management platform.
+      Welcome to Health OS — South Africa's AI-powered healthcare operations platform, built by Visio Research Labs.
       Your practice <strong>${opts.practiceName}</strong> has been onboarded to the <strong>${planNames[opts.plan] || opts.plan}</strong> plan.
     </p>
 
@@ -289,17 +289,17 @@ export function onboardingWelcomeEmail(opts: {
         <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://healthops.co.za"}/terms#cancellation" style="color:#16a34a;text-decoration:none;font-size:13px;font-weight:600;">Cancellation Policy</a>
       </p>
       <p style="color:#999;font-size:12px;line-height:1.6;margin-top:12px;">
-        This email contains your login credentials. Please do not forward it. If you did not expect this email, contact us at info@netcare.co.za.
+        This email contains your login credentials. Please do not forward it. If you did not expect this email, contact us at support@visiocorp.co.
       </p>
     </div>
 
     <p style="color:#555;font-size:14px;line-height:1.6;margin-top:20px;">
       We're excited to partner with you, Dr. ${opts.doctorName}.<br/>
-      <strong>— The Netcare Health OS Team</strong>
+      <strong>— The Health OS Team</strong>
     </p>`;
 
   return {
-    subject: `Welcome to Netcare Health OS — ${opts.practiceName} is Live`,
+    subject: `Welcome to Health OS — ${opts.practiceName} is Live`,
     html: baseTemplate(opts.practiceName, opts.primaryColor || "#16a34a", content),
   };
 }
