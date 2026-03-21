@@ -2,7 +2,7 @@
 # Healthbridge API Integration Test — tests every endpoint end-to-end
 # Usage: DEMO_MODE=true npx next dev --port 3848 & sleep 10 && bash scripts/test-healthbridge-api.sh
 
-BASE="http://localhost:3848"
+BASE="${HEALTHBRIDGE_TEST_URL:-http://localhost:3900}"
 PASS=0
 FAIL=0
 ERRORS=""
