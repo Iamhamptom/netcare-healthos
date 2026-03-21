@@ -45,6 +45,7 @@ import {
   Layers,
   Inbox,
   BadgeCheck,
+  Mic,
   FileCode,
   Brain,
   Pill,
@@ -129,6 +130,7 @@ const navSections: NavSection[] = [
   {
     label: "OPERATIONS",
     items: [
+      { href: "/dashboard/intake", icon: Mic, label: "AI Voice Intake", roles: ["admin", "doctor"] },
       { href: "/dashboard/daily", icon: ClipboardList, label: "Daily Tasks", roles: ["admin", "receptionist", "nurse"] },
       { href: "/dashboard/patients", icon: Users, label: "Patients", roles: ["admin", "doctor", "nurse"] },
       { href: "/dashboard/billing", icon: Receipt, label: "Billing", roles: ["admin", "receptionist"] },
