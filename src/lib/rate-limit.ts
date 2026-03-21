@@ -37,6 +37,22 @@ async function rateLimitSupabase(
   route: string,
   { limit = 30 }: { limit?: number; windowMs?: number }
 ): Promise<{ allowed: boolean; remaining: number }> {
+  // Timeout: if Supabase doesn't respond in 3s, fall back to in-memory
+  const timeout = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error("Supabase rate limit timeout")), 3000)
+  );
+  try {
+    return await Promise.race([rateLimitSupabaseInner(ip, route, { limit }), timeout]);
+  } catch {
+    return rateLimitInMemory(`${ip}:${route}`, { limit });
+  }
+}
+
+async function rateLimitSupabaseInner(
+  ip: string,
+  route: string,
+  { limit = 30 }: { limit?: number }
+): Promise<{ allowed: boolean; remaining: number }> {
   try {
     // Check current count within the last minute
     const { data, error: selectError } = await supabaseAdmin
