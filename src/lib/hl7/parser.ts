@@ -63,8 +63,8 @@ export function extractPatient(msg: HL7Message): HL7Patient | null {
     address: patSeg.fields[11]?.replace(/\^/g, ", ") ?? "",
     phone: patSeg.fields[13]?.replace(/\^/g, "") ?? "",
     medicalAidScheme: insSeg ? component(insSeg.fields[4], 0) : "",
-    medicalAidNo: insSeg ? (insSeg.fields[38] ?? "") : "",
-    medicalAidPlan: insSeg ? (insSeg.fields[40] ?? "") : "",
+    medicalAidNo: insSeg ? (insSeg.fields[38] ?? insSeg.fields[36] ?? "") : "",
+    medicalAidPlan: insSeg ? (insSeg.fields[40] ?? insSeg.fields[37] ?? insSeg.fields[35] ?? "") : "",
   };
 }
 
