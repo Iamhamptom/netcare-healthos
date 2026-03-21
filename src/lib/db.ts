@@ -108,6 +108,15 @@ export const db = {
     return data ? toCamel(data) : null;
   },
 
+  async updateUser(id: string, updates: Record<string, unknown>) {
+    if (!USE_SUPABASE) {
+      const { prisma } = await import("./prisma");
+      return prisma.user.update({ where: { id }, data: updates as never });
+    }
+    const { data } = await supabaseAdmin.from(tables.users).update(toSnake(updates)).eq("id", id).select().single();
+    return data ? toCamel(data) : null;
+  },
+
   // ── Client Pipeline ──
   async listClients(filters?: { stage?: string; search?: string; planTier?: string }) {
     if (!USE_SUPABASE) {

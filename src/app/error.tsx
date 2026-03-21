@@ -5,6 +5,20 @@ import { useEffect } from "react";
 export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
     console.error("Unhandled error:", error);
+    // Report to error tracking API
+    fetch("/api/errors", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: error.message,
+        stack: error.stack,
+        url: typeof window !== "undefined" ? window.location.href : undefined,
+        severity: "error",
+        metadata: { digest: error.digest, boundary: "error" },
+      }),
+    }).catch(() => {
+      // Silent fail
+    });
   }, [error]);
 
   return (

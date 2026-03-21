@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
+import crypto from "crypto";
 import { rateLimitByIp } from "@/lib/rate-limit";
 import { isDemoMode } from "@/lib/is-demo";
 import { demoUsers, demoUser } from "@/lib/demo-data";
 import { db } from "@/lib/db";
+import { storeTempToken } from "@/app/api/auth/mfa/verify/route";
 
 // --- Account lockout mechanism (OWASP brute-force protection) ---
 const MAX_FAILED_ATTEMPTS = 5;
@@ -132,6 +134,18 @@ export async function POST(request: Request) {
     }
 
     resetAttempts(email);
+
+    // Check if user has MFA enabled
+    if (user.mfaEnabled && user.mfaSecret) {
+      // Don't create a full session yet — issue a temp token for MFA verification
+      const tempToken = crypto.randomBytes(32).toString("hex");
+      storeTempToken(tempToken, user.id as string);
+      return NextResponse.json({
+        requiresMFA: true,
+        tempToken,
+      });
+    }
+
     await createSession(user.id as string);
     return NextResponse.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role } });
   } catch {

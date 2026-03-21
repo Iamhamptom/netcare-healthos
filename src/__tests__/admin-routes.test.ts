@@ -38,14 +38,14 @@ vi.mock("next/headers", () => ({
 }));
 
 vi.mock("@/lib/auth", () => ({
-  getSession: () => Promise.resolve({ userId: "demo-admin" }),
-  verifyToken: () => Promise.resolve({ userId: "demo-admin" }),
+  getSession: () => Promise.resolve({ userId: "platform-admin" }),
+  verifyToken: () => Promise.resolve({ userId: "platform-admin" }),
   SESSION_COOKIE: "healthops-session",
 }));
 
 vi.mock("@/lib/db", () => ({
   db: {
-    getUserById: () => Promise.resolve({ id: "demo-admin", role: "platform_admin", name: "Demo Admin", practiceId: "demo-practice" }),
+    getUserById: () => Promise.resolve({ id: "platform-admin", role: "platform_admin", name: "Demo Admin", practiceId: "demo-practice" }),
     listPractices: () => Promise.resolve([
       { id: "demo-practice", name: "Netcare Primary", type: "primary_care_network", plan: "enterprise", planStatus: "active", createdAt: "2026-01-01" },
       { id: "prac-2", name: "Medicross Sandton", type: "medicross_gp", plan: "professional", planStatus: "active", createdAt: "2026-02-01" },
