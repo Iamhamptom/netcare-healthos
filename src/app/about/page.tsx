@@ -210,7 +210,7 @@ export default function AboutPage() {
             {["AI Claims Engine", "88 Clinics", "POPIA Compliant", "Real-Time Analytics"].map((tech) => (
               <span
                 key={tech}
-                className="text-[11px] text-white/25 font-mono tracking-wider uppercase"
+                className="text-[11px] text-white/70 font-mono tracking-wider uppercase"
               >
                 {tech}
               </span>
@@ -372,7 +372,7 @@ export default function AboutPage() {
             <h2 className="text-4xl md:text-5xl font-light tracking-[-0.03em] text-white mb-4">
               Clinical Intelligence
             </h2>
-            <p className="text-[15px] text-white/40 max-w-xl mx-auto leading-relaxed">
+            <p className="text-[15px] text-white/60 max-w-xl mx-auto leading-relaxed">
               Complete patient management with medical records, vitals tracking,
               allergy alerts, and medication management.
             </p>
@@ -410,7 +410,7 @@ export default function AboutPage() {
                 <h3 className="font-semibold text-white text-[14px] mb-1">
                   {feat.title}
                 </h3>
-                <p className="text-[13px] text-white/30 leading-relaxed">
+                <p className="text-[13px] text-white/70 leading-relaxed">
                   {feat.description}
                 </p>
               </motion.div>
@@ -650,7 +650,7 @@ export default function AboutPage() {
             <h2 className="text-4xl md:text-5xl font-light tracking-[-0.03em] text-white mb-5">
               Powered by AI Intelligence
             </h2>
-            <p className="text-[15px] text-white/40 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-[15px] text-white/60 max-w-3xl mx-auto leading-relaxed">
               Netcare Health OS is powered by advanced AI systems purpose-built
               for healthcare operations. Our technology analyses claims patterns,
               predicts rejection risks, and optimizes revenue recovery across
@@ -665,7 +665,7 @@ export default function AboutPage() {
             viewport={{ once: true }}
             className="max-w-3xl mx-auto text-center mb-16"
           >
-            <p className="text-[14px] text-white/30 leading-relaxed">
+            <p className="text-[14px] text-white/70 leading-relaxed">
               We don&apos;t guess — we research. Every feature in Netcare Health OS is
               backed by real data from real healthcare environments across South
               Africa. Our autonomous agents monitor patient behavior, practice
@@ -692,7 +692,7 @@ export default function AboutPage() {
                 <h3 className="font-semibold text-white text-[15px] mb-2">
                   {cap.title}
                 </h3>
-                <p className="text-[13px] text-white/30 leading-relaxed">
+                <p className="text-[13px] text-white/70 leading-relaxed">
                   {cap.description}
                 </p>
               </motion.div>
@@ -716,7 +716,7 @@ export default function AboutPage() {
                 <div className="text-3xl md:text-4xl font-extralight text-[#3DA9D1] mb-1">
                   {stat.value}
                 </div>
-                <div className="text-[11px] text-white/25 font-mono uppercase tracking-wider">
+                <div className="text-[11px] text-white/70 font-mono uppercase tracking-wider">
                   {stat.label}
                 </div>
               </div>
@@ -731,7 +731,7 @@ export default function AboutPage() {
           >
             <div className="flex items-center justify-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-[#3DA9D1]" />
-              <span className="text-[13px] text-white/30 font-mono">
+              <span className="text-[13px] text-white/70 font-mono">
                 Netcare Health OS — Sandton, South Africa
               </span>
             </div>

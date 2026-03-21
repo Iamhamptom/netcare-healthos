@@ -15,7 +15,7 @@ export default function DashboardError({ error, reset }: { error: Error & { dige
           <AlertTriangle className="w-7 h-7 text-red-400" />
         </div>
         <h2 className="text-lg font-semibold text-white mb-2">Something went wrong</h2>
-        <p className="text-white/40 text-sm mb-6">
+        <p className="text-white/60 text-sm mb-6">
           {error.message || "An unexpected error occurred. Please try again."}
         </p>
         <button

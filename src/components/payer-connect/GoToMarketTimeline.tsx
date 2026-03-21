@@ -174,10 +174,10 @@ export default function GoToMarketTimeline({ phases }: { phases: Phase[] }) {
       >
         <div className="flex items-center gap-3 mb-2">
           <div className="w-3 h-3 rounded-full" style={{ backgroundColor: phaseColors[activePhase] }} />
-          <span className="text-[11px] font-mono text-white/30">{phases[activePhase].phase} — {phases[activePhase].timeline}</span>
+          <span className="text-[11px] font-mono text-white/70">{phases[activePhase].phase} — {phases[activePhase].timeline}</span>
         </div>
         <h4 className="text-lg font-light text-white mb-2">{phases[activePhase].title}</h4>
-        <p className="text-[13px] text-white/40 font-light leading-relaxed">{phases[activePhase].description}</p>
+        <p className="text-[13px] text-white/60 font-light leading-relaxed">{phases[activePhase].description}</p>
       </motion.div>
     </div>
   );

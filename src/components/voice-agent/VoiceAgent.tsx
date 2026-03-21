@@ -103,6 +103,9 @@ export default function VoiceAgent({ inline = false }: VoiceAgentProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 z-[999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Voice Agent"
               onClick={(e) => { if (e.target === e.currentTarget) { stopConversation(); setOpen(false); } }}
             >
               <motion.div
@@ -164,7 +167,7 @@ function AgentUI({
   const bg = dark ? "bg-transparent" : "bg-white";
   const textPrimary = dark ? "text-white" : "text-gray-900";
   const textSecondary = dark ? "text-white/50" : "text-gray-500";
-  const textTertiary = dark ? "text-white/30" : "text-gray-400";
+  const textTertiary = dark ? "text-white/70" : "text-gray-400";
   const borderColor = dark ? "border-white/10" : "border-gray-200";
   const bubbleAgent = dark ? "bg-white/10 text-white/80" : "bg-gray-100 text-gray-700";
   const bubbleUser = "bg-[#3DA9D1] text-white";

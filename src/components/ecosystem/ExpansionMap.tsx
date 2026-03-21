@@ -274,10 +274,10 @@ export default function ExpansionMap() {
             >
               <div className="flex items-center gap-1.5 mb-1">
                 <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: region.color }} />
-                <span className="text-[9px] font-mono text-white/30">{region.phase}</span>
+                <span className="text-[9px] font-mono text-white/70">{region.phase}</span>
               </div>
               <div className="text-[11px] font-mono text-white/60 mb-0.5">{region.name}</div>
-              <div className="text-[10px] font-mono text-white/25">{region.practitioners}</div>
+              <div className="text-[10px] font-mono text-white/70">{region.practitioners}</div>
               <div className="text-[10px] font-mono" style={{ color: region.color }}>{region.market}</div>
             </motion.div>
           ))}

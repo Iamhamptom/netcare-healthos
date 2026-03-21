@@ -152,7 +152,7 @@ export default function ComplianceShield({ features }: ComplianceShieldProps) {
                       animate={hoveredIdx === globalIdx ? { scale: 1.5, backgroundColor: "rgba(245,158,11,0.8)" } : {}}
                       transition={{ duration: 0.2 }}
                     />
-                    <span className="text-[11px] text-white/40 font-light">{feature}</span>
+                    <span className="text-[11px] text-white/60 font-light">{feature}</span>
                   </motion.div>
                 );
               })}

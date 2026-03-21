@@ -167,7 +167,7 @@ function MicrosoftSettingsContent() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-white/30" />
+        <Loader2 className="w-8 h-8 animate-spin text-white/70" />
       </div>
     );
   }
@@ -200,7 +200,7 @@ function MicrosoftSettingsContent() {
         </div>
         <div>
           <h1 className="text-xl font-semibold text-white">Microsoft 365 Integration</h1>
-          <p className="text-sm text-white/40">
+          <p className="text-sm text-white/60">
             Connect Outlook Calendar, Teams notifications, and Power BI exports
           </p>
         </div>
@@ -221,12 +221,12 @@ function MicrosoftSettingsContent() {
               </p>
               {status?.connected && (
                 <div className="space-y-0.5">
-                  <p className="text-xs text-white/40">{status.email}</p>
+                  <p className="text-xs text-white/60">{status.email}</p>
                   {status.displayName && (
-                    <p className="text-xs text-white/30">{status.displayName}</p>
+                    <p className="text-xs text-white/70">{status.displayName}</p>
                   )}
                   {status.connectedAt && (
-                    <p className="text-xs text-white/20">
+                    <p className="text-xs text-white/70">
                       Connected {new Date(status.connectedAt).toLocaleDateString("en-ZA")}
                     </p>
                   )}
@@ -268,7 +268,7 @@ function MicrosoftSettingsContent() {
           <Calendar className="w-5 h-5 text-blue-400" />
           <h2 className="text-base font-medium text-white">Outlook Calendar Sync</h2>
         </div>
-        <p className="text-sm text-white/40 mb-4">
+        <p className="text-sm text-white/60 mb-4">
           Automatically sync bookings to your Outlook calendar. When a patient books an appointment,
           it appears in Sara&apos;s calendar with clinic details.
         </p>
@@ -307,7 +307,7 @@ function MicrosoftSettingsContent() {
           <Bell className="w-5 h-5 text-purple-400" />
           <h2 className="text-base font-medium text-white">Teams Notifications</h2>
         </div>
-        <p className="text-sm text-white/40 mb-4">
+        <p className="text-sm text-white/60 mb-4">
           Receive critical alerts directly in Microsoft Teams. CareOn Bridge advisories,
           claim rejection alerts, and system health notifications.
         </p>
@@ -335,8 +335,8 @@ function MicrosoftSettingsContent() {
         </div>
         <div className="bg-white/[0.02] border border-white/[0.04] rounded-lg p-3">
           <div className="flex items-center gap-2 mb-2">
-            <Shield className="w-4 h-4 text-white/30" />
-            <span className="text-xs font-medium text-white/40">NOTIFICATION TYPES</span>
+            <Shield className="w-4 h-4 text-white/70" />
+            <span className="text-xs font-medium text-white/60">NOTIFICATION TYPES</span>
           </div>
           <ul className="space-y-1">
             {[
@@ -345,7 +345,7 @@ function MicrosoftSettingsContent() {
               "System health degradation alerts",
               "Daily performance summaries",
             ].map((item) => (
-              <li key={item} className="flex items-center gap-2 text-xs text-white/30">
+              <li key={item} className="flex items-center gap-2 text-xs text-white/70">
                 <Check className="w-3 h-3 text-emerald-400/60" />
                 {item}
               </li>
@@ -365,7 +365,7 @@ function MicrosoftSettingsContent() {
           <FileBarChart className="w-5 h-5 text-amber-400" />
           <h2 className="text-base font-medium text-white">Power BI Data Exports</h2>
         </div>
-        <p className="text-sm text-white/40 mb-6">
+        <p className="text-sm text-white/60 mb-6">
           Export report data in formats ready for Power BI import. CSV files include
           UTF-8 BOM for Excel compatibility.
         </p>
@@ -377,7 +377,7 @@ function MicrosoftSettingsContent() {
             >
               <div>
                 <p className="text-sm font-medium text-white">{report.label}</p>
-                <p className="text-xs text-white/30">{report.description}</p>
+                <p className="text-xs text-white/70">{report.description}</p>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -408,8 +408,8 @@ function MicrosoftSettingsContent() {
         className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4"
       >
         <div className="flex items-center gap-2 mb-2">
-          <Settings className="w-4 h-4 text-white/20" />
-          <span className="text-xs font-medium text-white/30">PERMISSIONS REQUESTED</span>
+          <Settings className="w-4 h-4 text-white/70" />
+          <span className="text-xs font-medium text-white/70">PERMISSIONS REQUESTED</span>
         </div>
         <div className="grid grid-cols-2 gap-2">
           {[
@@ -418,11 +418,11 @@ function MicrosoftSettingsContent() {
             { scope: "User.Read", desc: "Read your profile information" },
             { scope: "Files.ReadWrite", desc: "Store reports in OneDrive/SharePoint" },
           ].map((perm) => (
-            <div key={perm.scope} className="flex items-start gap-2 text-xs text-white/25">
-              <Check className="w-3 h-3 mt-0.5 text-white/15 shrink-0" />
+            <div key={perm.scope} className="flex items-start gap-2 text-xs text-white/70">
+              <Check className="w-3 h-3 mt-0.5 text-white/70 shrink-0" />
               <div>
-                <span className="text-white/35 font-mono">{perm.scope}</span>
-                <span className="text-white/20 ml-1">— {perm.desc}</span>
+                <span className="text-white/70 font-mono">{perm.scope}</span>
+                <span className="text-white/70 ml-1">— {perm.desc}</span>
               </div>
             </div>
           ))}
@@ -434,7 +434,7 @@ function MicrosoftSettingsContent() {
 
 export default function MicrosoftSettingsPage() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 animate-spin text-white/30" /></div>}>
+    <Suspense fallback={<div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 animate-spin text-white/70" /></div>}>
       <MicrosoftSettingsContent />
     </Suspense>
   );

@@ -104,7 +104,8 @@ function useTypingEffect(text: string, speed: number = 20) {
 function NDAPopup({ onAccept }: { onAccept: () => void }) {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+      role="dialog" aria-modal="true" aria-label="Confidentiality Agreement">
       <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }}
         className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl">
         <div className="flex items-center gap-3 mb-4">
@@ -157,7 +158,8 @@ function JessWelcome({ onComplete }: { onComplete: () => void }) {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[9998] bg-[#0a1520]/95 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto">
+      className="fixed inset-0 z-[9998] bg-[#0a1520]/95 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto"
+      role="dialog" aria-modal="true" aria-label="Feature Guide">
       <div className="max-w-3xl w-full py-8">
         {/* Jess Avatar */}
         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="flex items-center gap-3 mb-6">
@@ -166,7 +168,7 @@ function JessWelcome({ onComplete }: { onComplete: () => void }) {
           </div>
           <div>
             <div className="text-white font-semibold text-[15px]">Jess</div>
-            <div className="text-white/30 text-[11px]">Your AI Operations Guide • VisioHealth OS</div>
+            <div className="text-white/70 text-[11px]">Your AI Operations Guide • VisioHealth OS</div>
           </div>
         </motion.div>
 
@@ -192,7 +194,7 @@ function JessWelcome({ onComplete }: { onComplete: () => void }) {
                     <span className="text-white/60 text-[12px] font-medium">{s.label}</span>
                     <span className="text-[#E3964C] text-[13px] font-bold">{s.value}</span>
                   </div>
-                  <p className="text-white/30 text-[11px] leading-relaxed">{s.detail}</p>
+                  <p className="text-white/70 text-[11px] leading-relaxed">{s.detail}</p>
                 </motion.div>
               ))}
             </div>
@@ -211,7 +213,7 @@ function JessWelcome({ onComplete }: { onComplete: () => void }) {
                   className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-white/8">
                   <span className="text-[11px] font-bold text-[#3DA9D1] bg-[#3DA9D1]/10 px-2 py-0.5 rounded uppercase">{s.status}</span>
                   <span className="text-white/80 text-[13px] font-medium">{s.name}</span>
-                  <span className="text-white/30 text-[11px] flex-1">{s.detail}</span>
+                  <span className="text-white/70 text-[11px] flex-1">{s.detail}</span>
                 </motion.div>
               ))}
             </div>
@@ -250,7 +252,7 @@ function JessWelcome({ onComplete }: { onComplete: () => void }) {
                     <span className="text-white/80 text-[12px] font-semibold">{item.name}</span>
                     <span className="text-[#3DA9D1] text-[10px] font-bold">{item.timeline}</span>
                   </div>
-                  <p className="text-white/30 text-[11px]">{item.detail}</p>
+                  <p className="text-white/70 text-[11px]">{item.detail}</p>
                 </motion.div>
               ))}
             </div>
@@ -270,7 +272,7 @@ function JessWelcome({ onComplete }: { onComplete: () => void }) {
         </motion.button>
 
         {/* Skip */}
-        <button onClick={onComplete} className="w-full py-2 mt-2 text-white/20 text-[11px] hover:text-white/40 transition-colors">
+        <button onClick={onComplete} className="w-full py-2 mt-2 text-white/70 text-[11px] hover:text-white/60 transition-colors">
           Skip intro
         </button>
       </div>

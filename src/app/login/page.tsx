@@ -56,14 +56,14 @@ export default function LoginPage() {
             alt="Netcare"
             className="h-8 mb-2"
           />
-          <span className="text-[#3DA9D1]/50 text-[11px] font-semibold uppercase tracking-widest">Primary Healthcare Operations</span>
+          <span className="text-[#3DA9D1]/80 text-[11px] font-semibold uppercase tracking-widest">Primary Healthcare Operations</span>
         </div>
 
         <div className="relative z-10 space-y-6">
           <h2 className="text-2xl font-semibold text-white leading-snug">
             88 clinics.<br />One command center.
           </h2>
-          <p className="text-[#3DA9D1]/60 text-sm leading-relaxed max-w-xs">
+          <p className="text-[#3DA9D1]/80 text-sm leading-relaxed max-w-xs">
             AI-powered claims intelligence, financial dashboards, and operational analytics across your entire Netcare Primary Healthcare network.
           </p>
 
@@ -91,7 +91,7 @@ export default function LoginPage() {
 
         <div className="relative z-10 flex items-center gap-3">
           <div className="w-2 h-2 rounded-full bg-[#3DA9D1] animate-pulse" />
-          <span className="text-[#3DA9D1]/40 text-xs font-semibold uppercase tracking-widest">System Online</span>
+          <span className="text-[#3DA9D1]/70 text-xs font-semibold uppercase tracking-widest">System Online</span>
         </div>
       </div>
 
@@ -119,35 +119,41 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs">
+              <div role="alert" className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs" id="login-error">
                 {error}
               </div>
             )}
 
             <div>
-              <label className="block text-xs text-gray-500 font-medium uppercase tracking-[0.1em] mb-2">
+              <label htmlFor="login-email" className="block text-xs text-gray-600 font-medium uppercase tracking-[0.1em] mb-2">
                 Email
               </label>
               <input
+                id="login-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 focus:bg-white focus:border-[#3DA9D1] focus:outline-none focus:ring-2 focus:ring-[#3DA9D1]/10 transition-all"
+                aria-invalid={!!error}
+                aria-describedby={error ? "login-error" : undefined}
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 focus:bg-white focus:border-[#3DA9D1] focus:outline-none focus:ring-2 focus:ring-[#3DA9D1]/20 transition-all"
                 placeholder="you@netcare.co.za"
               />
             </div>
 
             <div>
-              <label className="block text-xs text-gray-500 font-medium uppercase tracking-[0.1em] mb-2">
+              <label htmlFor="login-password" className="block text-xs text-gray-600 font-medium uppercase tracking-[0.1em] mb-2">
                 Password
               </label>
               <input
+                id="login-password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 focus:bg-white focus:border-[#3DA9D1] focus:outline-none focus:ring-2 focus:ring-[#3DA9D1]/10 transition-all"
+                aria-invalid={!!error}
+                aria-describedby={error ? "login-error" : undefined}
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 focus:bg-white focus:border-[#3DA9D1] focus:outline-none focus:ring-2 focus:ring-[#3DA9D1]/20 transition-all"
                 placeholder="Enter password"
               />
             </div>
@@ -165,7 +171,7 @@ export default function LoginPage() {
               className="w-full py-3.5 mt-2 bg-[#E3964C] text-white font-medium text-sm rounded-xl hover:bg-[#D4843A] transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-[#E3964C]/20"
             >
               {loading && (
-                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 animate-spin" role="status" aria-label="Loading" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
@@ -183,34 +189,34 @@ export default function LoginPage() {
 
           {/* Trust bar */}
           <div className="mt-10 pt-6 border-t border-gray-100">
-            <div className="flex items-center justify-center gap-6 text-gray-300">
+            <div className="flex items-center justify-center gap-6 text-gray-500">
               <div className="flex items-center gap-1.5 text-[11px]">
                 <Shield className="w-3.5 h-3.5" />
                 <span>POPIA Compliant</span>
               </div>
-              <div className="w-px h-3 bg-gray-200" />
+              <div className="w-px h-3 bg-gray-300" />
               <div className="flex items-center gap-1.5 text-[11px]">
                 <Bot className="w-3.5 h-3.5" />
                 <span>AI-Powered</span>
               </div>
-              <div className="w-px h-3 bg-gray-200" />
+              <div className="w-px h-3 bg-gray-300" />
               <span className="text-[11px]">256-bit SSL</span>
             </div>
           </div>
 
           <div className="flex justify-center gap-3 mt-6">
-            <Link href="/terms" className="text-[10px] text-gray-300 hover:text-[#3DA9D1] transition-colors">Terms</Link>
-            <span className="text-[10px] text-gray-200">&middot;</span>
-            <Link href="/privacy" className="text-[10px] text-gray-300 hover:text-[#3DA9D1] transition-colors">Privacy</Link>
-            <span className="text-[10px] text-gray-200">&middot;</span>
-            <Link href="/cookies" className="text-[10px] text-gray-300 hover:text-[#3DA9D1] transition-colors">Cookies</Link>
+            <Link href="/terms" className="text-[10px] text-gray-500 hover:text-[#3DA9D1] transition-colors">Terms</Link>
+            <span className="text-[10px] text-gray-400">&middot;</span>
+            <Link href="/privacy" className="text-[10px] text-gray-500 hover:text-[#3DA9D1] transition-colors">Privacy</Link>
+            <span className="text-[10px] text-gray-400">&middot;</span>
+            <Link href="/cookies" className="text-[10px] text-gray-500 hover:text-[#3DA9D1] transition-colors">Cookies</Link>
           </div>
 
           <div className="mt-4 space-y-1 text-center">
-            <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Demo Accounts</p>
-            <p className="text-[11px] text-gray-300">sara.nayager@netcare.co.za</p>
-            <p className="text-[11px] text-gray-300">chris.mathew@netcare.co.za</p>
-            <p className="text-[11px] text-gray-300">Password: Netcare2026!</p>
+            <p className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">Demo Accounts</p>
+            <p className="text-[11px] text-gray-500">sara.nayager@netcare.co.za</p>
+            <p className="text-[11px] text-gray-500">chris.mathew@netcare.co.za</p>
+            <p className="text-[11px] text-gray-500">Password: Netcare2026!</p>
           </div>
         </motion.div>
       </div>

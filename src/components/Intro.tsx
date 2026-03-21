@@ -198,7 +198,7 @@ export default function Intro({ onEnter }: IntroProps) {
           transition={{ duration: 0.8, delay: 1.0 }}
           className="mb-4"
         >
-          <p className="text-sm text-white/40 font-medium tracking-[0.3em] uppercase">
+          <p className="text-sm text-white/60 font-medium tracking-[0.3em] uppercase">
             Primary Healthcare Operations
           </p>
         </motion.div>
@@ -270,7 +270,7 @@ export default function Intro({ onEnter }: IntroProps) {
 
       {/* Corner decorative elements */}
       <motion.div
-        className="absolute top-8 left-8 text-[11px] text-white/10 tracking-wider"
+        className="absolute top-8 left-8 text-[11px] text-white/70 tracking-wider"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 2 }}
@@ -279,7 +279,7 @@ export default function Intro({ onEnter }: IntroProps) {
         V1.0
       </motion.div>
       <motion.div
-        className="absolute bottom-8 right-8 text-[11px] text-white/10 tracking-wider"
+        className="absolute bottom-8 right-8 text-[11px] text-white/70 tracking-wider"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 2.2 }}

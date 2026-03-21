@@ -48,14 +48,14 @@ export default function RegisterPage() {
             <HeartPulse className="w-5 h-5 text-[#3DA9D1]" />
             <span className="text-lg font-semibold text-white tracking-tight">Netcare Health OS</span>
           </div>
-          <span className="text-[#3DA9D1]/50 text-[11px] font-mono uppercase tracking-widest">Operations Platform</span>
+          <span className="text-[#3DA9D1]/80 text-[11px] font-mono uppercase tracking-widest">Operations Platform</span>
         </div>
 
         <div className="relative z-10 space-y-6">
           <h2 className="text-2xl font-semibold text-white leading-snug">
             Set up in<br />under 5 minutes.
           </h2>
-          <p className="text-[#3DA9D1]/60 text-sm leading-relaxed max-w-xs">
+          <p className="text-[#3DA9D1]/80 text-sm leading-relaxed max-w-xs">
             Everything you need to run a modern healthcare practice — already built and waiting for you.
           </p>
 
@@ -78,14 +78,14 @@ export default function RegisterPage() {
                 <div className="w-5 h-5 rounded-full bg-[#3DA9D1]/15 flex items-center justify-center">
                   <Check className="w-3 h-3 text-[#3DA9D1]" />
                 </div>
-                <span className="text-[#3DA9D1]/70 text-sm">{text}</span>
+                <span className="text-[#3DA9D1]/80 text-sm">{text}</span>
               </motion.div>
             ))}
           </div>
         </div>
 
         <div className="relative z-10">
-          <p className="text-[#3DA9D1]/30 text-xs">
+          <p className="text-[#3DA9D1]/70 text-xs">
             Trusted by dental, wellness, and specialist practices across South Africa.
           </p>
         </div>
@@ -114,50 +114,59 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs">
+              <div role="alert" id="register-error" className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs">
                 {error}
               </div>
             )}
 
             <div>
-              <label className="block text-xs text-gray-500 font-medium uppercase tracking-[0.1em] mb-2">
+              <label htmlFor="register-name" className="block text-xs text-gray-600 font-medium uppercase tracking-[0.1em] mb-2">
                 Your name
               </label>
               <input
+                id="register-name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 focus:bg-white focus:border-[#3DA9D1] focus:outline-none focus:ring-2 focus:ring-[#3DA9D1]/10 transition-all"
+                aria-invalid={!!error}
+                aria-describedby={error ? "register-error" : undefined}
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 focus:bg-white focus:border-[#3DA9D1] focus:outline-none focus:ring-2 focus:ring-[#3DA9D1]/20 transition-all"
                 placeholder="Dr. Sarah Mitchell"
               />
             </div>
 
             <div>
-              <label className="block text-xs text-gray-500 font-medium uppercase tracking-[0.1em] mb-2">
+              <label htmlFor="register-email" className="block text-xs text-gray-600 font-medium uppercase tracking-[0.1em] mb-2">
                 Practice email
               </label>
               <input
+                id="register-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 focus:bg-white focus:border-[#3DA9D1] focus:outline-none focus:ring-2 focus:ring-[#3DA9D1]/10 transition-all"
+                aria-invalid={!!error}
+                aria-describedby={error ? "register-error" : undefined}
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 focus:bg-white focus:border-[#3DA9D1] focus:outline-none focus:ring-2 focus:ring-[#3DA9D1]/20 transition-all"
                 placeholder="you@practice.co.za"
               />
             </div>
 
             <div>
-              <label className="block text-xs text-gray-500 font-medium uppercase tracking-[0.1em] mb-2">
+              <label htmlFor="register-password" className="block text-xs text-gray-600 font-medium uppercase tracking-[0.1em] mb-2">
                 Password
               </label>
               <input
+                id="register-password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 focus:bg-white focus:border-[#3DA9D1] focus:outline-none focus:ring-2 focus:ring-[#3DA9D1]/10 transition-all"
+                aria-invalid={!!error}
+                aria-describedby={error ? "register-error" : undefined}
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 focus:bg-white focus:border-[#3DA9D1] focus:outline-none focus:ring-2 focus:ring-[#3DA9D1]/20 transition-all"
                 placeholder="Minimum 6 characters"
               />
             </div>
@@ -169,7 +178,7 @@ export default function RegisterPage() {
               className="w-full py-3.5 mt-2 bg-[#3DA9D1] text-white font-medium text-sm rounded-xl hover:bg-[#1D3443] transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-[#3DA9D1]/20"
             >
               {loading && (
-                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 animate-spin" role="status" aria-label="Loading" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
@@ -185,7 +194,7 @@ export default function RegisterPage() {
             </p>
           </form>
 
-          <p className="text-center text-[11px] text-gray-300 mt-8">
+          <p className="text-center text-[11px] text-gray-500 mt-8">
             By signing up you agree to our{" "}
             <Link href="/terms" className="text-[#3DA9D1] hover:underline">Terms of Service</Link>
             {" "}and{" "}

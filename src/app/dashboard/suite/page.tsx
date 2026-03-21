@@ -249,7 +249,7 @@ export default function SuitePage() {
         </div>
 
         <div className="mt-4 pt-4 border-t border-white/10">
-          <p className="text-[12px] text-white/40">
+          <p className="text-[12px] text-white/60">
             Also handles: find nearest clinic, check pharmacy stock, enquire about services, get operating hours, request repeat scripts, check medical aid coverage, emergency routing to Netcare 911
           </p>
         </div>

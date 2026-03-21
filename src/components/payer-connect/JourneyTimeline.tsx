@@ -103,7 +103,7 @@ export default function JourneyTimeline({ steps }: { steps: Step[] }) {
                     </span>
                     <h4 className="text-[14px] font-medium text-white/80">{s.title}</h4>
                   </div>
-                  <p className="text-[12px] text-white/30 font-light leading-relaxed">{s.description}</p>
+                  <p className="text-[12px] text-white/70 font-light leading-relaxed">{s.description}</p>
 
                   {/* Progress indicator */}
                   <motion.div

@@ -76,7 +76,7 @@ export default function SavingsPage() {
     <div className="p-6 space-y-6 max-w-[1200px] mx-auto">
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
         className="p-8 rounded-2xl bg-gradient-to-br from-[#1D3443] to-[#152736] text-center">
-        <div className="text-[11px] text-white/40 uppercase tracking-widest font-semibold mb-2">
+        <div className="text-[11px] text-white/60 uppercase tracking-widest font-semibold mb-2">
           Projected Annual Savings — Modelled Estimate
         </div>
         <div className="text-5xl md:text-7xl font-bold text-white mb-2 font-metric">
@@ -91,7 +91,7 @@ export default function SavingsPage() {
             Potential: {formatR(annualized)} annualised if deployed
           </span>
         </div>
-        <p className="text-[10px] text-white/25 mt-4 max-w-xl mx-auto">
+        <p className="text-[10px] text-white/70 mt-4 max-w-xl mx-auto">
           These are projected estimates based on Netcare FY2025 public data, SA industry benchmarks (CMS reports, BHF data), and verified gap analysis. Actual savings subject to integration scope, data access, and operational variables. Not based on live deployment data.
         </p>
       </motion.div>

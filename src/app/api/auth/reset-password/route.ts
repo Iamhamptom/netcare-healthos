@@ -15,8 +15,8 @@ export async function POST(request: Request) {
     if (!token || typeof token !== "string") {
       return NextResponse.json({ error: "Reset token is required" }, { status: 400 });
     }
-    if (!password || typeof password !== "string" || password.length < 8) {
-      return NextResponse.json({ error: "Password must be at least 8 characters" }, { status: 400 });
+    if (!password || typeof password !== "string" || password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+      return NextResponse.json({ error: "Password must be at least 8 characters with 1 uppercase and 1 number" }, { status: 400 });
     }
 
     // Look up the token

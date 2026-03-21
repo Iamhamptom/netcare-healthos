@@ -88,7 +88,7 @@ export default function ImpactMetrics() {
   return (
     <div ref={ref} className="space-y-4">
       {/* Header row */}
-      <div className="grid grid-cols-12 gap-4 px-4 text-[9px] font-mono text-white/20 uppercase tracking-wider">
+      <div className="grid grid-cols-12 gap-4 px-4 text-[9px] font-mono text-white/70 uppercase tracking-wider">
         <div className="col-span-3">Metric</div>
         <div className="col-span-2 text-center">Before</div>
         <div className="col-span-4 text-center">Improvement</div>
@@ -175,7 +175,7 @@ export default function ImpactMetrics() {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-2xl font-extralight text-blue-400">92%</span>
-            <span className="text-[10px] font-mono text-white/25">reduction in<br />friction points</span>
+            <span className="text-[10px] font-mono text-white/70">reduction in<br />friction points</span>
           </div>
         </div>
       </motion.div>

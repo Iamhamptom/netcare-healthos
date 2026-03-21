@@ -40,7 +40,7 @@ export default function Footer() {
                 className="h-6"
               />
             </Link>
-            <p className="text-xs text-white/30 leading-relaxed font-light">
+            <p className="text-xs text-white/70 leading-relaxed font-light">
               AI-powered operations platform for Netcare Primary Healthcare across South Africa.
             </p>
           </div>
@@ -55,7 +55,7 @@ export default function Footer() {
                   <Link
                     key={link.label}
                     href={link.href}
-                    className="block text-xs text-white/30 hover:text-white/60 transition-colors duration-300"
+                    className="block text-xs text-white/70 hover:text-white/60 transition-colors duration-300"
                   >
                     {link.label}
                   </Link>
@@ -68,10 +68,10 @@ export default function Footer() {
         <div className="h-px w-full bg-white/[0.04] mb-8" />
 
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-[11px] text-white/20 font-medium">
+          <p className="text-[11px] text-white/70 font-medium">
             &copy; 2026 Netcare Limited. All rights reserved.
           </p>
-          <p className="text-[11px] text-white/20 font-medium">
+          <p className="text-[11px] text-white/70 font-medium">
             Sandton, Gauteng, South Africa
           </p>
         </div>

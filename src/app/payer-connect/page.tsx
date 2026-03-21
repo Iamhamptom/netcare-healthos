@@ -385,7 +385,7 @@ export default function PayerConnectPage() {
               The live coordination layer between healthcare delivery
               and healthcare funding.
             </p>
-            <p className="text-lg text-white/25 font-light leading-relaxed max-w-2xl mb-12">
+            <p className="text-lg text-white/70 font-light leading-relaxed max-w-2xl mb-12">
               A secure, real-time platform connecting hospitals, clinics, specialists,
               medical aids, insurers, HMOs, and patients into one operating layer.
               Verify cover. Approve care. Route patients. Reduce claim friction. All live.
@@ -430,7 +430,7 @@ export default function PayerConnectPage() {
             <h2 className="text-4xl md:text-6xl font-extralight tracking-[-0.03em] mb-4">
               One coordination layer. <span className="text-blue-400">Live.</span>
             </h2>
-            <p className="text-base text-white/30 font-light max-w-2xl mx-auto">
+            <p className="text-base text-white/70 font-light max-w-2xl mx-auto">
               Eligibility, authorisation, claims, and referrals flow through a single intelligent hub —
               connecting every provider to every payer in real time. Hover the flow types to explore.
             </p>
@@ -492,7 +492,7 @@ export default function PayerConnectPage() {
             <h2 className="text-4xl md:text-6xl font-extralight tracking-[-0.03em] mb-4">
               The space between payer and provider is <span className="text-red-400">chaos</span>
             </h2>
-            <p className="text-base text-white/30 font-light max-w-2xl mx-auto">
+            <p className="text-base text-white/70 font-light max-w-2xl mx-auto">
               Every day, millions of healthcare interactions are slowed by manual processes,
               broken workflows, and zero shared visibility between the people providing care
               and the people funding it.
@@ -516,7 +516,7 @@ export default function PayerConnectPage() {
                   {p.icon}
                 </div>
                 <h3 className="text-lg font-light text-white mb-2">{p.title}</h3>
-                <p className="text-[13px] text-white/35 font-light leading-relaxed">{p.description}</p>
+                <p className="text-[13px] text-white/70 font-light leading-relaxed">{p.description}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -547,7 +547,7 @@ export default function PayerConnectPage() {
             <h2 className="text-4xl md:text-6xl font-extralight tracking-[-0.03em] mb-4">
               From patient entry to <span className="text-blue-400">claim resolution</span>
             </h2>
-            <p className="text-base text-white/30 font-light max-w-xl mx-auto">
+            <p className="text-base text-white/70 font-light max-w-xl mx-auto">
               Eight steps. One platform. Complete payer-provider coordination.
             </p>
           </motion.div>
@@ -575,7 +575,7 @@ export default function PayerConnectPage() {
             <h2 className="text-4xl md:text-6xl font-extralight tracking-[-0.03em] mb-4">
               Every layer of the <span className="text-[#3DA9D1]">coordination stack</span>
             </h2>
-            <p className="text-base text-white/30 font-light max-w-2xl mx-auto">
+            <p className="text-base text-white/70 font-light max-w-2xl mx-auto">
               From eligibility verification to AI-powered decision support —
               ten modules that turn payer-provider chaos into a single live workflow.
             </p>
@@ -593,7 +593,7 @@ export default function PayerConnectPage() {
               <span className="text-[11px] font-mono tracking-[0.3em] text-[#3DA9D1]/60 uppercase">
                 System Architecture
               </span>
-              <p className="text-[12px] font-mono text-white/25 mt-1">
+              <p className="text-[12px] font-mono text-white/70 mt-1">
                 Four layers, ten modules — hover to explore how they connect
               </p>
             </div>
@@ -624,12 +624,12 @@ export default function PayerConnectPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-1 flex-wrap">
                       <h3 className="text-lg font-light text-white">{mod.name}</h3>
-                      <span className="text-[10px] font-mono tracking-[0.15em] uppercase text-white/20 px-2.5 py-0.5 rounded-full border border-white/[0.06]">
+                      <span className="text-[10px] font-mono tracking-[0.15em] uppercase text-white/70 px-2.5 py-0.5 rounded-full border border-white/[0.06]">
                         {mod.phase}
                       </span>
                     </div>
-                    <p className="text-[12px] font-mono text-white/25 mb-3">{mod.tagline}</p>
-                    <p className="text-[13px] text-white/40 font-light leading-relaxed">{mod.description}</p>
+                    <p className="text-[12px] font-mono text-white/70 mb-3">{mod.tagline}</p>
+                    <p className="text-[13px] text-white/60 font-light leading-relaxed">{mod.description}</p>
                   </div>
                 </div>
               </motion.div>
@@ -677,7 +677,7 @@ export default function PayerConnectPage() {
               </div>
               <div className="flex flex-wrap gap-2">
                 {providerUsers.map((u) => (
-                  <span key={u} className="text-[12px] font-mono text-white/35 px-3 py-1.5 rounded-full border border-white/[0.06] bg-white/[0.02]">
+                  <span key={u} className="text-[12px] font-mono text-white/70 px-3 py-1.5 rounded-full border border-white/[0.06] bg-white/[0.02]">
                     {u}
                   </span>
                 ))}
@@ -701,7 +701,7 @@ export default function PayerConnectPage() {
               </div>
               <div className="flex flex-wrap gap-2">
                 {payerUsers.map((u) => (
-                  <span key={u} className="text-[12px] font-mono text-white/35 px-3 py-1.5 rounded-full border border-white/[0.06] bg-white/[0.02]">
+                  <span key={u} className="text-[12px] font-mono text-white/70 px-3 py-1.5 rounded-full border border-white/[0.06] bg-white/[0.02]">
                     {u}
                   </span>
                 ))}
@@ -733,7 +733,7 @@ export default function PayerConnectPage() {
             <h2 className="text-4xl md:text-6xl font-extralight tracking-[-0.03em] mb-4">
               Five phases to <span className="text-purple-400">infrastructure</span>
             </h2>
-            <p className="text-base text-white/30 font-light max-w-xl mx-auto">
+            <p className="text-base text-white/70 font-light max-w-xl mx-auto">
               Start with the easiest wedge. End as the coordination layer for African healthcare.
             </p>
           </motion.div>
@@ -785,7 +785,7 @@ export default function PayerConnectPage() {
             <h2 className="text-4xl md:text-5xl font-extralight tracking-[-0.03em] mb-4">
               Built for <span className="text-amber-400">regulated healthcare</span>
             </h2>
-            <p className="text-base text-white/30 font-light">
+            <p className="text-base text-white/70 font-light">
               Not a feature set. Part of the product foundation.
               Every module is built for healthcare and insurance compliance from day one.
             </p>
@@ -831,7 +831,7 @@ export default function PayerConnectPage() {
               </span>
             </div>
             <h3 className="text-lg font-light text-white mb-1">Measurable operational transformation</h3>
-            <p className="text-[12px] font-mono text-white/25 mb-6">
+            <p className="text-[12px] font-mono text-white/70 mb-6">
               Every metric that matters — red bars (before) vs coloured bars (with Payer Connect)
             </p>
             <ImpactMetrics />
@@ -860,7 +860,7 @@ export default function PayerConnectPage() {
               <br />
               <span className="bg-gradient-to-r from-blue-400 via-blue-300 to-cyan-400 bg-clip-text text-transparent">healthcare has been missing</span>
             </h2>
-            <p className="text-base text-white/30 font-light leading-relaxed mb-12 max-w-xl mx-auto">
+            <p className="text-base text-white/70 font-light leading-relaxed mb-12 max-w-xl mx-auto">
               Payer Connect is where healthcare delivery meets healthcare funding.
               One platform. Live. Secure. Intelligent.
             </p>
@@ -885,7 +885,7 @@ export default function PayerConnectPage() {
 
             {/* Newsletter */}
             <div className="max-w-md mx-auto">
-              <p className="text-[12px] font-mono text-white/20 mb-4">Get notified when Payer Connect launches</p>
+              <p className="text-[12px] font-mono text-white/70 mb-4">Get notified when Payer Connect launches</p>
               {submitted ? (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -905,7 +905,7 @@ export default function PayerConnectPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@company.com"
                     required
-                    className="flex-1 px-5 py-3 rounded-full bg-white/5 border border-white/10 text-white text-sm font-mono placeholder:text-white/20 focus:outline-none focus:border-blue-500/40 transition-colors"
+                    className="flex-1 px-5 py-3 rounded-full bg-white/5 border border-white/10 text-white text-sm font-mono placeholder:text-white/70 focus:outline-none focus:border-blue-500/40 transition-colors"
                   />
                   <button
                     type="submit"

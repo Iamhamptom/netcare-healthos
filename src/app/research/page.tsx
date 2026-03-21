@@ -191,7 +191,7 @@ export default function ResearchPage() {
             {["Peer-Reviewed", "Open Access", "African-First"].map((tag) => (
               <span
                 key={tag}
-                className="text-[11px] text-white/25 font-mono tracking-wider uppercase"
+                className="text-[11px] text-white/70 font-mono tracking-wider uppercase"
               >
                 {tag}
               </span>
@@ -303,7 +303,7 @@ export default function ResearchPage() {
             <h2 className="text-3xl md:text-4xl font-light tracking-[-0.03em] text-white mb-4">
               Subscribe to VRL Research
             </h2>
-            <p className="text-[15px] text-white/40 max-w-lg mx-auto leading-relaxed mb-10">
+            <p className="text-[15px] text-white/60 max-w-lg mx-auto leading-relaxed mb-10">
               Be the first to receive our research papers, market intelligence,
               and healthcare insights.
             </p>
@@ -318,7 +318,7 @@ export default function ResearchPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
                 required
-                className="flex-1 px-4 py-3 rounded-xl bg-white/[0.06] border border-white/[0.08] text-white placeholder:text-white/25 text-[14px] focus:outline-none focus:border-[#3DA9D1]/40 transition-colors"
+                className="flex-1 px-4 py-3 rounded-xl bg-white/[0.06] border border-white/[0.08] text-white placeholder:text-white/70 text-[14px] focus:outline-none focus:border-[#3DA9D1]/40 transition-colors"
               />
               <button
                 type="submit"

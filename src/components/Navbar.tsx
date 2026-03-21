@@ -49,7 +49,7 @@ export default function Navbar() {
               alt="Netcare"
               className="h-6"
             />
-            <span className="text-[11px] text-white/30 font-semibold uppercase tracking-widest">
+            <span className="text-[11px] text-white/70 font-semibold uppercase tracking-widest">
               Health OS
             </span>
           </Link>
@@ -60,7 +60,7 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="px-4 py-2 text-[13px] text-white/40 hover:text-white font-medium tracking-wide transition-colors duration-300"
+                className="px-4 py-2 text-[13px] text-white/60 hover:text-white font-medium tracking-wide transition-colors duration-300"
               >
                 {link.label}
               </Link>
@@ -71,7 +71,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             <Link
               href="/login"
-              className="px-4 py-2 text-[13px] text-white/40 hover:text-white font-medium tracking-wide transition-colors duration-300"
+              className="px-4 py-2 text-[13px] text-white/60 hover:text-white font-medium tracking-wide transition-colors duration-300"
             >
               Log In
             </Link>
@@ -129,7 +129,7 @@ export default function Navbar() {
                   <Link
                     href={link.href}
                     onClick={() => setMenuOpen(false)}
-                    className="text-2xl font-light text-white/40 hover:text-white transition-colors duration-300"
+                    className="text-2xl font-light text-white/60 hover:text-white transition-colors duration-300"
                    
                   >
                     {link.label}
@@ -149,7 +149,7 @@ export default function Navbar() {
                 <Link
                   href="/login"
                   onClick={() => setMenuOpen(false)}
-                  className="text-[15px] font-medium text-white/40 hover:text-white transition-colors"
+                  className="text-[15px] font-medium text-white/60 hover:text-white transition-colors"
                 >
                   Log In
                 </Link>

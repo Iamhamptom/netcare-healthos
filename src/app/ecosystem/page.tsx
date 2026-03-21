@@ -311,7 +311,7 @@ export default function EcosystemPage() {
               <br />
               A billion patients.
             </h1>
-            <p className="text-lg md:text-xl text-white/35 font-light leading-relaxed max-w-2xl mb-12">
+            <p className="text-lg md:text-xl text-white/70 font-light leading-relaxed max-w-2xl mb-12">
               Netcare Health OS isn&apos;t a single product — it&apos;s a healthcare operating
               system designed to capture every layer of the value chain, from patient
               discovery to clinical decision-making. Built for Africa. Scaling globally.
@@ -356,7 +356,7 @@ export default function EcosystemPage() {
             <h2 className="text-3xl md:text-5xl font-light tracking-[-0.03em] mb-4">
               The numbers speak for themselves
             </h2>
-            <p className="text-base text-white/30 font-light max-w-xl mx-auto">
+            <p className="text-base text-white/70 font-light max-w-xl mx-auto">
               Africa&apos;s healthcare market is massive, fragmented, and desperate for digitization.
             </p>
           </motion.div>
@@ -378,7 +378,7 @@ export default function EcosystemPage() {
                   {stat.value}
                 </div>
                 <div className="text-sm text-white/50 font-mono mb-1">{stat.label}</div>
-                <div className="text-[11px] text-white/20 font-mono">{stat.sub}</div>
+                <div className="text-[11px] text-white/70 font-mono">{stat.sub}</div>
                 {/* Animated accent bar */}
                 <motion.div
                   className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] bg-gradient-to-r from-transparent via-[#3DA9D1]/40 to-transparent"
@@ -406,7 +406,7 @@ export default function EcosystemPage() {
               </span>
             </div>
             <h3 className="text-xl font-light text-white mb-1">Africa Healthcare Market Distribution</h3>
-            <p className="text-[12px] font-mono text-white/25 mb-8">
+            <p className="text-[12px] font-mono text-white/70 mb-8">
               Where the $259B flows — and where digital health captures the fastest-growing segment
             </p>
             <MarketDonutChart />
@@ -450,7 +450,7 @@ export default function EcosystemPage() {
               <h2 className="text-3xl md:text-4xl font-light tracking-[-0.03em] mb-6">
                 Healthcare in Africa is broken at every layer
               </h2>
-              <p className="text-base text-white/35 font-light leading-relaxed mb-8">
+              <p className="text-base text-white/70 font-light leading-relaxed mb-8">
                 84% of South Africans rely on overcrowded public facilities. Private practices
                 still run on paper, fax machines, and phone calls. Patients can&apos;t find doctors.
                 Doctors can&apos;t find patients. And the systems that exist don&apos;t talk to each other.
@@ -464,7 +464,7 @@ export default function EcosystemPage() {
                 ].map((item) => (
                   <div key={item.stat} className="flex items-start gap-4">
                     <span className="text-lg font-light text-red-400/80 font-mono w-16 shrink-0 text-right">{item.stat}</span>
-                    <span className="text-sm text-white/40 font-light leading-relaxed">{item.text}</span>
+                    <span className="text-sm text-white/60 font-light leading-relaxed">{item.text}</span>
                   </div>
                 ))}
               </div>
@@ -482,7 +482,7 @@ export default function EcosystemPage() {
               <h2 className="text-3xl md:text-4xl font-light tracking-[-0.03em] mb-6">
                 WhatsApp + AI + Africa-first
               </h2>
-              <p className="text-base text-white/35 font-light leading-relaxed mb-8">
+              <p className="text-base text-white/70 font-light leading-relaxed mb-8">
                 We didn&apos;t build another desktop app and hope Africa adopts it.
                 We built on WhatsApp — the platform 98% of South Africans already live on.
                 Then we added AI that actually understands the South African healthcare system:
@@ -497,7 +497,7 @@ export default function EcosystemPage() {
                 ].map((item) => (
                   <div key={item.stat} className="flex items-start gap-4">
                     <span className="text-lg font-light text-[#3DA9D1]/80 font-mono w-16 shrink-0 text-right">{item.stat}</span>
-                    <span className="text-sm text-white/40 font-light leading-relaxed">{item.text}</span>
+                    <span className="text-sm text-white/60 font-light leading-relaxed">{item.text}</span>
                   </div>
                 ))}
               </div>
@@ -528,7 +528,7 @@ export default function EcosystemPage() {
             <h2 className="text-3xl md:text-5xl font-light tracking-[-0.03em] mb-4">
               Every layer of healthcare, covered
             </h2>
-            <p className="text-base text-white/30 font-light max-w-2xl mx-auto">
+            <p className="text-base text-white/70 font-light max-w-2xl mx-auto">
               One patient journey, five products: Placeo discovers → Netcare Health OS manages →
               Waiting Room checks in → VisioMed assists the doctor → Integrator connects everything.
             </p>
@@ -546,7 +546,7 @@ export default function EcosystemPage() {
               <span className="text-[11px] font-mono tracking-[0.3em] text-[#3DA9D1]/60 uppercase">
                 Network Effect
               </span>
-              <p className="text-[12px] font-mono text-white/25 mt-1">
+              <p className="text-[12px] font-mono text-white/70 mt-1">
                 Every product strengthens the others — hover to explore connections
               </p>
             </div>
@@ -565,7 +565,7 @@ export default function EcosystemPage() {
               <span
                 key={i}
                 className={`text-[11px] md:text-[12px] font-mono ${
-                  step === "→" ? "text-[#3DA9D1]/40" : "text-white/30 px-3 py-1.5 rounded-full border border-white/[0.06] bg-white/[0.02]"
+                  step === "→" ? "text-[#3DA9D1]/40" : "text-white/70 px-3 py-1.5 rounded-full border border-white/[0.06] bg-white/[0.02]"
                 }`}
               >
                 {step}
@@ -608,17 +608,17 @@ export default function EcosystemPage() {
                               className={`text-[10px] font-mono tracking-[0.15em] uppercase px-3 py-1 rounded-full border ${
                                 product.status === "Live"
                                   ? "text-[#3DA9D1] border-[#3DA9D1]/20 bg-[#3DA9D1]/5"
-                                  : "text-white/30 border-white/[0.06]"
+                                  : "text-white/70 border-white/[0.06]"
                               }`}
                             >
                               {product.status}
                             </span>
                           </div>
-                          <p className="text-[13px] font-mono text-white/30">{product.tagline}</p>
+                          <p className="text-[13px] font-mono text-white/70">{product.tagline}</p>
                         </div>
                       </div>
 
-                      <p className="text-[15px] text-white/45 font-light leading-relaxed mb-6">
+                      <p className="text-[15px] text-white/70 font-light leading-relaxed mb-6">
                         {product.description}
                       </p>
 
@@ -626,7 +626,7 @@ export default function EcosystemPage() {
                         {product.metrics.map((m) => (
                           <span
                             key={m}
-                            className="text-[11px] font-mono text-white/25 px-3 py-1.5 rounded-full border border-white/[0.06]"
+                            className="text-[11px] font-mono text-white/70 px-3 py-1.5 rounded-full border border-white/[0.06]"
                           >
                             {m}
                           </span>
@@ -645,16 +645,16 @@ export default function EcosystemPage() {
                             Investor Angle
                           </span>
                         </div>
-                        <p className="text-[13px] text-white/35 leading-relaxed mb-4">
+                        <p className="text-[13px] text-white/70 leading-relaxed mb-4">
                           {product.investorAngle}
                         </p>
                         <div className="flex items-center justify-between pt-3 border-t border-white/[0.04]">
                           <div>
-                            <div className="text-[10px] font-mono text-white/20 uppercase mb-0.5">Revenue</div>
+                            <div className="text-[10px] font-mono text-white/70 uppercase mb-0.5">Revenue</div>
                             <div className="text-[13px] font-mono text-white/50">{product.revenue}</div>
                           </div>
                           <div className="text-right">
-                            <div className="text-[10px] font-mono text-white/20 uppercase mb-0.5">TAM</div>
+                            <div className="text-[10px] font-mono text-white/70 uppercase mb-0.5">TAM</div>
                             <div className="text-[13px] font-mono text-[#3DA9D1]/60">{product.tam}</div>
                           </div>
                         </div>
@@ -687,7 +687,7 @@ export default function EcosystemPage() {
               </div>
               <div>
                 <h3 className="text-lg font-light text-white">Revenue Stacking Per Practice</h3>
-                <p className="text-[12px] font-mono text-white/30">Full ecosystem adoption = R30K–R105K/month per practice</p>
+                <p className="text-[12px] font-mono text-white/70">Full ecosystem adoption = R30K–R105K/month per practice</p>
               </div>
             </div>
             <div className="space-y-3">
@@ -696,7 +696,7 @@ export default function EcosystemPage() {
                 const widthPercent = (item.high / maxHigh) * 100;
                 return (
                   <div key={item.product} className="flex items-center gap-4">
-                    <span className="text-[12px] font-mono text-white/40 w-40 shrink-0 text-right">{item.product}</span>
+                    <span className="text-[12px] font-mono text-white/60 w-40 shrink-0 text-right">{item.product}</span>
                     <div className="flex-1 h-8 rounded-lg bg-white/[0.03] overflow-hidden relative">
                       <motion.div
                         initial={{ width: 0 }}
@@ -710,7 +710,7 @@ export default function EcosystemPage() {
                         </span>
                       </motion.div>
                     </div>
-                    <span className="text-[10px] font-mono text-white/20 w-28 shrink-0">{item.unit}</span>
+                    <span className="text-[10px] font-mono text-white/70 w-28 shrink-0">{item.unit}</span>
                   </div>
                 );
               })}
@@ -718,18 +718,18 @@ export default function EcosystemPage() {
                 <span className="text-[12px] font-mono text-[#3DA9D1] w-40 shrink-0 text-right font-medium">Total Per Practice</span>
                 <div className="flex-1">
                   <span className="text-lg font-light text-[#3DA9D1]">R30,500 – R105,000</span>
-                  <span className="text-[12px] font-mono text-white/30 ml-2">/month</span>
+                  <span className="text-[12px] font-mono text-white/70 ml-2">/month</span>
                 </div>
               </div>
             </div>
             <div className="mt-6 pt-6 border-t border-white/[0.04] grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
               <div>
                 <div className="text-2xl font-light text-white">100 practices</div>
-                <div className="text-[12px] font-mono text-white/30">= R3M–R10.5M MRR</div>
+                <div className="text-[12px] font-mono text-white/70">= R3M–R10.5M MRR</div>
               </div>
               <div>
                 <div className="text-2xl font-light text-white">1,000 practices</div>
-                <div className="text-[12px] font-mono text-white/30">= R30M–R105M MRR</div>
+                <div className="text-[12px] font-mono text-white/70">= R30M–R105M MRR</div>
               </div>
               <div>
                 <div className="text-2xl font-light text-[#3DA9D1]">10,000 practices</div>
@@ -755,7 +755,7 @@ export default function EcosystemPage() {
               </span>
             </div>
             <h3 className="text-lg font-light text-white mb-1">MRR Projection — Seed to Global Scale</h3>
-            <p className="text-[12px] font-mono text-white/25 mb-6">
+            <p className="text-[12px] font-mono text-white/70 mb-6">
               Conservative (dashed) vs. optimistic (solid) — hover milestones for detail
             </p>
             <RevenueGrowthChart />
@@ -781,7 +781,7 @@ export default function EcosystemPage() {
             <h2 className="text-3xl md:text-5xl font-light tracking-[-0.03em] mb-4">
               No one else does all of this
             </h2>
-            <p className="text-base text-white/30 font-light max-w-xl mx-auto">
+            <p className="text-base text-white/70 font-light max-w-xl mx-auto">
               Existing players solve one piece. We&apos;re building the whole stack.
             </p>
           </motion.div>
@@ -798,7 +798,7 @@ export default function EcosystemPage() {
               <span className="text-[11px] font-mono tracking-[0.3em] text-[#3DA9D1]/60 uppercase">
                 Feature Coverage Radar
               </span>
-              <p className="text-[12px] font-mono text-white/25 mt-1">
+              <p className="text-[12px] font-mono text-white/70 mt-1">
                 Click competitors to compare — the gap is the opportunity
               </p>
             </div>
@@ -817,13 +817,13 @@ export default function EcosystemPage() {
               <table className="w-full min-w-[640px]">
                 <thead>
                   <tr className="border-b border-white/[0.06]">
-                    <th className="text-left text-[12px] font-mono text-white/40 uppercase tracking-wider p-5 w-[260px]">Feature</th>
+                    <th className="text-left text-[12px] font-mono text-white/60 uppercase tracking-wider p-5 w-[260px]">Feature</th>
                     <th className="text-center text-[12px] font-mono text-[#3DA9D1] uppercase tracking-wider p-5">
                       Netcare Health OS
                     </th>
-                    <th className="text-center text-[12px] font-mono text-white/30 uppercase tracking-wider p-5">GoodX</th>
-                    <th className="text-center text-[12px] font-mono text-white/30 uppercase tracking-wider p-5">Healthbridge</th>
-                    <th className="text-center text-[12px] font-mono text-white/30 uppercase tracking-wider p-5">Elixir</th>
+                    <th className="text-center text-[12px] font-mono text-white/70 uppercase tracking-wider p-5">GoodX</th>
+                    <th className="text-center text-[12px] font-mono text-white/70 uppercase tracking-wider p-5">Healthbridge</th>
+                    <th className="text-center text-[12px] font-mono text-white/70 uppercase tracking-wider p-5">Elixir</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -838,40 +838,40 @@ export default function EcosystemPage() {
                             </svg>
                           </span>
                         ) : (
-                          <span className="text-white/10">—</span>
+                          <span className="text-white/70">—</span>
                         )}
                       </td>
                       <td className="text-center p-5">
                         {row.goodx ? (
                           <span className="inline-flex w-6 h-6 rounded-full bg-white/5 items-center justify-center">
-                            <svg className="w-3.5 h-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <svg className="w-3.5 h-3.5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                             </svg>
                           </span>
                         ) : (
-                          <span className="text-white/10">—</span>
+                          <span className="text-white/70">—</span>
                         )}
                       </td>
                       <td className="text-center p-5">
                         {row.healthbridge ? (
                           <span className="inline-flex w-6 h-6 rounded-full bg-white/5 items-center justify-center">
-                            <svg className="w-3.5 h-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <svg className="w-3.5 h-3.5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                             </svg>
                           </span>
                         ) : (
-                          <span className="text-white/10">—</span>
+                          <span className="text-white/70">—</span>
                         )}
                       </td>
                       <td className="text-center p-5">
                         {row.elixir ? (
                           <span className="inline-flex w-6 h-6 rounded-full bg-white/5 items-center justify-center">
-                            <svg className="w-3.5 h-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <svg className="w-3.5 h-3.5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                             </svg>
                           </span>
                         ) : (
-                          <span className="text-white/10">—</span>
+                          <span className="text-white/70">—</span>
                         )}
                       </td>
                     </tr>
@@ -905,7 +905,7 @@ export default function EcosystemPage() {
             <h2 className="text-3xl md:text-5xl font-light tracking-[-0.03em] mb-4">
               Built for Africa. Scaling globally.
             </h2>
-            <p className="text-base text-white/30 font-light max-w-xl mx-auto">
+            <p className="text-base text-white/70 font-light max-w-xl mx-auto">
               The playbook that works in South Africa works everywhere healthcare is fragmented.
             </p>
           </motion.div>
@@ -949,22 +949,22 @@ export default function EcosystemPage() {
                           ? "text-[#3DA9D1] border-[#3DA9D1]/20"
                           : phase.status === "planned"
                           ? "text-purple-400 border-purple-400/20"
-                          : "text-white/30 border-white/[0.06]"
+                          : "text-white/70 border-white/[0.06]"
                       }`}>
                         {phase.phase}
                       </span>
-                      <span className="text-[11px] font-mono text-white/20">{phase.timeline}</span>
+                      <span className="text-[11px] font-mono text-white/70">{phase.timeline}</span>
                     </div>
                     <h3 className="text-2xl font-light text-white">{phase.region}</h3>
                   </div>
 
                   <div className="lg:col-span-2">
-                    <p className="text-[14px] text-white/40 font-light leading-relaxed">
+                    <p className="text-[14px] text-white/60 font-light leading-relaxed">
                       {phase.description}
                     </p>
                     <div className="flex flex-wrap gap-2 mt-4">
                       {phase.markets.map((m) => (
-                        <span key={m} className="text-[11px] font-mono text-white/25 px-3 py-1 rounded-full border border-white/[0.06]">
+                        <span key={m} className="text-[11px] font-mono text-white/70 px-3 py-1 rounded-full border border-white/[0.06]">
                           {m}
                         </span>
                       ))}
@@ -972,11 +972,11 @@ export default function EcosystemPage() {
                   </div>
 
                   <div className="text-right">
-                    <div className="text-[10px] font-mono text-white/20 uppercase mb-1">Practitioners</div>
+                    <div className="text-[10px] font-mono text-white/70 uppercase mb-1">Practitioners</div>
                     <div className="text-lg font-light text-white/60 mb-2">{phase.practitioners}</div>
-                    <div className="text-[10px] font-mono text-white/20 uppercase mb-1">Opportunity</div>
+                    <div className="text-[10px] font-mono text-white/70 uppercase mb-1">Opportunity</div>
                     <div className={`text-lg font-light ${
-                      phase.status === "active" ? "text-[#3DA9D1]" : "text-white/40"
+                      phase.status === "active" ? "text-[#3DA9D1]" : "text-white/60"
                     }`}>{phase.opportunity}</div>
                   </div>
                 </div>
@@ -1068,7 +1068,7 @@ export default function EcosystemPage() {
                         card.color === "emerald" ? "bg-[#3DA9D1]/40" :
                         card.color === "purple" ? "bg-purple-400/40" : "bg-amber-400/40"
                       }`} />
-                      <p className="text-[13px] text-white/40 font-light leading-relaxed">{point}</p>
+                      <p className="text-[13px] text-white/60 font-light leading-relaxed">{point}</p>
                     </div>
                   ))}
                 </div>
@@ -1101,7 +1101,7 @@ export default function EcosystemPage() {
               <br />
               <span className="text-[#3DA9D1]">Africa has been waiting for</span>
             </h2>
-            <p className="text-base text-white/30 font-light leading-relaxed mb-12 max-w-xl mx-auto">
+            <p className="text-base text-white/70 font-light leading-relaxed mb-12 max-w-xl mx-auto">
               Whether you&apos;re a practice owner, investor, or partner — the ecosystem is open.
               Start with Netcare Health OS Ops today, or talk to us about the bigger vision.
             </p>
@@ -1126,7 +1126,7 @@ export default function EcosystemPage() {
 
             {/* Newsletter */}
             <div className="max-w-md mx-auto">
-              <p className="text-[12px] font-mono text-white/20 mb-4">Get investor updates and product launches</p>
+              <p className="text-[12px] font-mono text-white/70 mb-4">Get investor updates and product launches</p>
               {submitted ? (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -1146,7 +1146,7 @@ export default function EcosystemPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@company.com"
                     required
-                    className="flex-1 px-5 py-3 rounded-full bg-white/5 border border-white/10 text-white text-sm font-mono placeholder:text-white/20 focus:outline-none focus:border-[#3DA9D1]/40 transition-colors"
+                    className="flex-1 px-5 py-3 rounded-full bg-white/5 border border-white/10 text-white text-sm font-mono placeholder:text-white/70 focus:outline-none focus:border-[#3DA9D1]/40 transition-colors"
                   />
                   <button
                     type="submit"

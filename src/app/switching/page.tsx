@@ -217,7 +217,7 @@ export default function SwitchingEnginePage() {
                         transition={{ duration: 0.4, delay: 0.8 + i * 0.12 }}
                         className="hidden md:block"
                       >
-                        <svg width="24" height="12" viewBox="0 0 24 12" className="text-white/20">
+                        <svg width="24" height="12" viewBox="0 0 24 12" className="text-white/70">
                           <path d="M0 6h20m-4-4l4 4-4 4" fill="none" stroke="currentColor" strokeWidth="1.5" />
                         </svg>
                       </motion.div>
@@ -280,7 +280,7 @@ export default function SwitchingEnginePage() {
               <h2 className="text-3xl md:text-5xl font-extralight tracking-tight mt-3">
                 Purpose-built. Every module.
               </h2>
-              <p className="text-white/40 mt-4 max-w-2xl mx-auto">
+              <p className="text-white/60 mt-4 max-w-2xl mx-auto">
                 Eight interconnected modules forming SA&apos;s most complete medical aid switching stack
               </p>
             </div>
@@ -292,7 +292,7 @@ export default function SwitchingEnginePage() {
                 <div className="group bg-white/[0.03] backdrop-blur-sm border border-white/[0.06] rounded-xl p-6 hover:bg-white/[0.06] hover:border-emerald-500/20 transition-all duration-500 h-full">
                   <div className="text-2xl mb-3">{mod.icon}</div>
                   <h3 className="text-sm font-semibold text-white/90 mb-1">{mod.name}</h3>
-                  <p className="text-[12px] text-white/40 font-mono">{mod.detail}</p>
+                  <p className="text-[12px] text-white/60 font-mono">{mod.detail}</p>
                 </div>
               </FadeIn>
             ))}
@@ -302,7 +302,7 @@ export default function SwitchingEnginePage() {
           <FadeIn delay={0.3}>
             <div className="mt-12 bg-white/[0.02] backdrop-blur-sm border border-white/[0.06] rounded-2xl p-8 md:p-10">
               <div className="text-center mb-8">
-                <span className="font-mono text-[11px] tracking-wider text-white/30">SYSTEM FLOW</span>
+                <span className="font-mono text-[11px] tracking-wider text-white/70">SYSTEM FLOW</span>
               </div>
 
               {/* Top layer */}
@@ -321,15 +321,15 @@ export default function SwitchingEnginePage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div className="px-5 py-4 bg-teal-500/10 border border-teal-500/20 rounded-xl text-center">
                   <div className="text-teal-400 text-sm font-medium">EDIFACT Engine</div>
-                  <div className="text-[11px] text-white/30 mt-1">MEDCLM v0:912:ZA</div>
+                  <div className="text-[11px] text-white/70 mt-1">MEDCLM v0:912:ZA</div>
                 </div>
                 <div className="px-5 py-4 bg-cyan-500/10 border border-cyan-500/20 rounded-xl text-center">
                   <div className="text-cyan-400 text-sm font-medium">Pre-Auth Engine</div>
-                  <div className="text-[11px] text-white/30 mt-1">7 Rule Categories</div>
+                  <div className="text-[11px] text-white/70 mt-1">7 Rule Categories</div>
                 </div>
                 <div className="px-5 py-4 bg-blue-500/10 border border-blue-500/20 rounded-xl text-center">
                   <div className="text-blue-400 text-sm font-medium">Batch Processor</div>
-                  <div className="text-[11px] text-white/30 mt-1">5 concurrent workers</div>
+                  <div className="text-[11px] text-white/70 mt-1">5 concurrent workers</div>
                 </div>
               </div>
 
@@ -360,11 +360,11 @@ export default function SwitchingEnginePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="px-5 py-4 bg-purple-500/10 border border-purple-500/20 rounded-xl text-center">
                   <div className="text-purple-400 text-sm font-medium">eRA Reconciliation</div>
-                  <div className="text-[11px] text-white/30 mt-1">3-tier matching + disputes</div>
+                  <div className="text-[11px] text-white/70 mt-1">3-tier matching + disputes</div>
                 </div>
                 <div className="px-5 py-4 bg-purple-500/10 border border-purple-500/20 rounded-xl text-center">
                   <div className="text-purple-400 text-sm font-medium">Resubmission Workflow</div>
-                  <div className="text-[11px] text-white/30 mt-1">15 rejection codes, auto-fix</div>
+                  <div className="text-[11px] text-white/70 mt-1">15 rejection codes, auto-fix</div>
                 </div>
               </div>
             </div>
@@ -395,7 +395,7 @@ export default function SwitchingEnginePage() {
                       {stat.value}
                     </div>
                     <div className="text-white/70 text-sm font-medium mb-1">{stat.label}</div>
-                    <div className="text-white/30 text-[12px]">{stat.sublabel}</div>
+                    <div className="text-white/70 text-[12px]">{stat.sublabel}</div>
                   </div>
                 </div>
               </FadeIn>
@@ -413,7 +413,7 @@ export default function SwitchingEnginePage() {
               <h2 className="text-3xl md:text-5xl font-extralight tracking-tight mt-3">
                 30+ schemes. Fully mapped.
               </h2>
-              <p className="text-white/40 mt-4 max-w-2xl mx-auto">
+              <p className="text-white/60 mt-4 max-w-2xl mx-auto">
                 Every major South African medical aid scheme routed to the correct administrator and clearing house
               </p>
             </div>
@@ -469,7 +469,7 @@ export default function SwitchingEnginePage() {
               <h2 className="text-3xl md:text-5xl font-extralight tracking-tight mt-3">
                 PMS Accreditation Program
               </h2>
-              <p className="text-white/40 mt-4 max-w-2xl mx-auto">
+              <p className="text-white/60 mt-4 max-w-2xl mx-auto">
                 Third-party practice management systems can integrate with our switching engine through a structured accreditation process
               </p>
             </div>
@@ -491,7 +491,7 @@ export default function SwitchingEnginePage() {
                       </div>
                       <div>
                         <div className="text-sm font-medium text-white/80">{test.category}</div>
-                        <div className="text-[12px] text-white/40 mt-0.5">{test.tests}</div>
+                        <div className="text-[12px] text-white/60 mt-0.5">{test.tests}</div>
                       </div>
                     </div>
                   ))}
@@ -519,7 +519,7 @@ export default function SwitchingEnginePage() {
                       </div>
                       <div className="pt-1">
                         <div className="text-sm font-medium text-white/80">{step.title}</div>
-                        <div className="text-[12px] text-white/40 mt-0.5">{step.detail}</div>
+                        <div className="text-[12px] text-white/60 mt-0.5">{step.detail}</div>
                       </div>
                     </div>
                   ))}
@@ -620,7 +620,7 @@ export default function SwitchingEnginePage() {
                 </Link>
               </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-6 text-[12px] text-white/30 font-mono">
+              <div className="flex flex-wrap items-center justify-center gap-6 text-[12px] text-white/70 font-mono">
                 <span>EDIFACT MEDCLM v0:912:ZA</span>
                 <span className="w-px h-3 bg-white/10" />
                 <span>Multi-Switch Router</span>

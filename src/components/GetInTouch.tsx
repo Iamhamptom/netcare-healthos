@@ -163,7 +163,7 @@ export default function GetInTouch() {
                 <h3 className="text-white text-xl font-light mb-2">
                   Thanks! We&apos;ll be in touch within 24 hours.
                 </h3>
-                <p className="text-white/40 text-sm font-mono">
+                <p className="text-white/60 text-sm font-mono">
                   Check your inbox for a confirmation.
                 </p>
               </div>
@@ -174,26 +174,30 @@ export default function GetInTouch() {
                   name="name"
                   placeholder="Your name"
                   required
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-mono placeholder:text-white/30 focus:border-[#3DA9D1]/40 focus:outline-none transition-colors"
+                  aria-label="Your name"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-mono placeholder:text-white/70 focus:border-[#3DA9D1]/40 focus:outline-none focus:ring-2 focus:ring-[#3DA9D1]/20 transition-colors"
                 />
                 <input
                   type="email"
                   name="email"
                   placeholder="Email address"
                   required
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-mono placeholder:text-white/30 focus:border-[#3DA9D1]/40 focus:outline-none transition-colors"
+                  aria-label="Email address"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-mono placeholder:text-white/70 focus:border-[#3DA9D1]/40 focus:outline-none focus:ring-2 focus:ring-[#3DA9D1]/20 transition-colors"
                 />
                 <input
                   type="text"
                   name="practice"
                   placeholder="Practice name"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-mono placeholder:text-white/30 focus:border-[#3DA9D1]/40 focus:outline-none transition-colors"
+                  aria-label="Practice name"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-mono placeholder:text-white/70 focus:border-[#3DA9D1]/40 focus:outline-none focus:ring-2 focus:ring-[#3DA9D1]/20 transition-colors"
                 />
                 <textarea
                   name="message"
                   placeholder="Tell us about your practice..."
                   rows={4}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-mono placeholder:text-white/30 focus:border-[#3DA9D1]/40 focus:outline-none transition-colors resize-none"
+                  aria-label="Message"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-mono placeholder:text-white/70 focus:border-[#3DA9D1]/40 focus:outline-none focus:ring-2 focus:ring-[#3DA9D1]/20 transition-colors resize-none"
                 />
                 <button
                   type="submit"
@@ -206,7 +210,7 @@ export default function GetInTouch() {
             )}
 
             {/* Email fallback */}
-            <p className="text-white/30 text-xs font-mono mt-6">
+            <p className="text-white/70 text-xs font-mono mt-6">
               Or email us directly at hello@visiohealth.co.za
             </p>
           </motion.div>

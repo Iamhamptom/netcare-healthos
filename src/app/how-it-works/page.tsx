@@ -44,7 +44,7 @@ export default function HowItWorksPage() {
               From <span className="text-gradient-green text-glow">message</span> to{" "}
               <span className="text-gradient-green text-glow">payment</span>
             </h1>
-            <p className="text-white/40 text-[15px] leading-relaxed">
+            <p className="text-white/60 text-[15px] leading-relaxed">
               Netcare Health OS Ops automates every step of your practice — from the first WhatsApp message to the final payment.
               Here&apos;s exactly how it works, from start to finish.
             </p>
@@ -71,7 +71,7 @@ export default function HowItWorksPage() {
                     <span className="text-[11px] font-mono text-[#4ADE80]/50 uppercase tracking-widest">Step {i + 1}</span>
                   </div>
                   <h3 className="text-[16px] font-semibold text-white mb-1">{step.title}</h3>
-                  <p className="text-white/30 text-[14px] leading-relaxed">{step.description}</p>
+                  <p className="text-white/70 text-[14px] leading-relaxed">{step.description}</p>
                 </div>
               </motion.div>
             ))}
@@ -114,7 +114,7 @@ export default function HowItWorksPage() {
               </svg>
             </div>
             <h2 className="text-3xl text-white font-bold mb-4">POPIA Compliant</h2>
-            <p className="text-white/30 text-[14px] mb-8">Health data is classified as &quot;Special Personal Information&quot; — we treat it with the highest standard of care.</p>
+            <p className="text-white/70 text-[14px] mb-8">Health data is classified as &quot;Special Personal Information&quot; — we treat it with the highest standard of care.</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {["Audit Logging", "Role-Based Access", "Consent Tracking", "Data Encryption"].map(item => (
                 <div key={item} className="flex items-center gap-2 justify-center bg-[#071A0E] border border-[#4ADE80]/[0.06] rounded-xl py-3 px-4">
@@ -174,7 +174,7 @@ export default function HowItWorksPage() {
             <h2 className="text-3xl md:text-4xl text-white font-bold mb-6">
               Ready to <span className="text-gradient-green text-glow">automate</span>?
             </h2>
-            <p className="text-white/30 text-[14px] mb-8">14-day free trial. No credit card required. Set up in 10 minutes.</p>
+            <p className="text-white/70 text-[14px] mb-8">14-day free trial. No credit card required. Set up in 10 minutes.</p>
             <Link
               href="/register"
               className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#4ADE80] text-[#030F07] font-semibold text-[15px] rounded-full hover:bg-[#86EFAC] transition-all duration-300 shadow-[0_0_30px_rgba(52,211,153,0.3)]"

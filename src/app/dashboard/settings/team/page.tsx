@@ -400,7 +400,7 @@ export default function TeamManagementPage() {
 
       {/* Confirmation Modal */}
       {confirmAction && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" role="dialog" aria-modal="true" aria-label="Confirm action">
           <div className="bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-xl">
             <h3 className="text-lg font-semibold text-gray-900">Are you sure?</h3>
             <p className="text-[13px] text-gray-500 mt-2">
@@ -424,6 +424,9 @@ export default function TeamManagementPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Invite Team Member"
             onClick={() => setShowInvite(false)}
           >
             <motion.div
@@ -438,41 +441,44 @@ export default function TeamManagementPage() {
                   <Plus className="w-4 h-4 text-[#3DA9D1]" />
                   <h3 className="text-sm font-semibold text-gray-900">Invite Team Member</h3>
                 </div>
-                <button onClick={() => setShowInvite(false)} className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+                <button onClick={() => setShowInvite(false)} aria-label="Close" className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
                   <X className="w-4 h-4 text-gray-400" />
                 </button>
               </div>
 
               <form onSubmit={handleInvite} className="space-y-4">
                 <div>
-                  <label className="block text-xs text-gray-500 font-medium uppercase tracking-wider mb-1.5">Full Name</label>
+                  <label htmlFor="invite-name" className="block text-xs text-gray-600 font-medium uppercase tracking-wider mb-1.5">Full Name</label>
                   <input
+                    id="invite-name"
                     type="text"
                     value={inviteName}
                     onChange={e => setInviteName(e.target.value)}
                     required
                     placeholder="Dr Jane Smith"
-                    className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#3DA9D1]/40"
+                    className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#3DA9D1]/20 focus:border-[#3DA9D1]/40"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 font-medium uppercase tracking-wider mb-1.5">Email Address</label>
+                  <label htmlFor="invite-email" className="block text-xs text-gray-600 font-medium uppercase tracking-wider mb-1.5">Email Address</label>
                   <input
+                    id="invite-email"
                     type="email"
                     value={inviteEmail}
                     onChange={e => setInviteEmail(e.target.value)}
                     required
                     placeholder="jane.smith@netcare.co.za"
-                    className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#3DA9D1]/40"
+                    className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#3DA9D1]/20 focus:border-[#3DA9D1]/40"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 font-medium uppercase tracking-wider mb-1.5">Role</label>
+                  <label htmlFor="invite-role" className="block text-xs text-gray-600 font-medium uppercase tracking-wider mb-1.5">Role</label>
                   <div className="relative">
                     <select
+                      id="invite-role"
                       value={inviteRole}
                       onChange={e => setInviteRole(e.target.value)}
-                      className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 appearance-none focus:outline-none focus:border-[#3DA9D1]/40"
+                      className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-[#3DA9D1]/20 focus:border-[#3DA9D1]/40"
                     >
                       {INVITE_ROLES.map(r => (
                         <option key={r.value} value={r.value}>{r.label} — {r.desc}</option>

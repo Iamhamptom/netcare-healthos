@@ -15,7 +15,9 @@ export async function POST(request: Request) {
     const { name, email, password } = await request.json();
     if (!name || !email || !password) return NextResponse.json({ error: "All fields required" }, { status: 400 });
     if (typeof name !== "string" || typeof email !== "string" || typeof password !== "string") return NextResponse.json({ error: "Invalid input" }, { status: 400 });
-    if (password.length < 6) return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
+    if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+      return NextResponse.json({ error: "Password must be at least 8 characters with 1 uppercase and 1 number" }, { status: 400 });
+    }
     if (!email.includes("@") || !email.includes(".")) return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
 
     const existing = await db.getUserByEmail(email);

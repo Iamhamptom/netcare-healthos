@@ -216,7 +216,7 @@ export default function PatientsPage() {
 
       {/* Confirmation Modal */}
       {confirmAction && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" role="dialog" aria-modal="true" aria-label="Confirm deletion">
           <div className="bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-xl">
             <h3 className="text-lg font-semibold text-gray-900">Are you sure?</h3>
             <p className="text-[13px] text-gray-500 mt-2">This will permanently delete this patient and all their records. This action cannot be undone.</p>

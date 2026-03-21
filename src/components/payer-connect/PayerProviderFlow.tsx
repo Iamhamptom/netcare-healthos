@@ -281,7 +281,7 @@ export default function PayerProviderFlow() {
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[10px] font-mono transition-all duration-300 ${
               activeFlow === i
                 ? "border-white/15 bg-white/[0.06] text-white/70"
-                : "border-white/[0.04] text-white/30 hover:border-white/10"
+                : "border-white/[0.04] text-white/70 hover:border-white/10"
             }`}
             initial={{ opacity: 0, y: 8 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}

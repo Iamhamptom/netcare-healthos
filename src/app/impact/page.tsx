@@ -63,11 +63,11 @@ function LiveTicker() {
         <div className="text-5xl md:text-7xl font-extralight text-red-400 tabular-nums">
           {count}
         </div>
-        <div className="text-[10px] text-white/20 font-mono uppercase tracking-[0.2em] mt-2">
+        <div className="text-[10px] text-white/70 font-mono uppercase tracking-[0.2em] mt-2">
           Preventable deaths since you opened this page
         </div>
       </div>
-      <div className="text-[11px] text-white/10 font-mono tabular-nums">
+      <div className="text-[11px] text-white/70 font-mono tabular-nums">
         {String(minutes).padStart(2, "0")}:{String(secs).padStart(2, "0")}
       </div>
     </div>
@@ -265,7 +265,7 @@ export default function ImpactPage() {
             className="flex items-center justify-center gap-3 mb-10"
           >
             <div className="h-px w-12 bg-gradient-to-r from-transparent to-[#3DA9D1]/30" />
-            <span className="text-[10px] text-white/20 font-mono uppercase tracking-[0.3em]">
+            <span className="text-[10px] text-white/70 font-mono uppercase tracking-[0.3em]">
               120+ peer-reviewed citations &middot; Nature Medicine &middot; BMJ &middot; JAMA &middot; Lancet &middot; WHO
             </span>
             <div className="h-px w-12 bg-gradient-to-l from-transparent to-[#3DA9D1]/30" />
@@ -288,7 +288,7 @@ export default function ImpactPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.8 }}
-            className="text-[16px] md:text-[18px] text-white/35 max-w-2xl mx-auto leading-relaxed font-light"
+            className="text-[16px] md:text-[18px] text-white/70 max-w-2xl mx-auto leading-relaxed font-light"
           >
             South Africa&apos;s healthcare infrastructure exists. The doctors exist.
             The medicine exists. What doesn&apos;t exist is the intelligence layer
@@ -357,7 +357,7 @@ export default function ImpactPage() {
                 <div className="text-2xl md:text-3xl font-extralight text-white/80 tabular-nums">
                   <CountUp target={stat.target} prefix={stat.prefix} suffix={stat.suffix} decimals={stat.decimals ?? 0} />
                 </div>
-                <div className="text-[10px] text-white/15 font-mono uppercase tracking-[0.15em] mt-2 leading-relaxed">
+                <div className="text-[10px] text-white/70 font-mono uppercase tracking-[0.15em] mt-2 leading-relaxed">
                   {stat.label}
                 </div>
               </motion.div>
@@ -457,7 +457,7 @@ export default function ImpactPage() {
               <br />
               <span className="text-[#3DA9D1]">golden window.</span>
             </h2>
-            <p className="text-[15px] text-white/30 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-[15px] text-white/70 max-w-2xl mx-auto leading-relaxed">
               The difference between life and death is often not the medicine — it&apos;s
               whether the patient reaches the right facility before the window closes.
               Placeo Health maps facility capabilities in real-time.
@@ -473,7 +473,7 @@ export default function ImpactPage() {
                 className={`px-4 py-2 rounded-full text-[12px] font-mono tracking-wide transition-all duration-300 ${
                   activeCondition === i
                     ? "bg-[#3DA9D1]/20 text-[#3DA9D1] border border-[#3DA9D1]/30"
-                    : "text-white/20 border border-white/[0.06] hover:text-white/40 hover:border-white/10"
+                    : "text-white/70 border border-white/[0.06] hover:text-white/60 hover:border-white/10"
                 }`}
               >
                 {c.condition}
@@ -515,10 +515,10 @@ export default function ImpactPage() {
                     </div>
                     {/* Detail */}
                     <div className="p-8">
-                      <p className="text-[14px] text-white/30 leading-relaxed mb-4">
+                      <p className="text-[14px] text-white/70 leading-relaxed mb-4">
                         {c.detail}
                       </p>
-                      <p className="text-[11px] text-white/15 font-mono">
+                      <p className="text-[11px] text-white/70 font-mono">
                         Source: {c.source}
                       </p>
                     </div>
@@ -542,7 +542,7 @@ export default function ImpactPage() {
             ].map((s) => (
               <div key={s.label} className="text-center">
                 <div className="text-xl md:text-2xl font-extralight text-[#3DA9D1] mb-1">{s.value}</div>
-                <div className="text-[10px] text-white/15 font-mono uppercase tracking-wider leading-relaxed">{s.label}</div>
+                <div className="text-[10px] text-white/70 font-mono uppercase tracking-wider leading-relaxed">{s.label}</div>
               </div>
             ))}
           </motion.div>
@@ -618,7 +618,7 @@ export default function ImpactPage() {
               <br />
               <span className="text-[#3DA9D1]">One patient journey.</span>
             </h2>
-            <p className="text-[15px] text-white/25 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-[15px] text-white/70 max-w-2xl mx-auto leading-relaxed">
               Each product addresses a distinct failure point in the care pathway.
               Together, they form the intelligence layer South African healthcare
               has never had.
@@ -644,7 +644,7 @@ export default function ImpactPage() {
                 <h3 className="text-[18px] font-medium text-white mb-3 group-hover:text-[#3DA9D1] transition-colors duration-300">
                   {product.name}
                 </h3>
-                <p className="text-[13px] text-white/25 leading-relaxed mb-4">
+                <p className="text-[13px] text-white/70 leading-relaxed mb-4">
                   {product.description}
                 </p>
                 <div className="pt-4 border-t border-white/[0.04]">
@@ -808,10 +808,10 @@ export default function ImpactPage() {
                 <div className="p-6 border-b border-white/[0.04]">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[10px] font-mono text-[#3DA9D1] uppercase tracking-[0.2em]">{phase.phase}</span>
-                    <span className="text-[10px] font-mono text-white/15">{phase.timeline}</span>
+                    <span className="text-[10px] font-mono text-white/70">{phase.timeline}</span>
                   </div>
                   <div className="text-[18px] font-medium text-white mt-2">{phase.facilities}</div>
-                  <div className="text-[12px] text-white/20 font-mono">{phase.region}</div>
+                  <div className="text-[12px] text-white/70 font-mono">{phase.region}</div>
                 </div>
                 <div className="p-6 space-y-4">
                   {[
@@ -820,7 +820,7 @@ export default function ImpactPage() {
                     { label: "Orphans prevented", value: phase.orphans },
                   ].map((row) => (
                     <div key={row.label} className="flex justify-between items-baseline">
-                      <span className="text-[12px] text-white/20">{row.label}</span>
+                      <span className="text-[12px] text-white/70">{row.label}</span>
                       <span className="text-[14px] font-medium text-[#3DA9D1] font-mono">{row.value}</span>
                     </div>
                   ))}
@@ -837,7 +837,7 @@ export default function ImpactPage() {
             className="rounded-2xl bg-white/[0.02] border border-white/[0.05] p-10"
           >
             <div className="text-center mb-8">
-              <span className="text-[10px] font-mono text-white/20 uppercase tracking-[0.2em]">10-Year National Impact</span>
+              <span className="text-[10px] font-mono text-white/70 uppercase tracking-[0.2em]">10-Year National Impact</span>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {[
@@ -848,7 +848,7 @@ export default function ImpactPage() {
               ].map((s) => (
                 <div key={s.label} className="text-center">
                   <div className="text-2xl md:text-3xl font-extralight text-[#3DA9D1] mb-2">{s.value}</div>
-                  <div className="text-[10px] text-white/15 font-mono uppercase tracking-wider leading-relaxed">{s.label}</div>
+                  <div className="text-[10px] text-white/70 font-mono uppercase tracking-wider leading-relaxed">{s.label}</div>
                 </div>
               ))}
             </div>
@@ -894,7 +894,7 @@ export default function ImpactPage() {
           >
             <div className="flex items-center justify-center gap-2 mb-8">
               <div className="w-1.5 h-1.5 rounded-full bg-[#3DA9D1] animate-pulse" />
-              <span className="text-[12px] text-white/15 font-mono tracking-wider">
+              <span className="text-[12px] text-white/70 font-mono tracking-wider">
                 Netcare Health OS Ecosystem &middot; Netcare Technology &middot; South Africa
               </span>
             </div>
@@ -908,7 +908,7 @@ export default function ImpactPage() {
               </a>
               <a
                 href="mailto:davidhampton@visiocorp.co"
-                className="px-8 py-3 rounded-full border border-white/[0.06] text-white/30 text-[13px] font-mono tracking-wide hover:border-white/10 hover:text-white/50 transition-all duration-300"
+                className="px-8 py-3 rounded-full border border-white/[0.06] text-white/70 text-[13px] font-mono tracking-wide hover:border-white/10 hover:text-white/50 transition-all duration-300"
               >
                 Contact Us
               </a>

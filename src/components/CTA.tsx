@@ -80,7 +80,7 @@ export default function CTA() {
           </Link>
           <Link
             href="/about"
-            className="px-10 py-4 text-base font-medium text-white/40 rounded-full border border-white/10 hover:border-white/20 hover:text-white/60 transition-all duration-300"
+            className="px-10 py-4 text-base font-medium text-white/60 rounded-full border border-white/10 hover:border-white/20 hover:text-white/60 transition-all duration-300"
           >
             Learn More
           </Link>

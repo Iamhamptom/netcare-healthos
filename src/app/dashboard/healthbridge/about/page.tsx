@@ -94,7 +94,7 @@ function HeroSection() {
           {stats.map((s) => (
             <div key={s.label} className="text-center px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.06] backdrop-blur-sm">
               <div className="text-2xl md:text-3xl font-bold text-white">{s.value}</div>
-              <div className="text-[11px] text-white/40 font-medium uppercase tracking-wider mt-1">{s.label}</div>
+              <div className="text-[11px] text-white/60 font-medium uppercase tracking-wider mt-1">{s.label}</div>
             </div>
           ))}
         </motion.div>
@@ -493,7 +493,7 @@ function VisiocorpSection() {
               <div key={t.label} className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-3 text-center">
                 <t.icon className="w-5 h-5 text-[#3DA9D1] mx-auto mb-2" />
                 <div className="text-[12px] font-semibold text-white">{t.label}</div>
-                <div className="text-[10px] text-white/40 mt-0.5">{t.desc}</div>
+                <div className="text-[10px] text-white/60 mt-0.5">{t.desc}</div>
               </div>
             ))}
           </motion.div>

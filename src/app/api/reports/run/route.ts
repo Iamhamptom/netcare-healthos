@@ -17,7 +17,11 @@ export async function GET(request: NextRequest) {
   try {
     // Fetch scheduled reports
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-    const schedulesRes = await fetch(`${baseUrl}/api/reports/schedule`, {
+
+    // SSRF protection — only allow fetching from the app's own domain
+    const allowedOrigin = new URL(baseUrl).origin;
+
+    const schedulesRes = await fetch(`${allowedOrigin}/api/reports/schedule`, {
       headers: { cookie: request.headers.get("cookie") || "" },
     });
 
@@ -40,7 +44,7 @@ export async function GET(request: NextRequest) {
       console.log(`[reports/run] Generating scheduled report: ${schedule.reportName} (${schedule.reportType})`);
 
       try {
-        const genRes = await fetch(`${baseUrl}/api/reports/generate`, {
+        const genRes = await fetch(`${allowedOrigin}/api/reports/generate`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

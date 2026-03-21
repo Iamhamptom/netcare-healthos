@@ -522,7 +522,7 @@ export default function ClaimsAboutPage() {
               </div>
               <div>
                 <h2 className="text-xl font-bold">Built by Visio Research Labs</h2>
-                <p className="text-[12px] text-white/40">VisioCorp Innovation Division</p>
+                <p className="text-[12px] text-white/60">VisioCorp Innovation Division</p>
               </div>
             </div>
 
@@ -561,7 +561,7 @@ export default function ClaimsAboutPage() {
                 </div>
                 <div>
                   <p className="text-[12px] font-semibold text-white/60">Designed for Netcare Primary Healthcare</p>
-                  <p className="text-[11px] text-white/30">88 clinics across South Africa</p>
+                  <p className="text-[11px] text-white/70">88 clinics across South Africa</p>
                 </div>
               </div>
             </div>

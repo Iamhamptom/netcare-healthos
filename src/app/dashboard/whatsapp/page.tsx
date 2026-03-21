@@ -92,7 +92,7 @@ export default function WhatsAppPage() {
             </div>
             <div>
               <div className="text-white text-[13px] font-semibold">Netcare Medicross</div>
-              <div className="text-white/40 text-[10px]">Online \u2022 AI-powered</div>
+              <div className="text-white/60 text-[10px]">Online \u2022 AI-powered</div>
             </div>
           </div>
 

@@ -177,10 +177,10 @@ export default function PublicBookingPage({ params }: { params: Promise<{ slug: 
             )}
             <div>
               <h1 className="text-sm font-semibold">{practice.name}</h1>
-              <p className="text-[10px] text-white/40">{practice.tagline || `${practice.type} practice`}</p>
+              <p className="text-[10px] text-white/60">{practice.tagline || `${practice.type} practice`}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-[11px] text-white/40">
+          <div className="flex items-center gap-2 text-[11px] text-white/60">
             <MapPin className="w-3 h-3" />
             <span className="hidden sm:inline">{practice.address}</span>
           </div>
@@ -209,7 +209,7 @@ export default function PublicBookingPage({ params }: { params: Promise<{ slug: 
         {canGoBack && (
           <button
             onClick={() => setStep(STEPS[stepIndex - 1])}
-            className="flex items-center gap-1 text-xs text-white/40 hover:text-white/70 mb-6 transition-colors"
+            className="flex items-center gap-1 text-xs text-white/60 hover:text-white/70 mb-6 transition-colors"
           >
             <ChevronLeft className="w-3 h-3" /> Back
           </button>
@@ -246,13 +246,13 @@ export default function PublicBookingPage({ params }: { params: Promise<{ slug: 
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="text-sm font-medium group-hover:text-white transition-colors">{service.name}</div>
-                        <div className="text-xs text-white/40 mt-0.5">{service.duration} min</div>
+                        <div className="text-xs text-white/60 mt-0.5">{service.duration} min</div>
                       </div>
                       <div className="flex items-center gap-3">
                         {service.price > 0 && (
                           <span className="text-xs font-medium" style={{ color: pc }}>R{service.price}</span>
                         )}
-                        <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/50 transition-colors" />
+                        <ChevronRight className="w-4 h-4 text-white/70 group-hover:text-white/50 transition-colors" />
                       </div>
                     </div>
                   </button>
@@ -273,7 +273,7 @@ export default function PublicBookingPage({ params }: { params: Promise<{ slug: 
                       if (calMonth === 0) { setCalMonth(11); setCalYear(calYear - 1); }
                       else setCalMonth(calMonth - 1);
                     }}
-                    className="p-1.5 rounded-lg hover:bg-white/5 text-white/40 hover:text-white/70"
+                    className="p-1.5 rounded-lg hover:bg-white/5 text-white/60 hover:text-white/70"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
@@ -285,7 +285,7 @@ export default function PublicBookingPage({ params }: { params: Promise<{ slug: 
                       if (calMonth === 11) { setCalMonth(0); setCalYear(calYear + 1); }
                       else setCalMonth(calMonth + 1);
                     }}
-                    className="p-1.5 rounded-lg hover:bg-white/5 text-white/40 hover:text-white/70"
+                    className="p-1.5 rounded-lg hover:bg-white/5 text-white/60 hover:text-white/70"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
@@ -294,7 +294,7 @@ export default function PublicBookingPage({ params }: { params: Promise<{ slug: 
                 {/* Day headers */}
                 <div className="grid grid-cols-7 gap-1 mb-2">
                   {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(d => (
-                    <div key={d} className="text-center text-[10px] text-white/30 py-1">{d}</div>
+                    <div key={d} className="text-center text-[10px] text-white/70 py-1">{d}</div>
                   ))}
                 </div>
 
@@ -321,7 +321,7 @@ export default function PublicBookingPage({ params }: { params: Promise<{ slug: 
                           isSelected
                             ? "text-black font-semibold scale-105"
                             : isDisabled
-                              ? "text-white/15 cursor-not-allowed"
+                              ? "text-white/60 cursor-not-allowed"
                               : "text-white/70 hover:bg-white/5 hover:text-white"
                         }`}
                         style={isSelected ? { backgroundColor: pc } : undefined}
@@ -339,7 +339,7 @@ export default function PublicBookingPage({ params }: { params: Promise<{ slug: 
           {step === "time" && (
             <motion.div key="time" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
               <h2 className="text-lg font-semibold mb-1">Pick a time</h2>
-              <p className="text-xs text-white/40 mb-4">
+              <p className="text-xs text-white/60 mb-4">
                 {new Date(selectedDate + "T00:00:00").toLocaleDateString("en-ZA", { weekday: "long", month: "long", day: "numeric" })}
               </p>
 
@@ -349,8 +349,8 @@ export default function PublicBookingPage({ params }: { params: Promise<{ slug: 
                 </div>
               ) : slots.filter(s => s.available).length === 0 ? (
                 <div className="text-center py-12">
-                  <Clock className="w-8 h-8 text-white/20 mx-auto mb-2" />
-                  <p className="text-sm text-white/40">No available slots on this date</p>
+                  <Clock className="w-8 h-8 text-white/70 mx-auto mb-2" />
+                  <p className="text-sm text-white/60">No available slots on this date</p>
                   <button onClick={() => setStep("date")} className="mt-3 text-xs hover:underline" style={{ color: pc }}>
                     Choose another date
                   </button>
@@ -389,7 +389,7 @@ export default function PublicBookingPage({ params }: { params: Promise<{ slug: 
                     required
                     value={form.name}
                     onChange={e => setForm({ ...form, name: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-lg bg-white/[0.04] border border-white/10 text-sm text-white placeholder-white/20 focus:outline-none focus:border-white/30"
+                    className="w-full px-3 py-2.5 rounded-lg bg-white/[0.04] border border-white/10 text-sm text-white placeholder-white/60 focus:outline-none focus:border-white/30"
                     placeholder="e.g. Thandi Molefe"
                   />
                 </div>
@@ -402,7 +402,7 @@ export default function PublicBookingPage({ params }: { params: Promise<{ slug: 
                     type="tel"
                     value={form.phone}
                     onChange={e => setForm({ ...form, phone: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-lg bg-white/[0.04] border border-white/10 text-sm text-white placeholder-white/20 focus:outline-none focus:border-white/30"
+                    className="w-full px-3 py-2.5 rounded-lg bg-white/[0.04] border border-white/10 text-sm text-white placeholder-white/60 focus:outline-none focus:border-white/30"
                     placeholder="+27 82 123 4567"
                   />
                 </div>
@@ -414,7 +414,7 @@ export default function PublicBookingPage({ params }: { params: Promise<{ slug: 
                     type="email"
                     value={form.email}
                     onChange={e => setForm({ ...form, email: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-lg bg-white/[0.04] border border-white/10 text-sm text-white placeholder-white/20 focus:outline-none focus:border-white/30"
+                    className="w-full px-3 py-2.5 rounded-lg bg-white/[0.04] border border-white/10 text-sm text-white placeholder-white/60 focus:outline-none focus:border-white/30"
                     placeholder="thandi@example.com"
                   />
                 </div>
@@ -424,7 +424,7 @@ export default function PublicBookingPage({ params }: { params: Promise<{ slug: 
                     value={form.notes}
                     onChange={e => setForm({ ...form, notes: e.target.value })}
                     rows={2}
-                    className="w-full px-3 py-2.5 rounded-lg bg-white/[0.04] border border-white/10 text-sm text-white placeholder-white/20 focus:outline-none focus:border-white/30 resize-none"
+                    className="w-full px-3 py-2.5 rounded-lg bg-white/[0.04] border border-white/10 text-sm text-white placeholder-white/60 focus:outline-none focus:border-white/30 resize-none"
                     placeholder="Any concerns or special requirements..."
                   />
                 </div>
@@ -499,7 +499,7 @@ export default function PublicBookingPage({ params }: { params: Promise<{ slug: 
                 )}
               </div>
 
-              <div className="mt-4 p-3 rounded-lg bg-white/[0.02] border border-white/5 text-[11px] text-white/30 flex items-start gap-2">
+              <div className="mt-4 p-3 rounded-lg bg-white/[0.02] border border-white/5 text-[11px] text-white/70 flex items-start gap-2">
                 <Clock className="w-3 h-3 shrink-0 mt-0.5" />
                 <span>Your booking will be pending until confirmed by the practice. You&apos;ll receive a WhatsApp confirmation.</span>
               </div>
@@ -534,11 +534,11 @@ export default function PublicBookingPage({ params }: { params: Promise<{ slug: 
               </p>
               <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 max-w-xs mx-auto text-left space-y-2">
                 <div className="flex justify-between text-xs">
-                  <span className="text-white/40">Reference</span>
+                  <span className="text-white/60">Reference</span>
                   <span className="font-mono text-white/70">{bookingRef?.slice(0, 8)}...</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-white/40">Status</span>
+                  <span className="text-white/60">Status</span>
                   <span className="text-amber-400 font-medium">Pending Confirmation</span>
                 </div>
               </div>
@@ -556,7 +556,7 @@ export default function PublicBookingPage({ params }: { params: Promise<{ slug: 
                     setBookingRef("");
                     setError("");
                   }}
-                  className="text-xs text-white/30 hover:text-white/50"
+                  className="text-xs text-white/70 hover:text-white/50"
                 >
                   Book another appointment
                 </button>
@@ -568,7 +568,7 @@ export default function PublicBookingPage({ params }: { params: Promise<{ slug: 
 
       {/* Footer */}
       <footer className="border-t border-white/5 py-6 text-center">
-        <p className="text-[10px] text-white/20">Powered by Netcare Health OS Ops</p>
+        <p className="text-[10px] text-white/70">Powered by Netcare Health OS Ops</p>
       </footer>
     </div>
   );

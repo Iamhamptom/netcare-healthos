@@ -96,7 +96,7 @@ function TOCSidebar({ activeSection }: { activeSection: string }) {
               className={`block px-3 py-1.5 rounded-lg text-[12px] font-mono transition-all duration-200 ${
                 activeSection === s.id
                   ? "bg-[#3DA9D1]/10 text-[#3DA9D1]"
-                  : "text-white/30 hover:text-white/60"
+                  : "text-white/70 hover:text-white/60"
               }`}
             >
               <span className="text-[#3DA9D1]/40 mr-2">{s.number}</span>
@@ -385,7 +385,7 @@ export default function VRL001Page() {
             <span className="px-3 py-1 rounded-full bg-[#3DA9D1]/10 text-[#3DA9D1] text-[11px] font-mono tracking-[0.15em] uppercase border border-[#3DA9D1]/20">
               VRL-001
             </span>
-            <span className="text-white/20 text-[11px] font-mono tracking-[0.15em] uppercase">
+            <span className="text-white/70 text-[11px] font-mono tracking-[0.15em] uppercase">
               March 2026
             </span>
           </motion.div>
@@ -407,7 +407,7 @@ export default function VRL001Page() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.5 }}
-            className="text-white/30 text-[13px] font-mono tracking-[0.1em] mb-10"
+            className="text-white/70 text-[13px] font-mono tracking-[0.1em] mb-10"
           >
             Netcare Technology &middot; Netcare Health OS &middot; VisioCorp
           </motion.p>
@@ -445,7 +445,7 @@ export default function VRL001Page() {
             { label: "DOI", value: "VRL/2026/001" },
           ].map((item) => (
             <div key={item.label}>
-              <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/20 mb-1">
+              <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/70 mb-1">
                 {item.label}
               </div>
               <div className="text-[13px] font-mono text-[#3DA9D1]/80">
@@ -938,8 +938,8 @@ export default function VRL001Page() {
                     <tr key={i} className={i % 2 === 0 ? "bg-white/[0.01]" : "bg-white/[0.03]"}>
                       <td className="px-4 py-4 text-white/80 font-medium">{row.intervention}</td>
                       <td className="px-4 py-4 font-mono text-[#3DA9D1] font-semibold text-[15px]">{row.reduction}</td>
-                      <td className="px-4 py-4 text-white/40">{row.context}</td>
-                      <td className="px-4 py-4 text-white/25 text-[11px]">{row.source}</td>
+                      <td className="px-4 py-4 text-white/60">{row.context}</td>
+                      <td className="px-4 py-4 text-white/70 text-[11px]">{row.source}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -956,10 +956,10 @@ export default function VRL001Page() {
                     <span className="font-mono text-[#3DA9D1] text-[22px] font-semibold">{item.reduction}</span>
                     <span className="text-white/70 font-medium text-[15px]">{item.intervention}</span>
                   </div>
-                  <p className="text-[13px] text-white/40 leading-relaxed mb-2">
+                  <p className="text-[13px] text-white/60 leading-relaxed mb-2">
                     {item.detail}
                   </p>
-                  <p className="text-[11px] text-white/20 font-mono">
+                  <p className="text-[11px] text-white/70 font-mono">
                     {item.source}
                   </p>
                 </div>
@@ -1263,7 +1263,7 @@ export default function VRL001Page() {
                         <span className="font-mono text-[11px] text-[#3DA9D1]/30 mt-0.5 shrink-0 w-6 text-right">
                           {refNumber}.
                         </span>
-                        <span className="text-[13px] text-white/35 leading-relaxed">
+                        <span className="text-[13px] text-white/70 leading-relaxed">
                           {ref}
                         </span>
                       </li>
@@ -1288,7 +1288,7 @@ export default function VRL001Page() {
             <h2 className="text-3xl md:text-4xl font-extralight text-white mb-4">
               Access the Full Report
             </h2>
-            <p className="text-[15px] text-white/40 mb-10 max-w-xl mx-auto">
+            <p className="text-[15px] text-white/60 mb-10 max-w-xl mx-auto">
               Download the complete VRL-001 research paper with full methodology, extended data
               tables, and supplementary analyses.
             </p>
@@ -1308,7 +1308,7 @@ export default function VRL001Page() {
                 <input
                   type="email"
                   placeholder="Subscribe to VRL Research"
-                  className="px-4 py-3 rounded-full bg-white/[0.05] border border-white/[0.1] text-white text-[13px] placeholder:text-white/20 focus:outline-none focus:border-[#3DA9D1]/50 w-64"
+                  className="px-4 py-3 rounded-full bg-white/[0.05] border border-white/[0.1] text-white text-[13px] placeholder:text-white/70 focus:outline-none focus:border-[#3DA9D1]/50 w-64"
                 />
                 <button className="px-5 py-3 rounded-full bg-white/[0.06] text-white/60 text-[13px] hover:bg-white/[0.1] transition-colors border border-white/[0.08]">
                   Subscribe
@@ -1316,7 +1316,7 @@ export default function VRL001Page() {
               </div>
             </div>
 
-            <div className="mt-12 flex items-center justify-center gap-8 text-[11px] text-white/15 font-mono">
+            <div className="mt-12 flex items-center justify-center gap-8 text-[11px] text-white/70 font-mono">
               <span>VRL/2026/001</span>
               <span>&middot;</span>
               <span>CC BY-NC 4.0</span>

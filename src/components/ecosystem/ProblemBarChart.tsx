@@ -39,7 +39,7 @@ function AnimatedBar({ item, index, inView, maxVal, isGreen }: {
       onMouseLeave={() => setHovered(false)}
     >
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[11px] font-mono text-white/40">{item.label}</span>
+        <span className="text-[11px] font-mono text-white/60">{item.label}</span>
         <motion.span
           className="text-[13px] font-mono font-medium"
           style={{ color: item.color }}

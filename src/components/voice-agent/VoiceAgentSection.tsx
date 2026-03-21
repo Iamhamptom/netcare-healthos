@@ -39,10 +39,10 @@ export default function VoiceAgentSection() {
             <h2 className="text-4xl md:text-5xl font-light tracking-[-0.03em] text-white mb-6 leading-[1.1]">
               Talk to our AI.
               <br />
-              <span className="text-white/40">Right now.</span>
+              <span className="text-white/60">Right now.</span>
             </h2>
 
-            <p className="text-[15px] text-white/40 leading-relaxed max-w-md mb-10">
+            <p className="text-[15px] text-white/60 leading-relaxed max-w-md mb-10">
               Our voice AI knows everything about Netcare Health OS — pricing, features,
               how it works, integrations, POPIA compliance. Ask anything, in your
               language.
@@ -63,14 +63,14 @@ export default function VoiceAgentSection() {
                   </div>
                   <div>
                     <div className="text-[13px] font-medium text-white/80">{f.label}</div>
-                    <div className="text-[11px] text-white/30">{f.desc}</div>
+                    <div className="text-[11px] text-white/70">{f.desc}</div>
                   </div>
                 </motion.div>
               ))}
             </div>
 
             {/* Trust line */}
-            <div className="mt-10 flex items-center gap-4 text-[11px] text-white/20 font-mono">
+            <div className="mt-10 flex items-center gap-4 text-[11px] text-white/70 font-mono">
               <span className="flex items-center gap-1.5">
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />

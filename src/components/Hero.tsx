@@ -160,7 +160,7 @@ export default function Hero() {
             alt="Netcare"
             className="h-8 mx-auto mb-4"
           />
-          <span className="uppercase tracking-[0.3em] text-xs text-white/25 font-semibold">
+          <span className="uppercase tracking-[0.3em] text-xs text-white/70 font-semibold">
             Primary Healthcare Operations
           </span>
         </motion.div>
@@ -205,7 +205,7 @@ export default function Hero() {
         {/* Subtitle */}
         <motion.p
           variants={fadeUp}
-          className="text-lg text-white/40 font-light max-w-2xl mx-auto mt-8 leading-relaxed"
+          className="text-lg text-white/60 font-light max-w-2xl mx-auto mt-8 leading-relaxed"
         >
           Netcare Health OS is an AI-powered operations platform that unifies
           claims intelligence, financial analytics, and practice management
@@ -260,11 +260,11 @@ export default function Hero() {
         {/* Trust bar */}
         <motion.div
           variants={fadeUp}
-          className="mt-20 flex flex-wrap items-center justify-center gap-6 text-[13px] text-white/30 font-medium"
+          className="mt-20 flex flex-wrap items-center justify-center gap-6 text-[13px] text-white/70 font-medium"
         >
           <span className="flex items-center gap-1.5">
             <svg
-              className="w-4 h-4 text-white/30"
+              className="w-4 h-4 text-white/70"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -298,7 +298,7 @@ export default function Hero() {
           ].map((stat) => (
             <div key={stat.label} className="text-center">
               <div className="text-2xl md:text-3xl font-extralight text-white mb-1">{stat.value}</div>
-              <div className="text-[11px] text-white/25 font-semibold uppercase tracking-wider">{stat.label}</div>
+              <div className="text-[11px] text-white/70 font-semibold uppercase tracking-wider">{stat.label}</div>
             </div>
           ))}
         </motion.div>
@@ -310,7 +310,7 @@ export default function Hero() {
           transition={{ delay: 2.2 }}
           className="mt-8 text-center"
         >
-          <a href="/research/vrl-001" className="text-[12px] text-white/20 font-medium hover:text-white/40 transition-colors underline underline-offset-4 decoration-white/10">
+          <a href="/research/vrl-001" className="text-[12px] text-white/70 font-medium hover:text-white/60 transition-colors underline underline-offset-4 decoration-white/10">
             Visio Research Labs — VRL-001: The Routing Crisis (120+ citations) →
           </a>
         </motion.div>
@@ -328,7 +328,7 @@ export default function Hero() {
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         >
           <svg
-            className="w-5 h-5 text-white/20"
+            className="w-5 h-5 text-white/70"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"

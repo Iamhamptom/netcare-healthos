@@ -261,14 +261,14 @@ export default function NetcareAssistant() {
                 </div>
                 <div>
                   <div className="text-[13px] text-white font-semibold">VisioHealth OS Assistant</div>
-                  <div className="text-[10px] text-white/40">Ask me anything about the platform</div>
+                  <div className="text-[10px] text-white/60">Ask me anything about the platform</div>
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                <button onClick={() => setExpanded(!expanded)} className="p-1.5 text-white/40 hover:text-white rounded transition-colors">
+                <button onClick={() => setExpanded(!expanded)} className="p-1.5 text-white/60 hover:text-white rounded transition-colors">
                   {expanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                 </button>
-                <button onClick={() => setOpen(false)} className="p-1.5 text-white/40 hover:text-white rounded transition-colors">
+                <button onClick={() => setOpen(false)} className="p-1.5 text-white/60 hover:text-white rounded transition-colors">
                   <X className="w-4 h-4" />
                 </button>
               </div>

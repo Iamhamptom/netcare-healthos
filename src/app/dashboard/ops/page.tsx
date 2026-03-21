@@ -84,11 +84,11 @@ export default function OpsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-white">Operations Centre</h1>
-          <p className="text-xs text-white/40 mt-1">Research, strategy, leads, and campaign data — Dr. Lamola / Joburg ENT</p>
+          <p className="text-xs text-white/60 mt-1">Research, strategy, leads, and campaign data — Dr. Lamola / Joburg ENT</p>
         </div>
         <div className="flex items-center gap-2">
-          <MapPin className="w-3.5 h-3.5 text-white/30" />
-          <span className="text-xs text-white/30">Netcare Park Lane, Parktown</span>
+          <MapPin className="w-3.5 h-3.5 text-white/70" />
+          <span className="text-xs text-white/70">Netcare Park Lane, Parktown</span>
         </div>
       </div>
 
@@ -108,7 +108,7 @@ export default function OpsPage() {
                   <Icon className="w-4 h-4" style={{ color: stat.color }} />
                   <span className="text-2xl font-bold" style={{ color: stat.color }}>{stat.value}</span>
                 </div>
-                <p className="text-[10px] text-white/40">{stat.label}</p>
+                <p className="text-[10px] text-white/60">{stat.label}</p>
               </div>
             );
           })}
@@ -129,7 +129,7 @@ export default function OpsPage() {
             >
               <Icon className="w-4 h-4 text-[#D4AF37]" />
               <span className="text-xs text-white/60 group-hover:text-white/90">{link.label}</span>
-              <ExternalLink className="w-3 h-3 text-white/20 ml-auto" />
+              <ExternalLink className="w-3 h-3 text-white/70 ml-auto" />
             </a>
           );
         })}
@@ -171,8 +171,8 @@ export default function OpsPage() {
       <div className="space-y-3">
         {documents.length === 0 ? (
           <div className="text-center py-12">
-            <FileText className="w-8 h-8 text-white/20 mx-auto mb-2" />
-            <p className="text-sm text-white/40">No documents in this category</p>
+            <FileText className="w-8 h-8 text-white/70 mx-auto mb-2" />
+            <p className="text-sm text-white/60">No documents in this category</p>
           </div>
         ) : (
           documents.map(doc => {
@@ -205,11 +205,11 @@ export default function OpsPage() {
                         {catConfig.label}
                       </span>
                       {meta.lastUpdated && (
-                        <span className="text-[10px] text-white/30">Updated {String(meta.lastUpdated)}</span>
+                        <span className="text-[10px] text-white/70">Updated {String(meta.lastUpdated)}</span>
                       )}
                     </div>
                   </div>
-                  <ChevronRight className={`w-4 h-4 text-white/20 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
+                  <ChevronRight className={`w-4 h-4 text-white/70 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
                 </button>
 
                 {isExpanded && (
@@ -249,7 +249,7 @@ export default function OpsPage() {
                     {Object.keys(meta).length > 1 && (
                       <div className="px-5 pb-4 flex flex-wrap gap-2">
                         {Object.entries(meta).filter(([k]) => k !== "lastUpdated").map(([key, value]) => (
-                          <span key={key} className="text-[10px] px-2 py-1 rounded-full bg-white/5 text-white/40">
+                          <span key={key} className="text-[10px] px-2 py-1 rounded-full bg-white/5 text-white/60">
                             {key}: {typeof value === "object" ? JSON.stringify(value) : String(value)}
                           </span>
                         ))}

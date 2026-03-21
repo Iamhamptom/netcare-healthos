@@ -249,7 +249,7 @@ export default function JessPresenter({ sections }: JessPresenterProps) {
                       </motion.div>
                     )}
                   </div>
-                  <span className="text-[10px] text-white/30 font-mono">your AI guide</span>
+                  <span className="text-[10px] text-white/70 font-mono">your AI guide</span>
                 </div>
               </div>
 
@@ -281,7 +281,7 @@ export default function JessPresenter({ sections }: JessPresenterProps) {
                     stopAudio();
                     setDismissed(true);
                   }}
-                  className="p-1.5 rounded-lg text-white/20 hover:text-white/50 hover:bg-white/5 transition-all"
+                  className="p-1.5 rounded-lg text-white/70 hover:text-white/50 hover:bg-white/5 transition-all"
                   title="Minimize"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -326,7 +326,7 @@ export default function JessPresenter({ sections }: JessPresenterProps) {
                   >
                     {currentSection.label}
                   </span>
-                  <span className="text-[10px] font-mono text-white/15 ml-auto">
+                  <span className="text-[10px] font-mono text-white/70 ml-auto">
                     {currentIndex + 1}/{sections.length}
                   </span>
                 </motion.div>
@@ -378,7 +378,7 @@ export default function JessPresenter({ sections }: JessPresenterProps) {
                   }
                 }}
                 disabled={currentIndex <= 0}
-                className="py-2 px-3 rounded-xl bg-white/[0.04] text-white/30 text-[11px] font-mono hover:bg-white/[0.06] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                className="py-2 px-3 rounded-xl bg-white/[0.04] text-white/70 text-[11px] font-mono hover:bg-white/[0.06] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18" />

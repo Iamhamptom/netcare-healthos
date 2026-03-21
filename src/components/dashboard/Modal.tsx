@@ -21,12 +21,16 @@ export default function Modal({ open, onClose, title, children }: ModalProps) {
             exit={{ opacity: 0 }}
             onClick={onClose}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+            aria-hidden="true"
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.97 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            role="dialog"
+            aria-modal="true"
+            aria-label={title}
           >
             <div className="w-full max-w-lg glass-panel-strong rounded-xl shadow-2xl roman-border">
               <div className="flex items-center justify-between p-5 border-b border-[var(--border)]">

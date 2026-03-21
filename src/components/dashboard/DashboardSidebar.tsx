@@ -308,9 +308,9 @@ export default function DashboardSidebar() {
             className="w-full flex items-center gap-1.5 px-3 pt-4 pb-1.5 group cursor-pointer"
           >
             <ChevronRight
-              className={`w-3 h-3 text-white/20 transition-transform duration-200 ${open ? "rotate-90" : ""}`}
+              className={`w-3 h-3 text-white/70 transition-transform duration-200 ${open ? "rotate-90" : ""}`}
             />
-            <span className="text-[9px] uppercase tracking-[0.15em] text-white/20 font-semibold group-hover:text-white/40 transition-colors">
+            <span className="text-[9px] uppercase tracking-[0.15em] text-white/70 font-semibold group-hover:text-white/60 transition-colors">
               {label}
             </span>
             <span className={`ml-1 px-1.5 py-[1px] text-[8px] font-bold uppercase tracking-wider rounded-full leading-tight ${colorClasses}`}>
@@ -338,7 +338,7 @@ export default function DashboardSidebar() {
                     className={`w-full flex items-center gap-3 px-3 py-[7px] rounded-lg text-[13px] font-medium transition-all duration-200 ${
                       isActive
                         ? "bg-white/[0.08] text-white"
-                        : "text-white/40 hover:text-white/60 hover:bg-white/[0.04]"
+                        : "text-white/60 hover:text-white/60 hover:bg-white/[0.04]"
                     }`}
                   >
                     <item.icon className="w-[16px] h-[16px] shrink-0" />
@@ -380,7 +380,7 @@ export default function DashboardSidebar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="font-semibold text-[11px] whitespace-nowrap tracking-[0.15em] text-white/40"
+              className="font-semibold text-[11px] whitespace-nowrap tracking-[0.15em] text-white/60"
             >
               HEALTH OS
             </motion.span>
@@ -406,9 +406,9 @@ export default function DashboardSidebar() {
                     className="w-full flex items-center gap-1.5 px-3 pt-4 pb-1.5 group cursor-pointer"
                   >
                     <ChevronRight
-                      className={`w-3 h-3 text-white/20 transition-transform duration-200 ${sectionOpen ? "rotate-90" : ""}`}
+                      className={`w-3 h-3 text-white/70 transition-transform duration-200 ${sectionOpen ? "rotate-90" : ""}`}
                     />
-                    <span className="text-[9px] uppercase tracking-[0.15em] text-white/20 font-semibold group-hover:text-white/40 transition-colors">
+                    <span className="text-[9px] uppercase tracking-[0.15em] text-white/70 font-semibold group-hover:text-white/60 transition-colors">
                       {section.label}
                     </span>
                     {section.badge && (
@@ -448,7 +448,7 @@ export default function DashboardSidebar() {
                                 className={`w-full flex items-center gap-3 px-3 py-[7px] rounded-lg text-[13px] font-medium transition-all duration-200 ${
                                   isActive
                                     ? "bg-white/[0.08] text-white"
-                                    : "text-white/40 hover:text-white/60 hover:bg-white/[0.04]"
+                                    : "text-white/60 hover:text-white/60 hover:bg-white/[0.04]"
                                 }`}
                               >
                                 <item.icon className="w-[16px] h-[16px] shrink-0" />
@@ -463,7 +463,7 @@ export default function DashboardSidebar() {
                                 className={`w-full flex items-center gap-3 px-3 py-[7px] rounded-lg text-[13px] font-medium transition-all duration-200 ${
                                   isActive
                                     ? "bg-white/[0.08] text-white"
-                                    : "text-white/40 hover:text-white/60 hover:bg-white/[0.04]"
+                                    : "text-white/60 hover:text-white/60 hover:bg-white/[0.04]"
                                 }`}
                               >
                                 <item.icon className="w-[16px] h-[16px] shrink-0" />
@@ -502,7 +502,7 @@ export default function DashboardSidebar() {
                                           className={`flex items-center gap-2.5 px-2.5 py-[6px] rounded-md text-[12px] font-medium transition-all ${
                                             childActive
                                               ? "bg-white/[0.08] text-white"
-                                              : "text-white/30 hover:text-white/50 hover:bg-white/[0.03]"
+                                              : "text-white/70 hover:text-white/50 hover:bg-white/[0.03]"
                                           }`}
                                         >
                                           <ChildIcon className="w-[14px] h-[14px] shrink-0" />
@@ -535,7 +535,7 @@ export default function DashboardSidebar() {
       {/* Emergency line */}
       {!collapsed && (
         <div className="px-4 py-2 border-t border-white/[0.04]">
-          <div className="flex items-center gap-2 text-[11px] text-white/20">
+          <div className="flex items-center gap-2 text-[11px] text-white/70">
             <Phone className="w-3.5 h-3.5" />
             <span>Emergency line active</span>
           </div>
@@ -544,7 +544,7 @@ export default function DashboardSidebar() {
 
       <button
         onClick={handleSignOut}
-        className="flex items-center gap-3 px-5 py-3 text-[13px] text-white/30 hover:text-red-400 transition-colors border-t border-white/[0.04]"
+        className="flex items-center gap-3 px-5 py-3 text-[13px] text-white/70 hover:text-red-400 transition-colors border-t border-white/[0.04]"
       >
         <LogOut className="w-4 h-4 shrink-0" />
         <AnimatePresence>
@@ -558,7 +558,7 @@ export default function DashboardSidebar() {
 
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="p-3 text-white/20 hover:text-white/40 transition-colors border-t border-white/[0.04]"
+        className="p-3 text-white/70 hover:text-white/60 transition-colors border-t border-white/[0.04]"
       >
         <ChevronDown className={`w-4 h-4 mx-auto transition-transform ${collapsed ? "-rotate-90" : "rotate-90"}`} />
       </button>

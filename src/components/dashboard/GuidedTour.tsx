@@ -204,13 +204,13 @@ export default function GuidedTour({ onComplete }: { onComplete: () => void }) {
                 {isLast ? "Enter Platform" : "Next"}
                 <ChevronRight className="w-4 h-4" />
               </button>
-              <button onClick={skip} className="text-[12px] text-white/20 hover:text-white/40 transition-colors">
+              <button onClick={skip} className="text-[12px] text-white/70 hover:text-white/60 transition-colors">
                 Skip tour
               </button>
             </div>
 
             {/* Slide label */}
-            <div className="mt-8 text-[11px] text-white/15">
+            <div className="mt-8 text-[11px] text-white/70">
               {currentSlide + 1} of {TOUR_SLIDES.length} \u2022 {slide.label}
             </div>
           </motion.div>
@@ -249,7 +249,7 @@ export default function GuidedTour({ onComplete }: { onComplete: () => void }) {
           </div>
 
           <h3 className="text-white font-semibold text-[16px]">Jess</h3>
-          <p className="text-white/30 text-[12px] mt-1">AI Operations Guide</p>
+          <p className="text-white/70 text-[12px] mt-1">AI Operations Guide</p>
           <p className="text-[#3DA9D1] text-[11px] mt-1 font-medium">
             {isCallActive ? "Speaking..." : "Call ended"}
           </p>
@@ -276,14 +276,14 @@ export default function GuidedTour({ onComplete }: { onComplete: () => void }) {
 
           {/* Narration text */}
           <div className="mt-6 px-6 max-h-[200px] overflow-y-auto">
-            <p className="text-[12px] text-white/25 leading-relaxed italic">
+            <p className="text-[12px] text-white/70 leading-relaxed italic">
               &ldquo;{slide.narration.slice(0, 150)}...&rdquo;
             </p>
           </div>
 
           {/* Call controls */}
           <div className="flex items-center justify-center gap-4 mt-8">
-            <button className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white/60 transition-colors">
+            <button className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-white/60 transition-colors">
               <Volume2 className="w-5 h-5" />
             </button>
             <button
@@ -294,7 +294,7 @@ export default function GuidedTour({ onComplete }: { onComplete: () => void }) {
             </button>
           </div>
 
-          <p className="text-[10px] text-white/10 mt-6">Powered by ElevenLabs \u2022 Claire (SA)</p>
+          <p className="text-[10px] text-white/70 mt-6">Powered by ElevenLabs \u2022 Claire (SA)</p>
         </motion.div>
       </div>
     </motion.div>

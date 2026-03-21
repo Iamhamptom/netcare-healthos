@@ -105,7 +105,7 @@ export default function NextLevel() {
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-light tracking-[-0.03em] text-white mb-6">
             The ecosystem is expanding
           </h2>
-          <p className="text-base md:text-lg text-white/30 font-light max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base md:text-lg text-white/70 font-light max-w-2xl mx-auto leading-relaxed">
             Four new products are joining the Netcare Health OS platform — each one
             designed to capture a different layer of the healthcare value chain.
           </p>
@@ -126,7 +126,7 @@ export default function NextLevel() {
               className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm p-8 md:p-10 hover:border-white/[0.12] hover:bg-white/[0.04] transition-all duration-500"
             >
               {/* Status badge */}
-              <span className="absolute top-6 right-6 text-[10px] font-mono tracking-[0.2em] uppercase text-white/20 px-3 py-1 rounded-full border border-white/[0.06]">
+              <span className="absolute top-6 right-6 text-[10px] font-mono tracking-[0.2em] uppercase text-white/70 px-3 py-1 rounded-full border border-white/[0.06]">
                 {product.status}
               </span>
 
@@ -140,7 +140,7 @@ export default function NextLevel() {
                 </div>
                 <div>
                   <h3 className="text-xl font-medium text-white mb-1">{product.name}</h3>
-                  <p className="text-[13px] font-mono text-white/30">{product.tagline}</p>
+                  <p className="text-[13px] font-mono text-white/70">{product.tagline}</p>
                 </div>
               </div>
 
@@ -154,7 +154,7 @@ export default function NextLevel() {
                 {product.metrics.map((m) => (
                   <span
                     key={m}
-                    className="text-[11px] font-mono text-white/25 px-3 py-1 rounded-full border border-white/[0.06]"
+                    className="text-[11px] font-mono text-white/70 px-3 py-1 rounded-full border border-white/[0.06]"
                   >
                     {m}
                   </span>
@@ -171,7 +171,7 @@ export default function NextLevel() {
                     Investor Angle
                   </span>
                 </div>
-                <p className="text-[13px] text-white/35 leading-relaxed">
+                <p className="text-[13px] text-white/70 leading-relaxed">
                   {product.forInvestors}
                 </p>
               </div>
@@ -187,7 +187,7 @@ export default function NextLevel() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="text-center mt-20"
         >
-          <p className="text-sm text-white/20 font-mono mb-6">
+          <p className="text-sm text-white/70 font-mono mb-6">
             These products will launch throughout 2026–2027 as part of the Netcare Health OS ecosystem.
           </p>
           <Link

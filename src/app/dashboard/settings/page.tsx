@@ -835,7 +835,7 @@ export default function SettingsPage() {
 
       {/* Cancel Subscription Confirmation Modal */}
       {confirmCancel && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" role="dialog" aria-modal="true" aria-label="Confirm cancellation">
           <div className="bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-xl">
             <h3 className="text-lg font-semibold text-gray-900">Are you sure?</h3>
             <p className="text-[13px] text-gray-500 mt-2">Your access will continue until the end of the current billing period. You can resubscribe at any time.</p>

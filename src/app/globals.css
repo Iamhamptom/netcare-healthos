@@ -39,9 +39,9 @@
   /* Text */
   --text-primary: #FFFFFF;
   --text-muted: rgba(255, 255, 255, 0.6);
-  --text-dim: rgba(255, 255, 255, 0.3);
-  --text-secondary: rgba(255, 255, 255, 0.6);
-  --text-tertiary: rgba(255, 255, 255, 0.4);
+  --text-dim: rgba(255, 255, 255, 0.6);
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-tertiary: rgba(255, 255, 255, 0.6);
 
   /* Borders */
   --border: rgba(255, 255, 255, 0.06);
@@ -253,7 +253,7 @@ body {
 }
 
 .text-dim {
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* ─── Teal glow text ─── */
@@ -606,4 +606,66 @@ select option {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(20px) saturate(1.5);
   -webkit-backdrop-filter: blur(20px) saturate(1.5);
+}
+
+/* ─── Accessibility: Screen Reader Only ─── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ─── Accessibility: Skip Navigation ─── */
+.skip-nav {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.skip-nav:focus {
+  position: absolute;
+  width: auto;
+  height: auto;
+  padding: 1rem;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  z-index: 100;
+  background: #ffffff;
+  color: #1D3443;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  font-weight: 600;
+  font-size: 14px;
+  top: 0.5rem;
+  left: 0.5rem;
+}
+
+/* ─── Accessibility: Visible focus indicators ─── */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid #3DA9D1;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid #3DA9D1;
+  outline-offset: 0px;
 }

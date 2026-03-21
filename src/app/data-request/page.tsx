@@ -53,13 +53,13 @@ export default function DataRequestPage() {
         <div className="max-w-md text-center">
           <div className="text-[#3DA9D1] text-4xl mb-4">&#x2713;</div>
           <h1 className="text-xl font-light mb-4">Request Submitted</h1>
-          <p className="text-sm text-white/40 font-light leading-relaxed mb-6">
+          <p className="text-sm text-white/60 font-light leading-relaxed mb-6">
             Your data subject request has been received. We will respond within 30 days as
             required by POPIA. You will receive a confirmation email at {form.email}.
           </p>
           <Link
             href="/"
-            className="text-xs text-white/30 font-mono hover:text-white/60 transition-colors"
+            className="text-xs text-white/70 font-mono hover:text-white/60 transition-colors"
           >
             &larr; Back to home
           </Link>
@@ -73,7 +73,7 @@ export default function DataRequestPage() {
       <div className="mx-auto max-w-lg px-6 py-16">
         <Link
           href="/"
-          className="text-xs text-white/30 font-mono hover:text-white/60 transition-colors mb-8 inline-block"
+          className="text-xs text-white/70 font-mono hover:text-white/60 transition-colors mb-8 inline-block"
         >
           &larr; Back to home
         </Link>
@@ -81,10 +81,10 @@ export default function DataRequestPage() {
         <h1 className="text-2xl font-light text-white tracking-tight mb-2">
           Data Subject Request
         </h1>
-        <p className="text-xs text-white/30 font-mono mb-2">
+        <p className="text-xs text-white/70 font-mono mb-2">
           POPIA s23-25 — Your data rights
         </p>
-        <p className="text-sm text-white/35 leading-relaxed font-light mb-10">
+        <p className="text-sm text-white/70 leading-relaxed font-light mb-10">
           Use this form to exercise your rights under the Protection of Personal Information
           Act. We will verify your identity and respond within 30 days.
         </p>
@@ -97,7 +97,7 @@ export default function DataRequestPage() {
               required
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#3DA9D1]/30 transition-colors"
+              className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-4 py-3 text-sm text-white placeholder-white/60 focus:outline-none focus:border-[#3DA9D1]/30 transition-colors"
               placeholder="Your full name"
             />
           </div>
@@ -109,7 +109,7 @@ export default function DataRequestPage() {
               required
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#3DA9D1]/30 transition-colors"
+              className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-4 py-3 text-sm text-white placeholder-white/60 focus:outline-none focus:border-[#3DA9D1]/30 transition-colors"
               placeholder="you@example.com"
             />
           </div>
@@ -122,7 +122,7 @@ export default function DataRequestPage() {
               type="text"
               value={form.idNumber}
               onChange={(e) => setForm({ ...form, idNumber: e.target.value })}
-              className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#3DA9D1]/30 transition-colors"
+              className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-4 py-3 text-sm text-white placeholder-white/60 focus:outline-none focus:border-[#3DA9D1]/30 transition-colors"
               placeholder="Optional — last 4 digits only"
             />
           </div>
@@ -149,7 +149,7 @@ export default function DataRequestPage() {
               value={form.details}
               onChange={(e) => setForm({ ...form, details: e.target.value })}
               rows={4}
-              className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#3DA9D1]/30 transition-colors resize-none"
+              className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-4 py-3 text-sm text-white placeholder-white/60 focus:outline-none focus:border-[#3DA9D1]/30 transition-colors resize-none"
               placeholder="Provide any additional details about your request..."
             />
           </div>
@@ -166,7 +166,7 @@ export default function DataRequestPage() {
             {loading ? "Submitting..." : "Submit Request"}
           </button>
 
-          <p className="text-[11px] text-white/20 font-mono text-center">
+          <p className="text-[11px] text-white/70 font-mono text-center">
             We will verify your identity before processing. Response within 30 days (POPIA).
           </p>
         </form>

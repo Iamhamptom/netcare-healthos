@@ -196,9 +196,9 @@ export default function DashboardPage() {
 
           <div className="relative p-6">
             <div className="flex items-center gap-2 mb-5">
-              <Shield className="w-3.5 h-3.5 text-white/25" />
-              <span className="text-[10px] text-white/25 uppercase tracking-[0.2em] font-semibold">Network Overview</span>
-              <span className="ml-auto text-[10px] text-white/15 font-mono">FY2026</span>
+              <Shield className="w-3.5 h-3.5 text-white/70" />
+              <span className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-semibold">Network Overview</span>
+              <span className="ml-auto text-[10px] text-white/70 font-mono">FY2026</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
               {[
@@ -215,8 +215,8 @@ export default function DashboardPage() {
                   className="relative"
                 >
                   <div className="text-[32px] font-semibold text-white font-metric tracking-tight leading-none">{item.value}</div>
-                  <div className="text-[11px] text-white/30 mt-2 font-medium">{item.label}</div>
-                  <div className="text-[10px] text-white/15 mt-0.5">{item.sub}</div>
+                  <div className="text-[11px] text-white/70 mt-2 font-medium">{item.label}</div>
+                  <div className="text-[10px] text-white/70 mt-0.5">{item.sub}</div>
                 </motion.div>
               ))}
             </div>

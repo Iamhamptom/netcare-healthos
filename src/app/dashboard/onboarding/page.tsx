@@ -237,7 +237,7 @@ export default function OnboardingPage() {
           For full pricing, enterprise licensing, and custom module development —{" "}
           <span className="text-[#3DA9D1] font-semibold">contact VisioHealth OS</span>
         </p>
-        <p className="text-[11px] text-white/40 mt-1">
+        <p className="text-[11px] text-white/60 mt-1">
           Powered by Visio Research Labs &middot; 120+ peer-reviewed citations &middot; VRL-001 Healthcare Routing Research
         </p>
       </div>

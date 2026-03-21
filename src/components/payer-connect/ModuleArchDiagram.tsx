@@ -196,7 +196,7 @@ export default function ModuleArchDiagram() {
         {layers.map((layer, i) => (
           <motion.div
             key={layer.name}
-            className="flex items-center gap-2 text-[10px] font-mono text-white/30"
+            className="flex items-center gap-2 text-[10px] font-mono text-white/70"
             initial={{ opacity: 0 }}
             animate={inView ? { opacity: 1 } : {}}
             transition={{ delay: 1.5 + i * 0.1 }}

@@ -75,27 +75,31 @@ function ResetForm() {
       </div>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-[12px] font-semibold text-gray-600 mb-1">New password</label>
+          <label htmlFor="reset-password" className="block text-[12px] font-semibold text-gray-600 mb-1">New password</label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)}
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" aria-hidden="true" />
+            <input id="reset-password" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)}
               placeholder="Minimum 8 characters"
+              aria-invalid={!!error}
+              aria-describedby={error ? "reset-error" : undefined}
               className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-[14px] focus:outline-none focus:ring-2 focus:ring-[#3DA9D1]/30 focus:border-[#3DA9D1]" />
           </div>
         </div>
         <div>
-          <label className="block text-[12px] font-semibold text-gray-600 mb-1">Confirm password</label>
+          <label htmlFor="reset-confirm" className="block text-[12px] font-semibold text-gray-600 mb-1">Confirm password</label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input type="password" required value={confirm} onChange={(e) => setConfirm(e.target.value)}
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" aria-hidden="true" />
+            <input id="reset-confirm" type="password" required value={confirm} onChange={(e) => setConfirm(e.target.value)}
               placeholder="Repeat your password"
+              aria-invalid={!!error}
+              aria-describedby={error ? "reset-error" : undefined}
               className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-[14px] focus:outline-none focus:ring-2 focus:ring-[#3DA9D1]/30 focus:border-[#3DA9D1]" />
           </div>
         </div>
-        {error && <p className="text-[12px] text-red-500">{error}</p>}
+        {error && <p role="alert" id="reset-error" className="text-[12px] text-red-500">{error}</p>}
         <button type="submit" disabled={loading}
           className="w-full py-2.5 rounded-xl bg-[#1D3443] text-white text-[14px] font-semibold hover:bg-[#2a4a5e] transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" role="status" aria-label="Updating" /> : null}
           {loading ? "Updating..." : "Update password"}
         </button>
       </form>

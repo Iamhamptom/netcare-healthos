@@ -177,7 +177,7 @@ export default function CompetitiveRadar() {
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border font-mono text-[11px] transition-all duration-300 ${
               activeCompetitor === i
                 ? "border-white/20 bg-white/[0.06] text-white/80"
-                : "border-white/[0.04] bg-transparent text-white/30 hover:border-white/10"
+                : "border-white/[0.04] bg-transparent text-white/70 hover:border-white/10"
             }`}
             initial={{ opacity: 0, y: 10 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}

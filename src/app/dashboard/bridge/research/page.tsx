@@ -104,7 +104,7 @@ export default function ResearchPaperPage() {
 
         {/* Architecture Diagram */}
         <div className="my-6 p-6 rounded-xl bg-[#1D3443] text-white overflow-x-auto">
-          <div className="text-[10px] text-white/40 uppercase tracking-wider mb-4 font-semibold">Data Flow Architecture</div>
+          <div className="text-[10px] text-white/60 uppercase tracking-wider mb-4 font-semibold">Data Flow Architecture</div>
           <pre className="text-[11px] leading-relaxed font-mono text-white/70">
 {`CareOn EMR (26 hospitals, 13K iPads)
     |

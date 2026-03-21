@@ -113,7 +113,7 @@ export default function SymptomCheckerPage({ params }: { params: Promise<{ slug:
             </div>
             <div>
               <h1 className="text-sm font-semibold">{practiceName || "Netcare Health OS"}</h1>
-              <p className="text-[10px] text-white/40">AI Symptom Checker</p>
+              <p className="text-[10px] text-white/60">AI Symptom Checker</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20">
@@ -137,7 +137,7 @@ export default function SymptomCheckerPage({ params }: { params: Promise<{ slug:
 
               {/* Common Symptoms Grid */}
               <div className="mb-6">
-                <h3 className="text-xs text-white/40 uppercase tracking-wider mb-3">Common Symptoms</h3>
+                <h3 className="text-xs text-white/60 uppercase tracking-wider mb-3">Common Symptoms</h3>
                 <div className="grid grid-cols-2 gap-2">
                   {COMMON_SYMPTOMS.map(symptom => (
                     <button
@@ -159,12 +159,12 @@ export default function SymptomCheckerPage({ params }: { params: Promise<{ slug:
 
               {/* Free text */}
               <div className="mb-6">
-                <h3 className="text-xs text-white/40 uppercase tracking-wider mb-3">Describe in your own words</h3>
+                <h3 className="text-xs text-white/60 uppercase tracking-wider mb-3">Describe in your own words</h3>
                 <textarea
                   value={symptoms}
                   onChange={e => setSymptoms(e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-sm text-white placeholder-white/20 focus:outline-none focus:border-white/30 resize-none"
+                  className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-sm text-white placeholder-white/60 focus:outline-none focus:border-white/30 resize-none"
                   placeholder="e.g. I've had a blocked nose and headaches for 3 months. Antibiotics helped temporarily but symptoms came back. It's worse in the mornings and when I bend forward..."
                 />
               </div>
@@ -192,7 +192,7 @@ export default function SymptomCheckerPage({ params }: { params: Promise<{ slug:
                 )}
               </button>
 
-              <p className="text-[10px] text-white/20 text-center mt-4">
+              <p className="text-[10px] text-white/70 text-center mt-4">
                 This tool provides guidance only — it does not replace professional medical advice.
                 For emergencies, call 10177 or go to your nearest ER.
               </p>
@@ -294,7 +294,7 @@ export default function SymptomCheckerPage({ params }: { params: Promise<{ slug:
       </main>
 
       <footer className="border-t border-white/5 py-6 text-center">
-        <p className="text-[10px] text-white/20">Powered by Netcare Health OS Ops</p>
+        <p className="text-[10px] text-white/70">Powered by Netcare Health OS Ops</p>
       </footer>
     </div>
   );

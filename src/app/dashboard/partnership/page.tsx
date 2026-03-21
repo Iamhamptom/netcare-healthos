@@ -134,13 +134,13 @@ export default function PartnershipPage() {
           </motion.h1>
 
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.8 }}
-            className="text-[16px] text-white/40 max-w-2xl mx-auto leading-relaxed">
+            className="text-[16px] text-white/60 max-w-2xl mx-auto leading-relaxed">
             An AI research lab — in the tradition of Anthropic, OpenAI, and DeepMind — focused on making
             advanced machine learning accessible for African healthcare. We designed a solution for Netcare.
           </motion.p>
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-            className="flex items-center justify-center gap-6 mt-10 text-[12px] text-white/20 font-medium">
+            className="flex items-center justify-center gap-6 mt-10 text-[12px] text-white/70 font-medium">
             {["AI Research", "Healthcare Focus", "African Native", "120+ Citations"].map((t, i) => (
               <span key={t} className="flex items-center gap-2">
                 {i > 0 && <span className="w-1 h-1 rounded-full bg-white/10" />}
@@ -164,7 +164,7 @@ export default function PartnershipPage() {
               className="p-5 rounded-xl bg-white/[0.03] border border-white/[0.06] backdrop-blur-sm hover:bg-white/[0.06] hover:border-[#3DA9D1]/20 transition-all duration-500">
               <item.icon className="w-5 h-5 text-[#3DA9D1] mb-3" />
               <h3 className="text-[13px] font-semibold text-white mb-1">{item.title}</h3>
-              <p className="text-[11px] text-white/30 leading-relaxed">{item.desc}</p>
+              <p className="text-[11px] text-white/70 leading-relaxed">{item.desc}</p>
             </motion.div>
           ))}
         </div>
@@ -209,7 +209,7 @@ export default function PartnershipPage() {
               viewport={{ once: true }} transition={{ delay: i * 0.05 }}
               className="p-3 rounded-lg bg-white/[0.03] border border-white/[0.06] text-center backdrop-blur-sm">
               <div className="text-[11px] font-semibold text-white/80">{sys.name}</div>
-              <div className="text-[9px] text-white/25 mt-0.5">{sys.sub}</div>
+              <div className="text-[9px] text-white/70 mt-0.5">{sys.sub}</div>
               <div className="text-[8px] text-[#3DA9D1] mt-1 font-medium">{sys.type}</div>
             </motion.div>
           ))}
@@ -235,12 +235,12 @@ export default function PartnershipPage() {
               viewport={{ once: true }} transition={{ delay: 0.3 + i * 0.06 }}
               className="p-3 rounded-lg bg-gradient-to-br from-[#3DA9D1]/10 to-[#E3964C]/5 border border-[#3DA9D1]/15 text-center">
               <div className="text-[10px] font-semibold text-white">{tool.name}</div>
-              <div className="text-[8px] text-white/30 mt-0.5">{tool.desc}</div>
+              <div className="text-[8px] text-white/70 mt-0.5">{tool.desc}</div>
             </motion.div>
           ))}
         </div>
 
-        <p className="text-[12px] text-white/20 text-center mt-6">
+        <p className="text-[12px] text-white/70 text-center mt-6">
           Nothing gets replaced. Everything gets connected. Agentic AI tools built on top to automate the gaps.
         </p>
       </div>
@@ -267,7 +267,7 @@ export default function PartnershipPage() {
                 {p.items.map(item => (
                   <div key={item} className="flex items-start gap-2">
                     <CheckCircle2 className="w-3 h-3 text-[#3DA9D1]/50 mt-0.5 shrink-0" />
-                    <span className="text-[11px] text-white/40">{item}</span>
+                    <span className="text-[11px] text-white/60">{item}</span>
                   </div>
                 ))}
               </div>
@@ -318,8 +318,8 @@ export default function PartnershipPage() {
               viewport={{ once: true }} transition={{ delay: i * 0.05 }}
               className="text-center p-4">
               <div className="text-3xl font-extralight text-white font-metric">{s.value}</div>
-              <div className="text-[11px] text-white/40 mt-1 font-medium">{s.label}</div>
-              <div className="text-[9px] text-white/20 mt-1">{s.sub}</div>
+              <div className="text-[11px] text-white/60 mt-1 font-medium">{s.label}</div>
+              <div className="text-[9px] text-white/70 mt-1">{s.sub}</div>
             </motion.div>
           ))}
         </div>
@@ -332,16 +332,16 @@ export default function PartnershipPage() {
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#3DA9D1]/20 to-[#E3964C]/10 border border-white/[0.06] flex items-center justify-center mx-auto mb-6">
             <span className="text-white font-semibold text-lg">DH</span>
           </div>
-          <p className="text-[16px] text-white/40 leading-relaxed italic max-w-2xl mx-auto mb-6">
+          <p className="text-[16px] text-white/60 leading-relaxed italic max-w-2xl mx-auto mb-6">
             &ldquo;We are not here to sell you software. We are here to partner with you in making AI
             work for healthcare. We chose Netcare because you are South Africa&rsquo;s largest private
             healthcare provider. The combination of your scale and our AI capability can genuinely
             transform how 3.5 million people receive care. That is worth building together.&rdquo;
           </p>
           <p className="text-[14px] text-white font-semibold">David M. Hampton</p>
-          <p className="text-[11px] text-white/25 mt-1">Managing Director, VisioCorp &middot; Founder, Visio Research Labs</p>
+          <p className="text-[11px] text-white/70 mt-1">Managing Director, VisioCorp &middot; Founder, Visio Research Labs</p>
 
-          <div className="flex items-center justify-center gap-6 mt-8 text-[11px] text-white/20">
+          <div className="flex items-center justify-center gap-6 mt-8 text-[11px] text-white/70">
             <span className="flex items-center gap-1.5"><Mail className="w-3 h-3" /> davidhampton@visiocorp.co</span>
             <span className="flex items-center gap-1.5"><Globe className="w-3 h-3" /> visiocorp.co</span>
             <span className="flex items-center gap-1.5"><MapPin className="w-3 h-3" /> Johannesburg, SA</span>
@@ -351,7 +351,7 @@ export default function PartnershipPage() {
 
       {/* Security bar */}
       <div className="px-8 max-w-5xl mx-auto pb-16">
-        <div className="flex items-center justify-center gap-8 text-[10px] text-white/15">
+        <div className="flex items-center justify-center gap-8 text-[10px] text-white/70">
           {["POPIA Compliant", "SA Hosting Available", "NDA Ready", "DPA Prepared", "FHIR Compatible"].map((t, i) => (
             <span key={t} className="flex items-center gap-1.5">
               {i > 0 && <span className="w-0.5 h-0.5 rounded-full bg-white/10" />}

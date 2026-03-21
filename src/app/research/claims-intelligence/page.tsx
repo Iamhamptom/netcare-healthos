@@ -28,11 +28,11 @@ export default function ClaimsIntelligenceResearchPage() {
       <nav className="bg-[#1D3443] text-white py-3 px-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <img src="/images/netcare-logo.png" alt="Netcare" className="h-4 brightness-[10] saturate-0 opacity-70" />
-          <span className="text-[10px] tracking-[0.15em] text-white/30 font-semibold">HEALTH OS</span>
-          <span className="text-white/20">|</span>
+          <span className="text-[10px] tracking-[0.15em] text-white/70 font-semibold">HEALTH OS</span>
+          <span className="text-white/70">|</span>
           <span className="text-[11px] text-white/50">Research</span>
         </div>
-        <Link href="/dashboard" className="text-[11px] text-white/40 hover:text-white/70 transition-colors">
+        <Link href="/dashboard" className="text-[11px] text-white/60 hover:text-white/70 transition-colors">
           Dashboard
         </Link>
       </nav>
@@ -67,7 +67,7 @@ export default function ClaimsIntelligenceResearchPage() {
             ].map((stat, i) => (
               <div key={i} className="bg-white/[0.06] backdrop-blur-sm rounded-xl p-4 border border-white/[0.08]">
                 <div className="text-2xl font-bold" style={{ color: stat.color }}>{stat.value}</div>
-                <div className="text-[11px] text-white/40 mt-1">{stat.label}</div>
+                <div className="text-[11px] text-white/60 mt-1">{stat.label}</div>
               </div>
             ))}
           </motion.div>
@@ -288,7 +288,7 @@ export default function ClaimsIntelligenceResearchPage() {
               ].map((s, i) => (
                 <div key={i} className="text-center">
                   <div className="text-[20px] font-bold text-white">{s.value}</div>
-                  <div className="text-[10px] text-white/30">{s.label}</div>
+                  <div className="text-[10px] text-white/70">{s.label}</div>
                 </div>
               ))}
             </div>
@@ -361,13 +361,13 @@ export default function ClaimsIntelligenceResearchPage() {
           </div>
 
           <motion.div {...fadeIn} className="text-center">
-            <div className="inline-flex items-center gap-6 text-[11px] text-white/30">
+            <div className="inline-flex items-center gap-6 text-[11px] text-white/70">
               <span>Visio Research Labs</span>
-              <span className="text-white/10">|</span>
+              <span className="text-white/70">|</span>
               <span>VisioCorp</span>
-              <span className="text-white/10">|</span>
+              <span className="text-white/70">|</span>
               <span>Hampton Group Associates</span>
-              <span className="text-white/10">|</span>
+              <span className="text-white/70">|</span>
               <span>Netcare Primary Healthcare</span>
             </div>
           </motion.div>
@@ -396,10 +396,10 @@ export default function ClaimsIntelligenceResearchPage() {
 
       {/* ═══ FOOTER ═══ */}
       <footer className="py-6 px-6 bg-[#1D3443] text-center">
-        <div className="text-[10px] text-white/20">
+        <div className="text-[10px] text-white/70">
           Claims Intelligence Engine v1.0.0 | Built by Visio Research Labs | Designed for Netcare Primary Healthcare
         </div>
-        <div className="text-[9px] text-white/10 mt-1">
+        <div className="text-[9px] text-white/70 mt-1">
           Copyright 2026 VisioCorp (Pty) Ltd. All rights reserved.
         </div>
       </footer>

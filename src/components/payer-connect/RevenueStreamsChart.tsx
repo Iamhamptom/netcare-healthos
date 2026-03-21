@@ -63,7 +63,7 @@ export default function RevenueStreamsChart({ streams }: { streams: Stream[] }) 
                     animate={inView ? { opacity: 1 } : {}}
                     transition={{ delay: 1 + i * 0.08 }}
                   >
-                    <span className="text-[8px] font-mono text-white/40 truncate px-1">
+                    <span className="text-[8px] font-mono text-white/60 truncate px-1">
                       {stream.stream}
                     </span>
                   </motion.div>
@@ -102,10 +102,10 @@ export default function RevenueStreamsChart({ streams }: { streams: Stream[] }) 
                     transition: "box-shadow 0.3s",
                   }}
                 />
-                <span className="text-[10px] font-mono text-white/20">{pct}%</span>
+                <span className="text-[10px] font-mono text-white/70">{pct}%</span>
               </div>
               <h4 className="text-[12px] font-mono text-white/60 mb-1 leading-tight">{stream.stream}</h4>
-              <p className="text-[10px] text-white/25 font-light leading-relaxed">{stream.description}</p>
+              <p className="text-[10px] text-white/70 font-light leading-relaxed">{stream.description}</p>
 
               {/* Mini bar */}
               <div className="mt-2 h-1 rounded-full bg-white/[0.04] overflow-hidden">

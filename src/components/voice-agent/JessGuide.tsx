@@ -67,14 +67,14 @@ export default function JessGuide({ context, color = "#3b82f6" }: JessGuideProps
               <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: color }} />
             )}
           </div>
-          <span className="text-[11px] text-white/25 font-mono">{context}</span>
+          <span className="text-[11px] text-white/70 font-mono">{context}</span>
         </div>
 
         {/* Toggle icon */}
         <motion.div
           animate={{ rotate: expanded ? 180 : 0 }}
           transition={{ duration: 0.3 }}
-          className="text-white/20"
+          className="text-white/70"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />

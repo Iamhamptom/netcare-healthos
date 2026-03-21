@@ -190,7 +190,7 @@ export default function ENTLandingPage({ params }: { params: Promise<{ slug: str
             {STATS.map(stat => (
               <div key={stat.label} className="text-center">
                 <div className="text-2xl font-bold" style={{ color: pc }}>{stat.value}</div>
-                <div className="text-xs text-white/40 mt-1">{stat.label}</div>
+                <div className="text-xs text-white/60 mt-1">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -201,7 +201,7 @@ export default function ENTLandingPage({ params }: { params: Promise<{ slug: str
       <section className="py-16">
         <div className="max-w-5xl mx-auto px-4">
           <h2 className="text-2xl font-bold mb-2 text-center">Symptoms We Treat</h2>
-          <p className="text-sm text-white/40 text-center mb-10">If any of these sound familiar, we can help</p>
+          <p className="text-sm text-white/60 text-center mb-10">If any of these sound familiar, we can help</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {SYMPTOMS_WE_TREAT.map(symptom => (
               <div key={symptom} className="flex items-center gap-2.5 p-3 rounded-xl border border-white/10 bg-white/[0.02]">
@@ -226,7 +226,7 @@ export default function ENTLandingPage({ params }: { params: Promise<{ slug: str
       <section className="py-16 bg-white/[0.01] border-y border-white/10">
         <div className="max-w-5xl mx-auto px-4">
           <h2 className="text-2xl font-bold mb-2 text-center">Our Services</h2>
-          <p className="text-sm text-white/40 text-center mb-10">Advanced ENT procedures with proven results</p>
+          <p className="text-sm text-white/60 text-center mb-10">Advanced ENT procedures with proven results</p>
           <div className="grid sm:grid-cols-2 gap-4">
             {SINUS_SERVICES.map(service => {
               const Icon = service.icon;
@@ -239,7 +239,7 @@ export default function ENTLandingPage({ params }: { params: Promise<{ slug: str
                     <div>
                       <h3 className="text-sm font-semibold mb-1">{service.name}</h3>
                       <p className="text-xs text-white/50 mb-2">{service.desc}</p>
-                      <div className="flex items-center gap-3 text-[10px] text-white/30">
+                      <div className="flex items-center gap-3 text-[10px] text-white/70">
                         <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {service.duration}</span>
                       </div>
                     </div>
@@ -292,7 +292,7 @@ export default function ENTLandingPage({ params }: { params: Promise<{ slug: str
       <section className="py-16 bg-white/[0.01] border-y border-white/10">
         <div className="max-w-3xl mx-auto px-4">
           <h2 className="text-2xl font-bold mb-2 text-center">Common Questions</h2>
-          <p className="text-sm text-white/40 text-center mb-10">Everything you need to know before your visit</p>
+          <p className="text-sm text-white/60 text-center mb-10">Everything you need to know before your visit</p>
           <div className="space-y-2">
             {FAQ.map((faq, i) => (
               <div key={i} className="rounded-xl border border-white/10 overflow-hidden">
@@ -301,7 +301,7 @@ export default function ENTLandingPage({ params }: { params: Promise<{ slug: str
                   className="w-full p-4 text-left flex items-center justify-between hover:bg-white/[0.02] transition-colors"
                 >
                   <span className="text-sm font-medium pr-4">{faq.q}</span>
-                  <ChevronRight className={`w-4 h-4 text-white/30 shrink-0 transition-transform ${openFaq === i ? "rotate-90" : ""}`} />
+                  <ChevronRight className={`w-4 h-4 text-white/70 shrink-0 transition-transform ${openFaq === i ? "rotate-90" : ""}`} />
                 </button>
                 {openFaq === i && (
                   <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} className="overflow-hidden">
@@ -351,7 +351,7 @@ export default function ENTLandingPage({ params }: { params: Promise<{ slug: str
             <Calendar className="w-5 h-5" /> Book Now
           </a>
           {practice?.phone && (
-            <p className="text-xs text-white/30 mt-4">
+            <p className="text-xs text-white/70 mt-4">
               Or call us at <a href={`tel:${practice.phone}`} className="underline hover:text-white/50">{practice.phone}</a>
             </p>
           )}
@@ -361,11 +361,11 @@ export default function ENTLandingPage({ params }: { params: Promise<{ slug: str
       {/* Footer */}
       <footer className="border-t border-white/5 py-8">
         <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-[10px] text-white/20">Powered by Netcare Health OS Ops</p>
-          <div className="flex items-center gap-6 text-[10px] text-white/20">
-            <a href={`/book/${slug}`} className="hover:text-white/40">Book</a>
-            <a href={`/check/${slug}`} className="hover:text-white/40">Symptom Checker</a>
-            <a href={`/refer/${slug}`} className="hover:text-white/40">GP Referral</a>
+          <p className="text-[10px] text-white/70">Powered by Netcare Health OS Ops</p>
+          <div className="flex items-center gap-6 text-[10px] text-white/70">
+            <a href={`/book/${slug}`} className="hover:text-white/60">Book</a>
+            <a href={`/check/${slug}`} className="hover:text-white/60">Symptom Checker</a>
+            <a href={`/refer/${slug}`} className="hover:text-white/60">GP Referral</a>
           </div>
         </div>
       </footer>

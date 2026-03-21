@@ -14,11 +14,15 @@ const SALT = process.env.HEALTHBRIDGE_ENCRYPTION_SALT || "healthbridge-default-s
 /**
  * Derive a 32-byte key from the env var or fallback dev key.
  * Uses scrypt for key derivation so the env var can be any length.
+ * In production, HEALTHBRIDGE_ENCRYPTION_KEY MUST be set — the fallback is blocked.
  */
 function getEncryptionKey(): Buffer {
-  const rawKey =
-    process.env.HEALTHBRIDGE_ENCRYPTION_KEY || "dev-key-do-not-use-in-production";
-  return scryptSync(rawKey, SALT, 32);
+  const rawKey = process.env.HEALTHBRIDGE_ENCRYPTION_KEY;
+  if (!rawKey && process.env.NODE_ENV === "production") {
+    throw new Error("HEALTHBRIDGE_ENCRYPTION_KEY must be set in production");
+  }
+  const effectiveKey = rawKey || "dev-key-for-local-development-only";
+  return scryptSync(effectiveKey, SALT, 32);
 }
 
 /**

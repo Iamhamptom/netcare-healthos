@@ -133,7 +133,7 @@ export default function BoardPackPage() {
             </motion.div>
           ))}
         </div>
-        <p className="text-[11px] text-white/30 mt-3 text-center">
+        <p className="text-[11px] text-white/70 mt-3 text-center">
           This is the one-slide version for Dr Friedland. Full detail below for Keith Gibson.
         </p>
       </div>
@@ -224,7 +224,7 @@ export default function BoardPackPage() {
           <Zap className="w-4 h-4" />
           Start Regional Pilot
         </a>
-        <p className="text-[10px] text-white/30 mt-3">
+        <p className="text-[10px] text-white/70 mt-3">
           Powered by VisioHealth OS | Visio Research Labs | 120+ peer-reviewed citations
         </p>
       </div>

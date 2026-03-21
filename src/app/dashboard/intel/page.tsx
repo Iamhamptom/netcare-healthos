@@ -430,11 +430,11 @@ export default function IntelPage() {
                 <div key={c.name} className="p-3 rounded-lg bg-white/5 border border-white/10">
                   <div className="text-[12px] text-white font-semibold">{c.name}</div>
                   <div className="text-[10px] text-[#3DA9D1] font-medium">{c.raised}</div>
-                  <div className="text-[10px] text-white/40 mt-1">{c.focus}</div>
+                  <div className="text-[10px] text-white/60 mt-1">{c.focus}</div>
                 </div>
               ))}
             </div>
-            <p className="text-[10px] text-white/30 mt-3">Combined African healthtech funding is less than a single US mega-round. First-mover advantage is real.</p>
+            <p className="text-[10px] text-white/70 mt-3">Combined African healthtech funding is less than a single US mega-round. First-mover advantage is real.</p>
           </div>
         </motion.div>
       )}

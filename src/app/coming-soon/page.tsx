@@ -193,7 +193,7 @@ export default function ComingSoonPage() {
               <br />
               healthcare AI
             </h1>
-            <p className="text-base md:text-lg text-white/40 font-light leading-relaxed max-w-2xl">
+            <p className="text-base md:text-lg text-white/60 font-light leading-relaxed max-w-2xl">
               We&apos;re building the next generation of tools to transform
               healthcare operations across Africa. Here&apos;s what&apos;s on
               our roadmap.
@@ -360,7 +360,7 @@ export default function ComingSoonPage() {
             <h2 className="text-3xl md:text-4xl font-light text-white tracking-tight mb-4">
               Stay in the loop
             </h2>
-            <p className="text-sm text-white/40 font-light leading-relaxed mb-10">
+            <p className="text-sm text-white/60 font-light leading-relaxed mb-10">
               Get notified when new features launch.
             </p>
 
@@ -397,7 +397,7 @@ export default function ComingSoonPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@practice.co.za"
                   required
-                  className="flex-1 w-full sm:w-auto px-5 py-3 rounded-full bg-white/5 border border-white/10 text-white text-sm font-mono placeholder:text-white/20 focus:outline-none focus:border-[#3DA9D1]/40 transition-colors duration-300"
+                  className="flex-1 w-full sm:w-auto px-5 py-3 rounded-full bg-white/5 border border-white/10 text-white text-sm font-mono placeholder:text-white/70 focus:outline-none focus:border-[#3DA9D1]/40 transition-colors duration-300"
                 />
                 <button
                   type="submit"

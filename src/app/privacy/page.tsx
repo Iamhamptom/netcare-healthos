@@ -25,8 +25,8 @@ const sections = [
   {
     title: "2. Information Officer (POPIA s55)",
     content: [
-      `Name: TBD (to be designated)`,
-      `Email: ${COMPANY.informationOfficer}`,
+      `Name: David M. Hampton, Managing Director, Touchline Agency (Pty) Ltd t/a VisioHealth`,
+      `Email: davidhampton@visiocorp.co`,
     ],
   },
   {
@@ -125,7 +125,7 @@ export default function PrivacyPage() {
       <div className="mx-auto max-w-3xl px-6 py-16">
         <Link
           href="/"
-          className="text-xs text-white/30 font-mono hover:text-white/60 transition-colors mb-8 inline-block"
+          className="text-xs text-white/70 font-mono hover:text-white/60 transition-colors mb-8 inline-block"
         >
           &larr; Back to home
         </Link>
@@ -133,7 +133,7 @@ export default function PrivacyPage() {
         <h1 className="text-2xl font-light text-white tracking-tight mb-2">
           Privacy Policy
         </h1>
-        <p className="text-xs text-white/30 font-mono mb-10">
+        <p className="text-xs text-white/70 font-mono mb-10">
           Last updated: {COMPANY.lastUpdated}
         </p>
 
@@ -147,7 +147,7 @@ export default function PrivacyPage() {
                 {section.content.map((p, i) => (
                   <p
                     key={i}
-                    className="text-sm text-white/35 leading-relaxed font-light"
+                    className="text-sm text-white/70 leading-relaxed font-light"
                   >
                     {p}
                   </p>
@@ -158,7 +158,7 @@ export default function PrivacyPage() {
         </div>
 
         <div className="mt-16 border-t border-white/[0.04] pt-6">
-          <p className="text-[11px] text-white/20 font-mono">
+          <p className="text-[11px] text-white/70 font-mono">
             {COMPANY.legalName} · {COMPANY.address}
           </p>
         </div>

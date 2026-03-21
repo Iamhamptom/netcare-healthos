@@ -93,7 +93,7 @@ function StatBox({ value, label, dark = false }: { value: string; label: string;
       <div className={`text-3xl md:text-4xl font-extralight font-mono ${dark ? "text-[#3DA9D1]" : "text-[#1D8AB5]"}`}>
         {value}
       </div>
-      <div className={`text-[12px] font-mono mt-2 tracking-wide ${dark ? "text-white/40" : "text-gray-500"}`}>
+      <div className={`text-[12px] font-mono mt-2 tracking-wide ${dark ? "text-white/60" : "text-gray-500"}`}>
         {label}
       </div>
     </div>
@@ -118,7 +118,7 @@ function TOCSidebar({ activeSection }: { activeSection: string }) {
               className={`block px-3 py-1.5 rounded-lg text-[12px] font-mono transition-all duration-200 ${
                 activeSection === s.id
                   ? "bg-[#3DA9D1]/10 text-[#3DA9D1]"
-                  : "text-white/30 hover:text-white/60"
+                  : "text-white/70 hover:text-white/60"
               }`}
             >
               <span className="text-[#3DA9D1]/40 mr-2">{s.number}</span>
@@ -334,7 +334,7 @@ export default function VRL002Page() {
             <span className="px-3 py-1 rounded-full bg-[#3DA9D1]/10 text-[#3DA9D1] text-[11px] font-mono tracking-[0.15em] uppercase border border-[#3DA9D1]/20">
               VRL-002
             </span>
-            <span className="text-white/20 text-[11px] font-mono tracking-[0.15em] uppercase">
+            <span className="text-white/70 text-[11px] font-mono tracking-[0.15em] uppercase">
               March 2026
             </span>
           </motion.div>
@@ -356,7 +356,7 @@ export default function VRL002Page() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.35 }}
-            className="text-[17px] text-white/30 font-light max-w-2xl mx-auto mb-10 leading-relaxed"
+            className="text-[17px] text-white/70 font-light max-w-2xl mx-auto mb-10 leading-relaxed"
           >
             A Technical Analysis of EDIFACT MEDCLM Implementation and Multi-Switch Routing
           </motion.p>
@@ -366,7 +366,7 @@ export default function VRL002Page() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.5 }}
-            className="text-white/30 text-[13px] font-mono tracking-[0.1em] mb-10"
+            className="text-white/70 text-[13px] font-mono tracking-[0.1em] mb-10"
           >
             Dr. Hampton G. Arendse &middot; VisioCorp &middot; Visio Research Labs
           </motion.p>
@@ -408,7 +408,7 @@ export default function VRL002Page() {
             { label: "DOI", value: "VRL/2026/002" },
           ].map((item) => (
             <div key={item.label}>
-              <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/20 mb-1">
+              <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/70 mb-1">
                 {item.label}
               </div>
               <div className="text-[13px] font-mono text-[#3DA9D1]/80">
@@ -741,7 +741,7 @@ export default function VRL002Page() {
                       <td className="px-4 py-3 font-mono text-[#3DA9D1] font-semibold">{row.segment}</td>
                       <td className="px-4 py-3 text-white/70 font-medium">{row.name}</td>
                       <td className="px-4 py-3 text-white/50">{row.purpose}</td>
-                      <td className="px-4 py-3 text-white/40 text-[11px]">{row.fields}</td>
+                      <td className="px-4 py-3 text-white/60 text-[11px]">{row.fields}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -773,7 +773,7 @@ export default function VRL002Page() {
                 <div className="bg-[#3DA9D1]/10 border border-[#3DA9D1]/20 rounded-xl px-8 py-4 text-center">
                   <div className="text-[10px] font-mono text-[#3DA9D1]/60 mb-1">INPUT</div>
                   <div className="text-white/80 font-mono text-[14px]">Practice Management System</div>
-                  <div className="text-white/30 text-[11px] mt-1">HL7/JSON claim submission</div>
+                  <div className="text-white/70 text-[11px] mt-1">HL7/JSON claim submission</div>
                 </div>
               </div>
 
@@ -822,7 +822,7 @@ export default function VRL002Page() {
                 ].map((sw) => (
                   <div key={sw.name} className="bg-white/[0.04] border border-white/[0.08] rounded-xl p-4 text-center">
                     <div className="font-mono text-[14px] text-white/70 mb-1">{sw.name}</div>
-                    <div className="text-[11px] text-white/30 mb-2">{sw.schemes}</div>
+                    <div className="text-[11px] text-white/70 mb-2">{sw.schemes}</div>
                     <div className="font-mono text-[12px] text-[#3DA9D1]/60">{sw.share} market</div>
                   </div>
                 ))}
@@ -838,7 +838,7 @@ export default function VRL002Page() {
                 <div className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-8 py-4 text-center">
                   <div className="text-[10px] font-mono text-[#3DA9D1]/60 mb-1">DESTINATION</div>
                   <div className="text-white/80 font-mono text-[14px]">30+ Medical Aid Schemes</div>
-                  <div className="text-white/30 text-[11px] mt-1">Adjudication &rarr; eRA &rarr; Payment</div>
+                  <div className="text-white/70 text-[11px] mt-1">Adjudication &rarr; eRA &rarr; Payment</div>
                 </div>
               </div>
             </div>
@@ -873,7 +873,7 @@ export default function VRL002Page() {
                       <td className="px-4 py-3 font-mono text-[#3DA9D1] font-semibold">{row.standard}</td>
                       <td className="px-4 py-3 text-white/60">{row.description}</td>
                       <td className="px-4 py-3 text-white/50">{row.usage}</td>
-                      <td className="px-4 py-3 font-mono text-white/40">{row.entries}</td>
+                      <td className="px-4 py-3 font-mono text-white/60">{row.entries}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -1483,7 +1483,7 @@ export default function VRL002Page() {
             <h2 className="text-3xl md:text-4xl font-extralight text-white mb-4">
               Access the Full Report
             </h2>
-            <p className="text-[15px] text-white/40 mb-10 max-w-xl mx-auto">
+            <p className="text-[15px] text-white/60 mb-10 max-w-xl mx-auto">
               Download the complete VRL-002 research paper with full EDIFACT specification analysis,
               scheme routing tables, and financial models.
             </p>
@@ -1503,7 +1503,7 @@ export default function VRL002Page() {
                 <input
                   type="email"
                   placeholder="Subscribe to VRL Research"
-                  className="px-4 py-3 rounded-full bg-white/[0.05] border border-white/[0.1] text-white text-[13px] placeholder:text-white/20 focus:outline-none focus:border-[#3DA9D1]/50 w-64"
+                  className="px-4 py-3 rounded-full bg-white/[0.05] border border-white/[0.1] text-white text-[13px] placeholder:text-white/70 focus:outline-none focus:border-[#3DA9D1]/50 w-64"
                 />
                 <button className="px-5 py-3 rounded-full bg-white/[0.06] text-white/60 text-[13px] hover:bg-white/[0.1] transition-colors border border-white/[0.08]">
                   Subscribe
@@ -1511,7 +1511,7 @@ export default function VRL002Page() {
               </div>
             </div>
 
-            <div className="mt-12 flex items-center justify-center gap-8 text-[11px] text-white/15 font-mono">
+            <div className="mt-12 flex items-center justify-center gap-8 text-[11px] text-white/70 font-mono">
               <span>VRL/2026/002</span>
               <span>&middot;</span>
               <span>CC BY-NC 4.0</span>

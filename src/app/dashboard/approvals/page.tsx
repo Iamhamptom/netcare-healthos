@@ -167,7 +167,7 @@ export default function ApprovalsPage() {
                     {/* Patient info */}
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm font-medium">{booking.patientName}</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/5 text-white/40">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/5 text-white/60">
                         {sourceLabels[booking.source] || booking.source}
                       </span>
                     </div>
@@ -197,7 +197,7 @@ export default function ApprovalsPage() {
                     )}
 
                     {booking.notes && (
-                      <p className="mt-2 text-xs text-white/30 italic">&quot;{booking.notes}&quot;</p>
+                      <p className="mt-2 text-xs text-white/70 italic">&quot;{booking.notes}&quot;</p>
                     )}
 
                     {booking.depositAmount > 0 && (
@@ -260,7 +260,7 @@ export default function ApprovalsPage() {
                           value={rejectReason}
                           onChange={e => setRejectReason(e.target.value)}
                           placeholder="Reason for rejection (optional)"
-                          className="flex-1 px-3 py-2 rounded-lg bg-[var(--charcoal)]/30 border border-white/10 text-xs text-white placeholder-white/20 focus:outline-none"
+                          className="flex-1 px-3 py-2 rounded-lg bg-[var(--charcoal)]/30 border border-white/10 text-xs text-white placeholder-white/60 focus:outline-none"
                         />
                         <button
                           onClick={() => handleReject(booking.id)}
@@ -270,7 +270,7 @@ export default function ApprovalsPage() {
                         </button>
                         <button
                           onClick={() => { setRejectId(null); setRejectReason(""); }}
-                          className="px-3 py-2 rounded-lg bg-white/5 text-white/40 text-xs hover:bg-white/10"
+                          className="px-3 py-2 rounded-lg bg-white/5 text-white/60 text-xs hover:bg-white/10"
                         >
                           Cancel
                         </button>

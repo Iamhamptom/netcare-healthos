@@ -290,7 +290,206 @@ This incident response plan is tested annually through:
 
 ---
 
-## 8. Related Documents
+## 8. Scenario-Specific Playbooks
+
+### Playbook A: Unauthorised Access to Patient Data
+
+**Detection Indicators**:
+- Audit log entries showing access to patient records outside normal working hours or from unusual IP addresses
+- Access to records outside the user's assigned practice/tenant scope
+- Bulk patient record queries exceeding normal clinical patterns
+- Failed login attempts followed by successful access
+- Sentry alerts for RLS (Row-Level Security) bypass attempts
+- User reports of records they did not access appearing in their audit trail
+
+**Immediate Actions** (0–1 hour):
+1. Disable the compromised user account immediately
+2. Revoke all active sessions and API tokens for the affected account
+3. Block the source IP address(es) at the edge (Vercel)
+4. Capture full audit log for the affected account (last 30 days)
+5. Export Supabase auth logs and query logs for the compromise window
+6. Notify the Incident Commander
+
+**Investigation Steps** (1–24 hours):
+1. Determine the attack vector:
+   - Credential theft (phishing, brute force, credential stuffing)?
+   - Session hijacking?
+   - Application vulnerability (RLS bypass, IDOR)?
+   - Insider threat (legitimate credentials misused)?
+2. Identify all records accessed during the compromise window
+3. Map affected data subjects (patients) and affected tenants (practices)
+4. Determine if data was exfiltrated (check for bulk export, API responses, copy/download events)
+5. Review code changes deployed near the time of compromise
+6. Check for lateral movement to other accounts or systems
+
+**Notification Requirements**:
+- Client (practice/Netcare): Within 24 hours of confirmation
+- Information Regulator: Within 72 hours if PHI was accessed (POPIA Section 22)
+- Affected data subjects: As directed by the Responsible Party and legal counsel
+- SAPS Cybercrime unit: If criminal activity is confirmed
+
+**Recovery Steps**:
+1. Force password reset for all users in the affected practice
+2. Enable MFA if not already active
+3. Patch the vulnerability if application-level (deploy hotfix)
+4. Restore any modified records from backup
+5. Implement additional monitoring rules for the compromised pattern
+6. Verify RLS policies are correctly enforced with automated tests
+
+**Post-Incident Review**:
+- Complete root cause analysis within 5 business days
+- Update access control policies as needed
+- Brief all team members on the attack vector
+- Schedule additional security awareness training if insider threat
+
+---
+
+### Playbook B: Ransomware / Malware Infection
+
+**Detection Indicators**:
+- Sudden inability to access application or database
+- Ransom note displayed or received via email
+- File encryption detected on development machines
+- Unusual outbound network traffic (data exfiltration before encryption)
+- Sentry alerts showing mass application errors
+- Database queries returning encrypted/garbled data
+
+**Immediate Actions** (0–1 hour):
+1. **DO NOT** pay the ransom under any circumstances
+2. Disconnect affected development machines from the network
+3. Verify production environment status (Vercel serverless — typically not affected by endpoint malware)
+4. Verify database integrity by querying known records via Supabase dashboard
+5. Change all passwords and rotate all secrets as a precaution
+6. Notify the Incident Commander and activate the full IR team
+7. Engage external cybersecurity forensics firm if available
+
+**Investigation Steps** (1–48 hours):
+1. Determine infection vector (phishing email, compromised dependency, supply chain)
+2. Identify all systems affected (development machines, CI/CD pipeline, cloud services)
+3. Assess whether production data or source code was compromised
+4. Check for data exfiltration prior to encryption (double extortion)
+5. Review git history for unauthorised commits or backdoors
+6. Scan all dependencies for compromised packages
+
+**Notification Requirements**:
+- Client notification: Within 24 hours with scope assessment
+- Information Regulator: If any PHI compromise is confirmed
+- Law enforcement (SAPS Cybercrime): Immediately — ransomware is a criminal offence
+- Cyber insurance provider: As per policy terms
+
+**Recovery Steps**:
+1. Rebuild affected development machines from clean images
+2. If production database affected: restore from Supabase PITR to pre-infection point
+3. Redeploy application from verified clean git commit
+4. Rotate ALL secrets and credentials (see Key Rotation Policy — emergency procedure)
+5. Run full vulnerability scan on all systems before reconnecting
+6. Implement enhanced endpoint protection on development machines
+
+**Post-Incident Review**:
+- Engage external forensics for full investigation report
+- Review and enhance email filtering and endpoint protection
+- Implement network segmentation if not already in place
+- Update incident response plan with ransomware-specific lessons
+
+---
+
+### Playbook C: Data Breach via Third-Party Processor
+
+**Detection Indicators**:
+- Breach notification received from a sub-processor (Supabase, Vercel, Anthropic, ElevenLabs, Sentry)
+- Public disclosure of sub-processor breach (news, status page, CVE)
+- Unusual behaviour in data received from sub-processor APIs
+- Sub-processor status page showing security incident
+
+**Immediate Actions** (0–4 hours):
+1. Assess which data of ours the sub-processor holds/processes
+2. Review the Sub-Processor Register for data classification
+3. Rotate any API keys or credentials shared with the affected sub-processor
+4. Enable enhanced monitoring on integrations with the affected processor
+5. Contact the sub-processor's security team for detailed scope assessment
+6. Notify the Incident Commander
+
+**Investigation Steps** (4–72 hours):
+1. Obtain the sub-processor's incident report and timeline
+2. Determine if VisioHealth OS data was specifically affected
+3. Identify the types and volume of data potentially exposed:
+   - Supabase: Full database contents (PHI, PII, practice data)
+   - Vercel: Application code, environment variables (secrets)
+   - Anthropic: AI conversation logs (may contain clinical context)
+   - Sentry: Error payloads (should not contain PHI if properly sanitised)
+4. Assess whether the sub-processor's breach has been contained
+5. Review our data minimisation practices — was only necessary data shared?
+
+**Notification Requirements**:
+- Client notification: Within 48 hours with sub-processor identified and scope assessment
+- Information Regulator: If PHI exposure is confirmed or probable
+- Data subjects: As directed by the Responsible Party
+- Document our reliance on the sub-processor's incident report
+
+**Recovery Steps**:
+1. Rotate all credentials associated with the affected sub-processor
+2. Evaluate alternative sub-processors if the breach reveals systemic issues
+3. Review and update Data Processing Agreements with the sub-processor
+4. Implement additional encryption layers if data exposure risk is high
+5. Update the Sub-Processor Register with the incident record
+
+**Post-Incident Review**:
+- Reassess sub-processor risk ratings
+- Review data minimisation — reduce data shared with sub-processors where possible
+- Update vendor assessment questionnaire based on lessons learned
+- Consider contractual SLA changes for breach notification speed
+
+---
+
+### Playbook D: DDoS Attack
+
+**Detection Indicators**:
+- Sudden spike in traffic volume (Vercel analytics)
+- Application response times degrading significantly
+- Vercel function invocation limits approaching or exceeded
+- Legitimate users reporting inability to access the platform
+- Unusual geographic distribution of traffic
+- Sentry alerts for timeout errors and 503 responses
+
+**Immediate Actions** (0–30 minutes):
+1. Verify it is a DDoS attack vs. legitimate traffic spike or application bug
+2. Check Vercel status page — may be platform-wide
+3. Enable Vercel's built-in DDoS protection features (L3/L4/L7 mitigation is automatic)
+4. If Vercel protection is insufficient:
+   - Enable IP rate limiting at the application level (existing rate-limit middleware)
+   - Block attacking IP ranges via Vercel Edge Config or middleware
+   - Enable geographic restrictions if attack originates from specific regions
+5. Notify the Incident Commander if service degradation exceeds 15 minutes
+
+**Investigation Steps** (during and after attack):
+1. Analyse traffic patterns to identify attack type (volumetric, protocol, application-layer)
+2. Identify source IPs and geographic distribution
+3. Determine if the DDoS is covering another attack (diversion tactic)
+4. Review audit logs for suspicious activity during the attack window
+5. Check if any data was accessed or exfiltrated while defences were focused on DDoS
+
+**Notification Requirements**:
+- Client notification: If service degradation exceeds 30 minutes
+- No regulatory notification required unless DDoS is combined with a data breach
+- Law enforcement: If attack is sustained (>2 hours) or involves extortion demands
+
+**Recovery Steps**:
+1. Gradually ease blocking rules once attack subsides
+2. Monitor for recurrence over the following 48 hours
+3. Review and optimise rate limiting rules based on attack patterns
+4. Implement additional caching for static resources to reduce attack surface
+5. Consider upgrading Vercel plan for enhanced DDoS protection if needed
+
+**Post-Incident Review**:
+- Document attack characteristics for future detection
+- Update rate limiting thresholds based on attack patterns
+- Review application architecture for DDoS resilience improvements
+- Evaluate dedicated DDoS protection services if attacks are recurring
+- Brief team on DDoS indicators and response procedures
+
+---
+
+## 9. Related Documents
 
 - Security Posture Assessment
 - Data Flow Diagram
