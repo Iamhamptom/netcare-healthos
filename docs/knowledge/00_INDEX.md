@@ -29,6 +29,7 @@ This knowledge base gives VisioCorp AI agents (Steinberg, Claims Analyzer, Healt
 | 08 | `08_compliance.md` | **Compliance** | POPIA full checklist, SAHPRA SaMD decision tree, ISO 13485, cross-border AI transfer rules, data retention, 30/90/365-day action matrix |
 | 09 | `09_industry_landscape.md` | **Industry** | Altron, Medscheme, Discovery tech, CareOn, hospital IT, PMS market, global tech, startups, academic research |
 | 10 | `10_market_intelligence.md` | **Market** | R259B market, 76 schemes, competitive landscape, investor targets, NHI policy, government strategy, key contacts |
+| 12 | `12_commercial_intelligence.md` | **Commercial** | SLAs, PMS vendor contracts, insurance (PI/cyber), BEE/ICT sector codes, CIPC, SaaS pricing models, DPA/operator agreements, cloud hosting, tender processes, MediKredit accreditation, go-to-market checklist |
 
 ---
 

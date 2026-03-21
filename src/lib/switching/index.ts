@@ -153,3 +153,39 @@ export type {
   RoutingDecision,
   ResubmissionRequest,
 } from "./types";
+
+// Clinical Validation Rules (KB 01-04)
+export {
+  getGenderRestriction,
+  validateGenderForCode,
+  validateAgeForCode,
+  requiresExternalCauseCode,
+  isExternalCauseCode,
+  validateExternalCauseCodes,
+  validateECCNotPrimary,
+  isAsteriskCode,
+  validateAsteriskNotPrimary,
+  detectDiabetesConflict,
+  isSymptomCode,
+  flagSymptomCodeAsPrimary,
+  determineBenefitPool,
+  canApplyPMBCoPay,
+  validateClinicalRules,
+  MALE_ONLY_ICD10,
+  FEMALE_ONLY_ICD10,
+} from "./clinical-rules";
+export type { ClinicalValidationIssue, BenefitPool } from "./clinical-rules";
+
+// Fraud, Waste & Abuse Detection Engine (KB 07)
+export {
+  detectUnbundling,
+  detectUpcoding,
+  detectAfterHoursFraud,
+  detectTimeImpossibility,
+  detectDuplicateBilling,
+  detectPrescriptionFraud,
+  detectBalanceBilling,
+  applySchemeSpecificRules,
+  runFraudScan,
+} from "./fraud-engine";
+export type { FraudFlag, FraudType, SchemeSpecificFlag } from "./fraud-engine";

@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
         afterRejectionRate: correctedResult.summary.estimatedRejectionRate,
         improvement: result.summary.estimatedRejectionRate - correctedResult.summary.estimatedRejectionRate,
       },
-      correctedCSV: csvLines.join("\n"),
+      correctedCSV: csvLines.map(l => l.replace(/[\r\n]+/g, " ")).join("\n"),
       beforeResult: result.summary,
       afterResult: correctedResult.summary,
     });
