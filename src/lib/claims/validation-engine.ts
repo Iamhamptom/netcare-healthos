@@ -94,6 +94,9 @@ const COLUMN_ALIASES: Record<keyof ColumnMapping, string[]> = {
   modifier: ["modifier", "mod", "modifier_code"],
   practitionerType: ["practitioner", "practitioner_type", "provider_type", "discipline", "speciality"],
   dateOfService: ["date", "service_date", "date_of_service", "dos", "claim_date"],
+  dependentCode: ["dependent", "dependent_code", "dep_code", "dep", "dependant", "dependant_code"],
+  practiceNumber: ["practice", "practice_number", "practice_no", "provider_no", "provider_number", "practice_id", "bhf_number"],
+  scheme: ["scheme", "scheme_code", "scheme_name", "medical_aid", "medical_scheme", "funder"],
 };
 
 export function autoMapColumns(headers: string[], rows?: Record<string, string>[]): ColumnMapping {
@@ -232,6 +235,9 @@ export function extractClaimLines(
       modifier: mapping.modifier ? row[mapping.modifier]?.trim() : undefined,
       practitionerType: mapping.practitionerType ? normalizeDiscipline(row[mapping.practitionerType]?.trim()) : undefined,
       dateOfService: mapping.dateOfService ? row[mapping.dateOfService]?.trim() : undefined,
+      dependentCode: mapping.dependentCode ? row[mapping.dependentCode]?.trim() : undefined,
+      practiceNumber: mapping.practiceNumber ? row[mapping.practiceNumber]?.trim() : undefined,
+      scheme: mapping.scheme ? row[mapping.scheme]?.trim() : undefined,
     };
   });
 }
@@ -241,6 +247,28 @@ export function extractClaimLines(
 function validateLine(item: ClaimLineItem): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const ln = item.lineNumber;
+
+  // ── Rule 0a: Practice number must be present ──
+  // SA BHF (Board of Healthcare Funders) requires a practice number on every claim
+  if (item.practiceNumber !== undefined && !item.practiceNumber) {
+    issues.push({
+      lineNumber: ln, field: "practiceNumber", code: "MISSING_PRACTICE_NUMBER",
+      severity: "error", rule: "Missing Practice Number",
+      message: "No BHF practice number provided. SA medical schemes reject claims without a valid practice number.",
+      suggestion: "Add the 7-digit BHF practice number for the rendering provider.",
+    });
+  }
+
+  // ── Rule 0b: Dependent code must be present ──
+  // SA schemes require a 2-digit dependent code (00 = main member, 01+ = dependents)
+  if (item.dependentCode !== undefined && !item.dependentCode) {
+    issues.push({
+      lineNumber: ln, field: "dependentCode", code: "MISSING_DEPENDENT_CODE",
+      severity: "error", rule: "Missing Dependent Code",
+      message: "No dependent code provided. SA medical schemes require a 2-digit dependent code (00 = main member, 01-09 = dependents).",
+      suggestion: "Add the dependent code: '00' for main member, '01' for spouse, '02'+ for children.",
+    });
+  }
 
   // ── Rule 1: ICD-10 code must be present ──
   if (!item.primaryICD10) {
