@@ -3,8 +3,13 @@
 
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY || "");
 const fromEmail = process.env.RESEND_FROM_EMAIL || "Health OS <noreply@healthops.co.za>";
+
+function getResend() {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) throw new Error("RESEND_API_KEY not configured — email sending is unavailable.");
+  return new Resend(key);
+}
 
 interface EmailOptions {
   to: string | string[];
@@ -15,7 +20,7 @@ interface EmailOptions {
 
 /** Send a single email */
 export async function sendEmail({ to, subject, html, replyTo }: EmailOptions) {
-  const result = await resend.emails.send({
+  const result = await getResend().emails.send({
     from: fromEmail,
     to: Array.isArray(to) ? to : [to],
     subject,
