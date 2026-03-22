@@ -574,6 +574,20 @@ export function validateClaims(lines: ClaimLineItem[]): ValidationResult {
     topIssues,
   };
 
+  // ─── Batch Intelligence ─────────────────────────────────────────
+  // When a single rule affects 80%+ of claims, flag it as a batch-level issue
+  // with clear explanation and fix — don't make the user dig through 100 rows
+  const batchInsights: { rule: string; affectedCount: number; percentage: number; severity: string; explanation: string; fix: string }[] = [];
+  if (lines.length >= 5) {
+    for (const { rule, count, severity } of topIssues) {
+      const pct = Math.round((count / lines.length) * 100);
+      if (pct >= 50) {
+        const insight = getBatchExplanation(rule, count, lines.length, pct);
+        batchInsights.push({ rule, affectedCount: count, percentage: pct, severity, ...insight });
+      }
+    }
+  }
+
   return {
     totalClaims: lines.length,
     validClaims,
@@ -582,5 +596,70 @@ export function validateClaims(lines: ClaimLineItem[]): ValidationResult {
     issues: allIssues,
     summary,
     lineResults,
+    batchInsights,
+  };
+}
+
+/** Generate plain-English explanations for common batch failures */
+function getBatchExplanation(rule: string, count: number, total: number, pct: number): { explanation: string; fix: string } {
+  const r = rule.toLowerCase();
+  if (r.includes("missing icd") || r.includes("icd-10")) {
+    return {
+      explanation: `${count} of ${total} claims (${pct}%) are missing or have invalid ICD-10 diagnosis codes. This is the #1 cause of claim rejections in South Africa.`,
+      fix: "Ensure every claim line has a valid ICD-10 code in the format A00.0 (letter + 2 digits + dot + digit). Only the icd10_code column is required.",
+    };
+  }
+  if (r.includes("specificity") || r.includes("non-specific")) {
+    return {
+      explanation: `${count} of ${total} claims (${pct}%) use non-specific ICD-10 codes (3-character codes without a 4th digit). Medical schemes reject these because they lack clinical detail.`,
+      fix: "Add the 4th character to each code. Example: J06 → J06.9 (Acute upper respiratory infection, unspecified). Our auto-correct can fix most of these — click 'Auto-Correct' after review.",
+    };
+  }
+  if (r.includes("format") || r.includes("invalid code")) {
+    return {
+      explanation: `${count} of ${total} claims (${pct}%) have ICD-10 codes in the wrong format. SA uses the WHO ICD-10 format: one letter + 2-4 digits with an optional dot.`,
+      fix: "Check for typos: J069 should be J06.9, E119 should be E11.9. Ensure codes start with a letter (A-Z) followed by digits.",
+    };
+  }
+  if (r.includes("external cause") || r.includes("ecc")) {
+    return {
+      explanation: `${count} of ${total} claims (${pct}%) have injury codes (S/T chapter) without a required External Cause Code (V/W/X/Y). SA medical schemes mandate ECC for all injury claims.`,
+      fix: "Add the appropriate V/W/X/Y code as a secondary diagnosis. Example: S61.0 (hand laceration) needs W26 (contact with knife) or similar.",
+    };
+  }
+  if (r.includes("gender")) {
+    return {
+      explanation: `${count} of ${total} claims (${pct}%) have diagnosis codes that don't match the patient's gender. For example, male-only prostate codes on female patients.`,
+      fix: "Verify the patient_gender column matches the clinical codes. Check for data entry errors in the gender field.",
+    };
+  }
+  if (r.includes("duplicate")) {
+    return {
+      explanation: `${count} of ${total} claims (${pct}%) appear to be duplicate submissions (same patient, code, and date).`,
+      fix: "Remove duplicate rows from your CSV. If these are intentional repeat visits, differentiate by adding unique dates or modifier codes.",
+    };
+  }
+  if (r.includes("dependent") || r.includes("dep_")) {
+    return {
+      explanation: `${count} of ${total} claims (${pct}%) are missing the dependent code. SA medical schemes require a 2-digit dependent code (00 = main member, 01-09 = dependents).`,
+      fix: "Add a 'dependent_code' column to your CSV. Use '00' for the main member, '01' for spouse, '02'+ for children.",
+    };
+  }
+  if (r.includes("tariff") || r.includes("unknown tariff")) {
+    return {
+      explanation: `${count} of ${total} claims (${pct}%) have unrecognised tariff/procedure codes.`,
+      fix: "Verify tariff codes against the NHRPL (National Health Reference Price List). SA uses 4-digit CCSA codes, not US CPT codes.",
+    };
+  }
+  if (r.includes("asterisk") || r.includes("manifestation")) {
+    return {
+      explanation: `${count} of ${total} claims (${pct}%) use manifestation (asterisk) codes as the primary diagnosis. These codes describe symptoms, not the underlying condition.`,
+      fix: "Swap the primary and secondary codes. The dagger (†) code (underlying disease) must be primary; the asterisk (*) code (manifestation) must be secondary.",
+    };
+  }
+  // Generic fallback
+  return {
+    explanation: `${count} of ${total} claims (${pct}%) failed the "${rule}" check. This pattern suggests a systematic issue with your data rather than individual errors.`,
+    fix: "Review the first few flagged claims to understand the pattern, then apply the fix across your entire file before re-uploading.",
   };
 }

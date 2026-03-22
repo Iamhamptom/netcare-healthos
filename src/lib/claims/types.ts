@@ -28,6 +28,15 @@ export interface ValidationIssue {
   suggestion?: string;
 }
 
+export interface BatchInsight {
+  rule: string;
+  affectedCount: number;
+  percentage: number;
+  severity: string;
+  explanation: string;
+  fix: string;
+}
+
 export interface ValidationResult {
   totalClaims: number;
   validClaims: number;
@@ -36,6 +45,7 @@ export interface ValidationResult {
   issues: ValidationIssue[];
   summary: ValidationSummary;
   lineResults: LineValidationResult[];
+  batchInsights?: BatchInsight[];
 }
 
 export interface LineValidationResult {

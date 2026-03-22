@@ -59,6 +59,7 @@ interface ValidationResult {
   parseErrors?: string[];
   schemeCode?: string;
   schemeList?: { code: string; name: string }[];
+  batchInsights?: { rule: string; affectedCount: number; percentage: number; severity: string; explanation: string; fix: string }[];
 }
 
 interface ICD10SearchResult {
@@ -1343,6 +1344,40 @@ export default function ClaimsAnalyzerPage() {
                 <KPICard label="Savings if Fixed" value={`R${result.summary.estimatedSavings.toLocaleString()}`}
                   icon={TrendingDown} color="#10B981" subtitle="estimated recovery" />
               </div>
+
+              {/* ─── Batch Intelligence Insights ─── */}
+              {result.batchInsights && result.batchInsights.length > 0 && (
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-5 space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-amber-600" />
+                    <span className="text-[14px] font-semibold text-amber-900">
+                      AI Batch Analysis — {result.batchInsights.length === 1 ? "Pattern Detected" : `${result.batchInsights.length} Patterns Detected`}
+                    </span>
+                  </div>
+                  <p className="text-[12px] text-amber-800">
+                    Instead of reviewing {result.totalClaims} claims one by one, here&apos;s what&apos;s causing the bulk of your rejections:
+                  </p>
+                  {result.batchInsights.map((insight, i) => (
+                    <div key={i} className="bg-white rounded-lg border border-amber-100 p-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[13px] font-semibold text-gray-800">{insight.rule}</span>
+                        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                          insight.percentage >= 80 ? "bg-red-100 text-red-700" :
+                          insight.percentage >= 50 ? "bg-orange-100 text-orange-700" :
+                          "bg-yellow-100 text-yellow-700"
+                        }`}>
+                          {insight.affectedCount}/{result.totalClaims} claims ({insight.percentage}%)
+                        </span>
+                      </div>
+                      <p className="text-[12px] text-gray-600 leading-relaxed">{insight.explanation}</p>
+                      <div className="bg-emerald-50 border border-emerald-100 rounded-md p-3">
+                        <p className="text-[11px] font-semibold text-emerald-700 mb-0.5">How to fix this</p>
+                        <p className="text-[12px] text-emerald-800">{insight.fix}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* Rejection rate bar */}
               {result.summary.estimatedRejectionRate > 0 && (
