@@ -67,6 +67,25 @@ export {
 } from "./system-hooks";
 export type {} from "./system-hooks";
 
+// Comprehensive Training Data Generator (ALL domains)
+export {
+  generateComprehensiveDataset,
+  exportComprehensiveJSONL,
+  generateAllICD10Examples,
+  generateRejectionExamples,
+  generateCDLExamples,
+  generatePMBExamples,
+  generateTariffExamples,
+  generateMedicineExamples,
+  generateSchemeExamples,
+  generateFHIRExamples,
+  generateFraudExamples,
+  generateClinicalExamples,
+  generateComplianceExamples,
+  generateAdjudicationExamples,
+  generateWorkflowExamples,
+} from "./training-data-comprehensive";
+
 // PII Scrubber (POPIA 2026 compliance)
 export {
   scrubPII,
