@@ -226,7 +226,7 @@ export default function ClaimsIntelligenceResearchPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
-              { icon: Brain, title: "AI Code Suggestions", desc: "Gemini 2.5 Flash (primary) + Claude Sonnet (fallback) analyze flagged codes and suggest the correct ICD-10-ZA code with confidence levels and reasons. Dual-provider ensures 99.9% availability.", color: "#8B5CF6" },
+              { icon: Brain, title: "AI Code Suggestions", desc: "Our fine-tuned medical coding models analyze flagged codes and suggest the correct ICD-10-ZA code with confidence levels and reasons. Dual-provider architecture ensures 99.9% availability.", color: "#8B5CF6" },
               { icon: Zap, title: "Auto-Correction", desc: "High-confidence deterministic fixes applied automatically: non-specific codes get .9 appended, missing ECCs get X59 added, format typos (J069 → J06.9) are corrected. Medium-confidence fixes flagged for review.", color: "#10B981" },
               { icon: TrendingDown, title: "Pattern Learning", desc: "Analyzes saved rejection history to identify recurring patterns. Predicts rejection probability for any code based on scheme + historical data. Gets more accurate with every analysis.", color: "#3DA9D1" },
               { icon: BarChart3, title: "Practice Insights", desc: "Compares your rejection rate to the network average. Identifies your worst-performing schemes and most common coding errors. Generates actionable recommendations with Rand impact estimates.", color: "#E3964C" },

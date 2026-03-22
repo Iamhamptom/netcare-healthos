@@ -1,5 +1,5 @@
 // AI-Powered ICD-10 Code Suggestion Engine
-// Uses Gemini (primary, cheaper) with Claude fallback for medical coding suggestions
+// Dual-provider architecture with automatic failover
 
 import { GoogleGenAI } from "@google/genai";
 import Anthropic from "@anthropic-ai/sdk";
@@ -48,6 +48,29 @@ When suggesting ICD-10 codes:
 
 Respond ONLY with valid JSON — no markdown fences, no commentary outside the JSON.`;
 
+// ─── Local HealthOS-Med RAG (fine-tuned model + exact database lookup) ──────
+
+const HEALTHOS_SERVER = process.env.HEALTHOS_SERVER_URL || "http://localhost:8800";
+
+async function queryLocalRAG(query: string): Promise<string | null> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(`${HEALTHOS_SERVER}/rag`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query, top_k: 5 }),
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.context || null;
+  } catch {
+    return null;
+  }
+}
+
 // ─── AI Provider Abstraction ────────────────────────────────────────────────
 
 async function queryGemini(systemPrompt: string, userPrompt: string): Promise<string> {
@@ -88,13 +111,20 @@ async function queryClaude(systemPrompt: string, userPrompt: string): Promise<st
 }
 
 async function queryAI(systemPrompt: string, userPrompt: string): Promise<string> {
+  // Enrich system prompt with local RAG context (exact ICD-10, tariff, NAPPI data)
+  let enrichedPrompt = systemPrompt;
+  const ragContext = await queryLocalRAG(userPrompt);
+  if (ragContext) {
+    enrichedPrompt += `\n\n=== VERIFIED SA HEALTH DATABASE (use this data — it is authoritative) ===\n${ragContext}`;
+  }
+
   // Try Gemini first (cheaper), fall back to Claude
   try {
-    return await queryGemini(systemPrompt, userPrompt);
+    return await queryGemini(enrichedPrompt, userPrompt);
   } catch (geminiErr) {
     console.warn("[ai-suggestions] Gemini failed, falling back to Claude:", (geminiErr as Error).message);
     try {
-      return await queryClaude(systemPrompt, userPrompt);
+      return await queryClaude(enrichedPrompt, userPrompt);
     } catch (claudeErr) {
       console.error("[ai-suggestions] Both AI providers failed");
       throw new Error(`AI suggestion unavailable: Gemini (${(geminiErr as Error).message}), Claude (${(claudeErr as Error).message})`);

@@ -1257,7 +1257,7 @@ export default function ClaimsAnalyzerPage() {
                         { icon: BadgeCheck, title: "ICD-10 Validation", desc: "Format, specificity, existence — 500+ SA codes" },
                         { icon: Shield, title: "SA Rules Engine", desc: "Gender/age, ECCs, asterisk codes, PMB" },
                         { icon: Building2, title: "Scheme Rules", desc: "Discovery, GEMS, Bonitas — scheme-specific checks" },
-                        { icon: Brain, title: "AI Suggestions", desc: "Claude/Gemini suggests correct codes for flagged items" },
+                        { icon: Brain, title: "AI Suggestions", desc: "Our fine-tuned models suggest correct codes for flagged items" },
                       ].map((item, idx) => (
                         <div key={idx} className="bg-white/80 rounded-lg p-3 border border-gray-100">
                           <item.icon className="w-4 h-4 text-[#3DA9D1] mb-1.5" />

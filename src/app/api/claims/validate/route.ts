@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { parseCSV, autoMapColumns, extractClaimLines, validateClaims } from "@/lib/claims/validation-engine";
+import { parseCSV, autoMapColumns, extractClaimLines, validateClaims, suggestICD10Column } from "@/lib/claims/validation-engine";
 import { validateSchemeRules, SCHEME_LIST } from "@/lib/claims/scheme-rules";
 import { lookupTariff, findUnbundlingViolations, isDisciplineAllowed, isTariffValidForDiagnosis, checkMaxUnits, type Discipline } from "@/lib/claims/tariff-database";
 import { requireClaimsAuth, validateFileSize } from "@/lib/claims/auth-guard";
@@ -168,10 +168,29 @@ export async function POST(req: NextRequest) {
     } else {
       const mapping = customMapping || autoMapColumns(parsed.headers);
       if (!mapping.primaryICD10) {
-        return NextResponse.json({
-          error: "Could not identify the ICD-10 code column. Expected: icd10, diagnosis, icd10_code — or use Healthbridge export format.",
-          availableHeaders: parsed.headers,
-        }, { status: 400 });
+        // Smart detection: scan actual cell values to find the ICD-10 column
+        const suggestion = suggestICD10Column(parsed.headers, parsed.rows);
+        if (suggestion && suggestion.confidence >= 0.5) {
+          mapping.primaryICD10 = suggestion.header;
+        } else {
+          const headerList = parsed.headers.map(h => `"${h}"`).join(", ");
+          const sampleRow = parsed.rows[0] || {};
+          const sampleValues = parsed.headers.slice(0, 6).map(h => `${h}: ${sampleRow[h] || "(empty)"}`);
+          return NextResponse.json({
+            error: "We couldn't automatically detect which column contains ICD-10 codes.",
+            availableHeaders: parsed.headers,
+            sampleData: sampleValues,
+            suggestion: suggestion
+              ? `Column "${suggestion.header}" looks like it might contain ICD-10 codes (${Math.round(suggestion.confidence * 100)}% match) but confidence is too low to auto-map.`
+              : null,
+            fix: [
+              `Your CSV has these columns: ${headerList}`,
+              "To fix this, rename your ICD-10 column header to one of: icd10, diagnosis, icd10_code, dx_code",
+              "Or use Healthbridge export format (columns: CLAIM_ID, ICD10_1, TARIFF_CODE, AMOUNT)",
+              "Tip: Only the ICD-10 column is required — all other columns are optional.",
+            ],
+          }, { status: 400 });
+        }
       }
       claimLines = extractClaimLines(parsed.rows, mapping);
     }

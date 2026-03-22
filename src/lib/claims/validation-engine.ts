@@ -20,7 +20,9 @@ const ICD10_FORMAT = /^[A-Z]\d{2}(\.\d{1,4})?$/i;
 // ─── CSV PARSER ──────────────────────────────────────────────────
 export function parseCSV(text: string): CSVParseResult {
   const errors: string[] = [];
-  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  // Strip BOM (Excel exports often prepend \uFEFF)
+  const cleaned = text.replace(/^\uFEFF/, "");
+  const lines = cleaned.split(/\r?\n/).filter(l => l.trim());
   if (lines.length < 2) {
     return { headers: [], rows: [], errors: ["File must have a header row and at least one data row"] };
   }
@@ -71,7 +73,15 @@ function parseLine(line: string, delimiter: string): string[] {
 
 // ─── AUTO-MAP COLUMNS ────────────────────────────────────────────
 const COLUMN_ALIASES: Record<keyof ColumnMapping, string[]> = {
-  primaryICD10: ["icd10", "icd-10", "icd_10", "icd10_code", "diagnosis", "diagnosis_code", "primary_icd10", "primary_icd", "diag_code", "dx_code", "dx", "icd"],
+  primaryICD10: [
+    "icd10", "icd-10", "icd_10", "icd10_code", "icd10code", "icd_10_code",
+    "diagnosis", "diagnosis_code", "diagnosiscode", "diagcode", "diag_code",
+    "primary_icd10", "primary_icd", "primary_diagnosis", "primarydiagnosis",
+    "dx_code", "dx", "dxcode", "icd", "icd_code", "icdcode",
+    "diag1", "diag_1", "diagnosis1", "diagnosis_1",
+    "icd10_1", "icd10_primary", "icd_primary",
+    "code", "claim_code", "medical_code",
+  ],
   secondaryICD10: ["secondary_icd10", "secondary_icd", "icd10_secondary", "secondary_diagnosis", "sec_diag", "additional_icd"],
   tariffCode: ["tariff", "tariff_code", "procedure", "procedure_code", "cpt", "cpt_code", "service_code"],
   nappiCode: ["nappi", "nappi_code", "medicine", "medicine_code", "drug_code", "product_code"],
@@ -102,7 +112,7 @@ export function autoMapColumns(headers: string[]): ColumnMapping {
   // Fallback: if no primary ICD10 found, try partial match
   if (!mapping.primaryICD10) {
     for (const h of headers) {
-      if (/icd/i.test(h) || /diag/i.test(h)) {
+      if (/icd/i.test(h) || /diag/i.test(h) || /^dx/i.test(h) || /^code$/i.test(h.trim())) {
         mapping.primaryICD10 = h;
         break;
       }
@@ -110,6 +120,33 @@ export function autoMapColumns(headers: string[]): ColumnMapping {
   }
 
   return mapping as ColumnMapping;
+}
+
+/**
+ * Suggest which column might be the ICD-10 column based on data sampling.
+ * Checks if cell values look like ICD-10 codes (letter + 2+ digits).
+ */
+export function suggestICD10Column(headers: string[], rows: Record<string, string>[]): { header: string; confidence: number } | null {
+  const sampleRows = rows.slice(0, Math.min(20, rows.length));
+  let bestMatch: { header: string; confidence: number } | null = null;
+
+  for (const h of headers) {
+    let matches = 0;
+    let total = 0;
+    for (const row of sampleRows) {
+      const val = (row[h] || "").trim();
+      if (!val) continue;
+      total++;
+      if (/^[A-Z]\d{2,}(\.\d{1,4})?$/i.test(val)) matches++;
+    }
+    if (total > 0) {
+      const confidence = matches / total;
+      if (confidence > 0.4 && (!bestMatch || confidence > bestMatch.confidence)) {
+        bestMatch = { header: h, confidence };
+      }
+    }
+  }
+  return bestMatch;
 }
 
 // ─── NORMALIZE DISCIPLINE ────────────────────────────────────────

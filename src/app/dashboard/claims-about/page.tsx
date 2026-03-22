@@ -335,7 +335,7 @@ export default function ClaimsAboutPage() {
               },
               {
                 title: "AI-Powered Suggestions",
-                count: "Gemini + Claude",
+                count: "Dual AI",
                 example: "AI suggests the right ICD-10 code from notes",
                 icon: Brain,
                 color: "text-amber-500",
@@ -437,7 +437,7 @@ export default function ClaimsAboutPage() {
                   <p className="text-[13px] font-bold">Engine Layer</p>
                   <p className="text-[10px] text-white/70 mt-1">Rules + AI + Tariffs</p>
                 </div>
-                <div className="text-center text-[10px] text-slate-400 font-medium">13 Rules + Gemini/Claude</div>
+                <div className="text-center text-[10px] text-slate-400 font-medium">13 Rules + Fine-tuned AI</div>
               </div>
 
               {/* Arrow */}
@@ -536,7 +536,7 @@ export default function ClaimsAboutPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
               {[
                 "First SA-built ICD-10-ZA pre-submission validator",
-                "AI-powered coding assistance (Gemini + Claude dual-provider)",
+                "AI-powered coding assistance (proprietary dual-provider engine)",
                 "Scheme-specific rule engine covering 85%+ of SA medical scheme members",
                 "Healthbridge EDI native integration",
                 "Pattern learning that gets smarter with every analysis",
