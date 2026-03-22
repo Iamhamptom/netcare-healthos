@@ -242,6 +242,92 @@ export async function POST(req: NextRequest) {
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 
+    // ─── SELF-DIAGNOSIS: Detect column mapping errors ──────────────
+    // If 80%+ claims hit the SAME error, the problem is likely a bad column
+    // mapping, not bad data. Re-check and auto-fix if possible.
+    let selfDiagnosis: { detected: boolean; problem: string; action: string; remapped?: boolean } | null = null;
+
+    if (result.summary.estimatedRejectionRate >= 80 && result.summary.topIssues.length > 0) {
+      const topRule = result.summary.topIssues[0];
+      const topPct = Math.round((topRule.count / result.totalClaims) * 100);
+
+      if (topPct >= 80 && topRule.rule === "Invalid Code Format") {
+        // The mapped ICD-10 column likely contains non-ICD-10 data
+        // Try to find the REAL ICD-10 column by scanning all columns
+        const currentICD10Col = (customMapping || autoMapColumns(parsed.headers, parsed.rows)).primaryICD10;
+        const suggestion = suggestICD10Column(parsed.headers, parsed.rows);
+
+        if (suggestion && suggestion.header !== currentICD10Col && suggestion.confidence >= 0.4) {
+          // Found a better column — re-run validation with the correct mapping
+          const fixedMapping = { ...(customMapping || autoMapColumns(parsed.headers, parsed.rows)), primaryICD10: suggestion.header };
+          const fixedClaimLines = extractClaimLines(parsed.rows, fixedMapping);
+          const fixedResult = validateClaims(fixedClaimLines);
+
+          // If the fixed result is significantly better, use it
+          if (fixedResult.validClaims > result.validClaims) {
+            selfDiagnosis = {
+              detected: true,
+              problem: `The system initially mapped column "${currentICD10Col}" as ICD-10 codes, but that column contains non-medical data (like claim IDs). The real ICD-10 codes are in column "${suggestion.header}".`,
+              action: `Auto-corrected: remapped ICD-10 from "${currentICD10Col}" to "${suggestion.header}" — results below are from the corrected analysis.`,
+              remapped: true,
+            };
+
+            // Replace everything with the fixed results
+            Object.assign(result, fixedResult);
+            claimLines.length = 0;
+            claimLines.push(...fixedClaimLines);
+
+            // Re-run tariff + advanced + scheme validation
+            mergeIssues(result, validateTariffs(fixedClaimLines));
+            mergeIssues(result, runAdvancedValidation(fixedClaimLines));
+            if (schemeCode) {
+              const pdi = new Map<string, ClaimLineItem[]>();
+              for (const line of fixedClaimLines) {
+                const key = `${(line.patientName || "").toLowerCase()}|${line.dateOfService || ""}`;
+                if (!pdi.has(key)) pdi.set(key, []);
+                pdi.get(key)!.push(line);
+              }
+              for (const lr of result.lineResults) {
+                const key = `${(lr.claimData.patientName || "").toLowerCase()}|${lr.claimData.dateOfService || ""}`;
+                mergeIssues(result, validateSchemeRules(lr.claimData, schemeCode, pdi.get(key) || []));
+              }
+            }
+
+            // Recalculate summary
+            result.summary.errorCount = result.issues.filter(i => i.severity === "error").length;
+            result.summary.warningCount = result.issues.filter(i => i.severity === "warning").length;
+            result.summary.estimatedRejectionRate = result.totalClaims > 0
+              ? Math.round((result.invalidClaims / result.totalClaims) * 100) : 0;
+            const avg2 = fixedClaimLines.reduce((s, l) => s + (l.amount || 800), 0) / (fixedClaimLines.length || 1);
+            result.summary.estimatedSavings = Math.round(result.invalidClaims * avg2 * 0.85);
+            const byRule2: Record<string, number> = {};
+            for (const issue of result.issues) byRule2[issue.rule] = (byRule2[issue.rule] || 0) + 1;
+            result.summary.byRule = byRule2;
+            result.summary.topIssues = Object.entries(byRule2)
+              .map(([rule, count]) => ({ rule, count, severity: result.issues.find(i => i.rule === rule)?.severity || "info" }))
+              .sort((a, b) => b.count - a.count)
+              .slice(0, 10);
+          }
+        }
+
+        if (!selfDiagnosis) {
+          // Couldn't auto-fix, but still explain what happened
+          selfDiagnosis = {
+            detected: true,
+            problem: `${topPct}% of claims (${topRule.count}/${result.totalClaims}) failed with "${topRule.rule}". This usually means the wrong column was mapped as ICD-10 codes. The values in the mapped column don't look like medical diagnosis codes.`,
+            action: "Check your CSV headers — the ICD-10 column should be named 'icd10_code', 'diagnosis', or 'icd10'. If the codes are in a differently-named column, rename the header and re-upload.",
+          };
+        }
+      } else if (topPct >= 80) {
+        // Different systematic error — explain clearly
+        selfDiagnosis = {
+          detected: true,
+          problem: `${topPct}% of claims (${topRule.count}/${result.totalClaims}) failed the same check: "${topRule.rule}". This is a systematic issue with your file, not individual claim errors.`,
+          action: "See the batch analysis below for a detailed explanation and fix instructions.",
+        };
+      }
+    }
+
     // Auto-corrections for deterministic fixes
     const autoCorrections = generateAutoCorrections(claimLines, result.issues);
 
@@ -262,6 +348,7 @@ export async function POST(req: NextRequest) {
       ...result,
       detectedFormat,
       autoCorrections,
+      selfDiagnosis,
       parseErrors: parsed.errors,
       columnMapping: detectedFormat === "healthbridge" ? { primaryICD10: "ICD10_1", autoDetected: true } : autoMapColumns(parsed.headers, parsed.rows),
       headers: parsed.headers,

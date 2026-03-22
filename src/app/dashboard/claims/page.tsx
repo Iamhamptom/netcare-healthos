@@ -60,6 +60,7 @@ interface ValidationResult {
   schemeCode?: string;
   schemeList?: { code: string; name: string }[];
   batchInsights?: { rule: string; affectedCount: number; percentage: number; severity: string; explanation: string; fix: string }[];
+  selfDiagnosis?: { detected: boolean; problem: string; action: string; remapped?: boolean } | null;
 }
 
 interface ICD10SearchResult {
@@ -1405,6 +1406,33 @@ export default function ClaimsAnalyzerPage() {
                 <KPICard label="Savings if Fixed" value={`R${result.summary.estimatedSavings.toLocaleString()}`}
                   icon={TrendingDown} color="#10B981" subtitle="estimated recovery" />
               </div>
+
+              {/* ─── Self-Diagnosis Banner ─── */}
+              {result.selfDiagnosis?.detected && (
+                <div className={`rounded-xl p-5 border ${result.selfDiagnosis.remapped
+                  ? "bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200"
+                  : "bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200"
+                }`}>
+                  <div className="flex items-start gap-3">
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                      result.selfDiagnosis.remapped ? "bg-blue-100" : "bg-amber-100"
+                    }`}>
+                      <Sparkles className={`w-5 h-5 ${result.selfDiagnosis.remapped ? "text-blue-600" : "text-amber-600"}`} />
+                    </div>
+                    <div className="flex-1">
+                      <p className={`text-[14px] font-semibold ${result.selfDiagnosis.remapped ? "text-blue-900" : "text-amber-900"}`}>
+                        {result.selfDiagnosis.remapped ? "AI Auto-Corrected Your File" : "AI Detected a Problem"}
+                      </p>
+                      <p className="text-[12px] text-gray-700 mt-1 leading-relaxed">{result.selfDiagnosis.problem}</p>
+                      <div className={`mt-2 rounded-md p-3 ${result.selfDiagnosis.remapped ? "bg-blue-100/50" : "bg-amber-100/50"}`}>
+                        <p className={`text-[12px] font-medium ${result.selfDiagnosis.remapped ? "text-blue-800" : "text-amber-800"}`}>
+                          {result.selfDiagnosis.action}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* ─── Batch Intelligence Insights ─── */}
               {result.batchInsights && result.batchInsights.length > 0 && (
