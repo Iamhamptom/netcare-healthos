@@ -35,7 +35,7 @@ interface TrainingExample {
   category: string;
 }
 
-const KB_DIR = join(process.cwd(), "docs/knowledge");
+const KB_DIR = join(/* turbopackIgnore: true */ process.cwd(), "docs/knowledge");
 const EXTRACTED_DIR = join(KB_DIR, "extracted");
 
 // ─── Chunk-based Q&A Generator ──────────────────────────────────────────────

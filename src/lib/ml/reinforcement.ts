@@ -284,8 +284,8 @@ export function checkForKBUpdates(lastEmbedTimestamp: string): {
 
   // Scan knowledge base directories
   const kbDirs = [
-    join(process.cwd(), "docs/knowledge"),
-    join(process.cwd(), "docs/knowledge/extracted"),
+    join(/* turbopackIgnore: true */ process.cwd(), "docs/knowledge"),
+    join(/* turbopackIgnore: true */ process.cwd(), "docs/knowledge/extracted"),
   ];
 
   for (const dir of kbDirs) {
@@ -411,7 +411,7 @@ export async function runLearningCycle(): Promise<{
     console.warn("[Learning Cycle] Supabase write failed, falling back to local file:", dbError instanceof Error ? dbError.message : "unknown");
     try {
       const { appendFileSync, mkdirSync } = await import("fs");
-      const fallbackDir = join(process.cwd(), "ml/learning-fallback");
+      const fallbackDir = join(/* turbopackIgnore: true */ process.cwd(), "ml/learning-fallback");
       mkdirSync(fallbackDir, { recursive: true });
       const fallbackPath = join(fallbackDir, `learning-${new Date().toISOString().slice(0, 10)}.jsonl`);
       for (const ex of newExamples) {

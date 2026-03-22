@@ -57,7 +57,7 @@ export interface VersionManifest {
 
 // ─── Paths ──────────────────────────────────────────────────────────────────
 
-const ML_DIR = join(process.cwd(), "ml");
+const ML_DIR = join(/* turbopackIgnore: true */ process.cwd(), "ml");
 const VERSIONS_DIR = join(ML_DIR, "versions");
 const MANIFEST_PATH = join(VERSIONS_DIR, "manifest.json");
 
