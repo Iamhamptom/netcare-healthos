@@ -17,13 +17,8 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 import { createHash } from "crypto";
-// Lazy fs to prevent Turbopack from bundling ml/ directory (300MB) into serverless functions
-function getFs() { return require("fs") as typeof import("fs"); }
-const readFileSync = (...args: Parameters<typeof import("fs").readFileSync>) => getFs().readFileSync(...args);
-const writeFileSync = (...args: Parameters<typeof import("fs").writeFileSync>) => getFs().writeFileSync(...args);
-const existsSync = (...args: Parameters<typeof import("fs").existsSync>) => getFs().existsSync(...args);
-const mkdirSync = (...args: Parameters<typeof import("fs").mkdirSync>) => getFs().mkdirSync(...args);
-const readdirSync = (...args: Parameters<typeof import("fs").readdirSync>) => getFs().readdirSync(...args);
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+const _fs = () => require("fs") as typeof import("fs");
 import { join } from "path";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -93,7 +88,7 @@ export function createVersion(params: {
   // Find checkpoint files in the adapter directory
   const checkpoints: string[] = [];
   try {
-    const files = readdirSync(params.adapterPath);
+    const files = _fs().readdirSync(params.adapterPath);
     for (const f of files) {
       if (f.endsWith("_adapters.safetensors")) {
         checkpoints.push(f);
@@ -167,8 +162,8 @@ export function rollbackTo(version: string): void {
 
 function loadManifest(): VersionManifest {
   try {
-    if (existsSync(MANIFEST_PATH)) {
-      return JSON.parse(readFileSync(MANIFEST_PATH, "utf-8"));
+    if (_fs().existsSync(MANIFEST_PATH)) {
+      return JSON.parse(_fs().readFileSync(MANIFEST_PATH, "utf-8"));
     }
   } catch {
     // Corrupt manifest — start fresh
@@ -177,6 +172,6 @@ function loadManifest(): VersionManifest {
 }
 
 function saveManifest(manifest: VersionManifest): void {
-  mkdirSync(VERSIONS_DIR, { recursive: true });
-  writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2));
+  _fs().mkdirSync(VERSIONS_DIR, { recursive: true });
+  _fs().writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2));
 }
