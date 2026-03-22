@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
         if (firstScheme) schemeCode = firstScheme;
       }
     } else {
-      const mapping = customMapping || autoMapColumns(parsed.headers);
+      const mapping = customMapping || autoMapColumns(parsed.headers, parsed.rows);
       if (!mapping.primaryICD10) {
         // Smart detection: scan actual cell values to find the ICD-10 column
         const suggestion = suggestICD10Column(parsed.headers, parsed.rows);
@@ -263,7 +263,7 @@ export async function POST(req: NextRequest) {
       detectedFormat,
       autoCorrections,
       parseErrors: parsed.errors,
-      columnMapping: detectedFormat === "healthbridge" ? { primaryICD10: "ICD10_1", autoDetected: true } : autoMapColumns(parsed.headers),
+      columnMapping: detectedFormat === "healthbridge" ? { primaryICD10: "ICD10_1", autoDetected: true } : autoMapColumns(parsed.headers, parsed.rows),
       headers: parsed.headers,
       schemeCode,
       schemeList: SCHEME_LIST,

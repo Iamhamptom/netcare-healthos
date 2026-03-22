@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No valid data rows found" }, { status: 400 });
     }
 
-    const mapping = autoMapColumns(parsed.headers);
+    const mapping = autoMapColumns(parsed.headers, parsed.rows);
     if (!mapping.primaryICD10) {
       return NextResponse.json({ error: "Could not identify ICD-10 column" }, { status: 400 });
     }

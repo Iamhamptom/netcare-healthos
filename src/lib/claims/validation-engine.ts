@@ -80,7 +80,8 @@ const COLUMN_ALIASES: Record<keyof ColumnMapping, string[]> = {
     "dx_code", "dx", "dxcode", "icd", "icd_code", "icdcode",
     "diag1", "diag_1", "diagnosis1", "diagnosis_1",
     "icd10_1", "icd10_primary", "icd_primary",
-    "code", "claim_code", "medical_code",
+    "medical_code",
+    // NOTE: "code" and "claim_code" removed — too ambiguous, matches claim IDs
   ],
   secondaryICD10: ["secondary_icd10", "secondary_icd", "icd10_secondary", "secondary_diagnosis", "sec_diag", "additional_icd"],
   tariffCode: ["tariff", "tariff_code", "procedure", "procedure_code", "cpt", "cpt_code", "service_code"],
@@ -95,7 +96,7 @@ const COLUMN_ALIASES: Record<keyof ColumnMapping, string[]> = {
   dateOfService: ["date", "service_date", "date_of_service", "dos", "claim_date"],
 };
 
-export function autoMapColumns(headers: string[]): ColumnMapping {
+export function autoMapColumns(headers: string[], rows?: Record<string, string>[]): ColumnMapping {
   const mapping: Partial<ColumnMapping> = {};
   const lowerHeaders = headers.map(h => h.toLowerCase().replace(/[\s-]/g, "_"));
 
@@ -103,19 +104,37 @@ export function autoMapColumns(headers: string[]): ColumnMapping {
     for (const alias of aliases) {
       const idx = lowerHeaders.indexOf(alias);
       if (idx !== -1) {
+        // For ICD-10 column, verify the data actually looks like ICD-10 codes
+        if (field === "primaryICD10" && rows && rows.length > 0) {
+          const sample = rows.slice(0, 10);
+          const icdLike = sample.filter(r => {
+            const val = (r[headers[idx]] || "").trim();
+            return val && /^[A-Z]\d{2}/i.test(val);
+          }).length;
+          // If less than 30% of sampled values look like ICD-10, skip this match
+          if (icdLike < sample.length * 0.3) continue;
+        }
         (mapping as Record<string, string>)[field] = headers[idx];
         break;
       }
     }
   }
 
-  // Fallback: if no primary ICD10 found, try partial match
+  // Fallback: if no primary ICD10 found, try partial match on header names
   if (!mapping.primaryICD10) {
     for (const h of headers) {
-      if (/icd/i.test(h) || /diag/i.test(h) || /^dx/i.test(h) || /^code$/i.test(h.trim())) {
+      if (/icd/i.test(h) || /diag/i.test(h) || /^dx/i.test(h)) {
         mapping.primaryICD10 = h;
         break;
       }
+    }
+  }
+
+  // Ultimate fallback: scan actual data to find the ICD-10 column
+  if (!mapping.primaryICD10 && rows && rows.length > 0) {
+    const suggestion = suggestICD10Column(headers, rows);
+    if (suggestion && suggestion.confidence >= 0.4) {
+      mapping.primaryICD10 = suggestion.header;
     }
   }
 

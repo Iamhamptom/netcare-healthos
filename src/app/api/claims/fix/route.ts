@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       // For Healthbridge, use standard mapping
       mapping = { primaryICD10: "ICD10_1" } as ColumnMapping;
     } else {
-      mapping = autoMapColumns(parsed.headers);
+      mapping = autoMapColumns(parsed.headers, parsed.rows);
       if (!mapping.primaryICD10) {
         const suggestion = suggestICD10Column(parsed.headers, parsed.rows);
         if (suggestion && suggestion.confidence >= 0.5) {
