@@ -27,6 +27,7 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 import { scrubTrainingExample } from "./pii-scrubber";
+import { generateAllKnowledgeBaseExamples } from "./training-data-knowledge";
 
 export interface TrainingExample {
   instruction: string;
@@ -982,6 +983,11 @@ export function generateComprehensiveDataset(): {
   const workflows = generateWorkflowExamples();
   console.log(`[Training] Workflows: ${workflows.length} examples`);
   allExamples.push(...workflows);
+
+  // 14. FULL KNOWLEDGE BASE — every .md file auto-parsed into Q&A pairs
+  const kbResult = generateAllKnowledgeBaseExamples();
+  console.log(`[Training] Knowledge Base (${kbResult.stats.filesProcessed} files): ${kbResult.stats.totalExamples} examples`);
+  allExamples.push(...kbResult.examples);
 
   // Count by category
   const byCategory: Record<string, number> = {};

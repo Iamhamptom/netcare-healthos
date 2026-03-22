@@ -86,6 +86,15 @@ export {
   generateWorkflowExamples,
 } from "./training-data-comprehensive";
 
+// Knowledge Base Training Data (full doc parsing)
+export {
+  generateAllKnowledgeBaseExamples,
+  generateLawExamples,
+  generateNetcareExamples,
+  generateIndustryExamples,
+  generateTelehealthExamples,
+} from "./training-data-knowledge";
+
 // PII Scrubber (POPIA 2026 compliance)
 export {
   scrubPII,
