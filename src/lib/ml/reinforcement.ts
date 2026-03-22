@@ -14,7 +14,6 @@
 // - File watcher: re-embeds when docs/knowledge/ files change
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-import { readdirSync, statSync } from "fs";
 import { join } from "path";
 import { scrubJSON, scrubTrainingExample } from "./pii-scrubber";
 
@@ -288,14 +287,15 @@ export function checkForKBUpdates(lastEmbedTimestamp: string): {
     join(/* turbopackIgnore: true */ process.cwd(), "docs/knowledge/extracted"),
   ];
 
+  const fs = await import("fs");
   for (const dir of kbDirs) {
     try {
-      const files = readdirSync(dir);
+      const files = fs.readdirSync(dir);
       for (const file of files) {
         if (!file.endsWith(".md") && !file.endsWith(".csv")) continue;
         const fullPath = join(dir, file);
         try {
-          const stat = statSync(fullPath);
+          const stat = fs.statSync(fullPath);
           const mtime = stat.mtimeMs;
           const prevMtime = kbFileTimestamps.get(fullPath);
 

@@ -17,7 +17,13 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 import { createHash } from "crypto";
-import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from "fs";
+// Lazy fs to prevent Turbopack from bundling ml/ directory (300MB) into serverless functions
+function getFs() { return require("fs") as typeof import("fs"); }
+const readFileSync = (...args: Parameters<typeof import("fs").readFileSync>) => getFs().readFileSync(...args);
+const writeFileSync = (...args: Parameters<typeof import("fs").writeFileSync>) => getFs().writeFileSync(...args);
+const existsSync = (...args: Parameters<typeof import("fs").existsSync>) => getFs().existsSync(...args);
+const mkdirSync = (...args: Parameters<typeof import("fs").mkdirSync>) => getFs().mkdirSync(...args);
+const readdirSync = (...args: Parameters<typeof import("fs").readdirSync>) => getFs().readdirSync(...args);
 import { join } from "path";
 
 // ─── Types ──────────────────────────────────────────────────────────────────

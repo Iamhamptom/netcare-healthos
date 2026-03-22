@@ -25,7 +25,7 @@
 // - SAHPRA SaMD classification
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-import { readFileSync, readdirSync } from "fs";
+// fs imported dynamically to avoid Turbopack bundling docs/knowledge (300MB)
 import { join } from "path";
 
 interface TrainingExample {
@@ -279,6 +279,8 @@ export function generateAllKnowledgeBaseExamples(): {
   examples: TrainingExample[];
   stats: { filesProcessed: number; totalExamples: number; byFile: Record<string, number> };
 } {
+  // Dynamic require to prevent Turbopack from tracing docs/knowledge into bundle
+  const { readFileSync } = require("fs") as typeof import("fs");
   const allExamples: TrainingExample[] = [];
   const byFile: Record<string, number> = {};
 
