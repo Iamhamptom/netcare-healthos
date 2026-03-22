@@ -18,6 +18,17 @@ const cspDirectives = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  outputFileTracingExcludes: {
+    "*": [
+      "./docs/knowledge/**",
+      "./docs/knowledge/extracted/**",
+      "./docs/knowledge/databases/**",
+      "./ml/**",
+      "./steinberg/**",
+      "./.firecrawl/**",
+      "./legal/**",
+    ],
+  },
   async headers() {
     return [
       {
