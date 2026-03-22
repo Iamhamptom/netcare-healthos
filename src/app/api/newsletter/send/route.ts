@@ -4,7 +4,11 @@ import { rateLimitByIp } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY || "");
+function getResend() {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) throw new Error("RESEND_API_KEY not configured");
+  return new Resend(key);
+}
 
 export async function POST(req: NextRequest) {
   // Rate limit: 5 sends per minute (admin-only, high-impact)
@@ -53,7 +57,7 @@ export async function POST(req: NextRequest) {
     for (let i = 0; i < subscribers.length; i += batchSize) {
       const batch = subscribers.slice(i, i + batchSize);
       try {
-        await resend.emails.send({
+        await getResend().emails.send({
           from: "Netcare Technology <research@visiocorp.co>",
           to: batch.map((s) => s.email),
           subject,
