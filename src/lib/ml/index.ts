@@ -86,6 +86,18 @@ export {
   generateWorkflowExamples,
 } from "./training-data-comprehensive";
 
+// Deep Parse — extracted legal docs, formularies, drug prices (row-level)
+export {
+  deepParseAllDocuments,
+  parseGEMSDRP,
+  parseGEMSFormulary,
+  parseDiscoveryCDL,
+  parseMedicalSchemesAct,
+  parseMedicalSchemesRegulations,
+  parseSection59,
+  parsePHISCSpec,
+} from "./training-data-deep-parse";
+
 // Knowledge Base Training Data (full doc parsing)
 export {
   generateAllKnowledgeBaseExamples,

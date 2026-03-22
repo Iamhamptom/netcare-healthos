@@ -28,6 +28,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { scrubTrainingExample } from "./pii-scrubber";
 import { generateAllKnowledgeBaseExamples } from "./training-data-knowledge";
+import { deepParseAllDocuments } from "./training-data-deep-parse";
 
 export interface TrainingExample {
   instruction: string;
@@ -988,6 +989,13 @@ export function generateComprehensiveDataset(): {
   const kbResult = generateAllKnowledgeBaseExamples();
   console.log(`[Training] Knowledge Base (${kbResult.stats.filesProcessed} files): ${kbResult.stats.totalExamples} examples`);
   allExamples.push(...kbResult.examples);
+
+  // 15. DEEP PARSE — every row of GEMS DRP (10K), GEMS Formulary (5K),
+  //     Discovery CDL, Medical Schemes Act full text, Regulations full text,
+  //     Section 59 (227 pages), PHISC spec, HPCSA, SAHPRA, CMS Report, Bonitas
+  const deepResult = deepParseAllDocuments();
+  console.log(`[Training] Deep Parse: ${deepResult.examples.length} examples`);
+  allExamples.push(...deepResult.examples);
 
   // Count by category
   const byCategory: Record<string, number> = {};
