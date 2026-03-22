@@ -287,7 +287,7 @@ export function checkForKBUpdates(lastEmbedTimestamp: string): {
     join(/* turbopackIgnore: true */ process.cwd(), "docs/knowledge/extracted"),
   ];
 
-  const fs = await import("fs");
+  const fs = require("fs") as typeof import("fs");
   for (const dir of kbDirs) {
     try {
       const files = fs.readdirSync(dir);

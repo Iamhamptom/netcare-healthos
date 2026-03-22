@@ -14,6 +14,9 @@ export interface ClaimLineItem {
   modifier?: string;
   practitionerType?: string;
   dateOfService?: string;
+  dependentCode?: string;
+  practiceNumber?: string;
+  scheme?: string;
 }
 
 export type ValidationSeverity = "error" | "warning" | "info";
@@ -113,4 +116,7 @@ export interface ColumnMapping {
   modifier?: string;
   practitionerType?: string;
   dateOfService?: string;
+  dependentCode?: string;
+  practiceNumber?: string;
+  scheme?: string;
 }
