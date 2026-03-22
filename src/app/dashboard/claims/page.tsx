@@ -136,6 +136,24 @@ export default function ClaimsAnalyzerPage() {
   const [saved, setSaved] = useState(false);
   const [popiaConsented, setPopiaConsented] = useState(false);
 
+  // Fix file state
+  const [fixing, setFixing] = useState(false);
+  const [fixResult, setFixResult] = useState<{
+    fixedCSV: string;
+    suggestedFileName: string;
+    stats: {
+      before: { valid: number; errors: number; warnings: number; rejectionRate: number };
+      after: { valid: number; errors: number; warnings: number; rejectionRate: number };
+      totalCorrections: number;
+      correctionsAvailable: number;
+      changesByType: Record<string, number>;
+      improvement: { claimsFixed: number; rejectionRateDrop: number; estimatedSavingsRecovered: number };
+    };
+    corrections: { line: number; field: string; from: string; to: string; rule: string; confidence: string; reason: string }[];
+    remainingIssues: { rule: string; explanation: string; fix: string }[];
+  } | null>(null);
+  const [lastUploadedFile, setLastUploadedFile] = useState<File | null>(null);
+
   // Search
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<ICD10SearchResult[]>([]);
@@ -224,7 +242,9 @@ export default function ClaimsAnalyzerPage() {
     setLoading(true);
     setError(null);
     setFileName(file.name);
+    setLastUploadedFile(file);
     setResult(null);
+    setFixResult(null);
     setSaved(false);
     setAiSuggestions({});
     setAiExplanation({});
@@ -259,6 +279,40 @@ export default function ClaimsAnalyzerPage() {
   }, [handleFile]);
 
   // ── Save analysis ──
+  // ── Fix & Download ──
+  async function handleFixFile(applyMedium = false) {
+    if (!lastUploadedFile) { setError("No file to fix — please upload first."); return; }
+    setFixing(true);
+    setFixResult(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", lastUploadedFile);
+      formData.append("applyMedium", applyMedium ? "true" : "false");
+      if (scheme) formData.append("scheme", scheme);
+      const res = await fetch("/api/claims/fix", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || "Fix failed"); return; }
+      setFixResult(data);
+    } catch {
+      setError("Failed to fix file — check your connection.");
+    } finally {
+      setFixing(false);
+    }
+  }
+
+  function downloadFixedCSV() {
+    if (!fixResult) return;
+    const blob = new Blob([fixResult.fixedCSV], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fixResult.suggestedFileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   async function saveAnalysis() {
     if (!result) return;
     try {
@@ -1326,7 +1380,14 @@ export default function ClaimsAnalyzerPage() {
                     {saved ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
                     {saved ? "Saved" : "Save"}
                   </button>
-                  <button onClick={() => { setResult(null); setFileName(null); setSaved(false); setAiSuggestions({}); setAiExplanation({}); }}
+                  {result.invalidClaims > 0 && (
+                    <button onClick={() => handleFixFile()} disabled={fixing}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-[12px] font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50">
+                      {fixing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
+                      {fixing ? "Fixing..." : "Fix My File"}
+                    </button>
+                  )}
+                  <button onClick={() => { setResult(null); setFileName(null); setSaved(false); setFixResult(null); setAiSuggestions({}); setAiExplanation({}); }}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 text-[12px] font-medium hover:bg-gray-200 transition-colors">
                     <Upload className="w-3.5 h-3.5" />New
                   </button>
@@ -1376,6 +1437,122 @@ export default function ClaimsAnalyzerPage() {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* ─── Fix Result Panel ─── */}
+              {fixResult && (
+                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-5 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-5 h-5 text-emerald-600" />
+                      <span className="text-[14px] font-semibold text-emerald-900">File Fixed — {fixResult.stats.totalCorrections} corrections applied</span>
+                    </div>
+                    <button onClick={downloadFixedCSV}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-600 text-white text-[12px] font-semibold hover:bg-emerald-700 transition-colors shadow-sm">
+                      <Download className="w-4 h-4" />
+                      Download {fixResult.suggestedFileName}
+                    </button>
+                  </div>
+
+                  {/* Before / After comparison */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-white rounded-lg border border-red-100 p-3">
+                      <p className="text-[10px] font-semibold text-red-500 uppercase tracking-wide mb-2">Before</p>
+                      <div className="grid grid-cols-3 gap-2 text-center">
+                        <div>
+                          <p className="text-[18px] font-bold text-emerald-600">{fixResult.stats.before.valid}</p>
+                          <p className="text-[10px] text-gray-500">Valid</p>
+                        </div>
+                        <div>
+                          <p className="text-[18px] font-bold text-red-600">{fixResult.stats.before.errors}</p>
+                          <p className="text-[10px] text-gray-500">Rejected</p>
+                        </div>
+                        <div>
+                          <p className="text-[18px] font-bold text-amber-600">{fixResult.stats.before.warnings}</p>
+                          <p className="text-[10px] text-gray-500">Warnings</p>
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-red-600 font-medium text-center mt-2">{fixResult.stats.before.rejectionRate}% rejection rate</p>
+                    </div>
+                    <div className="bg-white rounded-lg border border-emerald-200 p-3">
+                      <p className="text-[10px] font-semibold text-emerald-500 uppercase tracking-wide mb-2">After Fix</p>
+                      <div className="grid grid-cols-3 gap-2 text-center">
+                        <div>
+                          <p className="text-[18px] font-bold text-emerald-600">{fixResult.stats.after.valid}</p>
+                          <p className="text-[10px] text-gray-500">Valid</p>
+                        </div>
+                        <div>
+                          <p className="text-[18px] font-bold text-red-600">{fixResult.stats.after.errors}</p>
+                          <p className="text-[10px] text-gray-500">Rejected</p>
+                        </div>
+                        <div>
+                          <p className="text-[18px] font-bold text-amber-600">{fixResult.stats.after.warnings}</p>
+                          <p className="text-[10px] text-gray-500">Warnings</p>
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-emerald-600 font-medium text-center mt-2">{fixResult.stats.after.rejectionRate}% rejection rate</p>
+                    </div>
+                  </div>
+
+                  {/* Improvement stats */}
+                  {fixResult.stats.improvement.claimsFixed > 0 && (
+                    <div className="bg-emerald-100 rounded-lg p-3 flex items-center gap-4 justify-center">
+                      <div className="text-center">
+                        <p className="text-[20px] font-bold text-emerald-700">+{fixResult.stats.improvement.claimsFixed}</p>
+                        <p className="text-[10px] text-emerald-600">Claims fixed</p>
+                      </div>
+                      <div className="w-px h-8 bg-emerald-300" />
+                      <div className="text-center">
+                        <p className="text-[20px] font-bold text-emerald-700">-{fixResult.stats.improvement.rejectionRateDrop}%</p>
+                        <p className="text-[10px] text-emerald-600">Rejection rate drop</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* What was changed */}
+                  {Object.keys(fixResult.stats.changesByType).length > 0 && (
+                    <div className="bg-white rounded-lg border border-gray-100 p-3">
+                      <p className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide mb-2">Corrections Applied</p>
+                      <div className="space-y-1">
+                        {Object.entries(fixResult.stats.changesByType).map(([rule, count]) => (
+                          <div key={rule} className="flex items-center justify-between text-[12px]">
+                            <span className="text-gray-700">{rule}</span>
+                            <span className="text-emerald-600 font-medium">{count} fixed</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Sample corrections */}
+                  {fixResult.corrections.length > 0 && (
+                    <details className="bg-white rounded-lg border border-gray-100 p-3">
+                      <summary className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide cursor-pointer">
+                        View all {fixResult.corrections.length} changes
+                      </summary>
+                      <div className="mt-2 space-y-1 max-h-60 overflow-y-auto">
+                        {fixResult.corrections.map((c, i) => (
+                          <div key={i} className="flex items-center gap-2 text-[11px] py-1 border-b border-gray-50 last:border-0">
+                            <span className="text-gray-400 font-mono w-8 shrink-0">L{c.line}</span>
+                            <span className="bg-red-50 text-red-700 px-1.5 py-0.5 rounded font-mono line-through">{c.from}</span>
+                            <ArrowRight className="w-3 h-3 text-gray-400 shrink-0" />
+                            <span className="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-mono font-medium">{c.to}</span>
+                            <span className="text-gray-400 ml-auto truncate max-w-[200px]">{c.reason}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </details>
+                  )}
+
+                  {/* Re-upload prompt */}
+                  <div className="flex items-center justify-between bg-blue-50 border border-blue-100 rounded-lg p-3">
+                    <p className="text-[12px] text-blue-800">Download the fixed file, then re-upload it here to verify all corrections.</p>
+                    <button onClick={downloadFixedCSV}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-[11px] font-medium hover:bg-blue-700 transition-colors">
+                      <Download className="w-3.5 h-3.5" /> Download & Re-check
+                    </button>
+                  </div>
                 </div>
               )}
 
