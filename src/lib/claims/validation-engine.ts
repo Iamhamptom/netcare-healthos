@@ -792,18 +792,17 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     }
   }
 
-  // ── Rule 21: PMB modifier requirement ──
-  // CDL conditions like Asthma (J45.x), Diabetes (E10-E14), Hypertension (I10-I15)
-  // should carry appropriate modifiers when billed under PMB
+  // ── Rule 21: PMB modifier note ──
+  // CDL conditions MAY need a PMB modifier when claiming under the CDL benefit.
+  // This is informational, not an error — routine visits don't always need it.
   if (entry?.isPMB && !item.modifier) {
-    const pmbCodes = ["J45", "E10", "E11", "E12", "E13", "E14", "I10", "I11", "I12", "I13", "I15"];
-    const isPMBCode = pmbCodes.some(p => code.startsWith(p));
-    if (isPMBCode) {
+    const cdlCodes = ["J45", "E10", "E11", "E12", "E13", "E14", "I10", "I11", "I12", "I13", "I15"];
+    const isCDLCode = cdlCodes.some(p => code.startsWith(p));
+    if (isCDLCode) {
       issues.push({
-        lineNumber: ln, field: "modifier", code: "PMB_MODIFIER_MISSING",
-        severity: "warning", rule: "PMB Modifier Missing",
-        message: `"${code}" is a CDL/PMB condition but no modifier is specified. SA schemes expect a PMB modifier for Chronic Disease List claims to route correctly.`,
-        suggestion: "Add the appropriate PMB modifier to ensure the claim routes to the CDL benefit, not day-to-day benefits.",
+        lineNumber: ln, field: "modifier", code: "PMB_MODIFIER_NOTE",
+        severity: "info", rule: "CDL/PMB Condition Detected",
+        message: `"${code}" is a Chronic Disease List condition. If claiming under the CDL benefit, a PMB modifier may be required for correct routing.`,
       });
     }
   }
@@ -816,15 +815,16 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
 function validateCrossLine(lines: ClaimLineItem[]): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
 
-  // Detect duplicate claims (same patient + same code + same date)
+  // Detect duplicate claims — must match ALL of: patient + ICD-10 + date + tariff + amount
+  // A patient CAN have multiple services (different tariffs) on the same day — that's NOT a duplicate
   const seen = new Map<string, number>();
   for (const line of lines) {
-    const key = `${line.patientName || ""}|${line.primaryICD10}|${line.dateOfService || ""}`;
+    const key = `${(line.patientName || "").toLowerCase()}|${line.primaryICD10}|${line.dateOfService || ""}|${line.tariffCode || ""}|${line.amount || ""}`;
     if (key && seen.has(key)) {
       issues.push({
         lineNumber: line.lineNumber, field: "primaryICD10", code: "DUPLICATE_CLAIM",
         severity: "error", rule: "Duplicate Claim",
-        message: `Potential duplicate: same patient, diagnosis "${line.primaryICD10}", and date of service as line ${seen.get(key)}.`,
+        message: `Exact duplicate: same patient, diagnosis "${line.primaryICD10}", tariff "${line.tariffCode || "N/A"}", amount, and date as line ${seen.get(key)}.`,
         suggestion: "Review for possible duplicate billing. Remove if this is the same service.",
       });
     } else {
