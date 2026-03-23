@@ -241,7 +241,7 @@ export function extractClaimLines(
       amount: mapping.amount ? parseFloat((row[mapping.amount] || "").replace(/[^0-9.\-]/g, "")) || undefined : undefined,
       modifier: mapping.modifier ? row[mapping.modifier]?.trim() : undefined,
       practitionerType: mapping.practitionerType ? normalizeDiscipline(row[mapping.practitionerType]?.trim()) : undefined,
-      dateOfService: mapping.dateOfService ? row[mapping.dateOfService]?.trim() : undefined,
+      dateOfService: mapping.dateOfService ? (row[mapping.dateOfService]?.trim() || "").replace(/[./]/g, "-") : undefined,
       dependentCode: mapping.dependentCode ? row[mapping.dependentCode]?.trim() : undefined,
       practiceNumber: mapping.practiceNumber ? row[mapping.practiceNumber]?.trim() : undefined,
       scheme: mapping.scheme ? row[mapping.scheme]?.trim() : undefined,
@@ -300,17 +300,13 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     const isISO = /^\d{4}-\d{2}-\d{2}$/.test(raw);
     const isCCYYMMDD = /^\d{8}$/.test(raw);
     if (!isISO && !isCCYYMMDD) {
-      // Check for common bad formats
-      const isSlashFormat = /^\d{4}\/\d{2}\/\d{2}$/.test(raw); // YYYY/MM/DD
-      const isDDMMYYYY = /^\d{2}[-/]\d{2}[-/]\d{4}$/.test(raw); // DD-MM-YYYY or DD/MM/YYYY
-      if (isSlashFormat || isDDMMYYYY) {
-        issues.push({
-          lineNumber: ln, field: "dateOfService", code: "INVALID_DATE_FORMAT",
-          severity: "error", rule: "Invalid Date Format",
-          message: `Date "${raw}" uses a non-standard format. SA claims require YYYY-MM-DD (ISO 8601) or CCYYMMDD (EDIFACT).`,
-          suggestion: "Convert dates to YYYY-MM-DD format (e.g., 2026-02-15).",
-        });
-      }
+      // Catch ALL non-standard formats — any date that isn't YYYY-MM-DD or CCYYMMDD is wrong
+      issues.push({
+        lineNumber: ln, field: "dateOfService", code: "INVALID_DATE_FORMAT",
+        severity: "error", rule: "Invalid Date Format",
+        message: `Date "${raw}" uses a non-standard format. SA claims require YYYY-MM-DD (ISO 8601) or CCYYMMDD (EDIFACT).`,
+        suggestion: "Convert dates to YYYY-MM-DD format. Common errors: slashes (2026/02/15), dots (2026.02.15), DD-MM-YYYY.",
+      });
     }
   }
 

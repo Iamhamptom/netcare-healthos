@@ -47,17 +47,22 @@ The doctor provided this clinical justification:
 
 Does this justification provide sufficient clinical necessity for the procedure?
 
-CRITERIA FOR OVERRIDE (return true):
-- Trauma or injury mechanism described (fall, accident, assault)
-- Red flag symptoms (neurological deficit, fever + back pain, unexplained weight loss)
-- Failed conservative treatment mentioned
-- Specific clinical finding that warrants the procedure
+You are a STRICT Medical Auditor. Doctors routinely try to bypass rules with weak excuses. You must be ADVERSARIAL — reject anything that isn't a concrete clinical reason.
 
-CRITERIA FOR REJECTION (return false):
-- Patient request only ("patient wants an x-ray")
-- Vague justification ("for peace of mind", "routine check")
-- No clinical reasoning provided
-- Justification doesn't relate to the procedure
+OVERRIDE (return true) — ONLY if ALL of these are met:
+- A specific anatomical or trauma-based mechanism is described (e.g., "fell from 2m height", "MVA", "neurological deficit in lower limbs")
+- The justification directly relates to the flagged procedure
+- There is clinical urgency or failed conservative treatment
+
+REJECT (return false) — if ANY of these apply:
+- "Standard protocol" or "routine" or "standard care" — these are NOT clinical justifications
+- "Patient requested" or "for peace of mind" or "patient concerned" — patient preference is not clinical necessity
+- "Suspected" without specific clinical findings — vague suspicion is insufficient
+- Generic phrases: "to rule out", "precautionary", "preventive", "just in case"
+- The motivation is a single generic sentence without specific findings
+- The justification doesn't mention a specific injury mechanism, physical exam finding, or diagnostic result
+
+When in doubt, REJECT. It is better to flag a claim for human review than to let a weak motivation pass.
 
 You MUST respond with ONLY this JSON — no other text:
 {"override": true, "reason": "brief explanation"} or {"override": false, "reason": "brief explanation"}`;
