@@ -150,18 +150,68 @@ export function generateAutoCorrections(
             break;
           }
         }
-        // Letter O vs digit 0 confusion: "O19O" → "O190" or "019O" → "O19.0"
-        const fixedO = code.replace(/O/g, "0").replace(/^0/, code[0]);
-        if (fixedO !== code) {
-          const entry = lookupICD10(fixedO);
+        // Strip trailing special characters: "B90*" → "B90", "J06#" → "J06"
+        const stripped = code.replace(/[^A-Z0-9.]/gi, "");
+        if (stripped !== code && stripped.length >= 3) {
+          const entry = lookupICD10(stripped);
           if (entry) {
             corrections.push({
               lineNumber: issue.lineNumber, field: "primaryICD10",
-              originalValue: code, correctedValue: fixedO,
-              rule: "Invalid Code Format", confidence: "medium",
-              reason: `Letter O/digit 0 confusion — "${code}" may be "${fixedO}" (${entry.description}).`,
+              originalValue: code, correctedValue: stripped,
+              rule: "Invalid Code Format", confidence: "high",
+              reason: `Removed invalid characters — "${code}" corrected to "${stripped}" (${entry.description}).`,
               applied: false,
             });
+            break;
+          }
+          // Try with .9 appended
+          const strippedWith9 = stripped.length === 3 ? `${stripped}.9` : stripped;
+          const entry9 = lookupICD10(strippedWith9);
+          if (entry9 && strippedWith9 !== stripped) {
+            corrections.push({
+              lineNumber: issue.lineNumber, field: "primaryICD10",
+              originalValue: code, correctedValue: strippedWith9,
+              rule: "Invalid Code Format", confidence: "medium",
+              reason: `Cleaned "${code}" → "${strippedWith9}" (${entry9.description}).`,
+              applied: false,
+            });
+            break;
+          }
+        }
+        // Letter O vs digit 0 confusion: try multiple combinations
+        // "O19O" → try "O190", "0190", with/without dot
+        const oFixAttempts = [
+          code.replace(/O(?=\d)/g, "0"),  // O before digit → 0
+          code.replace(/(?<=\d)O/g, "0"), // O after digit → 0
+          code.replace(/O/g, "0").replace(/^0/, code[0]), // all O→0 but keep first letter
+        ];
+        for (const attempt of oFixAttempts) {
+          if (attempt === code) continue;
+          const entry = lookupICD10(attempt);
+          if (entry) {
+            corrections.push({
+              lineNumber: issue.lineNumber, field: "primaryICD10",
+              originalValue: code, correctedValue: attempt,
+              rule: "Invalid Code Format", confidence: "medium",
+              reason: `Letter O/digit 0 fix — "${code}" → "${attempt}" (${entry.description}).`,
+              applied: false,
+            });
+            break;
+          }
+          // Try with dot
+          if (/^[A-Z]\d{3,}$/i.test(attempt)) {
+            const withDot = attempt.substring(0, 3) + "." + attempt.substring(3);
+            const entryDot = lookupICD10(withDot);
+            if (entryDot) {
+              corrections.push({
+                lineNumber: issue.lineNumber, field: "primaryICD10",
+                originalValue: code, correctedValue: withDot,
+                rule: "Invalid Code Format", confidence: "medium",
+                reason: `Letter O/digit 0 + dot fix — "${code}" → "${withDot}" (${entryDot.description}).`,
+                applied: false,
+              });
+              break;
+            }
           }
         }
         break;
