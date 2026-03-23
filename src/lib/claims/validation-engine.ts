@@ -804,17 +804,25 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     }
   }
 
-  // ── Rule 21: PMB modifier note ──
-  // CDL conditions MAY need a PMB modifier when claiming under the CDL benefit.
-  // This is informational, not an error — routine visits don't always need it.
+  // ── Rule 21: PMB modifier check ──
+  // CDL conditions with medication (NAPPI present) or modifier field available
+  // but empty should be warned — they're likely CDL claims that need PMB routing.
+  // Routine GP visits for chronic conditions without medication don't need it.
   if (entry?.isPMB && !item.modifier) {
     const cdlCodes = ["J45", "E10", "E11", "E12", "E13", "E14", "I10", "I11", "I12", "I13", "I15"];
     const isCDLCode = cdlCodes.some(p => code.startsWith(p));
     if (isCDLCode) {
+      // If NAPPI code present (medication dispensed) → this IS a CDL claim, warn harder
+      // If no NAPPI → might be routine visit, softer note
+      const hasMedication = !!item.nappiCode;
       issues.push({
-        lineNumber: ln, field: "modifier", code: "PMB_MODIFIER_NOTE",
-        severity: "info", rule: "CDL/PMB Condition Detected",
-        message: `"${code}" is a Chronic Disease List condition. If claiming under the CDL benefit, a PMB modifier may be required for correct routing.`,
+        lineNumber: ln, field: "modifier", code: hasMedication ? "PMB_MODIFIER_MISSING" : "PMB_MODIFIER_NOTE",
+        severity: hasMedication ? "warning" : "info",
+        rule: hasMedication ? "PMB Modifier Missing" : "CDL/PMB Condition Detected",
+        message: hasMedication
+          ? `"${code}" is a CDL condition with medication (NAPPI ${item.nappiCode}) but no PMB modifier. SA schemes require PMB modifier for chronic medication claims.`
+          : `"${code}" is a Chronic Disease List condition. If claiming under the CDL benefit, a PMB modifier may be required.`,
+        suggestion: hasMedication ? "Add the PMB modifier to route this claim to the Chronic Disease List benefit." : undefined,
       });
     }
   }
