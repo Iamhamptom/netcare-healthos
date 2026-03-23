@@ -664,6 +664,69 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     });
   }
 
+  // ── Rule 14: Quantity limits — GP/specialist consults ──
+  if (item.quantity !== undefined && item.quantity > 1 && item.tariffCode) {
+    const prefix = item.tariffCode.substring(0, 2);
+    // GP consults (01xx), specialist consults (02xx) — max 1 per day is standard
+    // 4+ is always suspicious
+    if ((prefix === "01" || prefix === "02") && item.quantity >= 4) {
+      issues.push({
+        lineNumber: ln, field: "quantity", code: "EXCESSIVE_QUANTITY",
+        severity: "error", rule: "Excessive Consultation Quantity",
+        message: `${item.quantity} consultations billed on tariff "${item.tariffCode}" (${prefix === "01" ? "GP" : "Specialist"}). Billing ${item.quantity} consults on a single claim is flagged as suspicious by all SA schemes.`,
+        suggestion: "Verify the quantity. GP/specialist consults should typically be 1 per claim line. Multiple consults on the same day require motivation.",
+      });
+    } else if ((prefix === "01" || prefix === "02") && item.quantity > 1) {
+      issues.push({
+        lineNumber: ln, field: "quantity", code: "MULTIPLE_CONSULTS",
+        severity: "warning", rule: "Multiple Consultations",
+        message: `${item.quantity} consultations billed on tariff "${item.tariffCode}". Multiple same-day consults may require pre-authorisation or motivation.`,
+        suggestion: "Ensure clinical justification exists for multiple consultations.",
+      });
+    }
+  }
+
+  // ── Rule 15: Neonatal modifier 0019 — age check ──
+  if (item.modifier === "0019" && item.patientAge !== undefined && item.patientAge > 1) {
+    issues.push({
+      lineNumber: ln, field: "modifier", code: "NEONATAL_MODIFIER_AGE",
+      severity: "error", rule: "Neonatal Modifier on Non-Neonate",
+      message: `Modifier 0019 (neonatal) used on a ${item.patientAge}-year-old patient. This modifier is restricted to neonates (< 28 days / < 1 year).`,
+      suggestion: "Remove modifier 0019 or verify patient age. Using neonatal modifiers on adults is automatically rejected.",
+    });
+  }
+
+  // ── Rule 16: Clinical appropriateness — medication vs diagnosis ──
+  if (item.nappiCode && item.primaryICD10) {
+    // Paracetamol (7020901, 7020902) for respiratory conditions (J-codes) — flag as inappropriate
+    const isParacetamol = item.nappiCode.startsWith("702090");
+    const isRespiratory = /^J\d/i.test(item.primaryICD10);
+    if (isParacetamol && isRespiratory) {
+      issues.push({
+        lineNumber: ln, field: "nappiCode", code: "MEDICATION_DIAGNOSIS_MISMATCH",
+        severity: "warning", rule: "Medication-Diagnosis Mismatch",
+        message: `Paracetamol (NAPPI ${item.nappiCode}) billed with respiratory diagnosis "${item.primaryICD10}". Basic analgesics are not first-line treatment for respiratory conditions.`,
+        suggestion: "Verify the medication is appropriate for the diagnosis. Schemes may query this combination.",
+      });
+    }
+  }
+
+  // ── Rule 17: PMB modifier requirement ──
+  // CDL conditions like Asthma (J45.x), Diabetes (E10-E14), Hypertension (I10-I15)
+  // should carry appropriate modifiers when billed under PMB
+  if (entry?.isPMB && !item.modifier) {
+    const pmbCodes = ["J45", "E10", "E11", "E12", "E13", "E14", "I10", "I11", "I12", "I13", "I15"];
+    const isPMBCode = pmbCodes.some(p => code.startsWith(p));
+    if (isPMBCode) {
+      issues.push({
+        lineNumber: ln, field: "modifier", code: "PMB_MODIFIER_MISSING",
+        severity: "warning", rule: "PMB Modifier Missing",
+        message: `"${code}" is a CDL/PMB condition but no modifier is specified. SA schemes expect a PMB modifier for Chronic Disease List claims to route correctly.`,
+        suggestion: "Add the appropriate PMB modifier to ensure the claim routes to the CDL benefit, not day-to-day benefits.",
+      });
+    }
+  }
+
   return issues;
 }
 
