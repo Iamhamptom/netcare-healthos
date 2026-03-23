@@ -121,6 +121,7 @@ const ACTION_PILLS = [
   { id: 'rejected', label: 'Show Rejected Claims', icon: 'xcircle', color: 'bg-red-500 hover:bg-red-600' },
   { id: 'report', label: 'Download PDF Report', icon: 'download', color: 'bg-[#3DA9D1] hover:bg-[#2E8AB0]' },
   { id: 'details', label: 'View All Details', icon: 'arrow', color: 'bg-gray-600 hover:bg-gray-700' },
+  { id: 'raw', label: 'Raw JSON', icon: 'arrow', color: 'bg-gray-500 hover:bg-gray-600' },
 ];
 
 /* ──────────────────────────────────────────────
@@ -498,7 +499,7 @@ function FilteredClaimsCard({ data }: { data: FilteredData }) {
         {data.filterType === 'rejected' ? 'Rejected Claims' : 'Filtered Claims'} ({data.count})
       </p>
       <div className="max-h-60 overflow-y-auto space-y-1.5 pr-1">
-        {claims.slice(0, 20).map((claim: any, i: number) => (
+        {claims.map((claim: any, i: number) => (
           <div key={i} className="bg-white border border-red-100 rounded-lg px-3 py-2 text-sm">
             <div className="flex items-center gap-2">
               <XCircle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
@@ -508,11 +509,9 @@ function FilteredClaimsCard({ data }: { data: FilteredData }) {
             {claim.details && <p className="text-xs text-gray-400 mt-1 ml-6">{claim.details}</p>}
           </div>
         ))}
-        {claims.length > 20 && (
-          <p className="text-xs text-gray-400 text-center py-2">
-            Showing 20 of {claims.length} rejected claims
-          </p>
-        )}
+        <p className="text-xs text-gray-400 text-center py-2">
+          {claims.length} rejected claim{claims.length !== 1 ? 's' : ''} shown
+        </p>
       </div>
     </div>
   );
@@ -690,8 +689,8 @@ export default function ClaimsChatPage() {
   }, [lastAnalysis, addMessage]);
 
   const handleDownloadReport = useCallback(async () => {
-    if (!lastFileRef) {
-      addMessage('ai', 'No file available for report generation. Please upload a claims file first.', 'error');
+    if (!lastAnalysis?.rawResponse) {
+      addMessage('ai', 'No analysis results available. Please upload and analyze a file first.', 'error');
       return;
     }
 
@@ -700,10 +699,11 @@ export default function ClaimsChatPage() {
     const typingId = addMessage('ai', '', 'typing');
 
     try {
-      const formData = new FormData();
-      formData.append('file', lastFileRef);
-
-      const res = await fetch('/api/claims/report', { method: 'POST', body: formData });
+      const res = await fetch('/api/claims/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ result: lastAnalysis.rawResponse }),
+      });
 
       removeMessage(typingId);
 
@@ -731,7 +731,7 @@ export default function ClaimsChatPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [lastFileRef, addMessage, removeMessage]);
+  }, [lastAnalysis, addMessage, removeMessage]);
 
   const handleViewDetails = useCallback(() => {
     if (!lastAnalysis?.rawResponse) {
@@ -740,9 +740,37 @@ export default function ClaimsChatPage() {
     }
     addMessage('user', 'View all details');
     const raw = lastAnalysis.rawResponse;
-    const details = JSON.stringify(raw, null, 2);
-    const truncated = details.length > 3000 ? details.slice(0, 3000) + '\n...(truncated)' : details;
-    addMessage('ai', 'Here are the full analysis details:\n```json\n' + truncated + '\n```', 'text');
+    const lines = raw.lineResults ?? [];
+
+    let detail = `**Full Analysis — ${lastAnalysis.totalClaims} Claims**\n\n`;
+    detail += `| # | Status | ICD-10 | Patient | Issues |\n`;
+    detail += `|---|--------|--------|---------|--------|\n`;
+    for (const lr of lines) {
+      const status = lr.status === 'valid' ? '✅' : lr.status === 'error' ? '❌' : '⚠️';
+      const code = lr.claimData?.primaryICD10 || '—';
+      const name = (lr.claimData?.patientName || '?').slice(0, 18);
+      const issues = (lr.issues ?? [])
+        .filter((i: any) => i.severity === 'error' || i.severity === 'warning')
+        .map((i: any) => i.rule)
+        .join(', ') || 'Clean';
+      detail += `| ${lr.lineNumber} | ${status} | ${code} | ${name} | ${issues} |\n`;
+    }
+
+    detail += `\n**Summary:** ${lastAnalysis.validClaims} valid, ${lastAnalysis.rejectedClaims} rejected, ${lastAnalysis.warningClaims} warnings`;
+    detail += `\n**Estimated savings if fixed:** ${lastAnalysis.estimatedSavings}`;
+
+    addMessage('ai', detail, 'text');
+  }, [lastAnalysis, addMessage]);
+
+  const handleViewRawJSON = useCallback(() => {
+    if (!lastAnalysis?.rawResponse) {
+      addMessage('ai', 'No analysis data. Upload a file first.', 'error');
+      return;
+    }
+    addMessage('user', 'Show raw JSON');
+    // Full JSON — no truncation
+    const full = JSON.stringify(lastAnalysis.rawResponse, null, 2);
+    addMessage('ai', '```json\n' + full + '\n```', 'text');
   }, [lastAnalysis, addMessage]);
 
   const handleAction = useCallback((actionId: string) => {
@@ -751,8 +779,9 @@ export default function ClaimsChatPage() {
       case 'rejected': handleShowRejected(); break;
       case 'report': handleDownloadReport(); break;
       case 'details': handleViewDetails(); break;
+      case 'raw': handleViewRawJSON(); break;
     }
-  }, [handleFixFile, handleShowRejected, handleDownloadReport, handleViewDetails]);
+  }, [handleFixFile, handleShowRejected, handleDownloadReport, handleViewDetails, handleViewRawJSON]);
 
   /* ── File handling ── */
 
@@ -1077,8 +1106,8 @@ export default function ClaimsChatPage() {
         <div className="h-4" />
       </div>
 
-      {/* Input bar */}
-      <div className="flex-shrink-0 border-t border-gray-200 bg-white px-4 py-3">
+      {/* Input bar — pr-24 to avoid Jess On widget overlap, mb-12 for Intercom bubble */}
+      <div className="flex-shrink-0 border-t border-gray-200 bg-white px-4 py-3 pr-24 mb-0">
         {/* Attached file preview */}
         <AnimatePresence>
           {attachedFile && (
