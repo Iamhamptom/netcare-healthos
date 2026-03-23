@@ -6,6 +6,7 @@ export interface ClaimLineItem {
   patientGender?: "M" | "F" | "U";
   patientAge?: number;
   primaryICD10: string;
+  rawICD10?: string;           // Original ICD-10 before uppercasing (detects lowercase input)
   secondaryICD10?: string[];
   tariffCode?: string;
   nappiCode?: string;
@@ -17,6 +18,10 @@ export interface ClaimLineItem {
   dependentCode?: string;
   practiceNumber?: string;
   scheme?: string;
+  motivationText?: string;
+  rawAmount?: string;
+  rawDateOfService?: string;
+  placeOfService?: string;
 }
 
 export type ValidationSeverity = "error" | "warning" | "info";
@@ -119,4 +124,6 @@ export interface ColumnMapping {
   dependentCode?: string;
   practiceNumber?: string;
   scheme?: string;
+  motivationText?: string;
+  placeOfService?: string;
 }

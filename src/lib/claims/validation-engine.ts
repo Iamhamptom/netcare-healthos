@@ -97,6 +97,8 @@ const COLUMN_ALIASES: Record<keyof ColumnMapping, string[]> = {
   dependentCode: ["dependent", "dependent_code", "dep_code", "dep", "dependant", "dependant_code"],
   practiceNumber: ["practice", "practice_number", "practice_no", "provider_no", "provider_number", "practice_id", "bhf_number"],
   scheme: ["scheme", "scheme_code", "scheme_name", "medical_aid", "medical_scheme", "funder"],
+  motivationText: ["motivation", "motivation_text", "clinical_motivation", "clinical_notes", "notes", "justification", "reason"],
+  placeOfService: ["place_of_service", "pos", "service_place", "facility_type"],
 };
 
 export function autoMapColumns(headers: string[], rows?: Record<string, string>[]): ColumnMapping {
@@ -219,12 +221,17 @@ export function extractClaimLines(
     const ageStr = mapping.patientAge ? row[mapping.patientAge] : undefined;
     const secondaryStr = mapping.secondaryICD10 ? row[mapping.secondaryICD10] : undefined;
 
+    const rawICD10 = mapping.primaryICD10 ? (row[mapping.primaryICD10] || "").trim() : "";
+    const rawAmountStr = mapping.amount ? (row[mapping.amount] || "").trim() : "";
+    const rawDateStr = mapping.dateOfService ? (row[mapping.dateOfService] || "").trim() : "";
+
     return {
       lineNumber: idx + 1,
       patientName: mapping.patientName ? row[mapping.patientName] : undefined,
       patientGender: gender === "M" || gender === "F" ? gender : "U",
       patientAge: ageStr ? parseInt(ageStr, 10) || undefined : undefined,
-      primaryICD10: (mapping.primaryICD10 ? row[mapping.primaryICD10] : "").toUpperCase().trim(),
+      primaryICD10: rawICD10.toUpperCase(),
+      rawICD10: rawICD10 || undefined,
       secondaryICD10: secondaryStr
         ? secondaryStr.split(/[,;|]/).map(c => c.trim().toUpperCase()).filter(Boolean)
         : undefined,
@@ -238,6 +245,10 @@ export function extractClaimLines(
       dependentCode: mapping.dependentCode ? row[mapping.dependentCode]?.trim() : undefined,
       practiceNumber: mapping.practiceNumber ? row[mapping.practiceNumber]?.trim() : undefined,
       scheme: mapping.scheme ? row[mapping.scheme]?.trim() : undefined,
+      motivationText: mapping.motivationText ? row[mapping.motivationText]?.trim() : undefined,
+      rawAmount: mapping.amount ? row[mapping.amount]?.trim() : undefined,
+      rawDateOfService: mapping.dateOfService ? row[mapping.dateOfService]?.trim() : undefined,
+      placeOfService: mapping.placeOfService ? row[mapping.placeOfService]?.trim() : undefined,
     };
   });
 }
@@ -270,6 +281,112 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     });
   }
 
+  // ── Rule 0c: Patient name must be present ──
+  // PHISC MEDCLM: RFF+PTN (patient name) is mandatory
+  if (item.patientName !== undefined && !item.patientName) {
+    issues.push({
+      lineNumber: ln, field: "patientName", code: "MISSING_PATIENT_NAME",
+      severity: "error", rule: "Missing Patient Name",
+      message: "No patient name provided. SA PHISC MEDCLM standard requires patient name on every claim.",
+      suggestion: "Add the patient's full name as it appears on the scheme membership record.",
+    });
+  }
+
+  // ── Rule 0d: Date format validation ──
+  // SA standard: YYYY-MM-DD (ISO 8601). PHISC EDIFACT uses CCYYMMDD.
+  // Reject DD-MM-YYYY, YYYY/MM/DD, and other non-standard formats.
+  if (item.rawDateOfService) {
+    const raw = item.rawDateOfService;
+    const isISO = /^\d{4}-\d{2}-\d{2}$/.test(raw);
+    const isCCYYMMDD = /^\d{8}$/.test(raw);
+    if (!isISO && !isCCYYMMDD) {
+      // Check for common bad formats
+      const isSlashFormat = /^\d{4}\/\d{2}\/\d{2}$/.test(raw); // YYYY/MM/DD
+      const isDDMMYYYY = /^\d{2}[-/]\d{2}[-/]\d{4}$/.test(raw); // DD-MM-YYYY or DD/MM/YYYY
+      if (isSlashFormat || isDDMMYYYY) {
+        issues.push({
+          lineNumber: ln, field: "dateOfService", code: "INVALID_DATE_FORMAT",
+          severity: "error", rule: "Invalid Date Format",
+          message: `Date "${raw}" uses a non-standard format. SA claims require YYYY-MM-DD (ISO 8601) or CCYYMMDD (EDIFACT).`,
+          suggestion: "Convert dates to YYYY-MM-DD format (e.g., 2026-02-15).",
+        });
+      }
+    }
+  }
+
+  // ── Rule 0e: Future date of service ──
+  if (item.dateOfService) {
+    const serviceDate = new Date(item.dateOfService);
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    if (!isNaN(serviceDate.getTime()) && serviceDate > today) {
+      issues.push({
+        lineNumber: ln, field: "dateOfService", code: "FUTURE_DATE",
+        severity: "error", rule: "Future Date of Service",
+        message: `Date of service "${item.dateOfService}" is in the future. Claims cannot be submitted for services not yet rendered.`,
+        suggestion: "Verify the date of service is correct. Future-dated claims are automatically rejected.",
+      });
+    }
+  }
+
+  // ── Rule 0f: Stale claim (>120 days) and near-stale (90-120 days) ──
+  // Medical Schemes Act Regulation 6: 4-month (120-day) hard deadline
+  if (item.dateOfService) {
+    const serviceDate = new Date(item.dateOfService);
+    const now = new Date();
+    if (!isNaN(serviceDate.getTime()) && serviceDate <= now) {
+      const diffDays = Math.floor((now.getTime() - serviceDate.getTime()) / (1000 * 60 * 60 * 24));
+      if (diffDays > 120) {
+        issues.push({
+          lineNumber: ln, field: "dateOfService", code: "STALE_CLAIM",
+          severity: "error", rule: "Stale Claim (>120 Days)",
+          message: `Date of service "${item.dateOfService}" is ${diffDays} days ago. Medical Schemes Act Regulation 6 mandates submission within 120 days.`,
+          suggestion: "This claim has expired. Contact the scheme for a late submission appeal if applicable.",
+        });
+      } else if (diffDays > 90) {
+        issues.push({
+          lineNumber: ln, field: "dateOfService", code: "NEAR_STALE_CLAIM",
+          severity: "warning", rule: "Claim Nearing Expiry (>90 Days)",
+          message: `Date of service "${item.dateOfService}" is ${diffDays} days ago. Only ${120 - diffDays} days remain before the 120-day submission deadline.`,
+          suggestion: "Submit this claim urgently to avoid expiry.",
+        });
+      }
+    }
+  }
+
+  // ── Rule 0g: Amount format validation (comma decimals) ──
+  // SA PHISC EDIFACT: No commas in amounts. Dot decimals only.
+  if (item.rawAmount && /,\d{1,2}$/.test(item.rawAmount)) {
+    issues.push({
+      lineNumber: ln, field: "amount", code: "INVALID_AMOUNT_FORMAT",
+      severity: "error", rule: "Invalid Amount Format",
+      message: `Amount "${item.rawAmount}" uses a comma decimal separator. SA claims require dot decimals (e.g., 450.00 not 450,00).`,
+      suggestion: "Replace the comma with a dot in the amount field.",
+    });
+  }
+
+  // ── Rule 0h: Excessive amount (>300% of typical scheme rate) ──
+  // Flag absurdly high amounts that indicate data entry errors
+  if (item.amount && item.amount > 0 && item.tariffCode) {
+    const tariffPrefix = item.tariffCode.substring(0, 2);
+    // GP consultations (01xx): max reasonable ~R3,000 (extended complex)
+    // Specialist consultations (02xx): max reasonable ~R5,000
+    // Radiology (51xx): max reasonable ~R10,000
+    const maxReasonable: Record<string, number> = {
+      "01": 3000, "02": 5000, "03": 5000, "04": 15000, "05": 30000,
+      "06": 20000, "45": 5000, "51": 10000, "81": 5000,
+    };
+    const maxAmount = maxReasonable[tariffPrefix];
+    if (maxAmount && item.amount > maxAmount * 3) {
+      issues.push({
+        lineNumber: ln, field: "amount", code: "EXCESSIVE_AMOUNT",
+        severity: "error", rule: "Excessive Claim Amount",
+        message: `Amount R${item.amount.toFixed(2)} is extremely high for tariff ${item.tariffCode} (expected max ~R${maxAmount.toLocaleString()}). This may be a data entry error.`,
+        suggestion: "Verify the amount. Common causes: extra digits, cents entered as Rands, or decimal point error.",
+      });
+    }
+  }
+
   // ── Rule 1: ICD-10 code must be present ──
   if (!item.primaryICD10) {
     issues.push({
@@ -283,11 +400,23 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
 
   // ── Rule 2: ICD-10 format validation ──
   const code = item.primaryICD10;
+
+  // Check for lowercase input BEFORE format check (raw value preserved)
+  if (item.rawICD10 && item.rawICD10 !== item.rawICD10.toUpperCase() && /^[a-z]\d{2}/i.test(item.rawICD10)) {
+    issues.push({
+      lineNumber: ln, field: "primaryICD10", code: "INVALID_FORMAT",
+      severity: "error", rule: "Invalid Code Format",
+      message: `"${item.rawICD10}" contains lowercase characters. ICD-10 codes must be uppercase (e.g., "${code}" not "${item.rawICD10}").`,
+      suggestion: "Convert ICD-10 codes to uppercase before submission.",
+    });
+    return issues;
+  }
+
   if (!ICD10_FORMAT.test(code)) {
     issues.push({
       lineNumber: ln, field: "primaryICD10", code: "INVALID_FORMAT",
       severity: "error", rule: "Invalid Code Format",
-      message: `"${code}" is not a valid ICD-10 format. Expected: Letter + 2 digits + optional decimal + subcategory (e.g., J06.9).`,
+      message: `"${item.rawICD10 || code}" is not a valid ICD-10 format. Expected: Letter + 2 digits + optional decimal + subcategory (e.g., J06.9).`,
       suggestion: "Check the code format. ICD-10 codes start with a letter followed by two digits.",
     });
     return issues;
@@ -393,6 +522,19 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
           lineNumber: ln, field: "primaryICD10", code: "GENDER_MISMATCH",
           severity: "error", rule: "Gender Mismatch",
           message: `"${code}" (${mitEntry.description}) is restricted to ${genderLabel} patients per the SA MIT.`,
+          suggestion: "Verify patient gender and diagnosis code.",
+        });
+      }
+    }
+
+    // Z-code reproductive gender restrictions (Z32.1+, Z33-Z39 = female only per SA MIT)
+    if (!entry?.genderRestriction && !mitEntry?.gender) {
+      const zFemaleOnly = /^Z3[2-9]/i.test(code) && !/^Z32\.0$/i.test(code) && !/^Z38/i.test(code);
+      if (zFemaleOnly && item.patientGender === "M") {
+        issues.push({
+          lineNumber: ln, field: "primaryICD10", code: "GENDER_MISMATCH",
+          severity: "error", rule: "Gender Mismatch",
+          message: `"${code}" is a pregnancy/reproductive code restricted to female patients per the SA ICD-10 MIT, but patient gender is male.`,
           suggestion: "Verify patient gender and diagnosis code.",
         });
       }
@@ -507,8 +649,8 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
   if (item.amount !== undefined && item.amount <= 0) {
     issues.push({
       lineNumber: ln, field: "amount", code: "INVALID_AMOUNT",
-      severity: "warning", rule: "Invalid Claim Amount",
-      message: `Claim amount is R${item.amount.toFixed(2)} — zero or negative amounts will be rejected.`,
+      severity: "error", rule: "Invalid Claim Amount",
+      message: `Claim amount is R${item.amount.toFixed(2)} — zero or negative amounts are automatically rejected by all SA schemes.`,
       suggestion: "Enter the correct charge amount for this service.",
     });
   }
