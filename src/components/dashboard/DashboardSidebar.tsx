@@ -107,6 +107,7 @@ const navSections: NavSection[] = [
     badge: "NEW",
     badgeColor: "teal",
     items: [
+      { href: "/dashboard/claims-chat", icon: MessageSquare, label: "Claims AI", roles: ["admin", "receptionist"] },
       { href: "/dashboard/claims", icon: ShieldCheck, label: "Claims Analyzer", roles: ["admin", "receptionist"] },
       { href: "/dashboard/claims-copilot", icon: MessageSquare, label: "Claims Copilot", roles: ["admin", "receptionist"] },
       { href: "/dashboard/claims-network", icon: Building2, label: "Claims Network", roles: ["platform_admin"] },
@@ -187,6 +188,7 @@ const allNavItems = [...navSections.flatMap(s => s.items), ...healthbridgeItems,
 /* ─── Feature gate mapping: route prefix → required feature ─── */
 
 const ROUTE_FEATURE_MAP: Record<string, keyof TenantFeatures> = {
+  "/dashboard/claims-chat": "claimsAnalyzer",
   "/dashboard/claims": "claimsAnalyzer",
   "/dashboard/claims-copilot": "claimsAnalyzer",
   "/dashboard/claims-network": "claimsAnalyzer",
