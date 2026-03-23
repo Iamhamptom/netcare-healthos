@@ -117,10 +117,11 @@ const NAV_TABS = [
 ];
 
 const ACTION_PILLS = [
-  { id: 'fix', label: 'Fix My File', icon: 'zap', color: 'bg-emerald-500 hover:bg-emerald-600' },
-  { id: 'rejected', label: 'Show Rejected Claims', icon: 'xcircle', color: 'bg-red-500 hover:bg-red-600' },
-  { id: 'report', label: 'Download PDF Report', icon: 'download', color: 'bg-[#3DA9D1] hover:bg-[#2E8AB0]' },
-  { id: 'details', label: 'View All Details', icon: 'arrow', color: 'bg-gray-600 hover:bg-gray-700' },
+  { id: 'fix', label: 'Fix Rejections', icon: 'zap', color: 'bg-emerald-500 hover:bg-emerald-600' },
+  { id: 'rejected', label: 'Show Rejected', icon: 'xcircle', color: 'bg-red-500 hover:bg-red-600' },
+  { id: 'csv', label: 'Download CSV', icon: 'download', color: 'bg-emerald-600 hover:bg-emerald-700' },
+  { id: 'report', label: 'Download PDF', icon: 'download', color: 'bg-[#3DA9D1] hover:bg-[#2E8AB0]' },
+  { id: 'details', label: 'Full Table', icon: 'arrow', color: 'bg-gray-600 hover:bg-gray-700' },
   { id: 'raw', label: 'Raw JSON', icon: 'arrow', color: 'bg-gray-500 hover:bg-gray-600' },
 ];
 
@@ -621,30 +622,65 @@ export default function ClaimsChatPage() {
       return;
     }
 
-    addMessage('user', 'Fix my file');
+    addMessage('user', 'Fix the rejections');
     setIsLoading(true);
     const typingId = addMessage('ai', '', 'typing');
 
     try {
+      // Step 1: Fix the file
       const formData = new FormData();
       formData.append('file', lastFileRef);
+      formData.append('applyMedium', 'true');
 
-      const res = await fetch('/api/claims/fix', { method: 'POST', body: formData });
-      const json = await res.json();
+      const fixRes = await fetch('/api/claims/fix', { method: 'POST', body: formData });
+      const fixJson = await fixRes.json();
 
-      removeMessage(typingId);
-
-      if (!res.ok) {
-        addMessage('ai', json?.error ?? 'Could not fix the file. Please try again.', 'error');
+      if (!fixRes.ok) {
+        removeMessage(typingId);
+        addMessage('ai', fixJson?.error ?? 'Could not fix the file.', 'error');
         setIsLoading(false);
         return;
       }
 
-      const fix = buildFixSummary(json);
-      const summary =
-        fix.fixedCount > 0
-          ? `I fixed **${fix.fixedCount} issues** in your claims file. Here is the before and after:`
-          : 'I reviewed your file but found no auto-fixable issues. The remaining errors may require manual correction.';
+      // Step 2: Re-analyze the fixed CSV to get fresh results
+      let reanalysis = null;
+      if (fixJson.fixedCSV) {
+        const fixedBlob = new Blob([fixJson.fixedCSV], { type: 'text/csv' });
+        const fixedFile = new File([fixedBlob], fixJson.suggestedFileName || 'claims_FIXED.csv', { type: 'text/csv' });
+        const reForm = new FormData();
+        reForm.append('file', fixedFile);
+        const reRes = await fetch('/api/claims/validate', { method: 'POST', body: reForm });
+        if (reRes.ok) {
+          reanalysis = await reRes.json();
+          // Update the analysis state so subsequent actions use the fixed data
+          const newAnalysis = buildAnalysisSummary(reanalysis);
+          setLastAnalysis(newAnalysis);
+          // Store fixed file as the new reference
+          setLastFileRef(fixedFile);
+        }
+      }
+
+      removeMessage(typingId);
+
+      const fix = buildFixSummary(fixJson);
+      const stats = fixJson.stats || {};
+      const beforeRate = stats.before?.rejectionRate ?? 0;
+      const afterRate = stats.after?.rejectionRate ?? 0;
+
+      let summary = '';
+      if (fix.fixedCount > 0) {
+        summary = `I fixed **${fix.fixedCount} issues** and re-analyzed your file:\n\n`;
+        summary += `**Before:** ${stats.before?.errors ?? '?'} rejected (${beforeRate}% rejection rate)\n`;
+        summary += `**After:** ${stats.after?.errors ?? '?'} rejected (${afterRate}% rejection rate)\n\n`;
+        if (reanalysis) {
+          summary += `The fixed file has **${reanalysis.validClaims} valid claims** out of ${reanalysis.totalClaims}.`;
+          if (reanalysis.invalidClaims > 0) {
+            summary += ` ${reanalysis.invalidClaims} claims still need manual review (duplicates, gender mismatches, etc.).`;
+          }
+        }
+      } else {
+        summary = 'I reviewed your file but found no auto-fixable issues. The remaining errors (duplicates, gender mismatches, missing codes) require manual correction.';
+      }
 
       addMessage('ai', summary, 'fix', fix);
     } catch (err: any) {
@@ -653,7 +689,7 @@ export default function ClaimsChatPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [lastFileRef, addMessage, removeMessage]);
+  }, [lastFileRef, addMessage, removeMessage, buildAnalysisSummary]);
 
   const handleShowRejected = useCallback(() => {
     if (!lastAnalysis?.rawResponse) {
@@ -762,6 +798,44 @@ export default function ClaimsChatPage() {
     addMessage('ai', detail, 'text');
   }, [lastAnalysis, addMessage]);
 
+  const handleDownloadCSV = useCallback(async () => {
+    if (!lastFileRef) {
+      addMessage('ai', 'No file available. Upload a claims file first.', 'error');
+      return;
+    }
+    addMessage('user', 'Download fixed CSV');
+    setIsLoading(true);
+    const typingId = addMessage('ai', '', 'typing');
+    try {
+      const formData = new FormData();
+      formData.append('file', lastFileRef);
+      formData.append('applyMedium', 'true');
+      const res = await fetch('/api/claims/fix', { method: 'POST', body: formData });
+      const json = await res.json();
+      removeMessage(typingId);
+      if (!res.ok || !json.fixedCSV) {
+        addMessage('ai', 'Could not generate CSV. Try "Fix Rejections" first.', 'error');
+        return;
+      }
+      // Trigger download
+      const blob = new Blob([json.fixedCSV], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = json.suggestedFileName || 'claims_FIXED.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      addMessage('ai', `Downloaded **${json.suggestedFileName}** with ${json.stats?.totalCorrections ?? 0} corrections applied. Re-upload to verify.`, 'text');
+    } catch (err: any) {
+      removeMessage(typingId);
+      addMessage('ai', `CSV download failed: ${err?.message ?? 'Network error'}`, 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [lastFileRef, addMessage, removeMessage]);
+
   const handleViewRawJSON = useCallback(() => {
     if (!lastAnalysis?.rawResponse) {
       addMessage('ai', 'No analysis data. Upload a file first.', 'error');
@@ -777,11 +851,12 @@ export default function ClaimsChatPage() {
     switch (actionId) {
       case 'fix': handleFixFile(); break;
       case 'rejected': handleShowRejected(); break;
+      case 'csv': handleDownloadCSV(); break;
       case 'report': handleDownloadReport(); break;
       case 'details': handleViewDetails(); break;
       case 'raw': handleViewRawJSON(); break;
     }
-  }, [handleFixFile, handleShowRejected, handleDownloadReport, handleViewDetails, handleViewRawJSON]);
+  }, [handleFixFile, handleShowRejected, handleDownloadCSV, handleDownloadReport, handleViewDetails, handleViewRawJSON]);
 
   /* ── File handling ── */
 
@@ -854,19 +929,33 @@ export default function ClaimsChatPage() {
     setInput('');
 
     const lower = text.toLowerCase();
-    if (lower.includes('fix') && (lower.includes('file') || lower.includes('claim'))) {
+    // Fix commands
+    if (lower.includes('fix') && (lower.includes('file') || lower.includes('claim') || lower.includes('reject') || lower.includes('issue') || lower.includes('error'))) {
       handleFixFile();
       return;
     }
+    // Show rejected
     if (lower.includes('reject') && (lower.includes('show') || lower.includes('list') || lower.includes('which'))) {
       handleShowRejected();
       return;
     }
-    if (lower.includes('report') || lower.includes('pdf') || lower.includes('download')) {
+    // CSV download
+    if ((lower.includes('csv') || lower.includes('fixed file') || lower.includes('clean file')) && (lower.includes('download') || lower.includes('give') || lower.includes('send') || lower.includes('get'))) {
+      handleDownloadCSV();
+      return;
+    }
+    // PDF download
+    if (lower.includes('pdf') || (lower.includes('report') && lower.includes('download'))) {
       handleDownloadReport();
       return;
     }
-    if (lower.includes('detail') || lower.includes('all')) {
+    // JSON
+    if (lower.includes('json') || lower.includes('raw')) {
+      handleViewRawJSON();
+      return;
+    }
+    // Table / details
+    if (lower.includes('table') || lower.includes('detail') || lower.includes('all claim')) {
       handleViewDetails();
       return;
     }
