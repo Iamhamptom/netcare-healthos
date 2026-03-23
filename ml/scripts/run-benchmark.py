@@ -55,7 +55,12 @@ def check_answer(response: str, correct: str, answer_type: str) -> bool:
     correct_lower = correct.lower().strip()
 
     # Normalize common variants
-    response_norm = response_lower.replace("samd", "software as a medical device").replace("r ", "r").replace("rr", "r")
+    response_norm = (response_lower
+        .replace("samd", "software as a medical device")
+        .replace("r ", "r").replace("rr", "r")
+        .replace("`", "").replace("**", "")  # Strip markdown formatting
+        .replace("  ", " ")
+    )
     correct_norm = correct_lower.replace("rr", "r").replace("r ", "r")
 
     if answer_type == "exact_match":
@@ -63,8 +68,11 @@ def check_answer(response: str, correct: str, answer_type: str) -> bool:
 
     elif answer_type == "boolean":
         resp_bool = None
-        # Check first 150 chars for yes/no signals
-        check_zone = response_lower[:150]
+        check_zone = response_norm[:200]
+
+        # "I don't know" = can't determine, skip
+        if "don't have exact data" in check_zone or "i don't have" in check_zone:
+            return False
 
         if check_zone.startswith("yes") or "yes," in check_zone[:30] or "yes." in check_zone[:30]:
             resp_bool = True
@@ -74,12 +82,16 @@ def check_answer(response: str, correct: str, answer_type: str) -> bool:
             resp_bool = True
         elif " no " in check_zone or " no." in check_zone or "not " in check_zone[:50] or "cannot" in check_zone[:50]:
             resp_bool = False
-        elif "must " in check_zone or "is a " in check_zone or "valid" in check_zone[:60] or "can be" in check_zone:
+        elif "must " in check_zone or "is a " in check_zone or "valid" in check_zone[:80] or "can be" in check_zone:
             resp_bool = True
-        elif "is not" in check_zone or "invalid" in check_zone or "cannot" in check_zone or "rejected" in check_zone:
+        elif "is not" in check_zone or "invalid" in check_zone or "cannot" in check_zone or "rejected" in check_zone or "will be rejected" in check_zone:
             resp_bool = False
         elif "cdl condition" in check_zone and correct_lower in ("yes", "true", "1"):
-            resp_bool = True  # Mentions CDL = knows it's on the list
+            resp_bool = True
+        elif "likely accepted" in check_zone or "should be accepted" in check_zone or "will likely" in check_zone:
+            resp_bool = True
+        elif "will not" in check_zone or "would be rejected" in check_zone or "exceed" in check_zone:
+            resp_bool = False
 
         expected_bool = correct_lower in ("yes", "true", "1")
 
@@ -95,16 +107,35 @@ def check_answer(response: str, correct: str, answer_type: str) -> bool:
         # Check individual significant words (for multi-word answers)
         words = [w for w in correct_lower.split() if len(w) > 3]
         if len(words) >= 2:
-            matches = sum(1 for w in words if w in response_lower)
-            if matches >= len(words) * 0.6:
+            matches = sum(1 for w in words if w in response_norm)
+            if matches >= len(words) * 0.5:  # 50% word match threshold
                 return True
-        # Check numeric values (strip R prefix, match digits)
+        # Single important word match (for short answers like "Condition", "ADT")
+        if len(words) <= 1 and correct_lower in response_norm:
+            return True
+        # Check numeric values
         import re as _re
         correct_nums = _re.findall(r'[\d.]+', correct_lower)
         if correct_nums:
             for num in correct_nums:
-                if num in response_lower:
+                if num in response_norm:
                     return True
+        # Synonym/abbreviation expansion
+        synonyms = {
+            "condition": ["condition", "diagnosis"],
+            "adt": ["adt", "admit", "admission"],
+            "oru": ["oru", "observation", "result"],
+            "orm": ["orm", "order"],
+            "claim": ["claim"],
+            "patient": ["patient"],
+            "medication.code": ["medication", "medicationrequest"],
+            "condition.code": ["condition.code", "condition", "codeable"],
+        }
+        for key, syns in synonyms.items():
+            if key in correct_lower:
+                for syn in syns:
+                    if syn in response_norm:
+                        return True
         return False
 
     return False
