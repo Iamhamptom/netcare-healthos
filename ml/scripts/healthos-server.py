@@ -37,7 +37,7 @@ from datetime import datetime
 
 HOME = os.path.expanduser("~")
 NETCARE_DIR = os.path.join(HOME, "netcare-healthos")
-MODEL_PATH = os.path.join(NETCARE_DIR, "ml/models/healthos-fused")
+MODEL_PATH = os.path.join(NETCARE_DIR, "ml/models/healthos-fused-v3")
 INDEX_DIR = os.path.join(NETCARE_DIR, "ml/rag-index")
 KB_DIR = os.path.join(NETCARE_DIR, "docs/knowledge")
 DB_DIR = os.path.join(KB_DIR, "databases")
