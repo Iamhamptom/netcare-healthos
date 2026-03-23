@@ -874,7 +874,9 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
   // CDL conditions with medication (NAPPI present) or modifier field available
   // but empty should be warned — they're likely CDL claims that need PMB routing.
   // Routine GP visits for chronic conditions without medication don't need it.
-  if (entry?.isPMB && !item.modifier) {
+  // Check if PMB modifier is present (could be sole modifier or part of comma-separated list)
+  const hasPMBModifier = item.modifier ? /\bPMB\b/i.test(item.modifier) || item.modifier === "0000" : false;
+  if (entry?.isPMB && !hasPMBModifier) {
     const cdlCodes = ["J45", "E10", "E11", "E12", "E13", "E14", "I10", "I11", "I12", "I13", "I15"];
     const isCDLCode = cdlCodes.some(p => code.startsWith(p));
     if (isCDLCode) {
