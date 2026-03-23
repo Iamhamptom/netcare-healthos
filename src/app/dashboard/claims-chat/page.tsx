@@ -324,13 +324,16 @@ function StatCards({ data }: { data: AnalysisData }) {
   );
 }
 
-function DiagnosisBanner({ text }: { text: string }) {
+function DiagnosisBanner({ diagnosis }: { diagnosis: { detected: boolean; problem: string; action: string; remapped?: boolean } }) {
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 my-3 flex items-start gap-2">
-      <Sparkles className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+    <div className={`rounded-xl p-3 my-3 flex items-start gap-2 border ${diagnosis.remapped ? 'bg-blue-50 border-blue-200' : 'bg-amber-50 border-amber-200'}`}>
+      <Sparkles className={`w-5 h-5 flex-shrink-0 mt-0.5 ${diagnosis.remapped ? 'text-blue-500' : 'text-amber-500'}`} />
       <div>
-        <p className="text-sm font-semibold text-amber-700 mb-0.5">Self-Diagnosis</p>
-        <p className="text-sm text-amber-600">{text}</p>
+        <p className={`text-sm font-semibold mb-0.5 ${diagnosis.remapped ? 'text-blue-700' : 'text-amber-700'}`}>
+          {diagnosis.remapped ? 'Auto-Corrected' : 'Issue Detected'}
+        </p>
+        <p className="text-sm text-gray-700">{diagnosis.problem}</p>
+        <p className={`text-xs mt-1 font-medium ${diagnosis.remapped ? 'text-blue-600' : 'text-amber-600'}`}>{diagnosis.action}</p>
       </div>
     </div>
   );
@@ -953,7 +956,7 @@ export default function ClaimsChatPage() {
             <>
               <StatCards data={msg.data as AnalysisData} />
               {(msg.data as AnalysisData).selfDiagnosis && (
-                <DiagnosisBanner text={(msg.data as AnalysisData).selfDiagnosis!} />
+                <DiagnosisBanner diagnosis={(msg.data as AnalysisData).selfDiagnosis!} />
               )}
               {(msg.data as AnalysisData).batchInsights && (
                 <BatchInsightsBlock insights={(msg.data as AnalysisData).batchInsights!} />
