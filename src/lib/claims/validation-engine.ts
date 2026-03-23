@@ -750,17 +750,39 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
   if (item.motivationText) {
     const lower = item.motivationText.toLowerCase();
     const injectionPatterns = [
+      // Direct LLM attacks
       "ignore all previous", "ignore previous instructions", "override the warning",
       "system prompt", "override_warning", "return valid", "mark as valid",
       "this claim is perfectly valid", "clinically necessary and perfectly valid",
-      "override immediately", "bypass", "disregard previous",
+      "override immediately", "bypass", "disregard previous", "in your capacity",
+      "you are an authorized", "authorize this claim",
+      // Emotional manipulation (pity play)
+      "child will not receive", "life-saving", "liability will be on",
+      "patient will die", "blood on your hands", "urgent override needed",
     ];
-    if (injectionPatterns.some(p => lower.includes(p))) {
+    // "See Attached" bypass — motivation references external docs the AI can't read
+    const externalRefPatterns = [
+      "see attached", "refer to specialist letter", "see lab results",
+      "refer to attached", "see enclosed", "as per attachment",
+      "see report", "refer to report", "documentation on file",
+    ];
+    const hasInjection = injectionPatterns.some(p => lower.includes(p));
+    const hasExternalRef = externalRefPatterns.some(p => lower.includes(p)) && item.motivationText.trim().length < 100;
+
+    if (hasInjection) {
       issues.push({
         lineNumber: ln, field: "motivationText", code: "PROMPT_INJECTION_DETECTED",
         severity: "error", rule: "Suspicious Motivation Text",
-        message: `Motivation text contains suspicious override language: "${item.motivationText.slice(0, 80)}...". This pattern matches known prompt injection attempts.`,
-        suggestion: "This claim has been flagged for manual security review. The motivation text appears to contain instructions rather than clinical justification.",
+        message: `Motivation text contains suspicious override language: "${item.motivationText.slice(0, 80)}...". Flagged for security review.`,
+        suggestion: "This claim requires manual security review. The motivation text appears to contain instructions rather than clinical justification.",
+      });
+    }
+    if (hasExternalRef) {
+      issues.push({
+        lineNumber: ln, field: "motivationText", code: "INSUFFICIENT_MOTIVATION",
+        severity: "warning", rule: "Insufficient Motivation",
+        message: `Motivation references external documents ("${item.motivationText.slice(0, 60)}...") without providing clinical justification inline. The AI auditor cannot verify external attachments.`,
+        suggestion: "Include the key clinical findings directly in the motivation text, not just a reference to external documents.",
       });
     }
   }
@@ -893,6 +915,54 @@ function validateCrossLine(lines: ClaimLineItem[]): ValidationIssue[] {
       });
     } else {
       seen.set(key, line.lineNumber);
+    }
+  }
+
+  // ── Micro-unbundling: aggregate quantities per patient/day/tariff across file ──
+  const qtyByPatientDayTariff = new Map<string, { total: number; lines: number[] }>();
+  for (const line of lines) {
+    if (!line.tariffCode || !line.quantity) continue;
+    const key = `${(line.patientName || "").toLowerCase()}|${line.dateOfService || ""}|${line.tariffCode}`;
+    const entry = qtyByPatientDayTariff.get(key) || { total: 0, lines: [] };
+    entry.total += line.quantity;
+    entry.lines.push(line.lineNumber);
+    qtyByPatientDayTariff.set(key, entry);
+  }
+  for (const [key, entry] of qtyByPatientDayTariff) {
+    const tariff = key.split("|")[2];
+    const isConsult = tariff.startsWith("01") || tariff.startsWith("02");
+    if (isConsult && entry.total >= 4 && entry.lines.length > 1) {
+      // Multiple rows with same tariff for same patient on same day = micro-unbundling
+      for (const ln of entry.lines.slice(1)) {
+        issues.push({
+          lineNumber: ln, field: "quantity", code: "MICRO_UNBUNDLING",
+          severity: "warning", rule: "Suspected Micro-Unbundling",
+          message: `Patient has ${entry.total} total units of tariff "${tariff}" across ${entry.lines.length} separate lines on the same day. This may be an attempt to split quantities to avoid detection.`,
+          suggestion: "Combine into a single claim line or provide clinical justification for multiple separate encounters.",
+        });
+      }
+    }
+  }
+
+  // ── Copy-paste motivation detection: same text across multiple patients ──
+  const motivationCounts = new Map<string, number[]>();
+  for (const line of lines) {
+    if (!line.motivationText || line.motivationText.trim().length < 20) continue;
+    const normalized = line.motivationText.trim().toLowerCase().slice(0, 200);
+    const entry = motivationCounts.get(normalized) || [];
+    entry.push(line.lineNumber);
+    motivationCounts.set(normalized, entry);
+  }
+  for (const [, lineNums] of motivationCounts) {
+    if (lineNums.length >= 3) {
+      for (const ln of lineNums) {
+        issues.push({
+          lineNumber: ln, field: "motivationText", code: "COPY_PASTE_MOTIVATION",
+          severity: "warning", rule: "Duplicate Motivation Text",
+          message: `Identical motivation text used across ${lineNums.length} claims. This pattern is flagged as potential copy-paste fraud.`,
+          suggestion: "Each claim should have unique, patient-specific clinical justification.",
+        });
+      }
     }
   }
 
