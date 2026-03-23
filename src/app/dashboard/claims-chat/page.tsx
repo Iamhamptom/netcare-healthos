@@ -19,6 +19,10 @@ import {
   Bot,
   User,
   RotateCcw,
+  History,
+  Trash2,
+  Plus,
+  ChevronLeft,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -540,6 +544,33 @@ function renderMarkdown(text: string) {
    Main Page Component
    ────────────────────────────────────────────── */
 
+// ─── Session types ───
+interface ChatSession {
+  id: string;
+  title: string;
+  createdAt: string;
+  messageCount: number;
+  lastMessage?: string;
+}
+
+const SESSIONS_KEY = 'claims-chat-sessions';
+const ACTIVE_SESSION_KEY = 'claims-chat-active-session';
+
+function loadSessions(): ChatSession[] {
+  try {
+    const raw = localStorage.getItem(SESSIONS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveSessions(sessions: ChatSession[]) {
+  try { localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions)); } catch {}
+}
+
+function getSessionStorageKey(sessionId: string) {
+  return `claims-chat-msgs-${sessionId}`;
+}
+
 export default function ClaimsChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -548,62 +579,139 @@ export default function ClaimsChatPage() {
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [lastAnalysis, setLastAnalysis] = useState<AnalysisData | null>(null);
   const [lastFileRef, setLastFileRef] = useState<File | null>(null);
+  const [showSessions, setShowSessions] = useState(false);
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [activeSessionId, setActiveSessionId] = useState<string>('');
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textInputRef = useRef<HTMLInputElement>(null);
   const didLoadRef = useRef(false);
 
-  const STORAGE_KEY = 'claims-chat-messages';
-
-  // Load messages from localStorage on mount
+  // Load sessions and active session on mount
   useEffect(() => {
     if (didLoadRef.current) return;
     didLoadRef.current = true;
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed: ChatMessage[] = JSON.parse(saved).map((m: any) => ({
-          ...m,
-          timestamp: new Date(m.timestamp),
-        }));
-        if (parsed.length > 0) {
-          setMessages(parsed);
+    const allSessions = loadSessions();
+    setSessions(allSessions);
+
+    // Load active session or create new one
+    let activeId = '';
+    try { activeId = localStorage.getItem(ACTIVE_SESSION_KEY) || ''; } catch {}
+
+    if (activeId && allSessions.find(s => s.id === activeId)) {
+      // Load existing session
+      setActiveSessionId(activeId);
+      try {
+        const saved = localStorage.getItem(getSessionStorageKey(activeId));
+        if (saved) {
+          const parsed: ChatMessage[] = JSON.parse(saved).map((m: any) => ({
+            ...m, timestamp: new Date(m.timestamp),
+          }));
+          if (parsed.length > 0) setMessages(parsed);
         }
-      }
-    } catch {
-      // Corrupt data — ignore
+      } catch {}
+    } else {
+      // Create first session
+      const newId = uid();
+      setActiveSessionId(newId);
+      try { localStorage.setItem(ACTIVE_SESSION_KEY, newId); } catch {}
     }
   }, []);
 
-  // Save messages to localStorage on every change (strip non-serializable data)
+  // Save messages to current session on every change
   useEffect(() => {
-    if (!didLoadRef.current) return; // Don't save before initial load
+    if (!didLoadRef.current || !activeSessionId) return;
     try {
       const serializable = messages
         .filter((m) => m.type !== 'typing')
         .map((m) => {
           const cleaned = { ...m };
-          // Strip File objects from FileInfo data — they can't be serialized
           if (m.type === 'file' && m.data && (m.data as FileInfo).file) {
             cleaned.data = { name: (m.data as FileInfo).name, size: (m.data as FileInfo).size, type: (m.data as FileInfo).type };
           }
           return cleaned;
         });
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(serializable));
-    } catch {
-      // Storage full or unavailable — ignore
-    }
-  }, [messages]);
+      localStorage.setItem(getSessionStorageKey(activeSessionId), JSON.stringify(serializable));
 
-  // Clear chat and start fresh
+      // Update session metadata
+      if (messages.length > 0) {
+        const allSessions = loadSessions();
+        const existing = allSessions.find(s => s.id === activeSessionId);
+        const firstUserMsg = messages.find(m => m.role === 'user');
+        const lastMsg = [...messages].reverse().find(m => m.type !== 'typing');
+        const title = firstUserMsg?.type === 'file'
+          ? `📄 ${(firstUserMsg.data as FileInfo)?.name || 'File upload'}`
+          : firstUserMsg?.content?.slice(0, 40) || 'New chat';
+
+        if (existing) {
+          existing.title = title;
+          existing.messageCount = messages.length;
+          existing.lastMessage = lastMsg?.content?.slice(0, 60) || '';
+        } else {
+          allSessions.unshift({
+            id: activeSessionId,
+            title,
+            createdAt: new Date().toISOString(),
+            messageCount: messages.length,
+            lastMessage: lastMsg?.content?.slice(0, 60) || '',
+          });
+        }
+        saveSessions(allSessions);
+        setSessions(allSessions);
+      }
+    } catch {}
+  }, [messages, activeSessionId]);
+
+  // Switch to a different session
+  const switchSession = useCallback((sessionId: string) => {
+    setActiveSessionId(sessionId);
+    try { localStorage.setItem(ACTIVE_SESSION_KEY, sessionId); } catch {}
+    setLastAnalysis(null);
+    setLastFileRef(null);
+    setAttachedFile(null);
+    setInput('');
+    try {
+      const saved = localStorage.getItem(getSessionStorageKey(sessionId));
+      if (saved) {
+        setMessages(JSON.parse(saved).map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) })));
+      } else {
+        setMessages([]);
+      }
+    } catch { setMessages([]); }
+    setShowSessions(false);
+  }, []);
+
+  // Delete a session
+  const deleteSession = useCallback((sessionId: string) => {
+    const updated = loadSessions().filter(s => s.id !== sessionId);
+    saveSessions(updated);
+    setSessions(updated);
+    try { localStorage.removeItem(getSessionStorageKey(sessionId)); } catch {}
+    if (sessionId === activeSessionId) {
+      // Switch to most recent or create new
+      if (updated.length > 0) {
+        switchSession(updated[0].id);
+      } else {
+        const newId = uid();
+        setActiveSessionId(newId);
+        setMessages([]);
+        try { localStorage.setItem(ACTIVE_SESSION_KEY, newId); } catch {}
+      }
+    }
+  }, [activeSessionId, switchSession]);
+
+  // Create new chat session
   const handleNewChat = useCallback(() => {
+    const newId = uid();
+    setActiveSessionId(newId);
     setMessages([]);
     setLastAnalysis(null);
     setLastFileRef(null);
     setAttachedFile(null);
     setInput('');
-    localStorage.removeItem(STORAGE_KEY);
+    try { localStorage.setItem(ACTIVE_SESSION_KEY, newId); } catch {}
+    setShowSessions(false);
   }, []);
 
   const scrollToBottom = useCallback(() => {
@@ -1177,16 +1285,23 @@ export default function ClaimsChatPage() {
       <div className="bg-[#1D3443] text-white px-6 py-4 flex-shrink-0">
         <div className="flex items-center gap-3 mb-3">
           <MessageSquare className="w-6 h-6 text-[#3DA9D1]" />
-          <h1 className="text-xl font-bold">Claims Analyzer</h1>
-          {messages.length > 0 && (
+          <h1 className="text-xl font-bold">Claims AI</h1>
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              onClick={() => setShowSessions(!showSessions)}
+              className="flex items-center gap-1.5 text-sm text-gray-300 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition-colors"
+            >
+              <History className="w-3.5 h-3.5" />
+              Sessions {sessions.length > 0 && <span className="text-[10px] bg-[#3DA9D1]/30 text-[#3DA9D1] px-1.5 rounded-full">{sessions.length}</span>}
+            </button>
             <button
               onClick={handleNewChat}
-              className="ml-auto flex items-center gap-1.5 text-sm text-gray-300 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 text-sm text-white bg-[#3DA9D1] hover:bg-[#2E8AB0] px-3 py-1.5 rounded-lg transition-colors"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
+              <Plus className="w-3.5 h-3.5" />
               New Chat
             </button>
-          )}
+          </div>
         </div>
         <div className="flex gap-1 overflow-x-auto pb-1 -mb-1">
           {NAV_TABS.map((tab) => (
@@ -1204,6 +1319,61 @@ export default function ClaimsChatPage() {
           ))}
         </div>
       </div>
+
+      {/* Sessions panel */}
+      <AnimatePresence>
+        {showSessions && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden border-b border-gray-200 bg-gray-50"
+          >
+            <div className="p-4 max-h-64 overflow-y-auto">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-semibold text-gray-700">Recent Sessions</p>
+                <button onClick={() => setShowSessions(false)} className="text-gray-400 hover:text-gray-600">
+                  <ChevronLeft className="w-4 h-4 rotate-90" />
+                </button>
+              </div>
+              {sessions.length === 0 ? (
+                <p className="text-sm text-gray-400 text-center py-4">No previous sessions</p>
+              ) : (
+                <div className="space-y-1">
+                  {sessions.map((session) => (
+                    <div
+                      key={session.id}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors group ${
+                        session.id === activeSessionId
+                          ? 'bg-[#3DA9D1]/10 border border-[#3DA9D1]/20'
+                          : 'hover:bg-gray-100'
+                      }`}
+                      onClick={() => switchSession(session.id)}
+                    >
+                      <MessageSquare className={`w-4 h-4 shrink-0 ${session.id === activeSessionId ? 'text-[#3DA9D1]' : 'text-gray-400'}`} />
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm font-medium truncate ${session.id === activeSessionId ? 'text-[#3DA9D1]' : 'text-gray-700'}`}>
+                          {session.title}
+                        </p>
+                        <p className="text-[11px] text-gray-400 truncate">
+                          {session.messageCount} messages · {new Date(session.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); deleteSession(session.id); }}
+                        className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 transition-all"
+                        title="Delete session"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Chat area */}
       <div
