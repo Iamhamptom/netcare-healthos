@@ -59,7 +59,7 @@ interface AnalysisData {
   warningClaims: number;
   columns: number;
   estimatedSavings: string;
-  selfDiagnosis?: string;
+  selfDiagnosis?: { detected: boolean; problem: string; action: string; remapped?: boolean };
   batchInsights?: BatchInsight[];
   topIssues: IssueItem[];
   rawResponse?: any;
@@ -69,8 +69,12 @@ interface FixData {
   fixedCount: number;
   originalRejections: number;
   newRejections: number;
-  downloadUrl?: string;
+  fixedCSV?: string | null;
+  suggestedFileName?: string;
   changes: { field: string; before: string; after: string; count: number }[];
+  beforeRate?: number;
+  afterRate?: number;
+  claimsFixed?: number;
 }
 
 interface FilteredData {
@@ -133,36 +137,85 @@ function formatBytes(bytes: number): string {
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
+function getSmartResponse(text: string): string {
+  const t = text.toLowerCase();
+  if (t.includes('hi') || t.includes('hello') || t.includes('hey'))
+    return "Hello! I'm the Claims AI assistant. Upload a CSV file with your medical claims and I'll analyze them for rejection risks, fix formatting issues, and help you get cleaner submissions. Just drop your file here or click the attachment icon.";
+  if (t.includes('how') && (t.includes('work') || t.includes('use')))
+    return "**How it works:**\n\n1. Upload your claims CSV (any format — comma, semicolon, tab-separated)\n2. I'll instantly analyze every claim against SA ICD-10 rules, scheme rules, and common rejection patterns\n3. Click **Fix My File** to auto-correct what I can (format errors, missing codes, specificity)\n4. Download the fixed CSV and re-upload to verify\n\nI support Healthbridge format, standard CSV, and auto-detect column names.";
+  if (t.includes('format') || t.includes('column') || t.includes('csv'))
+    return "**Supported CSV columns:**\n\n- `icd10_code` — ICD-10 diagnosis code (**required**)\n- `patient_name`, `patient_gender`, `patient_age`\n- `tariff_code`, `nappi_code`, `amount`\n- `date_of_service`, `scheme`, `dependent_code`\n\nOnly `icd10_code` is required. I auto-detect column names — your headers don't need to match exactly. I also support semicolon-delimited (SA Excel) and Healthbridge export format.";
+  if (t.includes('reject') || t.includes('error') || t.includes('why'))
+    return "Common rejection reasons in SA:\n\n1. **Invalid ICD-10 format** — codes must be Letter + 2 digits + optional dot + subcategory (e.g., J06.9)\n2. **Non-specific codes** — 3-character codes without 4th digit (J06 should be J06.9)\n3. **Missing External Cause Code** — injury codes (S/T) need a V/W/X/Y secondary code\n4. **Gender mismatch** — male-only codes on female patients or vice versa\n5. **Duplicate claims** — same patient + code + date\n\nUpload your file and I'll check for all of these.";
+  if (t.includes('scheme') || t.includes('discovery') || t.includes('gems') || t.includes('bonitas'))
+    return "I support scheme-specific rules for **Discovery Health**, **GEMS**, **Bonitas**, **Medshield**, **Momentum Health**, **Bestmed**, and more. When you upload, select your scheme from the dropdown for targeted validation.";
+  if (t.includes('help'))
+    return "I can help you with:\n\n- **Analyze** — Upload a CSV and I'll check every claim\n- **Fix** — Auto-correct format errors, missing codes, specificity issues\n- **Explain** — Tell you why claims are being rejected\n- **Download** — Give you a cleaned CSV ready for submission\n\nJust drop your claims file here to get started.";
+  return "I'm ready to analyze your claims. Upload a CSV, TSV, or XLSX file with medical claims data and I'll check every line for rejection risks, fix what I can, and explain any issues. Just drop the file here or click the attachment icon below.";
+}
+
 function isAcceptedFile(file: File): boolean {
   const ext = '.' + file.name.split('.').pop()?.toLowerCase();
   return ACCEPTED_TYPES.includes(file.type) || ACCEPTED_EXTENSIONS.includes(ext);
 }
 
 function buildAnalysisSummary(data: any): AnalysisData {
-  const total = data?.totalClaims ?? data?.total ?? data?.summary?.totalClaims ?? 0;
-  const valid = data?.validClaims ?? data?.valid ?? data?.summary?.validClaims ?? 0;
-  const rejected = data?.rejectedClaims ?? data?.rejected ?? data?.summary?.rejectedClaims ?? 0;
-  const warnings = data?.warningClaims ?? data?.warnings ?? data?.summary?.warningClaims ?? 0;
-  const columns = data?.columns ?? data?.columnCount ?? data?.summary?.columns ?? 0;
-  const savings = data?.estimatedSavings ?? data?.savings ?? data?.summary?.estimatedSavings ?? 'R0';
+  // API returns: totalClaims, validClaims, invalidClaims, warningClaims, headers[], summary.estimatedSavings, summary.topIssues[{rule,count,severity}], lineResults[], batchInsights[], selfDiagnosis
+  const total = data.totalClaims ?? 0;
+  const valid = data.validClaims ?? 0;
+  const rejected = data.invalidClaims ?? 0;
+  const warnings = data.warningClaims ?? 0;
+  const columns = data.headers?.length ?? 0;
+  const savings = data.summary?.estimatedSavings ?? 0;
+  const rejRate = data.summary?.estimatedRejectionRate ?? 0;
 
-  const topIssues: IssueItem[] = (data?.topIssues ?? data?.issues ?? data?.summary?.topIssues ?? []).map(
-    (i: any) => ({
-      issue: i.issue ?? i.description ?? i.message ?? String(i),
-      count: i.count ?? i.total ?? 1,
-      severity: i.severity ?? (i.type === 'error' ? 'error' : i.type === 'warning' ? 'warning' : 'info'),
-    })
-  );
+  // Top issues from summary.topIssues — field is "rule" not "issue"
+  const topIssues: IssueItem[] = (data.summary?.topIssues ?? [])
+    .filter((i: any) => i.severity === 'error' || i.severity === 'warning')
+    .map((i: any) => ({
+      issue: i.rule ?? '',
+      count: i.count ?? 1,
+      severity: i.severity ?? 'error',
+    }));
 
-  const batchInsights: BatchInsight[] = (data?.batchInsights ?? data?.insights ?? []).map((b: any) => ({
-    title: b.title ?? b.name ?? 'Insight',
-    description: b.description ?? b.detail ?? b.message ?? '',
-    severity: b.severity ?? 'info',
+  // Also add top error-level issues from the actual issues list if topIssues is sparse
+  if (topIssues.length === 0 && data.issues) {
+    const byRule: Record<string, { count: number; severity: string; message: string }> = {};
+    for (const i of data.issues) {
+      if (i.severity === 'error' || i.severity === 'warning') {
+        if (!byRule[i.rule]) byRule[i.rule] = { count: 0, severity: i.severity, message: i.message };
+        byRule[i.rule].count++;
+      }
+    }
+    for (const [rule, info] of Object.entries(byRule)) {
+      topIssues.push({ issue: rule, count: info.count, severity: info.severity as 'error' | 'warning' | 'info' });
+    }
+    topIssues.sort((a, b) => b.count - a.count);
+  }
+
+  // Batch insights from batchInsights[]
+  const batchInsights: BatchInsight[] = (data.batchInsights ?? []).map((b: any) => ({
+    title: b.rule ?? 'Issue',
+    description: b.explanation ?? '',
+    severity: b.severity ?? 'error',
   }));
 
-  const selfDiagnosis = data?.selfDiagnosis ?? data?.diagnosis ?? data?.columnMapping?.note ?? undefined;
+  // Self-diagnosis
+  const selfDiagnosis = data.selfDiagnosis?.detected ? data.selfDiagnosis : undefined;
 
-  const summary = `I analyzed **${total} claims** across **${columns} columns**. Here is what I found:`;
+  // Build natural language summary
+  let summary = `I analyzed **${total} claims** across **${columns} columns**. `;
+  if (rejected === 0 && warnings === 0) {
+    summary += `All claims look clean — **${valid} valid**, no rejections.`;
+  } else if (rejRate >= 80) {
+    summary += `**${rejected} claims will be rejected** (${rejRate}% rejection rate). There's likely a systematic issue — see the details below.`;
+  } else {
+    summary += `**${valid} valid**, **${rejected} will be rejected**, **${warnings} warnings**. Estimated savings if fixed: **R${savings.toLocaleString()}**.`;
+  }
+
+  if (selfDiagnosis?.remapped) {
+    summary += `\n\n⚡ **Auto-corrected**: ${selfDiagnosis.problem}`;
+  }
 
   return {
     summary,
@@ -171,26 +224,32 @@ function buildAnalysisSummary(data: any): AnalysisData {
     rejectedClaims: rejected,
     warningClaims: warnings,
     columns,
-    estimatedSavings: typeof savings === 'number' ? `R${savings.toLocaleString()}` : savings,
+    estimatedSavings: `R${savings.toLocaleString()}`,
     selfDiagnosis,
     batchInsights: batchInsights.length > 0 ? batchInsights : undefined,
-    topIssues,
+    topIssues: topIssues.slice(0, 8),
     rawResponse: data,
   };
 }
 
 function buildFixSummary(data: any): FixData {
+  // API returns: stats.before/after, stats.totalCorrections, corrections[{line,field,from,to,rule}], fixedCSV
+  const stats = data.stats ?? {};
   return {
-    fixedCount: data?.fixedCount ?? data?.fixed ?? data?.totalFixed ?? 0,
-    originalRejections: data?.originalRejections ?? data?.before?.rejected ?? 0,
-    newRejections: data?.newRejections ?? data?.after?.rejected ?? 0,
-    downloadUrl: data?.downloadUrl ?? data?.url ?? data?.fileUrl ?? undefined,
-    changes: (data?.changes ?? data?.fixes ?? []).map((c: any) => ({
-      field: c.field ?? c.column ?? c.name ?? '',
-      before: c.before ?? c.old ?? '',
-      after: c.after ?? c.new ?? c.fixed ?? '',
-      count: c.count ?? 1,
+    fixedCount: stats.totalCorrections ?? 0,
+    originalRejections: stats.before?.errors ?? 0,
+    newRejections: stats.after?.errors ?? 0,
+    fixedCSV: data.fixedCSV ?? null,
+    suggestedFileName: data.suggestedFileName ?? 'claims_FIXED.csv',
+    changes: (data.corrections ?? []).map((c: any) => ({
+      field: `Line ${c.line}: ${c.rule}`,
+      before: c.from || '(empty)',
+      after: c.to || '',
+      count: 1,
     })),
+    beforeRate: stats.before?.rejectionRate ?? 0,
+    afterRate: stats.after?.rejectionRate ?? 0,
+    claimsFixed: stats.improvement?.claimsFixed ?? 0,
   };
 }
 
@@ -403,15 +462,24 @@ function FixResultCard({ data }: { data: FixData }) {
         </div>
       )}
 
-      {data.downloadUrl && (
-        <a
-          href={data.downloadUrl}
-          download
+      {data.fixedCSV && (
+        <button
+          onClick={() => {
+            const blob = new Blob([data.fixedCSV!], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = data.suggestedFileName ?? 'claims_FIXED.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }}
           className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-sm px-6 py-3 rounded-xl transition-colors shadow-sm"
         >
           <Download className="w-4 h-4" />
-          Download Fixed File
-        </a>
+          Download Fixed File ({data.suggestedFileName})
+        </button>
       )}
 
       <p className="text-xs text-gray-400">Download the fixed file and re-upload to verify the improvements.</p>
@@ -594,20 +662,25 @@ export default function ClaimsChatPage() {
     addMessage('user', 'Show rejected claims');
 
     const raw = lastAnalysis.rawResponse;
-    const rejected = raw?.rejectedClaims ?? raw?.rejected ?? raw?.claims?.filter?.((c: any) => c.status === 'rejected') ?? [];
+    // lineResults[].status === 'error' are the rejected ones
+    const rejectedLines = (raw?.lineResults ?? []).filter((lr: any) => lr.status === 'error');
+    const claims = rejectedLines.map((lr: any) => ({
+      row: lr.lineNumber,
+      reason: (lr.issues ?? []).filter((i: any) => i.severity === 'error').map((i: any) => i.rule).join(', '),
+      details: (lr.issues ?? []).filter((i: any) => i.severity === 'error').map((i: any) => i.message).join(' | '),
+      code: lr.claimData?.primaryICD10 || '(empty)',
+      patient: lr.claimData?.patientName || '?',
+    }));
+
     const filtered: FilteredData = {
-      claims: Array.isArray(rejected)
-        ? rejected
-        : typeof rejected === 'number'
-        ? Array.from({ length: Math.min(rejected, 10) }, (_, i) => ({ row: i + 1, reason: 'Validation failed' }))
-        : [],
+      claims,
       filterType: 'rejected',
-      count: lastAnalysis.rejectedClaims,
+      count: claims.length,
     };
 
     addMessage(
       'ai',
-      `Found **${lastAnalysis.rejectedClaims} rejected claims** out of ${lastAnalysis.totalClaims} total:`,
+      `Found **${claims.length} rejected claims** out of ${lastAnalysis.totalClaims} total:`,
       'filtered',
       filtered
     );
@@ -685,8 +758,9 @@ export default function ClaimsChatPage() {
       addMessage('ai', 'I can only analyze CSV, TSV, TXT, or XLSX files. Please upload a supported claims file.', 'error');
       return;
     }
-    setAttachedFile(file);
-  }, [addMessage]);
+    // Auto-process immediately — don't make user press Send
+    processFile(file);
+  }, [addMessage, processFile]);
 
   const handleDrop = useCallback(
     (e: DragEvent<HTMLDivElement>) => {
@@ -768,11 +842,9 @@ export default function ClaimsChatPage() {
     addMessage('user', text);
 
     if (!lastFileRef) {
-      addMessage(
-        'ai',
-        'Please upload a claims file first. I can analyze CSV, TSV, TXT, or XLSX files containing medical claims data.',
-        'text'
-      );
+      // No file uploaded yet — respond intelligently to common questions
+      const response = getSmartResponse(lower);
+      addMessage('ai', response, 'text');
       return;
     }
 

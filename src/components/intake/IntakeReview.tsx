@@ -17,6 +17,7 @@ import {
   Brain,
 } from "lucide-react";
 import type { IntakeAnalysis } from "@/lib/intake-analyzer";
+import VoiceSummaryPlayer from "@/components/intake/VoiceSummaryPlayer";
 
 interface Props {
   analysis: IntakeAnalysis;
@@ -91,6 +92,23 @@ export default function IntakeReview({ analysis, transcript, patientName, onSave
           </div>
         </div>
       )}
+
+      {/* Voice Summary Player */}
+      <div className="flex items-center justify-between bg-white/[0.02] border border-white/[0.06] rounded-xl px-5 py-3">
+        <span className="text-xs text-white/40">AI Voice Summary</span>
+        <div className="flex items-center gap-3">
+          {a.redFlags.length > 0 && (
+            <VoiceSummaryPlayer
+              text={`Warning: Red flags detected. ${a.redFlags.join(". ")}. ${a.clinicalSummary}`}
+              label="Red Flags + Summary"
+            />
+          )}
+          <VoiceSummaryPlayer
+            text={`${a.chiefComplaint}. ${a.clinicalSummary}. ${a.recommendedActions.length > 0 ? "Recommended actions: " + a.recommendedActions.join(". ") : ""}`}
+            label="Full Summary"
+          />
+        </div>
+      </div>
 
       {/* Chief Complaint + Summary */}
       <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5">

@@ -294,7 +294,7 @@ export default function GuidedTour({ onComplete }: { onComplete: () => void }) {
             </button>
           </div>
 
-          <p className="text-[10px] text-white/70 mt-6">Powered by ElevenLabs \u2022 Claire (SA)</p>
+          <p className="text-[10px] text-white/70 mt-6">Health OS Voice AI \u2022 Claire (SA)</p>
         </motion.div>
       </div>
     </motion.div>

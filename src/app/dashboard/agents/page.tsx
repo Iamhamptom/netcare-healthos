@@ -234,7 +234,7 @@ export default function AgentsPage() {
             <div className="p-4 rounded-xl bg-[var(--charcoal)]/30 border border-[var(--border)]">
               <div className="flex items-start justify-between gap-4">
                 <p className="text-sm text-[var(--ivory)] leading-relaxed">{result.response}</p>
-                <button onClick={playVoice} disabled={voiceLoading} className="shrink-0 p-2 rounded-lg hover:bg-[var(--gold)]/10 text-[var(--text-secondary)] hover:text-[var(--gold)] transition-colors" title="Play as voice (requires ElevenLabs)">
+                <button onClick={playVoice} disabled={voiceLoading} className="shrink-0 p-2 rounded-lg hover:bg-[var(--gold)]/10 text-[var(--text-secondary)] hover:text-[var(--gold)] transition-colors" title="Play as voice">
                   {voiceLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Volume2 className="w-4 h-4" />}
                 </button>
               </div>

@@ -78,7 +78,7 @@ export default function VoiceAgentSection() {
                 End-to-end encrypted
               </span>
               <span className="w-1 h-1 rounded-full bg-white/10" />
-              <span>Powered by ElevenLabs</span>
+              <span>Proprietary voice AI</span>
             </div>
           </motion.div>
 
