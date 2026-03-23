@@ -1243,27 +1243,28 @@ export default function ClaimsAnalyzerPage() {
             </div>
           )}
 
-          {/* Scheme selector + upload zone */}
-          {!result && popiaConsented && (
-            <>
-              {/* Scheme selector */}
-              <div className="bg-white rounded-xl border border-gray-200 p-4">
-                <div className="flex items-center gap-3">
-                  <Building2 className="w-4 h-4 text-gray-400" />
-                  <label className="text-[12px] font-medium text-gray-600">Medical Scheme Rules:</label>
-                  <select value={scheme} onChange={e => setScheme(e.target.value)}
-                    className="flex-1 max-w-xs px-3 py-1.5 rounded-lg border border-gray-200 text-[13px] focus:border-[#3DA9D1] outline-none">
-                    {SCHEMES.map(s => <option key={s.code} value={s.code}>{s.name}</option>)}
-                  </select>
-                  {scheme && (
-                    <span className="text-[10px] px-2 py-0.5 bg-[#3DA9D1]/10 text-[#3DA9D1] rounded-full font-medium">
-                      Scheme-specific rules active
-                    </span>
-                  )}
-                </div>
+          {/* Scheme selector — always visible */}
+          {popiaConsented && (
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <div className="flex items-center gap-3">
+                <Building2 className="w-4 h-4 text-gray-400" />
+                <label className="text-[12px] font-medium text-gray-600">Medical Scheme Rules:</label>
+                <select value={scheme} onChange={e => setScheme(e.target.value)}
+                  className="flex-1 max-w-xs px-3 py-1.5 rounded-lg border border-gray-200 text-[13px] focus:border-[#3DA9D1] outline-none">
+                  {SCHEMES.map(s => <option key={s.code} value={s.code}>{s.name}</option>)}
+                </select>
+                {scheme && (
+                  <span className="text-[10px] px-2 py-0.5 bg-[#3DA9D1]/10 text-[#3DA9D1] rounded-full font-medium">
+                    Scheme-specific rules active
+                  </span>
+                )}
               </div>
+            </div>
+          )}
 
-              {/* Upload zone */}
+          {/* Upload zone */}
+          {!result && !prepResult && !preparing && popiaConsented && (
+            <>
               <div
                 onDrop={handleDrop}
                 onDragOver={e => { e.preventDefault(); setDragOver(true); }}
@@ -1382,7 +1383,7 @@ export default function ClaimsAnalyzerPage() {
                     {saved ? "Saved" : "Save"}
                   </button>
                   {result.invalidClaims > 0 && (
-                    <button onClick={() => handleFixFile()} disabled={fixing}
+                    <button onClick={() => handleFixFile(true)} disabled={fixing}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-[12px] font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50">
                       {fixing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
                       {fixing ? "Fixing..." : "Fix My File"}
