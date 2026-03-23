@@ -73,24 +73,72 @@ export async function POST(req: NextRequest) {
       applied.filter(c => c.field === "removeLine").map(c => c.lineNumber)
     );
 
+    // Build a lookup of revalidation results by original line number
+    const revalidatedByLine = new Map<number, { status: string; reason: string; code: string }>();
+    for (const lr of revalidated.lineResults) {
+      const errorIssues = (lr.issues || []).filter(i => i.severity === "error");
+      const warningIssues = (lr.issues || []).filter(i => i.severity === "warning");
+      let status = "VALID";
+      let reason = "";
+      let code = "";
+      if (errorIssues.length > 0) {
+        status = "REJECTED";
+        reason = errorIssues.map(i => i.message).join(" | ");
+        code = errorIssues.map(i => i.code).join(",");
+      } else if (warningIssues.length > 0) {
+        status = "WARNING";
+        reason = warningIssues.map(i => i.message).join(" | ");
+        code = warningIssues.map(i => i.code).join(",");
+      }
+      revalidatedByLine.set(lr.lineNumber, { status, reason, code });
+    }
+
+    // Ensure system_result, system_reason, system_code columns exist
+    const RESULT_COL = "system_result";
+    const REASON_COL = "system_reason";
+    const CODE_COL = "system_code";
+    const hasResultCol = parsed.headers.includes(RESULT_COL);
+    const hasReasonCol = parsed.headers.includes(REASON_COL);
+    const hasCodeCol = parsed.headers.includes(CODE_COL);
+    const outputHeaders = [...parsed.headers];
+    if (!hasResultCol) outputHeaders.push(RESULT_COL);
+    if (!hasReasonCol) outputHeaders.push(REASON_COL);
+    if (!hasCodeCol) outputHeaders.push(CODE_COL);
+
+    // Track which original line numbers survive after duplicate removal
+    let outputLineNum = 0;
     const fixedRows = parsed.rows
-      .filter((_, idx) => !removedLines.has(idx + 1)) // lineNumbers are 1-based
+      .filter((_, idx) => !removedLines.has(idx + 1))
       .map((originalRow) => {
-        // Find the corrected line by matching original row data
         const lineNum = parsed.rows.indexOf(originalRow) + 1;
+        outputLineNum++;
         const correctedLine = correctedLines.find(cl => cl.lineNumber === lineNum);
-        if (!correctedLine) return originalRow;
 
         const newRow = { ...originalRow };
-        if (reverseMapping.primaryICD10 && correctedLine.primaryICD10) {
-          newRow[reverseMapping.primaryICD10] = correctedLine.primaryICD10;
+        if (correctedLine) {
+          if (reverseMapping.primaryICD10 && correctedLine.primaryICD10) {
+            newRow[reverseMapping.primaryICD10] = correctedLine.primaryICD10;
+          }
+          if (reverseMapping.secondaryICD10 && correctedLine.secondaryICD10?.length) {
+            newRow[reverseMapping.secondaryICD10] = correctedLine.secondaryICD10.join(";");
+          }
+          if (reverseMapping.dependentCode && correctedLine.dependentCode) {
+            newRow[reverseMapping.dependentCode] = correctedLine.dependentCode;
+          }
         }
-        if (reverseMapping.secondaryICD10 && correctedLine.secondaryICD10?.length) {
-          newRow[reverseMapping.secondaryICD10] = correctedLine.secondaryICD10.join(";");
+
+        // Write validation results into system columns
+        const result = revalidatedByLine.get(correctedLine?.lineNumber ?? lineNum);
+        if (result) {
+          newRow[RESULT_COL] = result.status;
+          newRow[REASON_COL] = result.reason;
+          newRow[CODE_COL] = result.code;
+        } else {
+          newRow[RESULT_COL] = "VALID";
+          newRow[REASON_COL] = "";
+          newRow[CODE_COL] = "";
         }
-        if (reverseMapping.dependentCode && correctedLine.dependentCode) {
-          newRow[reverseMapping.dependentCode] = correctedLine.dependentCode;
-        }
+
         return newRow;
       });
 
@@ -100,10 +148,10 @@ export async function POST(req: NextRequest) {
       : firstLine.split(";").length > firstLine.split(",").length ? ";"
       : ",";
 
-    // Rebuild CSV with original delimiter
-    const csvHeader = parsed.headers.join(delimiter);
+    // Rebuild CSV with output headers (includes system columns)
+    const csvHeader = outputHeaders.join(delimiter);
     const csvBody = fixedRows.map(row =>
-      parsed.headers.map(h => {
+      outputHeaders.map(h => {
         const val = row[h] || "";
         return val.includes(delimiter) || val.includes('"') || val.includes("\n")
           ? `"${val.replace(/"/g, '""')}"` : val;
