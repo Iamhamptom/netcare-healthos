@@ -835,7 +835,7 @@ function validateCrossLine(lines: ClaimLineItem[]): ValidationIssue[] {
   // A patient CAN have multiple services (different tariffs) on the same day — that's NOT a duplicate
   const seen = new Map<string, number>();
   for (const line of lines) {
-    const key = `${(line.patientName || "").toLowerCase()}|${line.primaryICD10}|${line.dateOfService || ""}|${line.tariffCode || ""}|${line.amount || ""}`;
+    const key = `${(line.patientName || "").toLowerCase()}|${line.primaryICD10}|${line.dateOfService || ""}|${line.tariffCode || ""}|${line.amount || ""}|${line.modifier || ""}`;
     if (key && seen.has(key)) {
       issues.push({
         lineNumber: line.lineNumber, field: "primaryICD10", code: "DUPLICATE_CLAIM",
