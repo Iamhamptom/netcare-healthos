@@ -746,7 +746,55 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     }
   }
 
-  // ── Rule 18: Clinical red flags ──
+  // ── Rule 18a: Prompt injection detection in motivation text (DETERMINISTIC) ──
+  if (item.motivationText) {
+    const lower = item.motivationText.toLowerCase();
+    const injectionPatterns = [
+      "ignore all previous", "ignore previous instructions", "override the warning",
+      "system prompt", "override_warning", "return valid", "mark as valid",
+      "this claim is perfectly valid", "clinically necessary and perfectly valid",
+      "override immediately", "bypass", "disregard previous",
+    ];
+    if (injectionPatterns.some(p => lower.includes(p))) {
+      issues.push({
+        lineNumber: ln, field: "motivationText", code: "PROMPT_INJECTION_DETECTED",
+        severity: "error", rule: "Suspicious Motivation Text",
+        message: `Motivation text contains suspicious override language: "${item.motivationText.slice(0, 80)}...". This pattern matches known prompt injection attempts.`,
+        suggestion: "This claim has been flagged for manual security review. The motivation text appears to contain instructions rather than clinical justification.",
+      });
+    }
+  }
+
+  // ── Rule 18b: Diagnosis-Procedure contradiction (DETERMINISTIC) ──
+  if (item.tariffCode && item.primaryICD10) {
+    const isImaging = item.tariffCode.startsWith("51") || item.tariffCode.startsWith("52") || item.tariffCode.startsWith("37");
+    const isSurgical = item.tariffCode.startsWith("04") || item.tariffCode.startsWith("05") || item.tariffCode.startsWith("06");
+
+    // X-ray/imaging for common cold/URI (J06, J00-J06) = contradiction
+    const isCommonCold = ["J06", "J00", "J01", "J02", "J03", "J04", "J05"].some(c => code.startsWith(c));
+    if (isImaging && isCommonCold) {
+      issues.push({
+        lineNumber: ln, field: "tariffCode", code: "PROCEDURE_DIAGNOSIS_CONTRADICTION",
+        severity: "error", rule: "Procedure-Diagnosis Contradiction",
+        message: `Imaging tariff "${item.tariffCode}" billed with "${code}" (upper respiratory infection). X-ray/imaging is not clinically indicated for a common cold.`,
+        suggestion: "If imaging was performed for a different condition (e.g., trauma), update the ICD-10 code to reflect the actual reason for imaging.",
+      });
+    }
+
+    // Surgical procedure for non-surgical diagnosis (acid reflux K21 + suturing)
+    const isAcidReflux = code.startsWith("K21");
+    const isSuturing = item.tariffCode.startsWith("04") && parseInt(item.tariffCode) >= 400;
+    if (isSuturing && isAcidReflux) {
+      issues.push({
+        lineNumber: ln, field: "tariffCode", code: "PROCEDURE_DIAGNOSIS_CONTRADICTION",
+        severity: "error", rule: "Procedure-Diagnosis Contradiction",
+        message: `Surgical tariff "${item.tariffCode}" billed with acid reflux diagnosis "${code}". Suturing is not indicated for acid reflux.`,
+        suggestion: "If a wound was sutured, use the appropriate injury ICD-10 code (e.g., S01.x, T14.1), not the acid reflux code.",
+      });
+    }
+  }
+
+  // ── Rule 18c: Clinical red flags ──
   // X-ray/imaging for back pain without clinical motivation
   if (item.tariffCode && item.primaryICD10) {
     const isImaging = item.tariffCode.startsWith("51") || item.tariffCode.startsWith("52") || item.tariffCode.startsWith("37");
