@@ -235,6 +235,67 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // ── AI Motivation Classification (Phase 2 — bounded LLM) ──
+    // Find claims with clinical red flags that have motivation text
+    const needsAIReview = result.issues
+      .filter(i => i.code === "CLINICAL_NEEDS_AI_REVIEW")
+      .map(i => {
+        const ext = i as typeof i & { _motivationText?: string; _procedure?: string; _diagnosis?: string };
+        return {
+          lineNumber: i.lineNumber,
+          procedure: ext._procedure || "",
+          diagnosis: ext._diagnosis || "",
+          motivationText: ext._motivationText || "",
+          rule: "Imaging for non-specific back pain",
+        };
+      })
+      .filter(item => item.motivationText);
+
+    if (needsAIReview.length > 0) {
+      try {
+        const { classifyAllMotivations } = await import("@/lib/claims/motivation-classifier");
+        const decisions = await classifyAllMotivations(needsAIReview);
+
+        // Update issues based on AI decisions
+        for (const [lineNum, decision] of decisions) {
+          // Remove the "needs review" info issue
+          const idx = result.issues.findIndex(i => i.lineNumber === lineNum && i.code === "CLINICAL_NEEDS_AI_REVIEW");
+          if (idx !== -1) result.issues.splice(idx, 1);
+
+          // Find the line result
+          const lr = result.lineResults.find(r => r.lineNumber === lineNum);
+
+          if (decision.override) {
+            // AI approved the motivation — mark as valid with note
+            result.issues.push({
+              lineNumber: lineNum, field: "motivationText", code: "MOTIVATION_APPROVED",
+              severity: "info", rule: "Clinical Motivation Approved",
+              message: `AI approved: "${decision.reason}". The clinical justification is sufficient for this procedure.`,
+            });
+          } else {
+            // AI rejected the motivation — keep as warning
+            result.issues.push({
+              lineNumber: lineNum, field: "motivationText", code: "WEAK_MOTIVATION",
+              severity: "warning", rule: "Weak Clinical Motivation",
+              message: `AI review: "${decision.reason}". The provided justification may not satisfy scheme requirements for this procedure.`,
+              suggestion: "Strengthen the clinical motivation with specific findings, trauma mechanism, or failed conservative treatment.",
+            });
+            if (lr && lr.status === "valid") {
+              lr.status = "warning";
+              lr.issues.push({
+                lineNumber: lineNum, field: "motivationText", code: "WEAK_MOTIVATION",
+                severity: "warning", rule: "Weak Clinical Motivation",
+                message: `AI review: "${decision.reason}"`,
+              });
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("[validate] Motivation classification failed:", (err as Error).message);
+        // Non-blocking — claims stay as-is if AI fails
+      }
+    }
+
     // Recalculate summary
     result.summary.errorCount = result.issues.filter(i => i.severity === "error").length;
     result.summary.warningCount = result.issues.filter(i => i.severity === "warning").length;

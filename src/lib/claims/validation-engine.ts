@@ -755,13 +755,25 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
   if (item.tariffCode && item.primaryICD10) {
     const isImaging = item.tariffCode.startsWith("51") || item.tariffCode.startsWith("52") || item.tariffCode.startsWith("37");
     const isBackPain = ["M54", "M54.5", "M54.9", "M54.4", "M54.2"].some(c => code.startsWith(c));
-    if (isImaging && isBackPain && !item.motivationText?.trim()) {
-      issues.push({
-        lineNumber: ln, field: "tariffCode", code: "CLINICAL_RED_FLAG",
-        severity: "warning", rule: "Clinical Red Flag",
-        message: `Imaging tariff "${item.tariffCode}" billed with back pain diagnosis "${code}" without clinical motivation. SA schemes flag imaging for non-specific back pain without justification.`,
-        suggestion: "Add clinical motivation text explaining the medical necessity for imaging (e.g., 'red flag symptoms', 'suspected fracture').",
-      });
+    if (isImaging && isBackPain) {
+      if (!item.motivationText?.trim()) {
+        issues.push({
+          lineNumber: ln, field: "tariffCode", code: "CLINICAL_RED_FLAG",
+          severity: "warning", rule: "Clinical Red Flag",
+          message: `Imaging tariff "${item.tariffCode}" billed with back pain diagnosis "${code}" without clinical motivation. SA schemes flag imaging for non-specific back pain without justification.`,
+          suggestion: "Add clinical motivation text explaining the medical necessity for imaging (e.g., 'red flag symptoms', 'suspected fracture').",
+        });
+      } else {
+        // Has motivation text — flag for AI review (will be evaluated in post-validation)
+        issues.push({
+          lineNumber: ln, field: "tariffCode", code: "CLINICAL_NEEDS_AI_REVIEW",
+          severity: "info", rule: "Clinical Motivation Under Review",
+          message: `Imaging for back pain with motivation: "${item.motivationText.slice(0, 100)}". Pending AI clinical review.`,
+          _motivationText: item.motivationText,
+          _procedure: item.tariffCode,
+          _diagnosis: code,
+        } as ValidationIssue & { _motivationText: string; _procedure: string; _diagnosis: string });
+      }
     }
   }
 
