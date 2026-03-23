@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, Send, X, Minimize2, Maximize2, Sparkles } from "lucide-react";
 
@@ -198,6 +199,13 @@ function getResponse(query: string): string {
 let msgCounter = 0;
 
 export default function NetcareAssistant() {
+  const pathname = usePathname();
+  // Hide on claims-chat — that page IS the assistant
+  if (pathname === '/dashboard/claims-chat') return null;
+  return <NetcareAssistantInner />;
+}
+
+function NetcareAssistantInner() {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [messages, setMessages] = useState<Message[]>([

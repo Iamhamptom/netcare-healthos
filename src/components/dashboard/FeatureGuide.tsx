@@ -361,7 +361,9 @@ export default function FeatureGuide() {
     router.push(path);
   };
 
-  const showPanel = jessOpen && !dismissedPages.has(pathname) && PAGE_CONTEXTS[pathname] && ndaAccepted && welcomeDone;
+  // Hide on claims-chat page — the chat IS the assistant
+  const isClaimsChat = pathname === '/dashboard/claims-chat';
+  const showPanel = !isClaimsChat && jessOpen && !dismissedPages.has(pathname) && PAGE_CONTEXTS[pathname] && ndaAccepted && welcomeDone;
 
   return (
     <>
@@ -379,7 +381,7 @@ export default function FeatureGuide() {
         )}
       </AnimatePresence>
 
-      {ndaAccepted && welcomeDone && (
+      {ndaAccepted && welcomeDone && !isClaimsChat && (
         <button onClick={toggleJess}
           className="fixed bottom-20 right-6 z-[9989] flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm border border-black/[0.04] text-[11px] font-medium text-[#1D3443]/50 hover:text-[#1D3443]/80 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.1)] transition-all">
           <Sparkles className="w-3 h-3" />
