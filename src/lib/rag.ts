@@ -37,14 +37,33 @@ function getDataPath(filename: string): string {
   return path.join(process.cwd(), "docs/knowledge/databases", filename);
 }
 
+function parseCSVLine(line: string): string[] {
+  const result: string[] = [];
+  let current = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      inQuotes = !inQuotes;
+    } else if (ch === "," && !inQuotes) {
+      result.push(current.trim());
+      current = "";
+    } else {
+      current += ch;
+    }
+  }
+  result.push(current.trim());
+  return result;
+}
+
 function loadCSV(filePath: string): LookupRow[] {
   if (!fs.existsSync(filePath)) return [];
   const content = fs.readFileSync(filePath, "utf-8");
   const lines = content.split("\n").filter((l) => l.trim());
   if (lines.length < 2) return [];
-  const headers = lines[0].split(",").map((h) => h.trim().replace(/"/g, ""));
+  const headers = parseCSVLine(lines[0]);
   return lines.slice(1).map((line) => {
-    const vals = line.split(",").map((v) => v.trim().replace(/"/g, ""));
+    const vals = parseCSVLine(line);
     const row: LookupRow = {};
     headers.forEach((h, i) => {
       row[h] = vals[i] || "";
