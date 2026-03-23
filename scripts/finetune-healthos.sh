@@ -13,12 +13,16 @@
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 set -e
-export PATH="$PATH:/Users/hga/Library/Python/3.9/bin"
+# Use ml-toolkit venv with Python 3.13 + MLX 0.31.1
+VENV="/Users/hga/ml-toolkit/.venv"
+export PATH="$VENV/bin:$PATH"
+PYTHON="$VENV/bin/python3"
 
-MODEL_DIR="ml/models/med42-base"
-DATA_DIR="ml/training-data"
-ADAPTER_DIR="ml/models/healthos-adapter"
-FUSED_DIR="ml/models/healthos-fused"
+BASE="/Users/hga/netcare-healthos"
+MODEL_DIR="$BASE/ml/models/med42-mlx"
+DATA_DIR="$BASE/ml/training-data"
+ADAPTER_DIR="$BASE/ml/models/healthos-adapter-v3"
+FUSED_DIR="$BASE/ml/models/healthos-fused-v3"
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  HealthOS-Med — LoRA Fine-Tuning on Apple M1 Max"
@@ -54,19 +58,21 @@ echo ""
 
 mkdir -p "$ADAPTER_DIR"
 
-python3 -m mlx_lm.lora \
+$PYTHON -m mlx_lm lora \
     --model "$MODEL_DIR" \
     --data "$DATA_DIR" \
     --train \
     --adapter-path "$ADAPTER_DIR" \
     --iters 1000 \
     --batch-size 4 \
-    --lora-layers 16 \
+    --num-layers 16 \
     --learning-rate 1e-5 \
     --steps-per-report 50 \
     --steps-per-eval 200 \
     --val-batches 25 \
-    --save-every 200
+    --save-every 200 \
+    --max-seq-length 2048 \
+    --grad-checkpoint
 
 echo ""
 echo "✓ LoRA training complete"
@@ -76,7 +82,7 @@ echo "  Adapter saved to: $ADAPTER_DIR"
 echo ""
 echo "Fusing LoRA adapter with base model..."
 
-python3 -m mlx_lm.fuse \
+$PYTHON -m mlx_lm fuse \
     --model "$MODEL_DIR" \
     --adapter-path "$ADAPTER_DIR" \
     --save-path "$FUSED_DIR"
@@ -87,7 +93,7 @@ echo "✓ Fused model saved to: $FUSED_DIR"
 echo ""
 echo "Testing fine-tuned model..."
 
-python3 -c "
+$PYTHON -c "
 from mlx_lm import load, generate
 
 model, tokenizer = load('$FUSED_DIR')
