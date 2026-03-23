@@ -103,12 +103,12 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    label: "CLAIMS INTELLIGENCE",
+    label: "CLAIMS AI",
     badge: "NEW",
-    badgeColor: "teal",
+    badgeColor: "emerald",
     items: [
-      { href: "/dashboard/claims-chat", icon: MessageSquare, label: "Claims AI", roles: ["admin", "receptionist"] },
-      { href: "/dashboard/claims", icon: ShieldCheck, label: "Claims Analyzer", roles: ["admin", "receptionist"] },
+      { href: "/dashboard/claims-chat", icon: MessageSquare, label: "Chat with Claims AI", roles: ["admin", "receptionist", "doctor", "platform_admin"] },
+      { href: "/dashboard/claims", icon: ShieldCheck, label: "Batch Analyzer", roles: ["admin", "receptionist", "doctor", "platform_admin"] },
       { href: "/dashboard/claims-copilot", icon: MessageSquare, label: "Claims Copilot", roles: ["admin", "receptionist"] },
       { href: "/dashboard/claims-network", icon: Building2, label: "Claims Network", roles: ["platform_admin"] },
     ],
@@ -234,7 +234,7 @@ function sectionContainsPath(items: NavItem[], pathname: string): boolean {
 function buildDefaults(pathname: string): Record<string, boolean> {
   const state: Record<string, boolean> = {
     "": true,
-    "CLAIMS INTELLIGENCE": true,
+    "CLAIMS AI": true,
     "INTELLIGENCE": false,
     "AI PRODUCTS": false,
     "OPERATIONS": false,
