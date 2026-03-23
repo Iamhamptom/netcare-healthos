@@ -21,11 +21,13 @@ function validateTariffs(lines: ClaimLineItem[]): ValidationIssue[] {
     const tariff = lookupTariff(line.tariffCode);
 
     if (!tariff) {
+      // Only flag as info — our tariff database is GEMS-only (4,660 codes),
+      // not the full SA NHRPL. Valid pathology/radiology codes won't be in it.
+      // Don't generate false positives for codes we simply don't have.
       issues.push({
         lineNumber: ln, field: "tariffCode", code: "UNKNOWN_TARIFF",
-        severity: "warning", rule: "Unknown Tariff Code",
-        message: `Tariff code "${line.tariffCode}" was not found in the NHRPL reference database.`,
-        suggestion: "Verify the tariff code is correct and currently active.",
+        severity: "info", rule: "Tariff Not in Reference Database",
+        message: `Tariff code "${line.tariffCode}" was not found in our reference database. It may still be valid.`,
       });
       continue;
     }
@@ -70,16 +72,25 @@ function validateTariffs(lines: ClaimLineItem[]): ValidationIssue[] {
     }
   }
 
-  // Cross-line unbundling (use Set for O(1) lookups)
-  const allTariffCodes = [...new Set(lines.map(l => l.tariffCode).filter(Boolean) as string[])];
-  if (allTariffCodes.length > 1) {
-    const violations = findUnbundlingViolations(allTariffCodes);
+  // Cross-line unbundling — only check SAME patient + SAME date
+  const byPatientDate = new Map<string, ClaimLineItem[]>();
+  for (const line of lines) {
+    if (!line.tariffCode) continue;
+    const key = `${(line.patientName || "").toLowerCase()}|${line.dateOfService || ""}`;
+    if (!byPatientDate.has(key)) byPatientDate.set(key, []);
+    byPatientDate.get(key)!.push(line);
+  }
+  for (const [, group] of byPatientDate) {
+    if (group.length < 2) continue;
+    const tariffs = [...new Set(group.map(l => l.tariffCode).filter(Boolean) as string[])];
+    if (tariffs.length < 2) continue;
+    const violations = findUnbundlingViolations(tariffs);
     for (const v of violations) {
-      const affectedLine = lines.find(l => l.tariffCode === v.code1 || l.tariffCode === v.code2);
+      const affectedLine = group.find(l => l.tariffCode === v.code1 || l.tariffCode === v.code2);
       issues.push({
         lineNumber: affectedLine?.lineNumber || 0, field: "tariffCode", code: "UNBUNDLING",
         severity: "error", rule: "Unbundling Violation",
-        message: `Tariff codes "${v.code1}" and "${v.code2}" should not be billed together: ${v.reason}`,
+        message: `Tariff codes "${v.code1}" and "${v.code2}" should not be billed together by the same provider on the same day: ${v.reason}`,
         suggestion: "Use the bundled/comprehensive code instead of billing components separately.",
       });
     }
