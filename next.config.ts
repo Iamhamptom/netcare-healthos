@@ -20,13 +20,21 @@ const cspDirectives = [
 const nextConfig: NextConfig = {
   outputFileTracingExcludes: {
     "*": [
-      "./docs/knowledge/**",
       "./docs/knowledge/extracted/**",
-      "./docs/knowledge/databases/**",
-      "./ml/**",
+      "./docs/knowledge/raw_data/**",
+      "./ml/models/**",
+      "./ml/training-data/**",
+      "./ml/scripts/**",
       "./steinberg/**",
       "./.firecrawl/**",
       "./legal/**",
+    ],
+  },
+  outputFileTracingIncludes: {
+    "/api/**": [
+      "./docs/knowledge/databases/*.csv",
+      "./docs/knowledge/*.md",
+      "./ml/rag-index/documents.jsonl",
     ],
   },
   async headers() {
