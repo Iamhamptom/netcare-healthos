@@ -878,17 +878,19 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     const cdlCodes = ["J45", "E10", "E11", "E12", "E13", "E14", "I10", "I11", "I12", "I13", "I15"];
     const isCDLCode = cdlCodes.some(p => code.startsWith(p));
     if (isCDLCode) {
-      // If NAPPI code present (medication dispensed) → this IS a CDL claim, warn harder
-      // If no NAPPI → might be routine visit, softer note
+      // Strict CDL conditions (J45 asthma, E11 diabetes, I10 hypertension) → always warn
+      // These are the most commonly audited CDL conditions by SA schemes
+      const strictCDL = ["J45", "E11", "I10"].some(p => code.startsWith(p));
       const hasMedication = !!item.nappiCode;
+      const shouldWarn = strictCDL || hasMedication;
       issues.push({
-        lineNumber: ln, field: "modifier", code: hasMedication ? "PMB_MODIFIER_MISSING" : "PMB_MODIFIER_NOTE",
-        severity: hasMedication ? "warning" : "info",
-        rule: hasMedication ? "PMB Modifier Missing" : "CDL/PMB Condition Detected",
-        message: hasMedication
-          ? `"${code}" is a CDL condition with medication (NAPPI ${item.nappiCode}) but no PMB modifier. SA schemes require PMB modifier for chronic medication claims.`
+        lineNumber: ln, field: "modifier", code: shouldWarn ? "PMB_MODIFIER_MISSING" : "PMB_MODIFIER_NOTE",
+        severity: shouldWarn ? "warning" : "info",
+        rule: shouldWarn ? "PMB Modifier Missing" : "CDL/PMB Condition Detected",
+        message: shouldWarn
+          ? `"${code}" is a CDL condition without a PMB modifier. SA schemes require the PMB modifier for Asthma, Diabetes, and Hypertension claims to route to the CDL benefit.`
           : `"${code}" is a Chronic Disease List condition. If claiming under the CDL benefit, a PMB modifier may be required.`,
-        suggestion: hasMedication ? "Add the PMB modifier to route this claim to the Chronic Disease List benefit." : undefined,
+        suggestion: shouldWarn ? "Add the PMB modifier (e.g., 'PMB') to ensure correct benefit routing." : undefined,
       });
     }
   }
