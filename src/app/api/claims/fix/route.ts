@@ -68,20 +68,31 @@ export async function POST(req: NextRequest) {
       if (typeof header === "string") reverseMapping[field] = header;
     }
 
-    const fixedRows = parsed.rows.map((originalRow, idx) => {
-      const correctedLine = correctedLines[idx];
-      if (!correctedLine) return originalRow;
+    // Build a set of removed line numbers (duplicates)
+    const removedLines = new Set(
+      applied.filter(c => c.field === "removeLine").map(c => c.lineNumber)
+    );
 
-      const newRow = { ...originalRow };
-      // Apply corrections back to original column names
-      if (reverseMapping.primaryICD10 && correctedLine.primaryICD10) {
-        newRow[reverseMapping.primaryICD10] = correctedLine.primaryICD10;
-      }
-      if (reverseMapping.secondaryICD10 && correctedLine.secondaryICD10?.length) {
-        newRow[reverseMapping.secondaryICD10] = correctedLine.secondaryICD10.join(";");
-      }
-      return newRow;
-    });
+    const fixedRows = parsed.rows
+      .filter((_, idx) => !removedLines.has(idx + 1)) // lineNumbers are 1-based
+      .map((originalRow) => {
+        // Find the corrected line by matching original row data
+        const lineNum = parsed.rows.indexOf(originalRow) + 1;
+        const correctedLine = correctedLines.find(cl => cl.lineNumber === lineNum);
+        if (!correctedLine) return originalRow;
+
+        const newRow = { ...originalRow };
+        if (reverseMapping.primaryICD10 && correctedLine.primaryICD10) {
+          newRow[reverseMapping.primaryICD10] = correctedLine.primaryICD10;
+        }
+        if (reverseMapping.secondaryICD10 && correctedLine.secondaryICD10?.length) {
+          newRow[reverseMapping.secondaryICD10] = correctedLine.secondaryICD10.join(";");
+        }
+        if (reverseMapping.dependentCode && correctedLine.dependentCode) {
+          newRow[reverseMapping.dependentCode] = correctedLine.dependentCode;
+        }
+        return newRow;
+      });
 
     // Detect original delimiter
     const firstLine = text.replace(/^\uFEFF/, "").split(/\r?\n/)[0] || "";
