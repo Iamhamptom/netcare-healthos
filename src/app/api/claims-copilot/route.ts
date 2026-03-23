@@ -139,12 +139,11 @@ export async function POST(request: Request) {
   });
 }
 
-/** Fetch RAG context — uses internal /api/rag route (works on Vercel + local) */
+/** Fetch RAG context — uses internal lib (works on Vercel + local) */
 async function fetchRAGContext(query: string): Promise<string | null> {
   try {
-    // Import the retrieve function directly (same process, no network call)
-    const { retrieve } = await import("@/lib/rag");
-    const { context } = retrieve(query);
+    const { retrieveWithMetrics } = await import("@/lib/rag");
+    const { context } = retrieveWithMetrics(query);
     return context || null;
   } catch {
     return null;
