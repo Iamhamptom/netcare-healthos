@@ -234,15 +234,10 @@ async function executeTool(
         const tariff = lookupTariff(String(args.tariff_code));
         if (!tariff) {
           issues.push(`Tariff code "${args.tariff_code}" not found in NHRPL database`);
-        } else if (entry) {
-          // Check if the tariff is compatible with this diagnosis chapter
-          const chapterRange = `${entry.code.charAt(0)}00-${entry.code.charAt(0)}99`;
-          const matchesChapter = tariff.validDiagnosisCategories.some(cat => {
-            const catStart = cat.split("-")[0];
-            return entry.code >= catStart;
-          });
-          if (!matchesChapter && tariff.validDiagnosisCategories.length > 0) {
-            issues.push(`Tariff "${args.tariff_code}" [${tariff.description}] may not be compatible with diagnosis chapter for "${code}". Expected chapters: ${tariff.validDiagnosisCategories.join(", ")}`);
+        } else {
+          // Just report the tariff info — full cross-validation is done by the validation engine
+          if (tariff.validDiagnosisCategories.length > 0 && !tariff.validDiagnosisCategories.includes("ALL" as never)) {
+            issues.push(`Note: Tariff "${args.tariff_code}" [${tariff.description}] has diagnosis category restrictions`);
           }
         }
       }
@@ -295,12 +290,13 @@ async function executeTool(
         administrator: profile.administrator,
         claimWindowDays: profile.claimWindowDays,
         requiresPreAuth: profile.requiresPreAuth,
-        specificityLevel: profile.specificityLevel,
-        pmb: profile.pmb,
-        chronicMedication: profile.chronicMedication,
-        allowsEmergencyRetroAuth: profile.allowsEmergencyRetroAuth,
-        electronicOnly: profile.electronicOnly,
-        notes: profile.notes || "No additional notes",
+        specificityRequirements: profile.specificityRequirements,
+        genderCheckEnabled: profile.genderCheckEnabled,
+        ageCheckEnabled: profile.ageCheckEnabled,
+        eccRequired: profile.eccRequired,
+        maxConsultationsPerDay: profile.maxConsultationsPerDay,
+        pmbRules: profile.pmbRules,
+        chronicMedRules: profile.chronicMedRules,
       };
     }
 
