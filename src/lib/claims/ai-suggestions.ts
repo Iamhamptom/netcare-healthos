@@ -48,24 +48,13 @@ When suggesting ICD-10 codes:
 
 Respond ONLY with valid JSON — no markdown fences, no commentary outside the JSON.`;
 
-// ─── Local HealthOS-Med RAG (fine-tuned model + exact database lookup) ──────
-
-const HEALTHOS_SERVER = process.env.HEALTHOS_SERVER_URL || "http://localhost:8800";
+// ─── RAG — uses internal lib (works on Vercel, no external server) ──────
 
 async function queryLocalRAG(query: string): Promise<string | null> {
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-    const res = await fetch(`${HEALTHOS_SERVER}/rag`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query, top_k: 5 }),
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.context || null;
+    const { retrieve } = await import("@/lib/rag");
+    const { context } = retrieve(query);
+    return context || null;
   } catch {
     return null;
   }

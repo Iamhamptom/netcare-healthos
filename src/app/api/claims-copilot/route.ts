@@ -139,23 +139,13 @@ export async function POST(request: Request) {
   });
 }
 
-/** Fetch RAG context from local HealthOS-Med server */
+/** Fetch RAG context — uses internal /api/rag route (works on Vercel + local) */
 async function fetchRAGContext(query: string): Promise<string | null> {
-  const serverUrl =
-    process.env.HEALTHOS_SERVER_URL || "http://localhost:8800";
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-    const res = await fetch(`${serverUrl}/rag`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query, top_k: 5 }),
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.context || null;
+    // Import the retrieve function directly (same process, no network call)
+    const { retrieve } = await import("@/lib/rag");
+    const { context } = retrieve(query);
+    return context || null;
   } catch {
     return null;
   }
