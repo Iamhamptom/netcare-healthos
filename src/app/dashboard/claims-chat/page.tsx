@@ -18,6 +18,7 @@ import {
   MessageSquare,
   Bot,
   User,
+  RotateCcw,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -551,6 +552,59 @@ export default function ClaimsChatPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textInputRef = useRef<HTMLInputElement>(null);
+  const didLoadRef = useRef(false);
+
+  const STORAGE_KEY = 'claims-chat-messages';
+
+  // Load messages from localStorage on mount
+  useEffect(() => {
+    if (didLoadRef.current) return;
+    didLoadRef.current = true;
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed: ChatMessage[] = JSON.parse(saved).map((m: any) => ({
+          ...m,
+          timestamp: new Date(m.timestamp),
+        }));
+        if (parsed.length > 0) {
+          setMessages(parsed);
+        }
+      }
+    } catch {
+      // Corrupt data — ignore
+    }
+  }, []);
+
+  // Save messages to localStorage on every change (strip non-serializable data)
+  useEffect(() => {
+    if (!didLoadRef.current) return; // Don't save before initial load
+    try {
+      const serializable = messages
+        .filter((m) => m.type !== 'typing')
+        .map((m) => {
+          const cleaned = { ...m };
+          // Strip File objects from FileInfo data — they can't be serialized
+          if (m.type === 'file' && m.data && (m.data as FileInfo).file) {
+            cleaned.data = { name: (m.data as FileInfo).name, size: (m.data as FileInfo).size, type: (m.data as FileInfo).type };
+          }
+          return cleaned;
+        });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(serializable));
+    } catch {
+      // Storage full or unavailable — ignore
+    }
+  }, [messages]);
+
+  // Clear chat and start fresh
+  const handleNewChat = useCallback(() => {
+    setMessages([]);
+    setLastAnalysis(null);
+    setLastFileRef(null);
+    setAttachedFile(null);
+    setInput('');
+    localStorage.removeItem(STORAGE_KEY);
+  }, []);
 
   const scrollToBottom = useCallback(() => {
     requestAnimationFrame(() => {
@@ -608,6 +662,13 @@ export default function ClaimsChatPage() {
       const analysis = buildAnalysisSummary(json);
       setLastAnalysis(analysis);
       addMessage('ai', analysis.summary, 'analysis', analysis);
+
+      // Fire-and-forget: save to server history
+      fetch('/api/claims/history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ practiceId: 'default', fileName: file.name, result: json, schemeCode: '' }),
+      }).catch(() => {});
     } catch (err: any) {
       removeMessage(typingId);
       addMessage('ai', `Failed to analyze file: ${err?.message ?? 'Network error'}. Please check your connection and try again.`, 'error');
@@ -683,6 +744,13 @@ export default function ClaimsChatPage() {
       }
 
       addMessage('ai', summary, 'fix', fix);
+
+      // Fire-and-forget: log learning event for ML reinforcement
+      fetch('/api/ml/reinforce', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event: 'claims_fix', data: { corrections: fix.fixedCount, beforeRate, afterRate } }),
+      }).catch(() => {});
     } catch (err: any) {
       removeMessage(typingId);
       addMessage('ai', `Fix failed: ${err?.message ?? 'Network error'}`, 'error');
@@ -1110,6 +1178,15 @@ export default function ClaimsChatPage() {
         <div className="flex items-center gap-3 mb-3">
           <MessageSquare className="w-6 h-6 text-[#3DA9D1]" />
           <h1 className="text-xl font-bold">Claims Analyzer</h1>
+          {messages.length > 0 && (
+            <button
+              onClick={handleNewChat}
+              className="ml-auto flex items-center gap-1.5 text-sm text-gray-300 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition-colors"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              New Chat
+            </button>
+          )}
         </div>
         <div className="flex gap-1 overflow-x-auto pb-1 -mb-1">
           {NAV_TABS.map((tab) => (
