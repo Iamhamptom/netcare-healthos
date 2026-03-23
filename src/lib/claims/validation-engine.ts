@@ -238,7 +238,7 @@ export function extractClaimLines(
       tariffCode: mapping.tariffCode ? row[mapping.tariffCode]?.trim() : undefined,
       nappiCode: mapping.nappiCode ? row[mapping.nappiCode]?.trim().replace(/-/g, "") : undefined,
       quantity: mapping.quantity ? parseInt(row[mapping.quantity], 10) || undefined : undefined,
-      amount: mapping.amount ? parseFloat(row[mapping.amount]) || undefined : undefined,
+      amount: mapping.amount ? parseFloat((row[mapping.amount] || "").replace(/[^0-9.\-]/g, "")) || undefined : undefined,
       modifier: mapping.modifier ? row[mapping.modifier]?.trim() : undefined,
       practitionerType: mapping.practitionerType ? normalizeDiscipline(row[mapping.practitionerType]?.trim()) : undefined,
       dateOfService: mapping.dateOfService ? row[mapping.dateOfService]?.trim() : undefined,
@@ -354,15 +354,27 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     }
   }
 
-  // ── Rule 0g: Amount format validation (comma decimals) ──
-  // SA PHISC EDIFACT: No commas in amounts. Dot decimals only.
-  if (item.rawAmount && /,\d{1,2}$/.test(item.rawAmount)) {
-    issues.push({
-      lineNumber: ln, field: "amount", code: "INVALID_AMOUNT_FORMAT",
-      severity: "error", rule: "Invalid Amount Format",
-      message: `Amount "${item.rawAmount}" uses a comma decimal separator. SA claims require dot decimals (e.g., 450.00 not 450,00).`,
-      suggestion: "Replace the comma with a dot in the amount field.",
-    });
+  // ── Rule 0g: Amount format validation ──
+  if (item.rawAmount) {
+    const raw = item.rawAmount.trim();
+    // Comma decimals: 450,00
+    if (/,\d{1,2}$/.test(raw)) {
+      issues.push({
+        lineNumber: ln, field: "amount", code: "INVALID_AMOUNT_FORMAT",
+        severity: "error", rule: "Invalid Amount Format",
+        message: `Amount "${raw}" uses a comma decimal separator. SA claims require dot decimals (e.g., 450.00 not 450,00).`,
+        suggestion: "Replace the comma with a dot in the amount field.",
+      });
+    }
+    // Currency symbol prefix: R450.00, R 450, ZAR450
+    if (/^[RZ]/i.test(raw)) {
+      issues.push({
+        lineNumber: ln, field: "amount", code: "INVALID_AMOUNT_FORMAT",
+        severity: "error", rule: "Invalid Amount Format",
+        message: `Amount "${raw}" contains a currency symbol/prefix. Submit numeric values only (e.g., 450.00 not R450.00).`,
+        suggestion: "Remove the 'R' or 'ZAR' prefix — amounts must be plain numbers.",
+      });
+    }
   }
 
   // ── Rule 0h: Excessive amount (>300% of typical scheme rate) ──
