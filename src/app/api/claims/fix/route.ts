@@ -58,9 +58,6 @@ export async function POST(req: NextRequest) {
     const corrections = generateAutoCorrections(claimLines, result.issues);
     const { correctedLines, applied } = applyAutoCorrections(claimLines, corrections, applyMedium);
 
-    // Re-validate corrected lines to show improvement
-    const revalidated = validateClaims(correctedLines);
-
     // Build the corrected CSV
     // Use original headers + rebuild rows with corrections applied
     const reverseMapping: Record<string, string> = {};
@@ -68,79 +65,95 @@ export async function POST(req: NextRequest) {
       if (typeof header === "string") reverseMapping[field] = header;
     }
 
-    // Build a set of removed line numbers (duplicates)
+    // ─── STEP 1: Build correction lookup by line number ───
+    const correctionsByLine = new Map<number, typeof correctedLines[0]>();
+    for (const cl of correctedLines) {
+      correctionsByLine.set(cl.lineNumber, cl);
+    }
+
+    // Lines removed (duplicates)
     const removedLines = new Set(
       applied.filter(c => c.field === "removeLine").map(c => c.lineNumber)
     );
 
-    // Build a lookup of revalidation results by original line number
-    const revalidatedByLine = new Map<number, { status: string; reason: string; code: string }>();
-    for (const lr of revalidated.lineResults) {
-      const errorIssues = (lr.issues || []).filter(i => i.severity === "error");
-      const warningIssues = (lr.issues || []).filter(i => i.severity === "warning");
-      let status = "VALID";
-      let reason = "";
-      let code = "";
-      if (errorIssues.length > 0) {
-        status = "REJECTED";
-        reason = errorIssues.map(i => i.message).join(" | ");
-        code = errorIssues.map(i => i.code).join(",");
-      } else if (warningIssues.length > 0) {
-        status = "WARNING";
-        reason = warningIssues.map(i => i.message).join(" | ");
-        code = warningIssues.map(i => i.code).join(",");
+    // ─── STEP 2: Re-validate ALL original lines (not just corrected) ───
+    // This ensures every row gets a proper system_result
+    const allClaimLines = extractClaimLines(parsed.rows, mapping);
+
+    // Apply corrections to the full set
+    for (const cl of allClaimLines) {
+      const corrected = correctionsByLine.get(cl.lineNumber);
+      if (corrected) {
+        cl.primaryICD10 = corrected.primaryICD10;
+        if (corrected.secondaryICD10) cl.secondaryICD10 = corrected.secondaryICD10;
+        if (corrected.dependentCode) cl.dependentCode = corrected.dependentCode;
       }
-      revalidatedByLine.set(lr.lineNumber, { status, reason, code });
     }
 
-    // Ensure system_result, system_reason, system_code columns exist
+    // Validate all lines (not just the ones that survived duplicate removal)
+    const fullRevalidation = validateClaims(allClaimLines);
+
+    // Build result lookup by line number
+    const resultByLine = new Map<number, { status: string; reason: string; code: string }>();
+    for (const lr of fullRevalidation.lineResults) {
+      const errorIssues = (lr.issues || []).filter((i: { severity: string }) => i.severity === "error");
+      const warningIssues = (lr.issues || []).filter((i: { severity: string }) => i.severity === "warning");
+      let status = "VALID";
+      let reason = "";
+      let errCode = "";
+      if (errorIssues.length > 0) {
+        status = "REJECTED";
+        reason = errorIssues.map((i: { message: string }) => i.message).join(" | ");
+        errCode = errorIssues.map((i: { code: string }) => i.code).join(",");
+      } else if (warningIssues.length > 0) {
+        status = "WARNING";
+        reason = warningIssues.map((i: { message: string }) => i.message).join(" | ");
+        errCode = warningIssues.map((i: { code: string }) => i.code).join(",");
+      }
+      resultByLine.set(lr.lineNumber, { status, reason, code: errCode });
+    }
+
+    // ─── STEP 3: Build output CSV ───
     const RESULT_COL = "system_result";
     const REASON_COL = "system_reason";
     const CODE_COL = "system_code";
-    const hasResultCol = parsed.headers.includes(RESULT_COL);
-    const hasReasonCol = parsed.headers.includes(REASON_COL);
-    const hasCodeCol = parsed.headers.includes(CODE_COL);
     const outputHeaders = [...parsed.headers];
-    if (!hasResultCol) outputHeaders.push(RESULT_COL);
-    if (!hasReasonCol) outputHeaders.push(REASON_COL);
-    if (!hasCodeCol) outputHeaders.push(CODE_COL);
+    if (!parsed.headers.includes(RESULT_COL)) outputHeaders.push(RESULT_COL);
+    if (!parsed.headers.includes(REASON_COL)) outputHeaders.push(REASON_COL);
+    if (!parsed.headers.includes(CODE_COL)) outputHeaders.push(CODE_COL);
 
-    // Track which original line numbers survive after duplicate removal
-    let outputLineNum = 0;
-    const fixedRows = parsed.rows
-      .filter((_, idx) => !removedLines.has(idx + 1))
-      .map((originalRow) => {
-        const lineNum = parsed.rows.indexOf(originalRow) + 1;
-        outputLineNum++;
-        const correctedLine = correctedLines.find(cl => cl.lineNumber === lineNum);
+    const fixedRows: Record<string, string>[] = [];
+    for (let idx = 0; idx < parsed.rows.length; idx++) {
+      const lineNum = idx + 1; // 1-based
 
-        const newRow = { ...originalRow };
-        if (correctedLine) {
-          if (reverseMapping.primaryICD10 && correctedLine.primaryICD10) {
-            newRow[reverseMapping.primaryICD10] = correctedLine.primaryICD10;
-          }
-          if (reverseMapping.secondaryICD10 && correctedLine.secondaryICD10?.length) {
-            newRow[reverseMapping.secondaryICD10] = correctedLine.secondaryICD10.join(";");
-          }
-          if (reverseMapping.dependentCode && correctedLine.dependentCode) {
-            newRow[reverseMapping.dependentCode] = correctedLine.dependentCode;
-          }
+      // Skip removed duplicates
+      if (removedLines.has(lineNum)) continue;
+
+      const originalRow = parsed.rows[idx];
+      const newRow = { ...originalRow };
+
+      // Apply corrections
+      const corrected = correctionsByLine.get(lineNum);
+      if (corrected) {
+        if (reverseMapping.primaryICD10 && corrected.primaryICD10) {
+          newRow[reverseMapping.primaryICD10] = corrected.primaryICD10;
         }
-
-        // Write validation results into system columns
-        const result = revalidatedByLine.get(correctedLine?.lineNumber ?? lineNum);
-        if (result) {
-          newRow[RESULT_COL] = result.status;
-          newRow[REASON_COL] = result.reason;
-          newRow[CODE_COL] = result.code;
-        } else {
-          newRow[RESULT_COL] = "VALID";
-          newRow[REASON_COL] = "";
-          newRow[CODE_COL] = "";
+        if (reverseMapping.secondaryICD10 && corrected.secondaryICD10?.length) {
+          newRow[reverseMapping.secondaryICD10] = corrected.secondaryICD10.join(";");
         }
+        if (reverseMapping.dependentCode && corrected.dependentCode) {
+          newRow[reverseMapping.dependentCode] = corrected.dependentCode;
+        }
+      }
 
-        return newRow;
-      });
+      // Write validation result
+      const result = resultByLine.get(lineNum);
+      newRow[RESULT_COL] = result?.status ?? "VALID";
+      newRow[REASON_COL] = result?.reason ?? "";
+      newRow[CODE_COL] = result?.code ?? "";
+
+      fixedRows.push(newRow);
+    }
 
     // Detect original delimiter
     const firstLine = text.replace(/^\uFEFF/, "").split(/\r?\n/)[0] || "";
@@ -178,18 +191,18 @@ export async function POST(req: NextRequest) {
           rejectionRate: result.summary.estimatedRejectionRate,
         },
         after: {
-          valid: revalidated.validClaims,
-          errors: revalidated.invalidClaims,
-          warnings: revalidated.warningClaims,
-          rejectionRate: revalidated.summary.estimatedRejectionRate,
+          valid: fullRevalidation.validClaims,
+          errors: fullRevalidation.invalidClaims,
+          warnings: fullRevalidation.warningClaims,
+          rejectionRate: fullRevalidation.summary.estimatedRejectionRate,
         },
         totalCorrections: applied.length,
         correctionsAvailable: corrections.length,
         changesByType,
         improvement: {
-          claimsFixed: revalidated.validClaims - result.validClaims,
-          rejectionRateDrop: result.summary.estimatedRejectionRate - revalidated.summary.estimatedRejectionRate,
-          estimatedSavingsRecovered: result.summary.estimatedSavings - revalidated.summary.estimatedSavings,
+          claimsFixed: fullRevalidation.validClaims - result.validClaims,
+          rejectionRateDrop: result.summary.estimatedRejectionRate - fullRevalidation.summary.estimatedRejectionRate,
+          estimatedSavingsRecovered: result.summary.estimatedSavings - fullRevalidation.summary.estimatedSavings,
         },
       },
       corrections: applied.map(c => ({
@@ -202,7 +215,7 @@ export async function POST(req: NextRequest) {
         reason: c.reason,
       })),
       // Also include remaining issues that couldn't be auto-fixed
-      remainingIssues: revalidated.batchInsights || [],
+      remainingIssues: fullRevalidation.batchInsights || [],
     });
   } catch (err) {
     console.error("[fix] Error:", err);
