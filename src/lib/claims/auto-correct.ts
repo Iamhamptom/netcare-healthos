@@ -10,7 +10,7 @@ export interface AutoCorrection {
   originalValue: string;
   correctedValue: string;
   rule: string;
-  confidence: "high" | "medium";
+  confidence: "high" | "medium" | "low";
   reason: string;
   applied: boolean;
 }
