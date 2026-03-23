@@ -416,33 +416,14 @@ async function executeTool(
 // 3. Falls back to null (uses embedded rules in system prompt)
 
 async function getRAGContext(query: string): Promise<string | null> {
-  const sources = [
-    process.env.HEALTHOS_SERVER_URL ? `${process.env.HEALTHOS_SERVER_URL}/rag` : null,
-    process.env.HEALTHOS_RAG_URL || null,
-    // Try internal API (works when running locally or if the /api/rag route is available)
-    `${process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"}/api/rag`,
-  ].filter(Boolean) as string[];
-
-  for (const url of sources) {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query, top_k: 5, mode: "search" }),
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
-      if (!res.ok) continue;
-      const data = await res.json();
-      const context = data.context || data.results?.map((r: { text: string }) => r.text).join("\n\n") || null;
-      if (context && context.length > 50) return context;
-    } catch {
-      continue; // Try next source
-    }
+  // Direct import — no HTTP calls, works everywhere (Vercel + local)
+  try {
+    const { retrieveWithMetrics } = await import("@/lib/rag");
+    const { context } = retrieveWithMetrics(query);
+    return context && context.length > 50 ? context : null;
+  } catch {
+    return null; // Falls back to embedded rules in system prompt
   }
-  return null; // All sources failed — agent uses embedded rules
 }
 
 // ─── Gemini Agent Loop ──────────────────────────────────────────────────
