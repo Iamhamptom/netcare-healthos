@@ -108,6 +108,7 @@ const navSections: NavSection[] = [
     badgeColor: "teal",
     items: [
       { href: "/dashboard/claims", icon: ShieldCheck, label: "Claims Analyzer", roles: ["admin", "receptionist"] },
+      { href: "/dashboard/claims-copilot", icon: MessageSquare, label: "Claims Copilot", roles: ["admin", "receptionist"] },
       { href: "/dashboard/claims-network", icon: Building2, label: "Claims Network", roles: ["platform_admin"] },
     ],
   },
@@ -187,6 +188,7 @@ const allNavItems = [...navSections.flatMap(s => s.items), ...healthbridgeItems,
 
 const ROUTE_FEATURE_MAP: Record<string, keyof TenantFeatures> = {
   "/dashboard/claims": "claimsAnalyzer",
+  "/dashboard/claims-copilot": "claimsAnalyzer",
   "/dashboard/claims-network": "claimsAnalyzer",
   "/dashboard/bridge": "careonBridge",
   "/dashboard/whatsapp": "whatsapp",
