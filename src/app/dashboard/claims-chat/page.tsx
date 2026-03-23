@@ -841,32 +841,40 @@ export default function ClaimsChatPage() {
 
     addMessage('user', text);
 
-    if (!lastFileRef) {
-      // No file uploaded yet — respond intelligently to common questions
-      const response = getSmartResponse(lower);
-      addMessage('ai', response, 'text');
-      return;
-    }
+    // Build context from last analysis for the AI
+    const analysisContext = lastAnalysis ? {
+      totalClaims: lastAnalysis.totalClaims,
+      validClaims: lastAnalysis.validClaims,
+      rejectedClaims: lastAnalysis.rejectedClaims,
+      warningClaims: lastAnalysis.warningClaims,
+      rejectionRate: lastAnalysis.rawResponse?.summary?.estimatedRejectionRate,
+      topIssues: lastAnalysis.topIssues,
+      rejectedLines: (lastAnalysis.rawResponse?.lineResults ?? [])
+        .filter((lr: any) => lr.status === 'error')
+        .slice(0, 10)
+        .map((lr: any) => ({
+          line: lr.lineNumber,
+          code: lr.claimData?.primaryICD10 || '(empty)',
+          patient: lr.claimData?.patientName || '?',
+          reasons: lr.issues?.filter((i: any) => i.severity === 'error').map((i: any) => i.rule).join(', '),
+        })),
+    } : undefined;
 
     setIsLoading(true);
     const typingId = addMessage('ai', '', 'typing');
 
     try {
-      const formData = new FormData();
-      formData.append('file', lastFileRef);
-      formData.append('query', text);
-
-      const res = await fetch('/api/claims/suggest', { method: 'POST', body: formData });
+      const res = await fetch('/api/claims/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, analysisContext }),
+      });
       const json = await res.json();
 
       removeMessage(typingId);
 
-      if (!res.ok) {
-        addMessage('ai', json?.error ?? "I could not process that query. Try asking about specific claims, rejection reasons, or formatting issues.", 'error');
-      } else {
-        const answer = json?.answer ?? json?.suggestion ?? json?.response ?? json?.message ?? 'I processed your request. Is there anything specific about the claims you would like to know?';
-        addMessage('ai', answer, 'text');
-      }
+      const answer = json?.response ?? json?.error ?? "I couldn't process that. Try asking about specific claims or rejection reasons.";
+      addMessage('ai', answer, 'text');
     } catch (_err) {
       removeMessage(typingId);
       addMessage(
