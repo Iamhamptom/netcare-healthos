@@ -1263,7 +1263,7 @@ export default function ClaimsAnalyzerPage() {
           )}
 
           {/* Upload zone */}
-          {!result && !prepResult && !preparing && popiaConsented && (
+          {!result && popiaConsented && (
             <>
               <div
                 onDrop={handleDrop}
