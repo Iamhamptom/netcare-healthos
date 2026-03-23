@@ -498,27 +498,81 @@ function FixResultCard({ data }: { data: FixData }) {
 }
 
 function FilteredClaimsCard({ data }: { data: FilteredData }) {
-  const claims = data.claims ?? [];
+  const [dismissed, setDismissed] = useState<Set<number>>(new Set());
+  const [approved, setApproved] = useState<Set<number>>(new Set());
+  const claims = (data.claims ?? []).filter((_: any, i: number) => !dismissed.has(i));
+
+  const handleApprove = (idx: number) => {
+    setApproved(prev => { const n = new Set(prev); n.add(idx); return n; });
+  };
+  const handleDismiss = (idx: number) => {
+    setDismissed(prev => { const n = new Set(prev); n.add(idx); return n; });
+  };
+
+  const activeCount = data.count - dismissed.size;
+  const approvedCount = approved.size;
+
   return (
     <div className="my-3">
-      <p className="text-sm font-semibold text-gray-700 mb-2">
-        {data.filterType === 'rejected' ? 'Rejected Claims' : 'Filtered Claims'} ({data.count})
-      </p>
-      <div className="max-h-60 overflow-y-auto space-y-1.5 pr-1">
-        {claims.map((claim: any, i: number) => (
-          <div key={i} className="bg-white border border-red-100 rounded-lg px-3 py-2 text-sm">
-            <div className="flex items-center gap-2">
-              <XCircle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
-              <span className="text-gray-700 font-medium">Row {claim.row ?? i + 1}</span>
-              {claim.reason && <span className="text-gray-400">- {claim.reason}</span>}
-            </div>
-            {claim.details && <p className="text-xs text-gray-400 mt-1 ml-6">{claim.details}</p>}
-          </div>
-        ))}
-        <p className="text-xs text-gray-400 text-center py-2">
-          {claims.length} rejected claim{claims.length !== 1 ? 's' : ''} shown
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-sm font-semibold text-gray-700">
+          {data.filterType === 'rejected' ? 'Rejected Claims' : 'Filtered Claims'} ({activeCount})
         </p>
+        {(approvedCount > 0 || dismissed.size > 0) && (
+          <div className="flex gap-2 text-[10px]">
+            {approvedCount > 0 && <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">{approvedCount} approved</span>}
+            {dismissed.size > 0 && <span className="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{dismissed.size} removed</span>}
+          </div>
+        )}
       </div>
+      <div className="max-h-80 overflow-y-auto space-y-1.5 pr-1">
+        {claims.map((claim: any, i: number) => {
+          const origIdx = (data.claims ?? []).indexOf(claim);
+          const isApproved = approved.has(origIdx);
+          return (
+            <div key={origIdx} className={`border rounded-lg px-3 py-2 text-sm transition-colors ${
+              isApproved ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-red-100'
+            }`}>
+              <div className="flex items-center gap-2">
+                {isApproved
+                  ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                  : <XCircle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+                }
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-700 font-medium">Row {claim.row ?? origIdx + 1}</span>
+                    {claim.code && <code className="text-[11px] bg-gray-100 px-1.5 py-0.5 rounded font-mono">{claim.code}</code>}
+                    {claim.patient && <span className="text-gray-400 text-xs truncate">{claim.patient}</span>}
+                  </div>
+                  {claim.reason && <p className="text-xs text-gray-500 mt-0.5">{claim.reason}</p>}
+                  {claim.details && <p className="text-[11px] text-gray-400 mt-0.5">{claim.details}</p>}
+                </div>
+                <div className="flex gap-1 shrink-0">
+                  {!isApproved && (
+                    <button
+                      onClick={() => handleApprove(origIdx)}
+                      className="px-2 py-1 text-[10px] font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded transition-colors"
+                      title="Override — approve this claim"
+                    >
+                      Approve
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleDismiss(origIdx)}
+                    className="px-2 py-1 text-[10px] font-medium bg-red-100 hover:bg-red-200 text-red-600 rounded transition-colors"
+                    title="Remove this claim from the batch"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <p className="text-xs text-gray-400 text-center py-2">
+        {activeCount} claim{activeCount !== 1 ? 's' : ''} · {approvedCount} approved · {dismissed.size} removed
+      </p>
     </div>
   );
 }
