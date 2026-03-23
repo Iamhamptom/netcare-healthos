@@ -711,7 +711,76 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     }
   }
 
-  // ── Rule 17: PMB modifier requirement ──
+  // ── Rule 17: Tariff discipline mismatch — dental codes by GP ──
+  if (item.tariffCode) {
+    const tariffNum = parseInt(item.tariffCode, 10);
+    // Dental tariff codes: 8100-8999 range (SA dental procedures)
+    const isDentalTariff = tariffNum >= 8100 && tariffNum <= 8999;
+    // Practice number prefix indicates discipline — 01xxxx = GP, 04xxxx = dental
+    const isGPPractice = item.practiceNumber?.startsWith("014") || item.practiceNumber?.startsWith("015");
+    if (isDentalTariff && isGPPractice) {
+      issues.push({
+        lineNumber: ln, field: "tariffCode", code: "TARIFF_DISCIPLINE_MISMATCH",
+        severity: "error", rule: "Discipline/Tariff Mismatch",
+        message: `Dental tariff "${item.tariffCode}" billed by a GP practice (${item.practiceNumber}). Dental procedures must be billed by a registered dental practitioner.`,
+        suggestion: "Verify the tariff code and practice number. Dental tariffs require a dental BHF number.",
+      });
+    }
+
+    // Invalid tariff format — must be 4 digits
+    if (!/^\d{4}$/.test(item.tariffCode)) {
+      issues.push({
+        lineNumber: ln, field: "tariffCode", code: "INVALID_TARIFF_FORMAT",
+        severity: "error", rule: "Invalid Tariff Format",
+        message: `Tariff code "${item.tariffCode}" is not a valid 4-digit SA tariff code.`,
+        suggestion: "SA tariff codes are 4 digits (e.g., 0190 for GP consult, 0141 for specialist).",
+      });
+    }
+  }
+
+  // ── Rule 18: Clinical red flags ──
+  // X-ray/imaging for back pain without clinical motivation
+  if (item.tariffCode && item.primaryICD10) {
+    const isImaging = item.tariffCode.startsWith("51") || item.tariffCode.startsWith("52") || item.tariffCode.startsWith("37");
+    const isBackPain = ["M54", "M54.5", "M54.9", "M54.4", "M54.2"].some(c => code.startsWith(c));
+    if (isImaging && isBackPain && !item.motivationText?.trim()) {
+      issues.push({
+        lineNumber: ln, field: "tariffCode", code: "CLINICAL_RED_FLAG",
+        severity: "warning", rule: "Clinical Red Flag",
+        message: `Imaging tariff "${item.tariffCode}" billed with back pain diagnosis "${code}" without clinical motivation. SA schemes flag imaging for non-specific back pain without justification.`,
+        suggestion: "Add clinical motivation text explaining the medical necessity for imaging (e.g., 'red flag symptoms', 'suspected fracture').",
+      });
+    }
+  }
+
+  // ── Rule 19: Multiple modifier review ──
+  if (item.modifier && item.modifier.includes(",")) {
+    issues.push({
+      lineNumber: ln, field: "modifier", code: "MULTIPLE_MODIFIERS",
+      severity: "warning", rule: "Multiple Modifier Review",
+      message: `Multiple modifiers detected: "${item.modifier}". Claims with multiple modifiers require manual review by the scheme.`,
+      suggestion: "Verify all modifiers are appropriate. Some modifier combinations are invalid.",
+    });
+  }
+
+  // ── Rule 20: Amount above scheme rate ──
+  if (item.amount && item.amount > 0 && item.tariffCode) {
+    // GP consult (0190) typical rate: R400-R600. Flag if significantly above.
+    const schemeRates: Record<string, number> = {
+      "0190": 600, "0191": 800, "0192": 1000, "0141": 1500, "0142": 1800,
+    };
+    const expectedMax = schemeRates[item.tariffCode];
+    if (expectedMax && item.amount > expectedMax * 2) {
+      issues.push({
+        lineNumber: ln, field: "amount", code: "AMOUNT_ABOVE_SCHEME_RATE",
+        severity: "warning", rule: "Amount Above Scheme Rate",
+        message: `R${item.amount.toFixed(2)} is significantly above the typical scheme rate (~R${expectedMax}) for tariff "${item.tariffCode}". The scheme may reduce payment to the scheme rate.`,
+        suggestion: "Verify the amount. Schemes typically reimburse at their own rate tables.",
+      });
+    }
+  }
+
+  // ── Rule 21: PMB modifier requirement ──
   // CDL conditions like Asthma (J45.x), Diabetes (E10-E14), Hypertension (I10-I15)
   // should carry appropriate modifiers when billed under PMB
   if (entry?.isPMB && !item.modifier) {
