@@ -1149,29 +1149,32 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     let mismatchDrug: string | null = null;
     let mismatchReason = "";
 
-    // Paracetamol (7020901, 7020902) for respiratory conditions (J-codes)
-    if (item.nappiCode.startsWith("702090") && isRespiratory) {
+    // Paracetamol for respiratory conditions (J-codes) — REAL NAPPI codes
+    // 0703118 = Panado, 0720327 = Panado blister, 0701634 = Dis-Chem paracetamol, 0714499 = Clicks paracetamol
+    const paracetamolPrefixes = ["070311", "072032", "070163", "071449", "071315", "071718", "070287"];
+    if (paracetamolPrefixes.some(p => item.nappiCode!.startsWith(p)) && isRespiratory) {
       mismatchDrug = "Paracetamol";
       mismatchReason = "Basic analgesics are not first-line treatment for respiratory conditions.";
     }
-    // Antihypertensives for respiratory J-codes
-    if (item.nappiCode.startsWith("7119501") && isRespiratory) {
-      mismatchDrug = "Amlodipine (antihypertensive)";
+    // Antihypertensives for respiratory J-codes — REAL NAPPI codes
+    // 0707375/0708094 = Amlodipine, 0715625 = Atenolol
+    const antihypertensivePrefixes = ["070737", "070809", "071562", "078657"];
+    if (antihypertensivePrefixes.some(p => item.nappiCode!.startsWith(p)) && isRespiratory) {
+      mismatchDrug = "Antihypertensive (Amlodipine/Atenolol)";
       mismatchReason = "Antihypertensives are not indicated for respiratory conditions.";
     }
-    if (item.nappiCode.startsWith("7080701") && isRespiratory) {
-      mismatchDrug = "Atenolol (antihypertensive)";
-      mismatchReason = "Antihypertensives are not indicated for respiratory conditions.";
-    }
-    // Antidiabetics for respiratory J-codes
-    if (item.nappiCode.startsWith("7175002") && isRespiratory) {
+    // Antidiabetics for respiratory J-codes — REAL NAPPI codes
+    // 0705757/0705758 = Metformin
+    const antidiabeticPrefixes = ["070575", "070667", "070767", "070933"];
+    if (antidiabeticPrefixes.some(p => item.nappiCode!.startsWith(p)) && isRespiratory) {
       mismatchDrug = "Metformin (antidiabetic)";
       mismatchReason = "Antidiabetics are not indicated for respiratory conditions.";
     }
-    // Antibiotics for viral diagnoses — J06.9 (acute URI) is viral, antibiotics inappropriate
+    // Antibiotics for viral diagnoses — J06.9 (acute URI) is viral
+    // REAL: 0701380 = Amoxicillin, 0700284 = Ciprofloxacin, 0705100 = Azithromycin
     const isViralURI = /^J06/i.test(item.primaryICD10);
-    const commonAntibioticNAPPIs = ["7012001", "7012002", "7050501", "7050502", "7015001", "7015002"];
-    if (isViralURI && commonAntibioticNAPPIs.some(n => item.nappiCode!.startsWith(n.substring(0, 6)))) {
+    const antibioticPrefixes = ["070138", "070028", "070510", "070563", "070435", "071673", "070785"];
+    if (isViralURI && antibioticPrefixes.some(p => item.nappiCode!.startsWith(p))) {
       mismatchDrug = "Antibiotic";
       mismatchReason = "J06.x (acute upper respiratory infection) is typically viral — antibiotics are not first-line and may be flagged as inappropriate prescribing.";
     }

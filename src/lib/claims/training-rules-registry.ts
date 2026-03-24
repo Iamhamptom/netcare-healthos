@@ -226,8 +226,8 @@ export const RULE_REGISTRY: RuleDefinition[] = [
     description: "Medication category vs diagnosis chapter mismatch. Override with motivation text.",
     scienceBasis: "ATC classification maps medications to therapeutic indications. Cross-reference catches wrong med or wrong diagnosis.",
     examples: [
-      { claim: { icd10: "J45.9", nappi: "7020901" }, result: "WARNING", reason: "Paracetamol for asthma" },
-      { claim: { icd10: "J45.9", nappi: "7020901", motivationText: "concurrent headache" }, result: "VALID", reason: "Motivated" },
+      { claim: { icd10: "J45.9", nappi: "0703118" }, result: "WARNING", reason: "Paracetamol for asthma" },
+      { claim: { icd10: "J45.9", nappi: "0703118", motivationText: "concurrent headache" }, result: "VALID", reason: "Motivated" },
     ] },
 
   { code: "IMAGING_DIAGNOSIS_MISMATCH", name: "Imaging Mismatch", severity: "warning",

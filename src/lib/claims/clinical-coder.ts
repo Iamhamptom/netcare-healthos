@@ -73,7 +73,7 @@ Respond with ONLY valid JSON — no markdown, no commentary:
   "secondaryDescriptions": ["Need for immunization against influenza"],
   "tariffCode": "0190",
   "tariffDescription": "GP consultation — standard",
-  "nappiCode": "7048620",
+  "nappiCode": "0701380",
   "nappiDescription": "Amoxicillin 500mg capsules",
   "modifier": null,
   "confidence": "high",

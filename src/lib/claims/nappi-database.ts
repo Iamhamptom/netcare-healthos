@@ -5,18 +5,28 @@
 import type { NAPPIEntry } from "./types";
 import { prisma } from "@/lib/prisma";
 
-// ── Hardcoded fallback for offline/test use (most common SA medicines) ──
+// ── Hardcoded fallback for offline/test use (REAL MediKredit NAPPI codes) ──
 const HARDCODED_NAPPI: NAPPIEntry[] = [
-  { code: "7020901", description: "Paracetamol 500mg tablets", strength: "500mg", packSize: "24", manufacturer: "Generic", schedule: "S0", category: "analgesic" },
-  { code: "7048620", description: "Amoxicillin 500mg capsules", strength: "500mg", packSize: "20", manufacturer: "Generic", schedule: "S2", category: "antibiotic" },
-  { code: "7041220", description: "Metformin 500mg tablets", strength: "500mg", packSize: "60", manufacturer: "Generic", schedule: "S3", category: "diabetes" },
-  { code: "7082280", description: "Amlodipine 5mg tablets", strength: "5mg", packSize: "30", manufacturer: "Generic", schedule: "S3", category: "cardiovascular" },
-  { code: "7237801", description: "Omeprazole 20mg capsules", strength: "20mg", packSize: "28", manufacturer: "Generic", schedule: "S3", category: "gastrointestinal" },
-  { code: "7076060", description: "Salbutamol 100mcg inhaler", strength: "100mcg/dose", packSize: "200 doses", manufacturer: "Generic", schedule: "S2", category: "respiratory" },
-  { code: "7046320", description: "Ciprofloxacin 500mg tablets", strength: "500mg", packSize: "10", manufacturer: "Generic", schedule: "S3", category: "antibiotic" },
-  { code: "7101130", description: "Atorvastatin 20mg tablets", strength: "20mg", packSize: "30", manufacturer: "Generic", schedule: "S3", category: "cardiovascular" },
-  { code: "7133690", description: "Insulin glargine 100 units/ml", strength: "100U/ml", packSize: "5x3ml", manufacturer: "Sanofi", schedule: "S4", category: "diabetes" },
-  { code: "7051640", description: "Azithromycin 500mg tablets", strength: "500mg", packSize: "3", manufacturer: "Generic", schedule: "S3", category: "antibiotic" },
+  // Analgesic
+  { code: "0703118", description: "Panado (Paracetamol)", strength: "500mg", packSize: "24", manufacturer: "Adcock Ingram", schedule: "S0", category: "analgesic" },
+  { code: "0720327", description: "Panado blister pack", strength: "500mg", packSize: "20", manufacturer: "Adcock Ingram", schedule: "S0", category: "analgesic" },
+  // Antibiotic
+  { code: "0701380", description: "Amoxicillin (Unimed)", strength: "500mg", packSize: "20", manufacturer: "Unimed", schedule: "S2", category: "antibiotic" },
+  { code: "0700284", description: "Ciprofloxacin (Pharma-Q)", strength: "250mg", packSize: "10", manufacturer: "Pharma-Q", schedule: "S3", category: "antibiotic" },
+  { code: "0705100", description: "Azithromycin (Aspen)", strength: "500mg", packSize: "3", manufacturer: "Aspen", schedule: "S3", category: "antibiotic" },
+  // Diabetes
+  { code: "0705757", description: "Metformin (Austell)", strength: "500mg", packSize: "60", manufacturer: "Austell", schedule: "S3", category: "diabetes" },
+  // Cardiovascular
+  { code: "0707375", description: "Amlodipine 5mg (Oethmaan)", strength: "5mg", packSize: "30", manufacturer: "Oethmaan", schedule: "S3", category: "cardiovascular" },
+  { code: "0718073", description: "Atorvastatin (Adco)", strength: "20mg", packSize: "30", manufacturer: "Adco", schedule: "S3", category: "cardiovascular" },
+  { code: "0701276", description: "Simvastatin (Adco)", strength: "20mg", packSize: "30", manufacturer: "Adco", schedule: "S3", category: "cardiovascular" },
+  { code: "0715625", description: "Atenolol (Gulf)", strength: "50mg", packSize: "30", manufacturer: "Gulf", schedule: "S3", category: "cardiovascular" },
+  // Gastrointestinal
+  { code: "0703534", description: "Omeprazole (Sandoz)", strength: "20mg", packSize: "28", manufacturer: "Sandoz", schedule: "S3", category: "gastrointestinal" },
+  // Respiratory
+  { code: "0700920", description: "Salbutamol syrup (Vari)", strength: "2mg/5ml", packSize: "100ml", manufacturer: "Vari", schedule: "S2", category: "respiratory" },
+  // Neurological
+  { code: "3001174", description: "Carbamazepine (Gulf)", strength: "200mg", packSize: "100", manufacturer: "Gulf", schedule: "S5", category: "neurological" },
 ];
 
 const hardcodedMap = new Map<string, NAPPIEntry>();
