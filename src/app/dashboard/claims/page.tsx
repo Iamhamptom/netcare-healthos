@@ -134,6 +134,7 @@ export default function ClaimsAnalyzerPage() {
   const [filter, setFilter] = useState<"all" | "error" | "warning" | "valid">("all");
   const [activeTab, setActiveTab] = useState<"upload" | "search" | "history" | "realtime" | "code">("upload");
   const [scheme, setScheme] = useState("");
+  const [switchboard, setSwitchboard] = useState("");
   const [saved, setSaved] = useState(false);
   const [popiaConsented, setPopiaConsented] = useState(false);
 
@@ -254,6 +255,7 @@ export default function ClaimsAnalyzerPage() {
       const formData = new FormData();
       formData.append("file", file);
       if (scheme) formData.append("scheme", scheme);
+      if (switchboard) formData.append("switchboard", switchboard);
       const res = await fetch("/api/claims/validate", { method: "POST", body: formData });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Validation failed"); return; }
@@ -290,6 +292,7 @@ export default function ClaimsAnalyzerPage() {
       formData.append("file", lastUploadedFile);
       formData.append("applyMedium", applyMedium ? "true" : "false");
       if (scheme) formData.append("scheme", scheme);
+      if (switchboard) formData.append("switchboard", switchboard);
       const res = await fetch("/api/claims/fix", { method: "POST", body: formData });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Fix failed"); return; }
@@ -1243,19 +1246,35 @@ export default function ClaimsAnalyzerPage() {
             </div>
           )}
 
-          {/* Scheme selector — always visible */}
+          {/* Scheme + Switchboard selectors — always visible */}
           {popiaConsented && (
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <div className="flex items-center gap-3">
+            <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <Building2 className="w-4 h-4 text-gray-400" />
-                <label className="text-[12px] font-medium text-gray-600">Medical Scheme Rules:</label>
+                <label className="text-[12px] font-medium text-gray-600">Medical Scheme:</label>
                 <select value={scheme} onChange={e => setScheme(e.target.value)}
-                  className="flex-1 max-w-xs px-3 py-1.5 rounded-lg border border-gray-200 text-[13px] focus:border-[#3DA9D1] outline-none">
+                  className="max-w-xs px-3 py-1.5 rounded-lg border border-gray-200 text-[13px] focus:border-[#3DA9D1] outline-none">
                   {SCHEMES.map(s => <option key={s.code} value={s.code}>{s.name}</option>)}
                 </select>
                 {scheme && (
                   <span className="text-[10px] px-2 py-0.5 bg-[#3DA9D1]/10 text-[#3DA9D1] rounded-full font-medium">
-                    Scheme-specific rules active
+                    Scheme rules active
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-3 flex-wrap">
+                <Shield className="w-4 h-4 text-gray-400" />
+                <label className="text-[12px] font-medium text-gray-600">Switching House:</label>
+                <select value={switchboard} onChange={e => setSwitchboard(e.target.value)}
+                  className="max-w-xs px-3 py-1.5 rounded-lg border border-gray-200 text-[13px] focus:border-[#3DA9D1] outline-none">
+                  <option value="">No switchboard (generic)</option>
+                  <option value="healthbridge">Healthbridge (Netcare)</option>
+                  <option value="mediswitch">MediSwitch / MediKredit</option>
+                  <option value="switchon">SwitchOn</option>
+                </select>
+                {switchboard && (
+                  <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-medium">
+                    {switchboard === "healthbridge" ? "Healthbridge" : switchboard === "mediswitch" ? "MediSwitch" : "SwitchOn"} rules active
                   </span>
                 )}
               </div>

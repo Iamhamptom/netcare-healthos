@@ -7,6 +7,7 @@ import { isHealthbridgeFormat, parseHealthbridgeClaims } from "@/lib/claims/heal
 import { generateAutoCorrections } from "@/lib/claims/auto-correct";
 import { runAdvancedValidation } from "@/lib/claims/advanced-rules";
 import { detectAnomalies } from "@/lib/claims/statistical-anomaly";
+import { validateForSwitchboard, SWITCHBOARD_LIST } from "@/lib/claims/switchboard-rules";
 import type { ColumnMapping, ValidationIssue, ClaimLineItem } from "@/lib/claims/types";
 
 // Max rows to prevent O(n²) timeout
@@ -131,12 +132,14 @@ export async function POST(req: NextRequest) {
     let csvText: string;
     let customMapping: ColumnMapping | undefined;
     let schemeCode = "";
+    let switchboardCode = "";
 
     if (contentType.includes("multipart/form-data")) {
       const formData = await req.formData();
       const file = formData.get("file") as File | null;
       const mappingStr = formData.get("mapping") as string | null;
       schemeCode = (formData.get("scheme") as string) || "";
+      switchboardCode = (formData.get("switchboard") as string) || "";
 
       if (!file) return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
 
@@ -234,6 +237,12 @@ export async function POST(req: NextRequest) {
         const schemeIssues = validateSchemeRules(cd, schemeCode, relevantLines);
         mergeIssues(result, schemeIssues);
       }
+    }
+
+    // Switchboard-specific rules (Healthbridge, MediSwitch, SwitchOn)
+    if (switchboardCode) {
+      const switchIssues = validateForSwitchboard(claimLines, switchboardCode);
+      mergeIssues(result, switchIssues);
     }
 
     // ── AI Motivation Classification (Phase 2 — bounded LLM) ──
@@ -442,6 +451,8 @@ export async function POST(req: NextRequest) {
       headers: parsed.headers,
       schemeCode,
       schemeList: SCHEME_LIST,
+      switchboardCode,
+      switchboardList: SWITCHBOARD_LIST,
     });
   } catch (error) {
     console.error("Claims validation error:", error);
