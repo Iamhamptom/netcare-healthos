@@ -255,6 +255,39 @@ export function extractClaimLines(
   });
 }
 
+// ─── DISCIPLINE → TARIFF SCOPE (Practice number prefix mapping) ──
+const DISCIPLINE_TARIFF_SCOPE: Record<string, { min: number; max: number; label: string }> = {
+  "014": { min: 190, max: 199, label: "GP" },
+  "015": { min: 190, max: 199, label: "GP" },
+  "016": { min: 200, max: 299, label: "ObGyn" },
+  "036": { min: 300, max: 399, label: "Physio" },
+  "070": { min: -1, max: -1, label: "Pharmacy" }, // Pharmacy should not bill consultation codes
+};
+
+// ─── PROCEDURE BUNDLING PAIRS ────────────────────────────────────
+// Procedure combinations that should be billed as a single comprehensive code
+const BUNDLING_PAIRS: [string, string, string][] = [
+  ["0190", "0141", "GP + specialist same day = unbundling"],
+  ["3710", "3711", "Chest X-ray AP + lateral should be single code"],
+  ["4518", "4519", "Urine dipstick + culture should be single code"],
+];
+
+// ─── FREQUENCY-LIMITED SCREENING PROCEDURES ─────────────────────
+const FREQUENCY_LIMITS: { tariff: string; maxPerBatch: number; label: string }[] = [
+  { tariff: "5101", maxPerBatch: 1, label: "Mammogram" },
+  { tariff: "4548", maxPerBatch: 1, label: "Pap smear" },
+  { tariff: "4466", maxPerBatch: 1, label: "PSA" },
+  { tariff: "8101", maxPerBatch: 2, label: "Dental scale" },
+  { tariff: "0261", maxPerBatch: 1, label: "Eye test" },
+];
+
+// ─── CONFLICTING ICD-10 PAIRS ───────────────────────────────────
+const CONFLICTING_ICD10_PAIRS: [string, string, string][] = [
+  ["E10", "E11", "Type 1 diabetes + Type 2 diabetes = mutually exclusive"],
+  ["J44", "J45", "COPD + Asthma on same line = questionable"],
+  ["Z32.1", "N40", "Pregnancy confirmed + BPH/prostate = impossible"],
+];
+
 // ─── VALIDATION RULES ────────────────────────────────────────────
 
 function validateLine(item: ClaimLineItem): ValidationIssue[] {
@@ -785,14 +818,42 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
 
   // ── Rule 16: Clinical appropriateness — medication vs diagnosis ──
   if (item.nappiCode && item.primaryICD10) {
-    // Paracetamol (7020901, 7020902) for respiratory conditions (J-codes) — flag as inappropriate
-    const isParacetamol = item.nappiCode.startsWith("702090");
     const isRespiratory = /^J\d/i.test(item.primaryICD10);
-    if (isParacetamol && isRespiratory) {
+    let mismatchDrug: string | null = null;
+    let mismatchReason = "";
+
+    // Paracetamol (7020901, 7020902) for respiratory conditions (J-codes)
+    if (item.nappiCode.startsWith("702090") && isRespiratory) {
+      mismatchDrug = "Paracetamol";
+      mismatchReason = "Basic analgesics are not first-line treatment for respiratory conditions.";
+    }
+    // Antihypertensives for respiratory J-codes
+    if (item.nappiCode.startsWith("7119501") && isRespiratory) {
+      mismatchDrug = "Amlodipine (antihypertensive)";
+      mismatchReason = "Antihypertensives are not indicated for respiratory conditions.";
+    }
+    if (item.nappiCode.startsWith("7080701") && isRespiratory) {
+      mismatchDrug = "Atenolol (antihypertensive)";
+      mismatchReason = "Antihypertensives are not indicated for respiratory conditions.";
+    }
+    // Antidiabetics for respiratory J-codes
+    if (item.nappiCode.startsWith("7175002") && isRespiratory) {
+      mismatchDrug = "Metformin (antidiabetic)";
+      mismatchReason = "Antidiabetics are not indicated for respiratory conditions.";
+    }
+    // Antibiotics for viral diagnoses — J06.9 (acute URI) is viral, antibiotics inappropriate
+    const isViralURI = /^J06/i.test(item.primaryICD10);
+    const commonAntibioticNAPPIs = ["7012001", "7012002", "7050501", "7050502", "7015001", "7015002"];
+    if (isViralURI && commonAntibioticNAPPIs.some(n => item.nappiCode!.startsWith(n.substring(0, 6)))) {
+      mismatchDrug = "Antibiotic";
+      mismatchReason = "J06.x (acute upper respiratory infection) is typically viral — antibiotics are not first-line and may be flagged as inappropriate prescribing.";
+    }
+
+    if (mismatchDrug) {
       issues.push({
         lineNumber: ln, field: "nappiCode", code: "MEDICATION_DIAGNOSIS_MISMATCH",
         severity: "warning", rule: "Medication-Diagnosis Mismatch",
-        message: `Paracetamol (NAPPI ${item.nappiCode}) billed with respiratory diagnosis "${item.primaryICD10}". Basic analgesics are not first-line treatment for respiratory conditions.`,
+        message: `${mismatchDrug} (NAPPI ${item.nappiCode}) billed with diagnosis "${item.primaryICD10}". ${mismatchReason}`,
         suggestion: "Verify the medication is appropriate for the diagnosis. Schemes may query this combination.",
       });
     }
@@ -825,15 +886,56 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     }
   }
 
-  // ── Rule 17a2: Pre-auth tariff requirement ──
+  // ── Rule 17a2: Pre-auth tariff requirement (expanded) ──
   if (item.tariffCode) {
-    const preAuthTariffs = ["5608", "5609", "5201", "5202", "5501", "5502", "5101", "5102"];
-    const needsPreAuth = preAuthTariffs.some(t => item.tariffCode!.startsWith(t.substring(0, 4)));
-    if (needsPreAuth && !item.motivationText?.toLowerCase().includes("pre-auth")) {
+    const tariffNum = parseInt(item.tariffCode, 10);
+    const motivationLower = (item.motivationText || "").toLowerCase();
+    const hasPreAuthRef = motivationLower.includes("pre-auth") || motivationLower.includes("auth");
+    let needsPreAuth = false;
+    let preAuthReason = "";
+
+    // Original imaging pre-auth tariffs
+    const imagingPreAuth = ["5608", "5609", "5201", "5202", "5501", "5502", "5101", "5102"];
+    if (imagingPreAuth.some(t => item.tariffCode!.startsWith(t.substring(0, 4)))) {
+      needsPreAuth = true;
+      preAuthReason = "CT/MRI/specialist imaging";
+    }
+    // Surgery (04xx) where amount > R5000
+    if (item.tariffCode.startsWith("04") && item.amount && item.amount > 5000) {
+      needsPreAuth = true;
+      preAuthReason = "surgical procedure over R5,000";
+    }
+    // Hospital admissions (0801-0899)
+    if (tariffNum >= 801 && tariffNum <= 899) {
+      needsPreAuth = true;
+      preAuthReason = "hospital admission";
+    }
+    // CT scans (5201-5299)
+    if (tariffNum >= 5201 && tariffNum <= 5299) {
+      needsPreAuth = true;
+      preAuthReason = "CT scan";
+    }
+    // MRI (5608-5699)
+    if (tariffNum >= 5608 && tariffNum <= 5699) {
+      needsPreAuth = true;
+      preAuthReason = "MRI";
+    }
+    // Nuclear medicine (5501-5599)
+    if (tariffNum >= 5501 && tariffNum <= 5599) {
+      needsPreAuth = true;
+      preAuthReason = "nuclear medicine";
+    }
+    // Physio (03xx) with > 6 sessions
+    if (item.tariffCode.startsWith("03") && tariffNum >= 300 && item.quantity && item.quantity > 6) {
+      needsPreAuth = true;
+      preAuthReason = "physiotherapy exceeding 6 sessions";
+    }
+
+    if (needsPreAuth && !hasPreAuthRef) {
       issues.push({
         lineNumber: ln, field: "tariffCode", code: "PREAUTH_REQUIRED",
         severity: "warning", rule: "Pre-Authorisation May Be Required",
-        message: `Tariff "${item.tariffCode}" (CT/MRI/specialist imaging) typically requires pre-authorisation. No pre-auth reference found in motivation text.`,
+        message: `Tariff "${item.tariffCode}" (${preAuthReason}) typically requires pre-authorisation. No pre-auth reference found in motivation text.`,
         suggestion: "Include the pre-auth reference number in the motivation text (e.g., 'Pre-auth ref: PA2026-12345').",
       });
     }
@@ -1025,6 +1127,127 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     }
   }
 
+  // ── Rule 22: Referring provider required for specialist/pathology/radiology ──
+  if (item.tariffCode) {
+    const referralPrefixes = ["02", "04", "45", "51"];
+    const needsReferral = referralPrefixes.some(p => item.tariffCode!.startsWith(p));
+    if (needsReferral) {
+      const motivationLower = (item.motivationText || "").toLowerCase();
+      const hasReferralInfo = motivationLower.includes("referred by") || motivationLower.includes("ref:");
+      if (!hasReferralInfo) {
+        issues.push({
+          lineNumber: ln, field: "tariffCode", code: "MISSING_REFERRING_PROVIDER",
+          severity: "warning", rule: "Missing Referring Provider",
+          message: `Specialist/pathology/radiology tariff "${item.tariffCode}" typically requires a referring provider. No referral indicator found in motivation text.`,
+          suggestion: "Include referring provider details in motivation text (e.g., 'Referred by: Dr Smith, PR 0123456'). Schemes may reject specialist claims without a referral.",
+        });
+      }
+    }
+  }
+
+  // ── Rule 23: High-schedule medicine (S5+) without prescriber context ──
+  if (item.nappiCode && /^\d{6,7}$/.test(item.nappiCode)) {
+    const nappiEntry = lookupNAPPI(item.nappiCode);
+    if (nappiEntry && nappiEntry.schedule) {
+      const scheduleNum = parseInt(nappiEntry.schedule.replace(/^S/i, ""), 10);
+      if (scheduleNum >= 5) {
+        const isPharmacy = (item.practiceNumber && item.practiceNumber.startsWith("070")) ||
+          (item.practitionerType && item.practitionerType.toLowerCase().includes("pharm"));
+        if (isPharmacy) {
+          issues.push({
+            lineNumber: ln, field: "nappiCode", code: "HIGH_SCHEDULE_MEDICINE",
+            severity: "warning", rule: "Schedule 5+ Medicine Dispensed",
+            message: `NAPPI ${item.nappiCode} is a Schedule ${nappiEntry.schedule} controlled substance dispensed by a pharmacy. Ensure prescriber details are on file.`,
+            suggestion: "Schedule 5+ medicines require a valid prescription. Ensure the prescribing practitioner's name, practice number, and prescription date are recorded.",
+          });
+        }
+      }
+    }
+  }
+
+  // ── Rule 24: DISCIPLINE_TARIFF_SCOPE — Practice number prefix must match tariff range ──
+  if (item.practiceNumber && item.tariffCode && /^\d{7}$/.test(item.practiceNumber) && /^\d{4}$/.test(item.tariffCode)) {
+    const prefix3 = item.practiceNumber.substring(0, 3);
+    const scope = DISCIPLINE_TARIFF_SCOPE[prefix3];
+    const tariffNum = parseInt(item.tariffCode, 10);
+    if (scope) {
+      if (scope.label === "Pharmacy") {
+        // Pharmacy practices should not bill consultation codes (01xx-03xx)
+        if (tariffNum >= 100 && tariffNum <= 399) {
+          issues.push({
+            lineNumber: ln, field: "tariffCode", code: "DISCIPLINE_TARIFF_SCOPE",
+            severity: "error", rule: "Discipline-Tariff Scope Mismatch",
+            message: `Pharmacy practice (${item.practiceNumber}) billing consultation tariff "${item.tariffCode}". Pharmacy practices should not bill consultation codes.`,
+            suggestion: "Verify the practice number and tariff code. Pharmacies bill dispensing fees, not consultation tariffs.",
+          });
+        }
+      } else if (tariffNum < scope.min || tariffNum > scope.max) {
+        const isGP = prefix3 === "014" || prefix3 === "015";
+        const isSpecialistTariff = tariffNum >= 200;
+        if (isGP && isSpecialistTariff) {
+          issues.push({
+            lineNumber: ln, field: "tariffCode", code: "DISCIPLINE_TARIFF_SCOPE",
+            severity: "error", rule: "Discipline-Tariff Scope Mismatch",
+            message: `GP practice (${item.practiceNumber}, prefix ${prefix3}) billing specialist tariff "${item.tariffCode}" (code 0200+). GPs can only bill GP consultation tariffs (0190-0199).`,
+            suggestion: "Use the correct GP tariff code (e.g., 0190 for standard GP consultation) or verify the practice number.",
+          });
+        } else {
+          issues.push({
+            lineNumber: ln, field: "tariffCode", code: "DISCIPLINE_TARIFF_SCOPE",
+            severity: "warning", rule: "Discipline-Tariff Scope Mismatch",
+            message: `Practice prefix ${prefix3} (${scope.label}) billing tariff "${item.tariffCode}" which is outside the expected range (${String(scope.min).padStart(4, "0")}-${String(scope.max).padStart(4, "0")}).`,
+            suggestion: "Verify the tariff code matches the provider's discipline. Mismatched discipline-tariff claims are commonly rejected.",
+          });
+        }
+      }
+    }
+  }
+
+  // ── Rule 25: PROCEDURE_BUNDLING — Flag tariffs that are part of known bundling pairs ──
+  if (item.tariffCode) {
+    for (const [codeA, codeB, reason] of BUNDLING_PAIRS) {
+      if (item.tariffCode === codeA || item.tariffCode === codeB) {
+        issues.push({
+          lineNumber: ln, field: "tariffCode", code: "PROCEDURE_BUNDLING_CANDIDATE",
+          severity: "info", rule: "Bundling Candidate",
+          message: `Tariff "${item.tariffCode}" is part of a known bundling pair (${codeA}/${codeB}: ${reason}). Cross-line check will verify if both codes appear for the same patient and date.`,
+        });
+      }
+    }
+  }
+
+  // ── Rule 26: AFTER_HOURS_MODIFIER — Validate after-hours modifiers against service date ──
+  if (item.modifier && item.dateOfService) {
+    const afterHoursModifiers = item.modifier.split(",").map(m => m.trim());
+    const afterHoursDateParts = item.dateOfService.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (afterHoursDateParts) {
+      const svcDate = new Date(parseInt(afterHoursDateParts[1]), parseInt(afterHoursDateParts[2]) - 1, parseInt(afterHoursDateParts[3]));
+      const dayOfWeek = svcDate.getDay(); // 0 = Sunday, 6 = Saturday
+
+      if (afterHoursModifiers.includes("0011")) {
+        if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+          issues.push({
+            lineNumber: ln, field: "modifier", code: "AFTER_HOURS_MODIFIER",
+            severity: "info", rule: "After-Hours Modifier on Weekday",
+            message: `After-hours modifier 0011 used on a weekday (${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][dayOfWeek]}). This is valid for evening/night services but may be queried by the scheme.`,
+            suggestion: "Ensure the service was rendered outside normal practice hours (typically after 18:00 or before 07:00).",
+          });
+        }
+      }
+
+      if (afterHoursModifiers.includes("0012")) {
+        if (dayOfWeek !== 0) {
+          issues.push({
+            lineNumber: ln, field: "modifier", code: "AFTER_HOURS_MODIFIER",
+            severity: "warning", rule: "Sunday/Holiday Modifier on Non-Sunday",
+            message: `Sunday/public holiday modifier 0012 used on ${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][dayOfWeek]} (${item.dateOfService}). This modifier is for Sundays and public holidays only.`,
+            suggestion: "Verify the date of service. If it was a public holiday, add a note in the motivation. Otherwise, use modifier 0011 for weekday after-hours.",
+          });
+        }
+      }
+    }
+  }
+
   return issues;
 }
 
@@ -1094,6 +1317,124 @@ function validateCrossLine(lines: ClaimLineItem[]): ValidationIssue[] {
           severity: "warning", rule: "Duplicate Motivation Text",
           message: `Identical motivation text used across ${lineNums.length} claims. This pattern is flagged as potential copy-paste fraud.`,
           suggestion: "Each claim should have unique, patient-specific clinical justification.",
+        });
+      }
+    }
+  }
+
+  // ── Time impossibility: provider billing more than physically possible ──
+  const claimsByProviderDay = new Map<string, { total: number; consultCount: number; lineNumbers: number[] }>();
+  for (const line of lines) {
+    if (!line.practiceNumber || !line.dateOfService) continue;
+    const key = `${line.practiceNumber}|${line.dateOfService}`;
+    const entry = claimsByProviderDay.get(key) || { total: 0, consultCount: 0, lineNumbers: [] };
+    entry.total++;
+    entry.lineNumbers.push(line.lineNumber);
+    // Count consultation tariffs (01xx GP, 02xx specialist)
+    if (line.tariffCode && (line.tariffCode.startsWith("01") || line.tariffCode.startsWith("02"))) {
+      entry.consultCount++;
+    }
+    claimsByProviderDay.set(key, entry);
+  }
+  for (const [key, entry] of claimsByProviderDay) {
+    const [practiceNum, dateStr] = key.split("|");
+    if (entry.total > 50) {
+      for (const ln of entry.lineNumbers) {
+        issues.push({
+          lineNumber: ln, field: "practiceNumber", code: "TIME_IMPOSSIBILITY",
+          severity: "warning", rule: "Time Impossibility — Excessive Daily Claims",
+          message: `Practice ${practiceNum} has ${entry.total} claims on ${dateStr}. More than 50 claims per provider per day is physically implausible.`,
+          suggestion: "Review this provider's billing for the day. This volume may indicate batch duplication or fraudulent billing.",
+        });
+      }
+    }
+    if (entry.consultCount > 25) {
+      for (const ln of entry.lineNumbers) {
+        // Only flag lines that are consultations, to avoid noise on non-consult lines
+        const line = lines.find(l => l.lineNumber === ln);
+        if (line?.tariffCode && (line.tariffCode.startsWith("01") || line.tariffCode.startsWith("02"))) {
+          issues.push({
+            lineNumber: ln, field: "practiceNumber", code: "TIME_IMPOSSIBILITY_CONSULTS",
+            severity: "warning", rule: "Time Impossibility — Excessive Consultations",
+            message: `Practice ${practiceNum} has ${entry.consultCount} consultation tariffs on ${dateStr}. More than 25 consultations in one day exceeds reasonable capacity.`,
+            suggestion: "A typical provider sees 20-25 patients per day maximum. This volume suggests possible billing irregularities.",
+          });
+        }
+      }
+    }
+  }
+
+  // ── Rule 27: FREQUENCY_LIMIT — Screening procedures have per-batch caps ──
+  const screeningByPatient = new Map<string, Map<string, number[]>>();
+  for (const line of lines) {
+    if (!line.tariffCode) continue;
+    const patientKey = (line.patientName || "unknown").toLowerCase();
+    if (!screeningByPatient.has(patientKey)) screeningByPatient.set(patientKey, new Map());
+    const patientMap = screeningByPatient.get(patientKey)!;
+    for (const fl of FREQUENCY_LIMITS) {
+      if (line.tariffCode === fl.tariff) {
+        const existing = patientMap.get(fl.tariff) || [];
+        existing.push(line.lineNumber);
+        patientMap.set(fl.tariff, existing);
+      }
+    }
+  }
+  for (const [patientKey, tariffMap] of screeningByPatient) {
+    for (const fl of FREQUENCY_LIMITS) {
+      const lineNums = tariffMap.get(fl.tariff);
+      if (lineNums && lineNums.length > fl.maxPerBatch) {
+        for (const ln of lineNums.slice(fl.maxPerBatch)) {
+          issues.push({
+            lineNumber: ln, field: "tariffCode", code: "FREQUENCY_LIMIT",
+            severity: "warning", rule: "Screening Frequency Limit Exceeded",
+            message: `${fl.label} (tariff ${fl.tariff}) appears ${lineNums.length} time(s) for patient "${patientKey}" in this batch. Maximum is ${fl.maxPerBatch} per submission batch.`,
+            suggestion: `Remove the duplicate ${fl.label} screening. Schemes typically allow ${fl.maxPerBatch} per year — multiple in one batch will be rejected.`,
+          });
+        }
+      }
+    }
+  }
+
+  // ── Rule 28: CONFLICTING_ICD10 — Mutually exclusive diagnosis codes ──
+  for (const line of lines) {
+    if (!line.primaryICD10) continue;
+    const allCodes = [line.primaryICD10, ...(line.secondaryICD10 || [])];
+    for (const [codeA, codeB, reason] of CONFLICTING_ICD10_PAIRS) {
+      const hasA = allCodes.some(c => c.startsWith(codeA));
+      const hasB = allCodes.some(c => c.startsWith(codeB));
+      if (hasA && hasB) {
+        issues.push({
+          lineNumber: line.lineNumber, field: "primaryICD10", code: "CONFLICTING_ICD10",
+          severity: "error", rule: "Conflicting Diagnosis Codes",
+          message: `Line has both ${codeA} and ${codeB} codes: ${reason}. These diagnoses are mutually exclusive and cannot coexist on the same claim line.`,
+          suggestion: "Review the diagnosis codes. Only one of these conditions can apply to a patient at a time. Remove the incorrect code.",
+        });
+      }
+    }
+  }
+
+  // ── Rule 25b: PROCEDURE_BUNDLING cross-line — Check bundling pairs across patient+date ──
+  const tariffsByPatientDate = new Map<string, { tariff: string; lineNumber: number }[]>();
+  for (const line of lines) {
+    if (!line.tariffCode) continue;
+    const key = `${(line.patientName || "").toLowerCase()}|${line.dateOfService || ""}`;
+    const existing = tariffsByPatientDate.get(key) || [];
+    existing.push({ tariff: line.tariffCode, lineNumber: line.lineNumber });
+    tariffsByPatientDate.set(key, existing);
+  }
+  for (const [, tariffLines] of tariffsByPatientDate) {
+    if (tariffLines.length < 2) continue;
+    const tariffs = tariffLines.map(t => t.tariff);
+    for (const [codeA, codeB, reason] of BUNDLING_PAIRS) {
+      const hasA = tariffs.includes(codeA);
+      const hasB = tariffs.includes(codeB);
+      if (hasA && hasB) {
+        const secondLine = tariffLines.find(t => t.tariff === codeB) || tariffLines[tariffLines.length - 1];
+        issues.push({
+          lineNumber: secondLine.lineNumber, field: "tariffCode", code: "PROCEDURE_BUNDLING",
+          severity: "warning", rule: "Procedure Unbundling Detected",
+          message: `Tariffs ${codeA} and ${codeB} both billed for same patient on same date: ${reason}. These should typically be billed as a single comprehensive code.`,
+          suggestion: "Review for possible unbundling. Combine into the appropriate comprehensive tariff code to avoid rejection.",
         });
       }
     }
@@ -1262,4 +1603,147 @@ function getBatchExplanation(rule: string, count: number, total: number, pct: nu
     explanation: `${count} of ${total} claims (${pct}%) failed the "${rule}" check. This pattern suggests a systematic issue with your data rather than individual errors.`,
     fix: "Review the first few flagged claims to understand the pattern, then apply the fix across your entire file before re-uploading.",
   };
+}
+
+// ─── ADVANCED CLINICAL VALIDATION (Gaps 15-19) ──────────────────────
+export function validateAdvancedClinical(lines: ClaimLineItem[]): ValidationIssue[] {
+  const issues: ValidationIssue[] = [];
+
+  // ── Rule 15: FORMULARY_GENERIC — Brand medicine when generic exists ──
+  for (const line of lines) {
+    const ln = line.lineNumber;
+
+    if (line.nappiCode) {
+      const nappiEntry = lookupNAPPI(line.nappiCode);
+      if (
+        nappiEntry &&
+        nappiEntry.manufacturer &&
+        nappiEntry.manufacturer !== "Generic" &&
+        line.amount != null &&
+        line.amount > 200
+      ) {
+        issues.push({
+          lineNumber: ln,
+          field: "nappiCode",
+          code: "FORMULARY_GENERIC",
+          severity: "info",
+          rule: "Brand-Name Medicine Dispensed",
+          message: "Brand-name medicine dispensed. Generic alternatives may be available at lower cost.",
+          suggestion: `NAPPI ${line.nappiCode} (${nappiEntry.description ?? "unknown"}) is manufactured by ${nappiEntry.manufacturer}. Consider a generic equivalent to reduce patient and scheme costs.`,
+        });
+      }
+    }
+
+    // ── Rule 16b: PHARMACIST_ICD10 — Pharmacist assigning specific diagnoses ──
+    const isPharmacy =
+      (line.practiceNumber && line.practiceNumber.startsWith("070")) ||
+      (line.practitionerType && line.practitionerType.toLowerCase().includes("pharm"));
+
+    if (isPharmacy && line.primaryICD10) {
+      // Highly specific = has a dot with 4+ total chars (e.g., E11.2, not E11)
+      const isHighlySpecific = /^[A-Z]\d{2}\.\d+$/i.test(line.primaryICD10) && line.primaryICD10.length >= 4;
+      if (isHighlySpecific) {
+        issues.push({
+          lineNumber: ln,
+          field: "primaryICD10",
+          code: "PHARMACIST_ICD10",
+          severity: "warning",
+          rule: "Pharmacy-Specific Diagnosis Code",
+          message: "Pharmacy-dispensed claim uses a specific diagnosis code. Pharmacists should use general/unspecified codes.",
+          suggestion: `Code ${line.primaryICD10} is highly specific. Pharmacists typically use unspecified codes (e.g., ending in .9) unless directed by a prescriber.`,
+        });
+      }
+    }
+
+    // ── Rule 17c: UNCERTAIN_DIAGNOSIS — Query diagnosis in motivation text ──
+    if (line.motivationText && line.primaryICD10) {
+      const motivLower = line.motivationText.toLowerCase();
+      const uncertainPatterns = ["query", "?", "possible", "probable", "suspected", "rule out"];
+      const hasUncertainLanguage = uncertainPatterns.some((p) => motivLower.includes(p));
+
+      if (hasUncertainLanguage) {
+        // Confirmed diagnosis = NOT a Z-code (factors influencing health) or R-code (symptoms/signs)
+        const codeUpper = line.primaryICD10.toUpperCase();
+        const isConfirmedDiagnosis = !codeUpper.startsWith("Z") && !codeUpper.startsWith("R");
+
+        if (isConfirmedDiagnosis) {
+          issues.push({
+            lineNumber: ln,
+            field: "motivationText",
+            code: "UNCERTAIN_DIAGNOSIS",
+            severity: "info",
+            rule: "Uncertain Diagnosis Language",
+            message: "Motivation text suggests uncertain diagnosis but a confirmed ICD-10 code was used.",
+            suggestion: `The motivation contains uncertain language but code ${line.primaryICD10} is a confirmed diagnosis. Consider using an R-code (symptoms) or Z-code (screening) if the diagnosis is not yet confirmed.`,
+          });
+        }
+      }
+    }
+
+    // ── Rule 18d: SEP_EXCEEDED — Medicine price exceeds Single Exit Price ──
+    // NOTE: The NAPPIEntry type does not currently include a price field.
+    // When the NAPPI database is extended with SEP pricing data, uncomment and
+    // enable this rule. The logic should compare line.amount against
+    // nappiEntry.price * 1.5 (50% threshold above reference price).
+    // if (line.nappiCode && line.amount != null) {
+    //   const nappiEntry = lookupNAPPI(line.nappiCode);
+    //   if (nappiEntry && nappiEntry.price != null) {
+    //     const threshold = nappiEntry.price * 1.5;
+    //     if (line.amount > threshold) {
+    //       issues.push({
+    //         lineNumber: ln,
+    //         field: "amount",
+    //         code: "SEP_EXCEEDED",
+    //         severity: "warning",
+    //         rule: "Exceeds Reference Price",
+    //         message: "Claim amount significantly exceeds reference price for this medicine.",
+    //         suggestion: `Claimed R${line.amount.toFixed(2)} vs reference R${nappiEntry.price.toFixed(2)}. Verify pricing or provide motivation.`,
+    //       });
+    //     }
+    //   }
+    // }
+  }
+
+  // ── Rule 19b: CONSULT_LEVEL_DISTRIBUTION — Upcoding pattern detection ──
+  const consultTariffs = ["0190", "0191", "0192", "0193"];
+  const consultLines = lines.filter(
+    (l) => l.tariffCode && consultTariffs.includes(l.tariffCode)
+  );
+
+  // Group by practice_number
+  const byProvider = new Map<string, ClaimLineItem[]>();
+  for (const cl of consultLines) {
+    const key = cl.practiceNumber || "UNKNOWN";
+    const existing = byProvider.get(key);
+    if (existing) {
+      existing.push(cl);
+    } else {
+      byProvider.set(key, [cl]);
+    }
+  }
+
+  for (const [practiceNumber, providerLines] of byProvider) {
+    if (providerLines.length <= 5) continue; // Need >5 consults for pattern analysis
+
+    const level3and4 = providerLines.filter(
+      (l) => l.tariffCode === "0192" || l.tariffCode === "0193"
+    );
+    const highLevelPct = Math.round((level3and4.length / providerLines.length) * 100);
+
+    if (highLevelPct > 60) {
+      for (const cl of level3and4) {
+        issues.push({
+          lineNumber: cl.lineNumber,
+          field: "tariffCode",
+          code: "CONSULT_LEVEL_DISTRIBUTION",
+          severity: "warning",
+          rule: "Consultation Upcoding Pattern",
+          message: `Provider ${practiceNumber} bills ${highLevelPct}% at Level 3-4 (SA average ~25%). Review for potential upcoding.`,
+          suggestion: `This provider has ${level3and4.length} of ${providerLines.length} consultations at Level 3-4. The SA average is approximately 25%. Consider clinical audit.`,
+        });
+      }
+    }
+  }
+
+  return issues;
 }

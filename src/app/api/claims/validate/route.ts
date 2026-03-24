@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { parseCSV, autoMapColumns, extractClaimLines, validateClaims, suggestICD10Column } from "@/lib/claims/validation-engine";
+import { parseCSV, autoMapColumns, extractClaimLines, validateClaims, suggestICD10Column, validateAdvancedClinical } from "@/lib/claims/validation-engine";
 import { validateSchemeRules, SCHEME_LIST } from "@/lib/claims/scheme-rules";
 import { lookupTariff, findUnbundlingViolations, isDisciplineAllowed, isTariffValidForDiagnosis, checkMaxUnits, type Discipline } from "@/lib/claims/tariff-database";
 import { requireClaimsAuth, validateFileSize } from "@/lib/claims/auth-guard";
@@ -238,6 +238,9 @@ export async function POST(req: NextRequest) {
         mergeIssues(result, schemeIssues);
       }
     }
+
+    // Advanced clinical validation (Gaps 15-19: formulary, pharmacist, uncertainty, consult distribution)
+    mergeIssues(result, validateAdvancedClinical(claimLines));
 
     // Switchboard-specific rules (Healthbridge, MediSwitch, SwitchOn)
     if (switchboardCode) {
