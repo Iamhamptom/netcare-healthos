@@ -762,11 +762,13 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     ];
     const isGPCondition = gpLevelConditions.some(c => code.startsWith(c));
     if (isSpecialistTariff && isGPCondition) {
+      // Warning, not error — specialists CAN see GP-level conditions, it's just unusual
+      // Only escalate to error if practice type clearly mismatches (e.g., ObGyn for dermatitis)
       issues.push({
         lineNumber: ln, field: "tariffCode", code: "UPCODING_DETECTED",
-        severity: "error", rule: "Suspected Upcoding",
-        message: `Specialist tariff "${item.tariffCode}" billed for "${code}" — a condition typically managed at GP level. This may constitute upcoding.`,
-        suggestion: "Use GP consultation tariff (0190) for common conditions unless specialist intervention is clinically justified.",
+        severity: "warning", rule: "Suspected Upcoding",
+        message: `Specialist tariff "${item.tariffCode}" billed for "${code}" — a condition typically managed at GP level. Review for potential upcoding.`,
+        suggestion: "If specialist management is clinically justified, add motivation. Otherwise use GP tariff (0190).",
       });
     }
   }
