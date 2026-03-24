@@ -9,6 +9,10 @@ import { runAdvancedValidation } from "@/lib/claims/advanced-rules";
 import { detectAnomalies } from "@/lib/claims/statistical-anomaly";
 import { detectGeographicFraud } from "@/lib/claims/geographic-fraud";
 import { validateForSwitchboard, SWITCHBOARD_LIST } from "@/lib/claims/switchboard-rules";
+import { checkCodePairViolations } from "@/lib/claims/code-pair-violations";
+import { compareToSchemeRate } from "@/lib/claims/scheme-tariff-rates";
+import { findNearestFacility, calculateDistance, lookupFacilityByPracticeNumber } from "@/lib/claims/facility-database";
+import { getBehaviorStore } from "@/lib/claims/historical-behavior";
 import type { ColumnMapping, ValidationIssue, ClaimLineItem } from "@/lib/claims/types";
 
 // Max rows to prevent O(n²) timeout
@@ -422,6 +426,78 @@ export async function POST(req: NextRequest) {
     // Detects geographic impossibility patterns (provider/patient location fraud)
     const geoFraudAlerts = detectGeographicFraud(claimLines);
 
+    // ── Layer 4: Code-Pair Violations (104 rules) ──
+    for (const line of claimLines) {
+      const codes = [line.primaryICD10, ...(line.secondaryICD10 || [])];
+      if (line.tariffCode) codes.push(line.tariffCode);
+      const violations = checkCodePairViolations(codes);
+      for (const v of violations) {
+        const existing = result.issues.find(i => i.lineNumber === line.lineNumber && i.code === "CODE_PAIR_VIOLATION" && i.message.includes(v.code1));
+        if (!existing) {
+          result.issues.push({
+            lineNumber: line.lineNumber, field: "primaryICD10", code: "CODE_PAIR_VIOLATION",
+            severity: v.type === "never_together" || v.type === "mutually_exclusive" ? "error" : "warning",
+            rule: "Code-Pair Violation",
+            message: `${v.code1} + ${v.code2}: ${v.reason} (${v.source})`,
+            suggestion: v.type === "needs_modifier" ? "Add the appropriate modifier to allow this combination." : "Review the code combination — these should not appear together.",
+          });
+          // Update line result status
+          const lr = result.lineResults.find(r => r.lineNumber === line.lineNumber);
+          if (lr) {
+            lr.issues.push(result.issues[result.issues.length - 1]);
+            if ((v.type === "never_together" || v.type === "mutually_exclusive") && lr.status !== "error") {
+              if (lr.status === "valid") result.validClaims--;
+              else if (lr.status === "warning") result.warningClaims--;
+              lr.status = "error";
+              result.invalidClaims++;
+            }
+          }
+        }
+      }
+    }
+
+    // ── Layer 5: Scheme Tariff Rate Comparison ──
+    for (const line of claimLines) {
+      if (line.amount && line.tariffCode && line.scheme) {
+        const comparison = compareToSchemeRate(line.scheme, line.tariffCode, line.amount);
+        if (comparison.status === "significantly_above" && comparison.schemeRate) {
+          result.issues.push({
+            lineNumber: line.lineNumber, field: "amount", code: "ABOVE_SCHEME_RATE",
+            severity: "warning", rule: "Amount Exceeds Scheme Rate",
+            message: `R${line.amount.toFixed(2)} is ${comparison.ratio?.toFixed(1)}x the ${line.scheme} rate (R${comparison.schemeRate.toFixed(2)}) for tariff ${line.tariffCode}. Patient may face a shortfall.`,
+            suggestion: "Inform the patient of the potential out-of-pocket amount before submission.",
+          });
+          const lr = result.lineResults.find(r => r.lineNumber === line.lineNumber);
+          if (lr) {
+            lr.issues.push(result.issues[result.issues.length - 1]);
+            if (lr.status === "valid") { lr.status = "warning"; result.validClaims--; result.warningClaims++; }
+          }
+        }
+      }
+    }
+
+    // ── Layer 6: Facility Database Validation ──
+    for (const line of claimLines) {
+      if (line.practiceNumber) {
+        const facility = lookupFacilityByPracticeNumber(line.practiceNumber);
+        if (facility && facility.latitude && facility.longitude) {
+          // Enrich line result with facility info (useful for geo fraud)
+          const lr = result.lineResults.find(r => r.lineNumber === line.lineNumber);
+          if (lr) {
+            (lr as any).facilityName = facility.name;
+            (lr as any).facilityProvince = facility.province;
+          }
+        }
+      }
+    }
+
+    // ── Layer 7: Historical Behavior Tracking ──
+    // Record this batch for future pattern detection
+    const behaviorStore = getBehaviorStore();
+    behaviorStore.recordBatch(claimLines, result);
+    const providerAnomalies = behaviorStore.detectProviderAnomalies();
+    const rejectionSpikes = behaviorStore.detectRejectionSpikes();
+
     // Auto-corrections for deterministic fixes
     const autoCorrections = generateAutoCorrections(claimLines, result.issues);
 
@@ -445,6 +521,8 @@ export async function POST(req: NextRequest) {
       selfDiagnosis,
       statisticalAnomalies,
       geoFraudAlerts,
+      providerAnomalies: providerAnomalies.length > 0 ? providerAnomalies : undefined,
+      rejectionSpikes: rejectionSpikes.length > 0 ? rejectionSpikes : undefined,
       batchProfile: {
         totalClaims: batchProfile.totalClaims,
         uniquePatients: batchProfile.uniquePatients,
