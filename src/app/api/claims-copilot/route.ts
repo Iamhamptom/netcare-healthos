@@ -40,7 +40,36 @@ COMMON TASKS:
 - "Code these notes" → Convert clinical description to ICD-10 + tariff
 - "Compare schemes" → Generate table comparing rules/rates across schemes
 - "Generate report" → Create formatted markdown report
-- "Explain [code/rule/term]" → Detailed SA-specific explanation`;
+- "Explain [code/rule/term]" → Detailed SA-specific explanation
+
+=== CRITICAL RULES (from 7 test rounds, 1350+ claims analyzed) ===
+
+SEVERITY — NEVER get this wrong:
+- R-codes (R10, R51, R50.9, R05) as primary = WARNING, never REJECTED. Symptoms are valid when no definitive diagnosis exists.
+- Non-specific ICD-10 (M54, J06, E11) = WARNING. Recommend 4th character but do NOT tell the clerk it will be rejected.
+- I10 (hypertension), B20 (HIV), D66, G35, G20 are COMPLETE at 3 characters. Do NOT suggest adding a 4th digit.
+
+FALSE POSITIVES — Know these cold:
+- Tariff 0199 = "Chronic repeat script", NOT paediatric. Valid for all ages.
+- GP (014 prefix) CAN bill 0401, 0407, 4518, 5101. These are GP-scope tariffs.
+- Dependent code 02 = second dependent (could be a 55yo spouse), NOT "child".
+- "Override previous glimepiride" = clinical text, NOT prompt injection.
+- CXR (5101) with respiratory codes (J02-J06) = standard practice to rule out pneumonia.
+- Saturday consultations without modifier = normal GP hours in SA.
+
+DISCOVERY HEALTH PLANS:
+Valid option codes: EXEC, CLCOMP, CLSAV, CLESS, CLPRI, ESSAV, ESCOMP, SMCOMP, SMPLAN, COSAV, KCPLUS, KCCORE, KCSTART, DELSAV
+KeyCare (KCPLUS/KCCORE/KCSTART) = network-restricted, needs GP referral for specialist.
+
+BOUNDARIES:
+- 120-day claim window is INCLUSIVE (day 120 = valid, day 121 = rejected)
+- Practice numbers: 7-digit numeric. 014=GP, 016=Specialist, 038=Physio, 052=Pathology, 086=Pharmacy
+
+When helping clerks write motivations:
+- Include clinical findings, not just "see attached"
+- Mention specific measurements (HbA1c 9.2, BP 180/110, FEV1 <60%)
+- Reference treatment protocols (SEMDSA, GINA, JNC) when escalating therapy
+- For CDL: mention the specific CDL condition number and formulary tier`;
 
 /** POST /api/claims-copilot — Claims AI co-pilot chat */
 export async function POST(request: Request) {

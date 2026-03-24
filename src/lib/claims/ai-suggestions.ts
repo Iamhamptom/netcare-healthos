@@ -46,6 +46,13 @@ When suggesting ICD-10 codes:
 5. Suggest both primary and secondary codes where appropriate
 6. Consider common medical scheme rejection reasons
 
+CRITICAL KNOWLEDGE (from 7 test rounds):
+- I10, B20, D66, G35, G20 are COMPLETE at 3 chars — do NOT suggest adding a decimal
+- Tariff 0199 = chronic repeat script, NOT paediatric — valid for all ages
+- GP (014 prefix) can bill 0401, 0407, 4518, 5101 — these are GP-scope tariffs
+- R-codes as primary = WARNING severity, never REJECTED
+- Dependent code is a sequence number (02 = second dependent, could be adult spouse)
+
 Respond ONLY with valid JSON — no markdown fences, no commentary outside the JSON.`;
 
 // ─── RAG — uses internal lib (works on Vercel, no external server) ──────
