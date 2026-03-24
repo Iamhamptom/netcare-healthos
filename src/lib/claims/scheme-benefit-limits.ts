@@ -11,6 +11,10 @@
 //   - Bonitas Annexure B Primary 2026 (37 pages)
 //   - Bonitas Standard/Standard Select 2026 (16 pages)
 //   - Polmed Member Guide 2026 (45 pages)
+//   - Discovery Executive Plan Guide 2026 (36 pages)
+//   - Discovery Smart Plan Guide 2026 (39 pages)
+//   - Discovery Smart Saver Plan Guide 2026 (39 pages)
+//   - Discovery Core Plan Guide 2026 (36 pages)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 import type { ValidationSeverity } from "./types";
@@ -1868,6 +1872,379 @@ export const POLMED_LIMITS: BenefitLimitRule[] = [
   { ruleId: "POL_IOD", scheme: "POL", plan: "*", category: "hospital", description: "Injury-on-duty (IOD): separate benefit for SAPS members injured on duty", networkRequired: false, preAuthRequired: false, severity: "info", notes: "POLMED-specific: IOD claims processed separately per SAPS protocol." },
 ];
 
+// ─── DISCOVERY EXECUTIVE PLAN LIMITS (2026) ─────────────────────────────────
+// Source: Discovery Executive Plan Guide 2026 (36 pages)
+// Top-tier plan: unlimited hospital, 300% DHR specialists, R500K oncology
+
+export const DISCOVERY_EXECUTIVE_LIMITS: BenefitLimitRule[] = [
+  // Hospital — unlimited, no overall limit
+  { ruleId: "DH_EXEC_HOSPITAL", scheme: "DH", plan: "Executive", category: "hospital", description: "Hospital: unlimited cover, any private/public hospital, pre-auth required", networkRequired: false, preAuthRequired: true, severity: "info", notes: "No overall hospital limit. Any Scheme-approved hospital." },
+  { ruleId: "DH_EXEC_HOSP_SPECIALIST_PA", scheme: "DH", plan: "Executive", category: "hospital", description: "In-hospital specialists (payment arrangement): paid in full at agreed rate", networkRequired: true, preAuthRequired: true, severity: "info", notes: "Full cover for specialists with payment arrangement." },
+  { ruleId: "DH_EXEC_HOSP_SPECIALIST_NOPA", scheme: "DH", plan: "Executive", category: "hospital", description: "In-hospital specialists (no payment arrangement): up to 300% DHR", networkRequired: false, preAuthRequired: true, severity: "info", notes: "300% of Discovery Health Rate for non-contracted specialists." },
+  { ruleId: "DH_EXEC_HOSP_GP", scheme: "DH", plan: "Executive", category: "hospital", description: "In-hospital GPs/other professionals: up to 200% DHR", networkRequired: false, preAuthRequired: true, severity: "info", notes: "200% of Discovery Health Rate for GPs and other healthcare professionals." },
+  { ruleId: "DH_EXEC_PRIVATE_WARD", scheme: "DH", plan: "Executive", category: "hospital", description: "Private ward for delivery: up to R2,800/day", perEventLimitRands: 2800, networkRequired: false, preAuthRequired: true, severity: "info", notes: "Per-day private ward rate for maternity delivery." },
+
+  // MRI/CT scans
+  { ruleId: "DH_EXEC_MRI_COPAY", scheme: "DH", plan: "Executive", category: "radiology", description: "MRI/CT scan (not related to admission or conservative back/neck): first R4,000 from day-to-day, balance from Hospital Benefit", coPaymentRands: 4000, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "One scan per spinal/neck region per year for conservative treatment." },
+
+  // Scopes
+  { ruleId: "DH_EXEC_SCOPE_DAYCLINIC", scheme: "DH", plan: "Executive", category: "hospital", description: "Scope (day clinic): R4,650 co-payment", coPaymentRands: 4650, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "Gastroscopy/colonoscopy/sigmoidoscopy/proctoscopy at day clinic." },
+  { ruleId: "DH_EXEC_SCOPE_HOSPITAL", scheme: "DH", plan: "Executive", category: "hospital", description: "Scope (hospital): R6,800 co-payment (R5,450 value-based network)", coPaymentRands: 6800, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "Reduces to R5,450 with value-based network doctor." },
+  { ruleId: "DH_EXEC_SCOPE_BIDI_DAY", scheme: "DH", plan: "Executive", category: "hospital", description: "Bi-directional scopes (day clinic): R5,700 co-payment", coPaymentRands: 5700, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "Both gastroscopy and colonoscopy same admission." },
+  { ruleId: "DH_EXEC_SCOPE_BIDI_HOSP", scheme: "DH", plan: "Executive", category: "hospital", description: "Bi-directional scopes (hospital): R8,400 co-payment (R6,850 value-based network)", coPaymentRands: 8400, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "Reduces to R6,850 with value-based network doctor." },
+  { ruleId: "DH_EXEC_SCOPE_INROOMS_SINGLE", scheme: "DH", plan: "Executive", category: "hospital", description: "Scope in-rooms (non-network): R1,800 co-payment", coPaymentRands: 1800, networkRequired: false, preAuthRequired: false, severity: "warning", notes: "No co-payment at in-rooms network provider." },
+  { ruleId: "DH_EXEC_SCOPE_INROOMS_BIDI", scheme: "DH", plan: "Executive", category: "hospital", description: "Bi-directional scopes in-rooms (non-network): R3,100 co-payment", coPaymentRands: 3100, networkRequired: false, preAuthRequired: false, severity: "warning", notes: "No co-payment at in-rooms network provider." },
+
+  // Oncology — R500,000 cover
+  { ruleId: "DH_EXEC_ONCOLOGY", scheme: "DH", plan: "Executive", category: "oncology", description: "Oncology: R500,000 cover amount per 12-month cycle, then 80% DHR", annualLimitRands: 500000, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "After R500K, 80% DHR unless PMB or Extended Oncology Benefit. Oncology Innovation Benefit: 30% co-pay for innovative medicines." },
+
+  // Specialised Medicine and Technology
+  { ruleId: "DH_EXEC_SPEC_MED_TECH", scheme: "DH", plan: "Executive", category: "hospital", description: "Specialised Medicine and Technology Benefit: R200,000/person/year, 20% co-payment", annualLimitRands: 200000, coPaymentPercent: 20, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "High-cost medicine, advanced technologies and procedures." },
+
+  // Overseas Treatment
+  { ruleId: "DH_EXEC_OVERSEAS", scheme: "DH", plan: "Executive", category: "hospital", description: "Overseas Treatment Benefit: R750,000/person, 20% co-payment", annualLimitRands: 750000, coPaymentPercent: 20, networkRequired: false, preAuthRequired: true, severity: "info", notes: "Treatment not available in SA. Additional R300,000 for local-equivalent balance at 80%." },
+
+  // International Travel
+  { ruleId: "DH_EXEC_TRAVEL", scheme: "DH", plan: "Executive", category: "hospital", description: "International Travel Benefit: US$1 million per journey, 90-day cover", networkRequired: false, preAuthRequired: false, severity: "info", notes: "Emergency medical costs abroad. Pre-existing conditions excluded." },
+
+  // ART (Assisted Reproductive Therapy)
+  { ruleId: "DH_EXEC_ART", scheme: "DH", plan: "Executive", category: "maternity", description: "Assisted Reproductive Therapy: R140,000/person/year, 25% co-payment", annualLimitRands: 140000, coPaymentPercent: 25, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "75% of DHR. 1-2 cycles/year depending on age. Includes egg donation." },
+
+  // Mental health
+  { ruleId: "DH_EXEC_MENTAL_INPATIENT", scheme: "DH", plan: "Executive", category: "mental_health", description: "Mental health inpatient: 21 days/person/year (major affective disorders, anorexia, bulimia, other)", daysLimit: 21, visitPeriodMonths: 12, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "Full cover at network facility. 80% DHR non-network. 3 days per admission for attempted suicide." },
+  { ruleId: "DH_EXEC_MENTAL_OUTPATIENT", scheme: "DH", plan: "Executive", category: "mental_health", description: "Mental health outpatient: 15 consultations/person (major affective) or 12 (acute stress)", visitLimit: 15, visitPeriodMonths: 12, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "12 consultations for acute stress disorder with recent trauma." },
+
+  // Alcohol/drug rehabilitation
+  { ruleId: "DH_EXEC_REHAB", scheme: "DH", plan: "Executive", category: "mental_health", description: "Alcohol/drug rehabilitation: 21 days/person/year, 3 days detox per admission", daysLimit: 21, visitPeriodMonths: 12, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "Full cover at network facility. 80% DHR non-network." },
+
+  // Prosthesis — spinal
+  { ruleId: "DH_EXEC_SPINAL_PROSTHESIS", scheme: "DH", plan: "Executive", category: "prosthesis", description: "Spinal surgery prosthesis (non-preferred): R28,350 first level, R56,650 two+ levels, 1/person/year", perEventLimitRands: 56650, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "No limit with preferred supplier. Network spinal surgery: full cover. Non-network: 80% DHR." },
+
+  // Joint replacement
+  { ruleId: "DH_EXEC_JOINT_REPLACE", scheme: "DH", plan: "Executive", category: "prosthesis", description: "Major joint replacement (non-network): R31,850/prosthesis/admission", perEventLimitRands: 31850, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "No limit in network. Hips, knees. Network does not apply to emergency/trauma." },
+  { ruleId: "DH_EXEC_SHOULDER_PROSTHESIS", scheme: "DH", plan: "Executive", category: "prosthesis", description: "Shoulder joint prosthesis (non-network): R53,000", perEventLimitRands: 53000, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "No limit in network." },
+
+  // Hearing devices
+  { ruleId: "DH_EXEC_COCHLEAR", scheme: "DH", plan: "Executive", category: "prosthesis", description: "Cochlear implants/auditory brain implants: R252,000/person, R190,000 processor upgrade/3 years", perBeneficiaryLimit: 252000, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "Processor upgrade limit per person every 3 years." },
+  { ruleId: "DH_EXEC_BAHA", scheme: "DH", plan: "Executive", category: "prosthesis", description: "Bone-anchored hearing aids: R150,000/person, R78,000 processor upgrade/3 years", perBeneficiaryLimit: 150000, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "Processor upgrade limit per person every 3 years." },
+
+  // Internal nerve stimulators
+  { ruleId: "DH_EXEC_NERVE_STIM", scheme: "DH", plan: "Executive", category: "prosthesis", description: "Internal nerve stimulators: R192,000/person", perBeneficiaryLimit: 192000, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "Per-person limit." },
+
+  // Dental
+  { ruleId: "DH_EXEC_DENTAL_APPLIANCE", scheme: "DH", plan: "Executive", category: "dental", description: "Dental appliances and orthodontic treatment: R37,500/person/year from day-to-day", annualLimitRands: 37500, networkRequired: false, preAuthRequired: false, severity: "warning", notes: "Paid from day-to-day benefits. Basic dental treatment unlimited." },
+  { ruleId: "DH_EXEC_DENTAL_TRAUMA", scheme: "DH", plan: "Executive", category: "dental", description: "Basic Dental Trauma Benefit: R70,800/person/year for appliances/prostheses", annualLimitRands: 70800, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "Sudden/unexpected injury to teeth and mouth." },
+  { ruleId: "DH_EXEC_DENTAL_HOSP_ADULT", scheme: "DH", plan: "Executive", category: "dental", description: "Dental admission upfront (13+): R8,950 hospital / R5,750 day clinic", coPaymentRands: 8950, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "Day clinic R5,750. Waived for severe dental/oral surgery." },
+  { ruleId: "DH_EXEC_DENTAL_HOSP_CHILD", scheme: "DH", plan: "Executive", category: "dental", description: "Dental admission upfront (under 13): R3,470 hospital / R1,550 day clinic", coPaymentRands: 3470, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "Day clinic R1,550. Waived for severe dental/oral surgery." },
+
+  // Day-to-day medicine limits
+  { ruleId: "DH_EXEC_MEDICINE_SINGLE", scheme: "DH", plan: "Executive", category: "medicine_acute", description: "Prescribed medicine (schedule 3+): R53,450/year single member", annualLimitRands: 53450, networkRequired: false, preAuthRequired: false, severity: "warning", notes: "Pro-rated if joining after January." },
+  { ruleId: "DH_EXEC_MEDICINE_1DEP", scheme: "DH", plan: "Executive", category: "medicine_acute", description: "Prescribed medicine (schedule 3+): R62,650/year with 1 dependant", annualLimitRands: 62650, networkRequired: false, preAuthRequired: false, severity: "warning", notes: "Pro-rated if joining after January." },
+  { ruleId: "DH_EXEC_MEDICINE_2DEP", scheme: "DH", plan: "Executive", category: "medicine_acute", description: "Prescribed medicine (schedule 3+): R71,700/year with 2 dependants", annualLimitRands: 71700, networkRequired: false, preAuthRequired: false, severity: "warning", notes: "Pro-rated if joining after January." },
+  { ruleId: "DH_EXEC_MEDICINE_3DEP", scheme: "DH", plan: "Executive", category: "medicine_acute", description: "Prescribed medicine (schedule 3+): R80,900/year with 3+ dependants", annualLimitRands: 80900, networkRequired: false, preAuthRequired: false, severity: "warning", notes: "Pro-rated if joining after January." },
+
+  // Allied health
+  { ruleId: "DH_EXEC_ALLIED_SINGLE", scheme: "DH", plan: "Executive", category: "allied_health", description: "Allied/therapeutic/psychology: R32,000/year single member", annualLimitRands: 32000, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "Physio, chiro, psychology, OT, speech, dietitian, etc. Apply for benefits." },
+  { ruleId: "DH_EXEC_ALLIED_1DEP", scheme: "DH", plan: "Executive", category: "allied_health", description: "Allied/therapeutic/psychology: R38,450/year with 1 dependant", annualLimitRands: 38450, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "Physio, chiro, psychology, OT, speech, dietitian, etc." },
+  { ruleId: "DH_EXEC_ALLIED_2DEP", scheme: "DH", plan: "Executive", category: "allied_health", description: "Allied/therapeutic/psychology: R45,000/year with 2 dependants", annualLimitRands: 45000, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "Physio, chiro, psychology, OT, speech, dietitian, etc." },
+  { ruleId: "DH_EXEC_ALLIED_3DEP", scheme: "DH", plan: "Executive", category: "allied_health", description: "Allied/therapeutic/psychology: R54,000/year with 3+ dependants", annualLimitRands: 54000, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "Physio, chiro, psychology, OT, speech, dietitian, etc." },
+
+  // Optical
+  { ruleId: "DH_EXEC_OPTICAL", scheme: "DH", plan: "Executive", category: "optical", description: "Optical (lenses, frames, contacts, refractive surgery): R10,950/person/year", annualLimitRands: 10950, networkRequired: false, preAuthRequired: false, severity: "warning", notes: "Covers lenses, frames, contact lenses and refractive correction." },
+
+  // External medical items
+  { ruleId: "DH_EXEC_EXTERNAL_ITEMS", scheme: "DH", plan: "Executive", category: "appliance", description: "External medical items (wheelchairs, crutches, prostheses): R64,200/family/year", annualLimitRands: 64200, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "Family limit." },
+
+  // Hearing aids
+  { ruleId: "DH_EXEC_HEARING_AIDS", scheme: "DH", plan: "Executive", category: "appliance", description: "Hearing aids: R31,250/family/year", annualLimitRands: 31250, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "Accessories covered under external medical items." },
+
+  // Home monitoring
+  { ruleId: "DH_EXEC_HOME_MONITOR", scheme: "DH", plan: "Executive", category: "appliance", description: "Home Monitoring Device Benefit: R4,850/person/year", annualLimitRands: 4850, networkRequired: false, preAuthRequired: true, severity: "info", notes: "Chronic and acute conditions. Does not affect day-to-day benefits." },
+
+  // Maternity — essential devices
+  { ruleId: "DH_EXEC_MATERNITY_DEVICES", scheme: "DH", plan: "Executive", category: "maternity", description: "Maternity essential devices (breast pump, thermometer): R6,500, 25% co-payment", perEventLimitRands: 6500, coPaymentPercent: 25, networkRequired: false, preAuthRequired: true, severity: "info", notes: "For female beneficiaries." },
+
+  // Antenatal classes
+  { ruleId: "DH_EXEC_ANTENATAL", scheme: "DH", plan: "Executive", category: "maternity", description: "Antenatal classes: R2,500/family", annualLimitRands: 2500, networkRequired: false, preAuthRequired: false, severity: "info", notes: "Up to 5 antenatal/postnatal classes or consultations." },
+
+  // Maternity consultations
+  { ruleId: "DH_EXEC_ANTENATAL_CONSULTS", scheme: "DH", plan: "Executive", category: "maternity", description: "Antenatal consultations: up to 12 with gynaecologist/GP/midwife", visitLimit: 12, networkRequired: false, preAuthRequired: false, severity: "info", notes: "Executive plan: 12 antenatal consultations (vs 8 on lower plans)." },
+
+  // MSA and threshold
+  { ruleId: "DH_EXEC_MSA_SINGLE", scheme: "DH", plan: "Executive", category: "savings", description: "Medical Savings Account: R34,284/year single member", annualLimitRands: 34284, networkRequired: false, preAuthRequired: false, severity: "info", notes: "Day-to-day expenses. Unused funds carry over." },
+  { ruleId: "DH_EXEC_PHF", scheme: "DH", plan: "Executive", category: "day_to_day", description: "Personal Health Fund: up to R12,000 base (R24,000 with boost) per adult/year", annualLimitRands: 12000, networkRequired: false, preAuthRequired: false, severity: "info", notes: "R1,000 advance. R1,500/challenge (up to R3,000 boost). R1,500/child." },
+
+  // Specialist out-of-hospital
+  { ruleId: "DH_EXEC_SPECIALIST_OOH", scheme: "DH", plan: "Executive", category: "specialist", description: "Out-of-hospital specialists (no payment arrangement): 300% DHR from day-to-day", networkRequired: false, preAuthRequired: false, severity: "info", notes: "Paid from MSA/ATB. GPs at 100% DHR." },
+
+  // Virtual Urgent Care
+  { ruleId: "DH_EXEC_VIRTUAL_URGENT", scheme: "DH", plan: "Executive", category: "gp_consultation", description: "Virtual Urgent Care: 4 sessions/family/year", visitLimit: 4, visitPeriodMonths: 12, networkRequired: true, preAuthRequired: false, severity: "info", notes: "24/7 online doctor consultations. Additional sessions from day-to-day." },
+];
+
+// ─── DISCOVERY SMART PLAN LIMITS (2026) ─────────────────────────────────────
+// Source: Discovery Smart Plan Guide 2026 (39 pages)
+// Plans: Classic Smart, Essential Smart, Essential Dynamic Smart, Active Smart
+
+export const DISCOVERY_SMART_LIMITS: BenefitLimitRule[] = [
+  // Hospital — unlimited in Smart Hospital Network
+  { ruleId: "DH_SMART_HOSPITAL", scheme: "DH", plan: "Classic Smart", category: "hospital", description: "Hospital: unlimited cover in Smart Hospital Network, pre-auth required", networkRequired: true, preAuthRequired: true, severity: "info", notes: "No overall hospital limit. Smart Hospital Network required." },
+  { ruleId: "DH_ESMART_HOSPITAL", scheme: "DH", plan: "Essential Smart", category: "hospital", description: "Hospital: unlimited cover in Smart Hospital Network, pre-auth required", networkRequired: true, preAuthRequired: true, severity: "info", notes: "No overall hospital limit. Smart Hospital Network required." },
+
+  // Non-network upfront payments
+  { ruleId: "DH_SMART_NONNETWORK_CLASSIC", scheme: "DH", plan: "Classic Smart", category: "hospital", description: "Non-network hospital upfront payment: R12,650", coPaymentRands: 12650, networkRequired: true, preAuthRequired: true, severity: "error", notes: "Planned admissions outside Smart Hospital Network." },
+  { ruleId: "DH_SMART_NONNETWORK_ESSENTIAL", scheme: "DH", plan: "Essential Smart", category: "hospital", description: "Non-network hospital upfront payment: R12,650", coPaymentRands: 12650, networkRequired: true, preAuthRequired: true, severity: "error", notes: "Planned admissions outside Smart Hospital Network." },
+
+  // Active Smart elective upfront
+  { ruleId: "DH_ACTIVE_ELECTIVE_UPFRONT", scheme: "DH", plan: "Active Smart", category: "hospital", description: "Active Smart elective non-PMB admission: R7,750 upfront payment", coPaymentRands: 7750, networkRequired: true, preAuthRequired: true, severity: "error", notes: "All elective admissions on Active Smart." },
+
+  // Active Smart neonatal limit
+  { ruleId: "DH_ACTIVE_NEONATAL", scheme: "DH", plan: "Active Smart", category: "hospital", description: "Active Smart neonatal in-hospital cover: R72,600 limit", annualLimitRands: 72600, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "Neonatal admissions capped at R72,600 on Active Smart." },
+
+  // In-hospital specialists
+  { ruleId: "DH_CSMART_HOSP_SPECIALIST", scheme: "DH", plan: "Classic Smart", category: "hospital", description: "In-hospital specialists/professionals: up to 200% DHR", networkRequired: true, preAuthRequired: true, severity: "info", notes: "Classic Smart: 200% of Discovery Health Rate." },
+  { ruleId: "DH_ESMART_HOSP_SPECIALIST", scheme: "DH", plan: "Essential Smart", category: "hospital", description: "In-hospital specialists/professionals: up to 100% DHR", networkRequired: true, preAuthRequired: true, severity: "info", notes: "Essential Smart: 100% of Discovery Health Rate." },
+
+  // MRI/CT scans
+  { ruleId: "DH_CSMART_MRI", scheme: "DH", plan: "Classic Smart", category: "radiology", description: "MRI/CT (not related to admission/conservative back-neck): first R4,000 co-payment, balance from Hospital Benefit", coPaymentRands: 4000, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "One scan per spinal/neck region per year." },
+  { ruleId: "DH_ESMART_MRI", scheme: "DH", plan: "Essential Smart", category: "radiology", description: "MRI/CT (not related to admission): not covered; conservative back/neck: not covered", networkRequired: true, preAuthRequired: true, severity: "error", notes: "Essential/Dynamic/Active: you pay if not related to admission." },
+
+  // Oncology
+  { ruleId: "DH_SMART_ONCOLOGY_CLASSIC", scheme: "DH", plan: "Classic Smart", category: "oncology", description: "Oncology: R250,000 cover amount per 12-month cycle, then 80% DHR at network", annualLimitRands: 250000, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "Precision medicine: 50% co-pay. Network provider required." },
+  { ruleId: "DH_SMART_ONCOLOGY_ESSENTIAL", scheme: "DH", plan: "Essential Smart", category: "oncology", description: "Oncology: R250,000 cover amount per 12-month cycle, then 80% DHR at network", annualLimitRands: 250000, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "Precision medicine: 50% co-pay. Network provider required." },
+
+  // Day-to-day GP
+  { ruleId: "DH_CSMART_GP_COPAY", scheme: "DH", plan: "Classic Smart", category: "gp_consultation", description: "GP consultation (Smart network): unlimited visits, R75 co-payment each", coPaymentRands: 75, networkRequired: true, preAuthRequired: false, severity: "info", notes: "Video consultations covered in full up to DHR." },
+  { ruleId: "DH_ESMART_GP_COPAY", scheme: "DH", plan: "Essential Smart", category: "gp_consultation", description: "GP consultation (Smart network): unlimited visits, R130 co-payment each", coPaymentRands: 130, networkRequired: true, preAuthRequired: false, severity: "info", notes: "Video consultations covered in full up to DHR." },
+
+  // Optical
+  { ruleId: "DH_CSMART_OPTICAL_COPAY", scheme: "DH", plan: "Classic Smart", category: "optical", description: "Eye test (network optometrist): 1/person/year, R75 upfront", coPaymentRands: 75, visitLimit: 1, visitPeriodMonths: 12, networkRequired: true, preAuthRequired: false, severity: "info", notes: "Smart Optometry Network." },
+  { ruleId: "DH_ESMART_OPTICAL_COPAY", scheme: "DH", plan: "Essential Smart", category: "optical", description: "Eye test (network optometrist): 1/person/year, R130 upfront", coPaymentRands: 130, visitLimit: 1, visitPeriodMonths: 12, networkRequired: true, preAuthRequired: false, severity: "info", notes: "Smart Optometry Network." },
+
+  // Dental check-up
+  { ruleId: "DH_CSMART_DENTAL_CHECK", scheme: "DH", plan: "Classic Smart", category: "dental", description: "Dental check-up: 1/person/year, R130 co-payment, up to 100% DHR", coPaymentRands: 130, visitLimit: 1, visitPeriodMonths: 12, networkRequired: false, preAuthRequired: false, severity: "info", notes: "Any dentist/dental therapist/oral hygienist." },
+  { ruleId: "DH_ESMART_DENTAL_CHECK", scheme: "DH", plan: "Essential Smart", category: "dental", description: "Dental check-up: 1/person/year, R195 co-payment, up to 100% DHR", coPaymentRands: 195, visitLimit: 1, visitPeriodMonths: 12, networkRequired: false, preAuthRequired: false, severity: "info", notes: "Any dentist/dental therapist/oral hygienist." },
+
+  // OTC medicine
+  { ruleId: "DH_CSMART_OTC", scheme: "DH", plan: "Classic Smart", category: "medicine_otc", description: "Over-the-counter medicine: R905/family/year from network pharmacy", annualLimitRands: 905, networkRequired: true, preAuthRequired: false, severity: "warning", notes: "Network pharmacy only." },
+  { ruleId: "DH_ESMART_OTC", scheme: "DH", plan: "Essential Smart", category: "medicine_otc", description: "Over-the-counter medicine: R605/family/year from network pharmacy", annualLimitRands: 605, networkRequired: true, preAuthRequired: false, severity: "warning", notes: "Network pharmacy only." },
+
+  // Acute medicine (Classic only)
+  { ruleId: "DH_CSMART_ACUTE_MED", scheme: "DH", plan: "Classic Smart", category: "medicine_acute", description: "Acute medicine (schedule 3+): R1,970/member/year or R3,300/family/year", annualLimitRands: 3300, perBeneficiaryLimit: 1970, networkRequired: true, preAuthRequired: false, severity: "warning", notes: "Classic Smart only. Prescribed by Smart network GP. Network pharmacy." },
+
+  // Personal Health Fund
+  { ruleId: "DH_CSMART_PHF", scheme: "DH", plan: "Classic Smart", category: "day_to_day", description: "Personal Health Fund: up to R8,000 base (R16,000 with boost) per family/year", annualLimitRands: 8000, networkRequired: false, preAuthRequired: false, severity: "info", notes: "R2,000/adult, R1,000/child base. R1,000/challenge boost (max R8,000 boost)." },
+  { ruleId: "DH_ESMART_PHF", scheme: "DH", plan: "Essential Smart", category: "day_to_day", description: "Personal Health Fund: up to R4,000 base (R8,000 with boost) per family/year", annualLimitRands: 4000, networkRequired: false, preAuthRequired: false, severity: "info", notes: "R1,000/adult, R500/child base. R500/challenge boost (max R4,000 boost)." },
+
+  // Scopes
+  { ruleId: "DH_SMART_SCOPE_DAYCLINIC", scheme: "DH", plan: "Classic Smart", category: "hospital", description: "Scope (day clinic): R4,650 co-payment", coPaymentRands: 4650, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "All Smart plans." },
+  { ruleId: "DH_SMART_SCOPE_HOSPITAL", scheme: "DH", plan: "Classic Smart", category: "hospital", description: "Scope (hospital): R8,000 co-payment (R6,650 value-based network)", coPaymentRands: 8000, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "All Smart plans." },
+  { ruleId: "DH_SMART_SCOPE_BIDI_DAY", scheme: "DH", plan: "Classic Smart", category: "hospital", description: "Bi-directional scopes (day clinic): R5,700 co-payment", coPaymentRands: 5700, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "All Smart plans." },
+  { ruleId: "DH_SMART_SCOPE_BIDI_HOSP", scheme: "DH", plan: "Classic Smart", category: "hospital", description: "Bi-directional scopes (hospital): R9,950 co-payment (R8,250 value-based network)", coPaymentRands: 9950, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "All Smart plans." },
+  { ruleId: "DH_SMART_SCOPE_INROOMS_SINGLE", scheme: "DH", plan: "Classic Smart", category: "hospital", description: "Scope in-rooms (non-network): R1,800 co-payment", coPaymentRands: 1800, networkRequired: false, preAuthRequired: false, severity: "warning", notes: "No co-payment at in-rooms network provider." },
+  { ruleId: "DH_SMART_SCOPE_INROOMS_BIDI", scheme: "DH", plan: "Classic Smart", category: "hospital", description: "Bi-directional scopes in-rooms (non-network): R3,100 co-payment", coPaymentRands: 3100, networkRequired: false, preAuthRequired: false, severity: "warning", notes: "No co-payment at in-rooms network provider." },
+
+  // Day Surgery Network upfront
+  { ruleId: "DH_CSMART_DAYSURG_UPFRONT", scheme: "DH", plan: "Classic Smart", category: "hospital", description: "Day Surgery Network out-of-network upfront: R12,650", coPaymentRands: 12650, networkRequired: true, preAuthRequired: true, severity: "error", notes: "Classic and Essential Smart." },
+
+  // Mental health
+  { ruleId: "DH_SMART_MENTAL_INPATIENT", scheme: "DH", plan: "Classic Smart", category: "mental_health", description: "Mental health inpatient: 21 days/person/year", daysLimit: 21, visitPeriodMonths: 12, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "Major affective disorders, anorexia, bulimia. 3 days for attempted suicide. 80% DHR non-network." },
+  { ruleId: "DH_SMART_MENTAL_OUTPATIENT", scheme: "DH", plan: "Classic Smart", category: "mental_health", description: "Mental health outpatient: 15 sessions (major affective) or 12 (acute stress)", visitLimit: 15, visitPeriodMonths: 12, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "All Smart plans." },
+
+  // Alcohol/drug rehab
+  { ruleId: "DH_SMART_REHAB", scheme: "DH", plan: "Classic Smart", category: "mental_health", description: "Alcohol/drug rehabilitation: 21 days/person/year, 3 days detox per admission", daysLimit: 21, visitPeriodMonths: 12, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "Full cover at network. 80% DHR non-network." },
+
+  // Prosthesis
+  { ruleId: "DH_CSMART_COCHLEAR", scheme: "DH", plan: "Classic Smart", category: "prosthesis", description: "Cochlear implants: R252,000/person, R190,000 processor upgrade/3 years", perBeneficiaryLimit: 252000, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "Not covered on Essential/Dynamic/Active Smart." },
+  { ruleId: "DH_CSMART_BAHA", scheme: "DH", plan: "Classic Smart", category: "prosthesis", description: "Bone-anchored hearing aids: R150,000/person, R78,000 processor upgrade/3 years", perBeneficiaryLimit: 150000, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "Not covered on Essential/Dynamic/Active Smart." },
+  { ruleId: "DH_CSMART_NERVE_STIM", scheme: "DH", plan: "Classic Smart", category: "prosthesis", description: "Internal nerve stimulators: R192,000/person", perBeneficiaryLimit: 192000, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "Not covered on Essential/Dynamic/Active Smart." },
+  { ruleId: "DH_CSMART_JOINT", scheme: "DH", plan: "Classic Smart", category: "prosthesis", description: "Major joint replacement (non-network): R31,800/prosthesis/admission", perEventLimitRands: 31800, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "No limit in network. Not covered on Essential/Dynamic/Active Smart." },
+  { ruleId: "DH_CSMART_SHOULDER", scheme: "DH", plan: "Classic Smart", category: "prosthesis", description: "Shoulder joint prosthesis (non-network): R46,000", perEventLimitRands: 46000, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "No limit in network. Not covered on Essential/Dynamic/Active Smart." },
+  { ruleId: "DH_CSMART_SPINAL", scheme: "DH", plan: "Classic Smart", category: "prosthesis", description: "Spinal surgery prosthesis (non-preferred): R18,900 first level, R37,800 two+ levels", perEventLimitRands: 37800, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "No limit with preferred supplier. 1 procedure/person/year." },
+
+  // Dental
+  { ruleId: "DH_CSMART_DENTAL_TRAUMA", scheme: "DH", plan: "Classic Smart", category: "dental", description: "Basic Dental Trauma Benefit: R70,800/person/year", annualLimitRands: 70800, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "Classic Smart only. Not on Essential/Dynamic/Active." },
+  { ruleId: "DH_SMART_DENTAL_HOSP_ADULT", scheme: "DH", plan: "Classic Smart", category: "dental", description: "Dental admission upfront (13+): R8,950 hospital / R5,750 day clinic", coPaymentRands: 8950, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "Classic Smart only. In-hospital dentistry not covered on Essential/Dynamic/Active." },
+  { ruleId: "DH_SMART_DENTAL_HOSP_CHILD", scheme: "DH", plan: "Classic Smart", category: "dental", description: "Dental admission upfront (under 13): R3,470 hospital / R1,550 day clinic", coPaymentRands: 3470, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "Classic Smart only." },
+
+  // Home monitoring
+  { ruleId: "DH_SMART_HOME_MONITOR", scheme: "DH", plan: "Classic Smart", category: "appliance", description: "Home Monitoring Device Benefit: R4,850/person/year", annualLimitRands: 4850, networkRequired: false, preAuthRequired: true, severity: "info", notes: "All Smart plans." },
+
+  // Home-based hospital DSP penalty
+  { ruleId: "DH_SMART_HOMEHOSP_PENALTY", scheme: "DH", plan: "Classic Smart", category: "hospital", description: "Refusing Home-based hospital network: R5,450 upfront deductible", coPaymentRands: 5450, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "When treating provider recommends home-based care." },
+
+  // Virtual Urgent Care
+  { ruleId: "DH_SMART_VIRTUAL_URGENT", scheme: "DH", plan: "Classic Smart", category: "gp_consultation", description: "Virtual Urgent Care: 4 sessions/family/year", visitLimit: 4, visitPeriodMonths: 12, networkRequired: true, preAuthRequired: false, severity: "info", notes: "All Smart plans. Additional sessions from PHF." },
+];
+
+// ─── DISCOVERY SMART SAVER PLAN LIMITS (2026) ───────────────────────────────
+// Source: Discovery Smart Saver Plan Guide 2026 (39 pages)
+// Plans: Classic Smart Saver, Essential Smart Saver
+
+export const DISCOVERY_SMART_SAVER_LIMITS: BenefitLimitRule[] = [
+  // Hospital — unlimited in Smart Hospital Network
+  { ruleId: "DH_CSS_HOSPITAL", scheme: "DH", plan: "Classic Smart Saver", category: "hospital", description: "Hospital: unlimited cover in Smart Hospital Network", networkRequired: true, preAuthRequired: true, severity: "info", notes: "No overall hospital limit." },
+  { ruleId: "DH_ESS_HOSPITAL", scheme: "DH", plan: "Essential Smart Saver", category: "hospital", description: "Hospital: unlimited cover in Smart Hospital Network", networkRequired: true, preAuthRequired: true, severity: "info", notes: "No overall hospital limit. Certain procedures excluded." },
+
+  // Non-network upfront
+  { ruleId: "DH_SMARTSAVER_NONNETWORK", scheme: "DH", plan: "Classic Smart Saver", category: "hospital", description: "Non-network hospital upfront payment: R12,650", coPaymentRands: 12650, networkRequired: true, preAuthRequired: true, severity: "error", notes: "Both Classic and Essential Smart Saver." },
+
+  // In-hospital specialists
+  { ruleId: "DH_CSS_HOSP_SPECIALIST", scheme: "DH", plan: "Classic Smart Saver", category: "hospital", description: "In-hospital specialists/professionals: up to 200% DHR", networkRequired: true, preAuthRequired: true, severity: "info", notes: "Classic Smart Saver." },
+  { ruleId: "DH_ESS_HOSP_SPECIALIST", scheme: "DH", plan: "Essential Smart Saver", category: "hospital", description: "In-hospital specialists/professionals: up to 100% DHR", networkRequired: true, preAuthRequired: true, severity: "info", notes: "Essential Smart Saver." },
+
+  // MRI/CT scans
+  { ruleId: "DH_CSS_MRI", scheme: "DH", plan: "Classic Smart Saver", category: "radiology", description: "MRI/CT (not related to admission): first R4,000 from day-to-day, balance from Hospital Benefit. 1 scan per spinal/neck region per year", coPaymentRands: 4000, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "Classic Smart Saver." },
+  { ruleId: "DH_ESS_MRI", scheme: "DH", plan: "Essential Smart Saver", category: "radiology", description: "MRI/CT (not related to admission): first R4,000 from day-to-day. Conservative back/neck scans not covered", coPaymentRands: 4000, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "Essential Smart Saver. Back/neck treatment scans excluded." },
+
+  // Oncology
+  { ruleId: "DH_SMARTSAVER_ONCOLOGY", scheme: "DH", plan: "Classic Smart Saver", category: "oncology", description: "Oncology: R250,000 cover amount per 12-month cycle, then 80% DHR at network", annualLimitRands: 250000, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "Both plans. Precision medicine: 50% co-pay." },
+
+  // GP consultations
+  { ruleId: "DH_CSS_GP_COPAY", scheme: "DH", plan: "Classic Smart Saver", category: "gp_consultation", description: "GP consultation (Smart network): unlimited visits, R75 co-payment", coPaymentRands: 75, networkRequired: true, preAuthRequired: false, severity: "info", notes: "Video consultations covered in full." },
+  { ruleId: "DH_ESS_GP_COPAY", scheme: "DH", plan: "Essential Smart Saver", category: "gp_consultation", description: "GP consultation (Smart network): unlimited visits, R130 co-payment", coPaymentRands: 130, networkRequired: true, preAuthRequired: false, severity: "info", notes: "Video consultations covered in full." },
+
+  // Optical
+  { ruleId: "DH_CSS_OPTICAL", scheme: "DH", plan: "Classic Smart Saver", category: "optical", description: "Eye test: 1/person/year, R75 upfront at network optometrist", coPaymentRands: 75, visitLimit: 1, visitPeriodMonths: 12, networkRequired: true, preAuthRequired: false, severity: "info", notes: "Smart Optometry Network." },
+  { ruleId: "DH_ESS_OPTICAL", scheme: "DH", plan: "Essential Smart Saver", category: "optical", description: "Eye test: 1/person/year, R130 upfront at network optometrist", coPaymentRands: 130, visitLimit: 1, visitPeriodMonths: 12, networkRequired: true, preAuthRequired: false, severity: "info", notes: "Smart Optometry Network." },
+
+  // Dental check-up
+  { ruleId: "DH_CSS_DENTAL_CHECK", scheme: "DH", plan: "Classic Smart Saver", category: "dental", description: "Dental check-up: 1/person/year, R130 co-payment", coPaymentRands: 130, visitLimit: 1, visitPeriodMonths: 12, networkRequired: false, preAuthRequired: false, severity: "info", notes: "Up to 100% DHR." },
+  { ruleId: "DH_ESS_DENTAL_CHECK", scheme: "DH", plan: "Essential Smart Saver", category: "dental", description: "Dental check-up: 1/person/year, R195 co-payment", coPaymentRands: 195, visitLimit: 1, visitPeriodMonths: 12, networkRequired: false, preAuthRequired: false, severity: "info", notes: "Up to 100% DHR." },
+
+  // OTC medicine
+  { ruleId: "DH_CSS_OTC", scheme: "DH", plan: "Classic Smart Saver", category: "medicine_otc", description: "Over-the-counter medicine: R905/family/year", annualLimitRands: 905, networkRequired: true, preAuthRequired: false, severity: "warning", notes: "Network pharmacy." },
+  { ruleId: "DH_ESS_OTC", scheme: "DH", plan: "Essential Smart Saver", category: "medicine_otc", description: "Over-the-counter medicine: R605/family/year", annualLimitRands: 605, networkRequired: true, preAuthRequired: false, severity: "warning", notes: "Network pharmacy." },
+
+  // Acute medicine (Classic only)
+  { ruleId: "DH_CSS_ACUTE_MED", scheme: "DH", plan: "Classic Smart Saver", category: "medicine_acute", description: "Acute medicine (schedule 3+): R1,970/member/year or R3,300/family/year", annualLimitRands: 3300, perBeneficiaryLimit: 1970, networkRequired: true, preAuthRequired: false, severity: "warning", notes: "Classic Smart Saver only. Network pharmacy." },
+
+  // Contraceptive medicine
+  { ruleId: "DH_CSS_CONTRACEPTIVE", scheme: "DH", plan: "Classic Smart Saver", category: "contraceptive", description: "Contraceptive medicine: R2,600/female beneficiary/year", perBeneficiaryLimit: 2600, networkRequired: true, preAuthRequired: false, severity: "info", notes: "Prescribed by Smart network GP. Network pharmacy." },
+  { ruleId: "DH_ESS_CONTRACEPTIVE", scheme: "DH", plan: "Essential Smart Saver", category: "contraceptive", description: "Contraceptive medicine: R2,200/female beneficiary/year", perBeneficiaryLimit: 2200, networkRequired: true, preAuthRequired: false, severity: "info", notes: "Prescribed by Smart network GP. Network pharmacy." },
+
+  // Personal Health Fund
+  { ruleId: "DH_CSS_PHF", scheme: "DH", plan: "Classic Smart Saver", category: "day_to_day", description: "Personal Health Fund: up to R10,000 base (R20,000 with boost) per family/year", annualLimitRands: 10000, networkRequired: false, preAuthRequired: false, severity: "info", notes: "R2,500/adult, R1,250/child. R1,250/challenge boost (max R10,000 boost)." },
+  { ruleId: "DH_ESS_PHF", scheme: "DH", plan: "Essential Smart Saver", category: "day_to_day", description: "Personal Health Fund: up to R6,000 base (R12,000 with boost) per family/year", annualLimitRands: 6000, networkRequired: false, preAuthRequired: false, severity: "info", notes: "R1,500/adult, R750/child. R750/challenge boost (max R6,000 boost)." },
+
+  // Scopes
+  { ruleId: "DH_SMARTSAVER_SCOPE_DAY", scheme: "DH", plan: "Classic Smart Saver", category: "hospital", description: "Scope (day clinic): R4,650 co-payment", coPaymentRands: 4650, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "Both Smart Saver plans." },
+  { ruleId: "DH_SMARTSAVER_SCOPE_HOSP", scheme: "DH", plan: "Classic Smart Saver", category: "hospital", description: "Scope (hospital): R8,000 co-payment (R6,650 value-based)", coPaymentRands: 8000, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "Both Smart Saver plans." },
+  { ruleId: "DH_SMARTSAVER_SCOPE_BIDI_DAY", scheme: "DH", plan: "Classic Smart Saver", category: "hospital", description: "Bi-directional scopes (day clinic): R5,700 co-payment", coPaymentRands: 5700, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "Both Smart Saver plans." },
+  { ruleId: "DH_SMARTSAVER_SCOPE_BIDI_HOSP", scheme: "DH", plan: "Classic Smart Saver", category: "hospital", description: "Bi-directional scopes (hospital): R9,950 co-payment (R8,250 value-based)", coPaymentRands: 9950, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "Both Smart Saver plans." },
+  { ruleId: "DH_SMARTSAVER_SCOPE_INROOMS_SINGLE", scheme: "DH", plan: "Classic Smart Saver", category: "hospital", description: "Scope in-rooms (non-network): R1,800 co-payment", coPaymentRands: 1800, networkRequired: false, preAuthRequired: false, severity: "warning", notes: "No co-payment at network provider." },
+  { ruleId: "DH_SMARTSAVER_SCOPE_INROOMS_BIDI", scheme: "DH", plan: "Classic Smart Saver", category: "hospital", description: "Bi-directional scopes in-rooms (non-network): R3,100 co-payment", coPaymentRands: 3100, networkRequired: false, preAuthRequired: false, severity: "warning", notes: "No co-payment at network provider." },
+
+  // Day Surgery out-of-network
+  { ruleId: "DH_SMARTSAVER_DAYSURG_UPFRONT", scheme: "DH", plan: "Classic Smart Saver", category: "hospital", description: "Day Surgery out-of-network upfront: R12,650", coPaymentRands: 12650, networkRequired: true, preAuthRequired: true, severity: "error", notes: "Both Smart Saver plans." },
+
+  // Mental health
+  { ruleId: "DH_SMARTSAVER_MENTAL_INPATIENT", scheme: "DH", plan: "Classic Smart Saver", category: "mental_health", description: "Mental health inpatient: 21 days/person/year", daysLimit: 21, visitPeriodMonths: 12, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "Both plans. 3 days per admission for attempted suicide." },
+  { ruleId: "DH_SMARTSAVER_MENTAL_OUTPATIENT", scheme: "DH", plan: "Classic Smart Saver", category: "mental_health", description: "Mental health outpatient: 15 sessions (major affective) or 12 (acute stress)", visitLimit: 15, visitPeriodMonths: 12, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "Both Smart Saver plans." },
+
+  // Alcohol/drug rehab
+  { ruleId: "DH_SMARTSAVER_REHAB", scheme: "DH", plan: "Classic Smart Saver", category: "mental_health", description: "Alcohol/drug rehabilitation: 21 days/person/year, 3 days detox per admission", daysLimit: 21, visitPeriodMonths: 12, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "Both plans. 80% DHR non-network." },
+
+  // Prosthesis
+  { ruleId: "DH_CSS_COCHLEAR", scheme: "DH", plan: "Classic Smart Saver", category: "prosthesis", description: "Cochlear implants: R252,000/person, R190,000 processor upgrade/3 years", perBeneficiaryLimit: 252000, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "Not covered on Essential Smart Saver." },
+  { ruleId: "DH_CSS_BAHA", scheme: "DH", plan: "Classic Smart Saver", category: "prosthesis", description: "Bone-anchored hearing aids: R150,000/person, R78,000 processor upgrade/3 years", perBeneficiaryLimit: 150000, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "Not covered on Essential Smart Saver." },
+  { ruleId: "DH_CSS_NERVE_STIM", scheme: "DH", plan: "Classic Smart Saver", category: "prosthesis", description: "Internal nerve stimulators: R192,000/person", perBeneficiaryLimit: 192000, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "Not covered on Essential Smart Saver." },
+  { ruleId: "DH_CSS_JOINT", scheme: "DH", plan: "Classic Smart Saver", category: "prosthesis", description: "Major joint replacement (non-network): R31,850/prosthesis/admission", perEventLimitRands: 31850, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "No limit in network. Not covered on Essential Smart Saver." },
+  { ruleId: "DH_CSS_SHOULDER", scheme: "DH", plan: "Classic Smart Saver", category: "prosthesis", description: "Shoulder joint prosthesis (non-network): R46,000", perEventLimitRands: 46000, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "No limit in network. Not covered on Essential Smart Saver." },
+  { ruleId: "DH_CSS_SPINAL", scheme: "DH", plan: "Classic Smart Saver", category: "prosthesis", description: "Spinal surgery prosthesis (non-preferred): R18,900 first level, R37,800 two+ levels", perEventLimitRands: 37800, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "No limit with preferred. Not covered on Essential Smart Saver." },
+
+  // Home monitoring
+  { ruleId: "DH_SMARTSAVER_HOME_MONITOR", scheme: "DH", plan: "Classic Smart Saver", category: "appliance", description: "Home Monitoring Device Benefit: R4,850/person/year", annualLimitRands: 4850, networkRequired: false, preAuthRequired: true, severity: "info", notes: "Both Smart Saver plans." },
+
+  // Home-based hospital DSP penalty
+  { ruleId: "DH_SMARTSAVER_HOMEHOSP_PENALTY", scheme: "DH", plan: "Classic Smart Saver", category: "hospital", description: "Refusing Home-based hospital network: R5,450 upfront deductible", coPaymentRands: 5450, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "Both Smart Saver plans." },
+
+  // Virtual Urgent Care
+  { ruleId: "DH_SMARTSAVER_VIRTUAL_URGENT", scheme: "DH", plan: "Classic Smart Saver", category: "gp_consultation", description: "Virtual Urgent Care: 4 sessions/family/year", visitLimit: 4, visitPeriodMonths: 12, networkRequired: true, preAuthRequired: false, severity: "info", notes: "Both Smart Saver plans." },
+
+  // Kids casualty
+  { ruleId: "DH_CSS_KIDS_CASUALTY", scheme: "DH", plan: "Classic Smart Saver", category: "gp_consultation", description: "Kids casualty (12 and younger): 1 visit, R75 co-payment", coPaymentRands: 75, visitLimit: 1, visitPeriodMonths: 12, networkRequired: false, preAuthRequired: false, severity: "info", notes: "Classic Smart Saver. R130 on Essential." },
+  { ruleId: "DH_ESS_KIDS_CASUALTY", scheme: "DH", plan: "Essential Smart Saver", category: "gp_consultation", description: "Kids casualty (12 and younger): 1 visit, R130 co-payment", coPaymentRands: 130, visitLimit: 1, visitPeriodMonths: 12, networkRequired: false, preAuthRequired: false, severity: "info", notes: "Essential Smart Saver." },
+];
+
+// ─── DISCOVERY CORE PLAN LIMITS (2026) ──────────────────────────────────────
+// Source: Discovery Core Plan Guide 2026 (36 pages)
+// Plans: Classic Core, Classic Delta Core, Essential Core, Essential Delta Core, Coastal Core
+
+export const DISCOVERY_CORE_LIMITS: BenefitLimitRule[] = [
+  // Hospital — unlimited
+  { ruleId: "DH_CORE_HOSPITAL", scheme: "DH", plan: "Essential", category: "hospital", description: "Hospital: unlimited cover, any Scheme-approved private hospital, pre-auth required", networkRequired: false, preAuthRequired: true, severity: "info", notes: "No overall hospital limit on any Core plan." },
+  { ruleId: "DH_CORE_DELTA_HOSPITAL", scheme: "DH", plan: "Essential Delta", category: "hospital", description: "Hospital: unlimited cover in Delta Hospital Network", networkRequired: true, preAuthRequired: true, severity: "info", notes: "Delta options require Delta Hospital Network." },
+  { ruleId: "DH_CORE_COASTAL_HOSPITAL", scheme: "DH", plan: "Coastal", category: "hospital", description: "Hospital: unlimited cover in Coastal region approved hospitals", networkRequired: true, preAuthRequired: true, severity: "info", notes: "Coastal: approved hospitals in four coastal provinces. 70% DHR out-of-region." },
+
+  // Delta non-network upfront
+  { ruleId: "DH_CORE_DELTA_NONNETWORK", scheme: "DH", plan: "Essential Delta", category: "hospital", description: "Delta non-network hospital upfront: R11,100", coPaymentRands: 11100, networkRequired: true, preAuthRequired: true, severity: "error", notes: "Planned admissions outside Delta Hospital Network." },
+
+  // In-hospital specialists
+  { ruleId: "DH_CORE_CLASSIC_SPECIALIST", scheme: "DH", plan: "Essential", category: "hospital", description: "In-hospital specialists (Classic Core): up to 200% DHR", networkRequired: false, preAuthRequired: true, severity: "info", notes: "Classic and Classic Delta Core plans." },
+  { ruleId: "DH_CORE_ESSENTIAL_SPECIALIST", scheme: "DH", plan: "Essential Delta", category: "hospital", description: "In-hospital specialists (Essential/Coastal): up to 100% DHR", networkRequired: true, preAuthRequired: true, severity: "info", notes: "Essential, Essential Delta, Coastal Core plans." },
+
+  // MRI/CT scans
+  { ruleId: "DH_CORE_MRI", scheme: "DH", plan: "Essential", category: "radiology", description: "MRI/CT (not related to admission or conservative back/neck): not covered — you pay", networkRequired: false, preAuthRequired: true, severity: "error", notes: "All Core plans. Only covered if related to hospital admission." },
+
+  // Oncology
+  { ruleId: "DH_CORE_ONCOLOGY", scheme: "DH", plan: "Essential", category: "oncology", description: "Oncology: R250,000 cover amount per 12-month cycle, then 80% DHR", annualLimitRands: 250000, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "Classic/Essential at any provider. Delta/Coastal at network provider. Precision medicine: 50% co-pay." },
+
+  // Day Surgery Network upfront
+  { ruleId: "DH_CORE_DAYSURG_CLASSIC", scheme: "DH", plan: "Essential", category: "hospital", description: "Day Surgery out-of-network upfront (Classic/Essential/Coastal): R7,250", coPaymentRands: 7250, networkRequired: true, preAuthRequired: true, severity: "error", notes: "Classic, Essential, Coastal Core plans." },
+  { ruleId: "DH_CORE_DAYSURG_DELTA", scheme: "DH", plan: "Essential Delta", category: "hospital", description: "Day Surgery out-of-network upfront (Delta options): R11,100", coPaymentRands: 11100, networkRequired: true, preAuthRequired: true, severity: "error", notes: "Delta Day Surgery Network." },
+
+  // Scopes
+  { ruleId: "DH_CORE_SCOPE_DAY", scheme: "DH", plan: "Essential", category: "hospital", description: "Scope (day clinic): R4,650 co-payment", coPaymentRands: 4650, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "All Core plans." },
+  { ruleId: "DH_CORE_SCOPE_HOSP", scheme: "DH", plan: "Essential", category: "hospital", description: "Scope (hospital): R8,000 co-payment (R6,650 value-based)", coPaymentRands: 8000, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "All Core plans." },
+  { ruleId: "DH_CORE_SCOPE_BIDI_DAY", scheme: "DH", plan: "Essential", category: "hospital", description: "Bi-directional scopes (day clinic): R5,700 co-payment", coPaymentRands: 5700, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "All Core plans." },
+  { ruleId: "DH_CORE_SCOPE_BIDI_HOSP", scheme: "DH", plan: "Essential", category: "hospital", description: "Bi-directional scopes (hospital): R9,950 co-payment (R8,250 value-based)", coPaymentRands: 9950, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "All Core plans." },
+  { ruleId: "DH_CORE_SCOPE_INROOMS_SINGLE", scheme: "DH", plan: "Essential", category: "hospital", description: "Scope in-rooms (non-network): R1,800 co-payment", coPaymentRands: 1800, networkRequired: false, preAuthRequired: false, severity: "warning", notes: "No co-payment at in-rooms network provider." },
+  { ruleId: "DH_CORE_SCOPE_INROOMS_BIDI", scheme: "DH", plan: "Essential", category: "hospital", description: "Bi-directional scopes in-rooms (non-network): R3,100 co-payment", coPaymentRands: 3100, networkRequired: false, preAuthRequired: false, severity: "warning", notes: "No co-payment at in-rooms network provider." },
+
+  // Procedures outside Day Surgery Network upfront
+  { ruleId: "DH_CORE_PROCED_UPFRONT_CLASSIC", scheme: "DH", plan: "Essential", category: "hospital", description: "Defined procedures outside Day Surgery Network (Classic/Essential/Coastal): R7,250 upfront", coPaymentRands: 7250, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "Classic, Essential, Coastal plans." },
+  { ruleId: "DH_CORE_PROCED_UPFRONT_DELTA", scheme: "DH", plan: "Essential Delta", category: "hospital", description: "Defined procedures outside Day Surgery Network (Delta): R11,100 upfront", coPaymentRands: 11100, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "Delta options." },
+
+  // Home-based hospital DSP penalty
+  { ruleId: "DH_CORE_HOMEHOSP_PENALTY", scheme: "DH", plan: "Essential", category: "hospital", description: "Refusing Home-based hospital network (Delta plans): R5,450 upfront", coPaymentRands: 5450, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "Delta plans: DSP for home-based care." },
+
+  // Mental health
+  { ruleId: "DH_CORE_MENTAL_INPATIENT", scheme: "DH", plan: "Essential", category: "mental_health", description: "Mental health inpatient: 21 days/person/year", daysLimit: 21, visitPeriodMonths: 12, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "All Core plans. 3 days per admission for attempted suicide. 80% DHR non-network." },
+  { ruleId: "DH_CORE_MENTAL_OUTPATIENT", scheme: "DH", plan: "Essential", category: "mental_health", description: "Mental health outpatient: 15 sessions (major affective) or 12 (acute stress)", visitLimit: 15, visitPeriodMonths: 12, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "All Core plans." },
+
+  // Alcohol/drug rehab
+  { ruleId: "DH_CORE_REHAB", scheme: "DH", plan: "Essential", category: "mental_health", description: "Alcohol/drug rehabilitation: 21 days/person/year, 3 days detox per admission", daysLimit: 21, visitPeriodMonths: 12, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "All Core plans. 80% DHR non-network." },
+
+  // Prosthesis
+  { ruleId: "DH_CORE_COCHLEAR", scheme: "DH", plan: "Essential", category: "prosthesis", description: "Cochlear implants: R252,000/person, R190,000 processor upgrade/3 years", perBeneficiaryLimit: 252000, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "All Core plans." },
+  { ruleId: "DH_CORE_BAHA", scheme: "DH", plan: "Essential", category: "prosthesis", description: "Bone-anchored hearing aids: R150,000/person, R78,000 processor upgrade/3 years", perBeneficiaryLimit: 150000, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "All Core plans." },
+  { ruleId: "DH_CORE_NERVE_STIM", scheme: "DH", plan: "Essential", category: "prosthesis", description: "Internal nerve stimulators: R192,000/person", perBeneficiaryLimit: 192000, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "All Core plans." },
+  { ruleId: "DH_CORE_JOINT", scheme: "DH", plan: "Essential", category: "prosthesis", description: "Major joint replacement (non-network): R31,850/prosthesis/admission", perEventLimitRands: 31850, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "No limit in network. Emergency/trauma excluded from network requirement." },
+  { ruleId: "DH_CORE_SHOULDER", scheme: "DH", plan: "Essential", category: "prosthesis", description: "Shoulder joint prosthesis (non-network): R46,000", perEventLimitRands: 46000, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "No limit in network." },
+  { ruleId: "DH_CORE_SPINAL", scheme: "DH", plan: "Essential", category: "prosthesis", description: "Spinal surgery prosthesis (non-preferred): R18,900 first level, R37,800 two+ levels", perEventLimitRands: 37800, networkRequired: true, preAuthRequired: true, severity: "warning", notes: "No limit with preferred supplier. 1 procedure/person/year." },
+
+  // Dental
+  { ruleId: "DH_CORE_DENTAL_TRAUMA", scheme: "DH", plan: "Essential", category: "dental", description: "Basic Dental Trauma Benefit: R70,800/person/year", annualLimitRands: 70800, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "All Core plans." },
+  { ruleId: "DH_CORE_DENTAL_HOSP_ADULT", scheme: "DH", plan: "Essential", category: "dental", description: "Dental admission upfront (13+): R8,950 hospital / R5,750 day clinic", coPaymentRands: 8950, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "All Core plans. Waived for severe dental/oral surgery." },
+  { ruleId: "DH_CORE_DENTAL_HOSP_CHILD", scheme: "DH", plan: "Essential", category: "dental", description: "Dental admission upfront (under 13): R3,470 hospital / R1,550 day clinic", coPaymentRands: 3470, networkRequired: false, preAuthRequired: true, severity: "warning", notes: "All Core plans." },
+
+  // Personal Health Fund
+  { ruleId: "DH_CORE_CLASSIC_PHF", scheme: "DH", plan: "Essential", category: "day_to_day", description: "Personal Health Fund (Classic Core): up to R8,000 base (R16,000 with boost) per family", annualLimitRands: 8000, networkRequired: false, preAuthRequired: false, severity: "info", notes: "R2,000/adult, R1,000/child. R1,000/challenge boost (max R8,000 boost)." },
+  { ruleId: "DH_CORE_ESSENTIAL_PHF", scheme: "DH", plan: "Essential Delta", category: "day_to_day", description: "Personal Health Fund (Essential/Delta/Coastal): up to R4,000 base (R8,000 with boost) per family", annualLimitRands: 4000, networkRequired: false, preAuthRequired: false, severity: "info", notes: "R1,000/adult, R500/child. R500/challenge boost (max R4,000 boost)." },
+
+  // Home monitoring
+  { ruleId: "DH_CORE_HOME_MONITOR", scheme: "DH", plan: "Essential", category: "appliance", description: "Home Monitoring Device Benefit: R4,850/person/year", annualLimitRands: 4850, networkRequired: false, preAuthRequired: true, severity: "info", notes: "All Core plans." },
+
+  // International Travel
+  { ruleId: "DH_CORE_TRAVEL", scheme: "DH", plan: "Essential", category: "hospital", description: "International Travel Benefit: R5 million per journey, 90-day cover", networkRequired: false, preAuthRequired: false, severity: "info", notes: "All Core plans. Emergency medical costs abroad. Pre-existing excluded." },
+
+  // Virtual Urgent Care
+  { ruleId: "DH_CORE_VIRTUAL_URGENT", scheme: "DH", plan: "Essential", category: "gp_consultation", description: "Virtual Urgent Care: 4 sessions/family/year", visitLimit: 4, visitPeriodMonths: 12, networkRequired: true, preAuthRequired: false, severity: "info", notes: "All Core plans. Additional from PHF." },
+
+  // International Second Opinion
+  { ruleId: "DH_CORE_SECOND_OPINION", scheme: "DH", plan: "Essential", category: "hospital", description: "International Second Opinion (Cleveland Clinic): 75% of cost covered", coPaymentPercent: 25, networkRequired: false, preAuthRequired: true, severity: "info", notes: "Life-threatening/life-changing conditions." },
+];
+
 // ─── ALL BENEFIT LIMIT RULES ────────────────────────────────────────────────
 
 export const ALL_BENEFIT_LIMIT_RULES: BenefitLimitRule[] = [
@@ -1889,6 +2266,10 @@ export const ALL_BENEFIT_LIMIT_RULES: BenefitLimitRule[] = [
   ...MOMENTUM_LIMITS,
   ...BONITAS_BENEFIT_LIMITS,
   ...POLMED_LIMITS,
+  ...DISCOVERY_EXECUTIVE_LIMITS,
+  ...DISCOVERY_SMART_LIMITS,
+  ...DISCOVERY_SMART_SAVER_LIMITS,
+  ...DISCOVERY_CORE_LIMITS,
 ];
 
 // ─── EXPORTS ──────────────────────────────────────────────────────────────────

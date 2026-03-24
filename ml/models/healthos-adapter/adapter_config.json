@@ -1,13 +1,13 @@
 {
-    "adapter_path": "/Users/hga/netcare-healthos/ml/models/healthos-adapter",
+    "adapter_path": "ml/models/healthos-adapter",
     "batch_size": 2,
     "config": null,
-    "data": "/Users/hga/netcare-healthos/ml/training-data",
+    "data": "ml/training-data/combined",
     "fine_tune_type": "lora",
     "grad_accumulation_steps": 1,
-    "grad_checkpoint": false,
+    "grad_checkpoint": true,
     "iters": 500,
-    "learning_rate": 1e-05,
+    "learning_rate": 5e-06,
     "lora_parameters": {
         "rank": 8,
         "dropout": 0.0,
@@ -16,7 +16,7 @@
     "lr_schedule": null,
     "mask_prompt": false,
     "max_seq_length": 2048,
-    "model": "/Users/hga/netcare-healthos/ml/models/med42-mlx",
+    "model": "ml/models/med42-mlx",
     "num_layers": 8,
     "optimizer": "adam",
     "optimizer_config": {
@@ -28,7 +28,7 @@
     },
     "project_name": null,
     "report_to": null,
-    "resume_adapter_file": null,
+    "resume_adapter_file": "ml/models/healthos-adapter/0001000_adapters.safetensors",
     "save_every": 100,
     "seed": 0,
     "steps_per_eval": 100,
@@ -36,5 +36,5 @@
     "test": false,
     "test_batches": 500,
     "train": true,
-    "val_batches": 10
+    "val_batches": 25
 }

@@ -1578,6 +1578,883 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     }
   }
 
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // NEW VALIDATION RULES (Rules 27–89) — Gap closure to reach 200
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  // ── Rule 27: MISSING_AUTH_NUMBER — Pre-auth required but no auth number ──
+  if (item.authorizationNumber !== undefined && !item.authorizationNumber?.trim()) {
+    // Only flag if the claim type typically requires auth
+    const needsAuth = item.admissionDate || item.isMaternity ||
+      (item.tariffCode && parseInt(item.tariffCode, 10) >= 800 && parseInt(item.tariffCode, 10) <= 899);
+    if (needsAuth) {
+      issues.push({
+        lineNumber: ln, field: "authorizationNumber", code: "MISSING_AUTH_NUMBER",
+        severity: "error", rule: "Missing Authorisation Number",
+        message: "Hospital admission / maternity claim submitted without an authorisation number. All SA schemes require pre-auth for admissions.",
+        suggestion: "Add the pre-authorisation number (RFF+AE segment) before submitting. Contact the scheme's pre-auth line.",
+      });
+    }
+  }
+
+  // ── Rule 28: INVALID_AUTH_FORMAT — Auth number format validation ──
+  if (item.authorizationNumber?.trim()) {
+    const auth = item.authorizationNumber.trim();
+    if (auth.length < 4 || auth.length > 20) {
+      issues.push({
+        lineNumber: ln, field: "authorizationNumber", code: "INVALID_AUTH_FORMAT",
+        severity: "warning", rule: "Invalid Authorisation Number Format",
+        message: `Authorisation number "${auth}" has unusual length (${auth.length} chars). Typical auth numbers are 6-15 characters.`,
+        suggestion: "Verify the authorisation number. Incorrect auth numbers cause auto-rejection at the switch.",
+      });
+    }
+  }
+
+  // ── Rule 29: ADMISSION_NO_DISCHARGE — Hospital admission without discharge date ──
+  if (item.admissionDate?.trim() && !item.dischargeDate?.trim()) {
+    issues.push({
+      lineNumber: ln, field: "dischargeDate", code: "ADMISSION_NO_DISCHARGE",
+      severity: "warning", rule: "Admission Without Discharge Date",
+      message: `Hospital admission on ${item.admissionDate} but no discharge date provided. Claims without discharge dates are flagged as potentially still-admitted.`,
+      suggestion: "Add the discharge date (DTM+96). If the patient is still admitted, submit an interim claim with the expected discharge date.",
+    });
+  }
+
+  // ── Rule 30: DISCHARGE_BEFORE_ADMISSION — Date logic error ──
+  if (item.admissionDate?.trim() && item.dischargeDate?.trim()) {
+    const admDate = new Date(item.admissionDate);
+    const disDate = new Date(item.dischargeDate);
+    if (!isNaN(admDate.getTime()) && !isNaN(disDate.getTime()) && disDate < admDate) {
+      issues.push({
+        lineNumber: ln, field: "dischargeDate", code: "DISCHARGE_BEFORE_ADMISSION",
+        severity: "error", rule: "Discharge Before Admission",
+        message: `Discharge date (${item.dischargeDate}) is before admission date (${item.admissionDate}). This is an impossible date sequence.`,
+        suggestion: "Correct the admission or discharge date. This will be auto-rejected by the switch.",
+      });
+    }
+  }
+
+  // ── Rule 31: EXCESSIVE_LOS — Length of stay exceeds norms ──
+  if (item.admissionDate?.trim() && item.dischargeDate?.trim()) {
+    const admDate = new Date(item.admissionDate);
+    const disDate = new Date(item.dischargeDate);
+    if (!isNaN(admDate.getTime()) && !isNaN(disDate.getTime())) {
+      const losDays = Math.round((disDate.getTime() - admDate.getTime()) / (1000 * 60 * 60 * 24));
+      if (losDays > 30) {
+        issues.push({
+          lineNumber: ln, field: "dischargeDate", code: "EXCESSIVE_LOS",
+          severity: "warning", rule: "Excessive Length of Stay",
+          message: `Length of stay is ${losDays} days. Stays exceeding 30 days require clinical motivation and may trigger extended-stay protocols.`,
+          suggestion: "Ensure clinical motivation supports the extended stay. Schemes require progress notes and continued treatment plans for LOS > 14 days.",
+        });
+      }
+    }
+  }
+
+  // ── Rule 32: IOD_NO_ACCIDENT_DATE — Injured on duty without accident date ──
+  if (item.isIOD && !item.accidentDate?.trim()) {
+    issues.push({
+      lineNumber: ln, field: "accidentDate", code: "IOD_NO_ACCIDENT_DATE",
+      severity: "error", rule: "IOD Without Accident Date",
+      message: "Injured-on-duty (IOD) claim submitted without an accident date. COIDA requires the date of injury.",
+      suggestion: "Add the accident date (DTM+290 segment). IOD claims without accident dates are rejected by all switches.",
+    });
+  }
+
+  // ── Rule 33: MVA_NO_ACCIDENT_DATE — MVA claim without accident date ──
+  if (item.isMVA && !item.accidentDate?.trim()) {
+    issues.push({
+      lineNumber: ln, field: "accidentDate", code: "MVA_NO_ACCIDENT_DATE",
+      severity: "error", rule: "MVA Without Accident Date",
+      message: "Motor vehicle accident claim submitted without an accident date. RAF/insurer requires the date of accident.",
+      suggestion: "Add the accident date. MVA claims are routed to RAF or third-party insurer, not the medical scheme.",
+    });
+  }
+
+  // ── Rule 34: MVA_SCHEME_CLAIM — MVA should go to RAF not scheme ──
+  if (item.isMVA && item.scheme) {
+    issues.push({
+      lineNumber: ln, field: "scheme", code: "MVA_SCHEME_CLAIM",
+      severity: "warning", rule: "MVA Claim on Medical Scheme",
+      message: `MVA claim billed to medical scheme "${item.scheme}". Motor vehicle accident claims should be submitted to the Road Accident Fund (RAF) or the third-party insurer.`,
+      suggestion: "Medical schemes may recover costs from RAF. Verify the billing pathway with the practice manager.",
+    });
+  }
+
+  // ── Rule 35: IOD_SCHEME_CLAIM — IOD should go to COIDA not scheme ──
+  if (item.isIOD && item.scheme) {
+    issues.push({
+      lineNumber: ln, field: "scheme", code: "IOD_SCHEME_CLAIM",
+      severity: "warning", rule: "IOD Claim on Medical Scheme",
+      message: `IOD claim billed to medical scheme "${item.scheme}". Work injuries should be submitted under COIDA (Compensation for Occupational Injuries and Diseases Act).`,
+      suggestion: "IOD claims are the employer/insurer's responsibility under COIDA, not the medical scheme. Verify billing pathway.",
+    });
+  }
+
+  // ── Rule 36: MATERNITY_NO_AUTH — Maternity without pre-auth ──
+  if (item.isMaternity && !item.authorizationNumber?.trim()) {
+    issues.push({
+      lineNumber: ln, field: "authorizationNumber", code: "MATERNITY_NO_AUTH",
+      severity: "error", rule: "Maternity Without Pre-Authorisation",
+      message: "Maternity claim submitted without authorisation. All SA schemes require maternity pre-authorisation for delivery and hospitalisation.",
+      suggestion: "Contact the scheme's pre-auth centre to register the pregnancy and obtain an auth number before submitting.",
+    });
+  }
+
+  // ── Rule 37: PRESCRIPTION_MISSING — Pharmacy claim without prescription ref ──
+  if (item.nappiCode && !item.prescriptionNumber?.trim()) {
+    const isPharmacy = item.practiceNumber?.startsWith("070") ||
+      item.practitionerType?.toLowerCase().includes("pharm");
+    if (isPharmacy) {
+      issues.push({
+        lineNumber: ln, field: "prescriptionNumber", code: "PRESCRIPTION_MISSING",
+        severity: "warning", rule: "Missing Prescription Reference",
+        message: "Pharmacy dispensing claim without a prescription reference number. Schemes may query pharmacy claims without a linked prescription.",
+        suggestion: "Add the prescription number (RFF+PRE segment) to link this dispensing to the original prescriber.",
+      });
+    }
+  }
+
+  // ── Rule 38: DISPENSING_DATE_MISMATCH — Dispensing date vs service date ──
+  if (item.dispensingDate?.trim() && item.dateOfService) {
+    const dispDate = new Date(item.dispensingDate);
+    const svcDate = new Date(item.dateOfService);
+    if (!isNaN(dispDate.getTime()) && !isNaN(svcDate.getTime())) {
+      const diffDays = Math.abs(Math.round((dispDate.getTime() - svcDate.getTime()) / (1000 * 60 * 60 * 24)));
+      if (diffDays > 7) {
+        issues.push({
+          lineNumber: ln, field: "dispensingDate", code: "DISPENSING_DATE_MISMATCH",
+          severity: "warning", rule: "Dispensing Date Mismatch",
+          message: `Dispensing date (${item.dispensingDate}) is ${diffDays} days from service date (${item.dateOfService}). Prescriptions dispensed > 7 days after consultation may be queried.`,
+          suggestion: "Verify the dispensing and service dates. Chronic medication repeats should use the actual dispensing date.",
+        });
+      }
+    }
+  }
+
+  // ── Rule 39: VAT_RATE_INVALID — VAT must be 0% or 15% ──
+  if (item.vatRate !== undefined && item.vatRate !== 0 && item.vatRate !== 15) {
+    issues.push({
+      lineNumber: ln, field: "vatRate", code: "VAT_RATE_INVALID",
+      severity: "error", rule: "Invalid VAT Rate",
+      message: `VAT rate ${item.vatRate}% is invalid. SA healthcare VAT is either 0% (medical services) or 15% (consumables/devices).`,
+      suggestion: "Medical consultations and procedures are VAT-exempt (0%). Consumables and devices attract 15% VAT.",
+    });
+  }
+
+  // ── Rule 40: DEPOSIT_EXCEEDS_CLAIM — Patient deposit > claim amount ──
+  if (item.depositAmount !== undefined && item.amount !== undefined && item.depositAmount > item.amount) {
+    issues.push({
+      lineNumber: ln, field: "depositAmount", code: "DEPOSIT_EXCEEDS_CLAIM",
+      severity: "error", rule: "Deposit Exceeds Claim Amount",
+      message: `Patient deposit R${item.depositAmount.toFixed(2)} exceeds claim amount R${item.amount.toFixed(2)}. The scheme payment would be negative.`,
+      suggestion: "Verify the deposit and claim amounts. The deposit should not exceed the total claimed.",
+    });
+  }
+
+  // ── Rule 41: NEGATIVE_DEPOSIT — Negative patient deposit ──
+  if (item.depositAmount !== undefined && item.depositAmount < 0) {
+    issues.push({
+      lineNumber: ln, field: "depositAmount", code: "NEGATIVE_DEPOSIT",
+      severity: "error", rule: "Negative Patient Deposit",
+      message: `Patient deposit amount is negative (R${item.depositAmount.toFixed(2)}). Deposits must be zero or positive.`,
+      suggestion: "Correct the deposit amount. If processing a refund, submit a credit note (correction type REV).",
+    });
+  }
+
+  // ── Rule 42: TREATING_PROVIDER_MISSING — Treating provider not specified ──
+  if (item.treatingProviderNumber !== undefined && !item.treatingProviderNumber?.trim()) {
+    issues.push({
+      lineNumber: ln, field: "treatingProviderNumber", code: "TREATING_PROVIDER_MISSING",
+      severity: "error", rule: "Missing Treating Provider",
+      message: "Treating provider practice number (NAD+TDN) is empty. The switch requires the treating practitioner's BHF number.",
+      suggestion: "Add the treating provider's BHF-registered practice number. This is mandatory for all EDIFACT claims.",
+    });
+  }
+
+  // ── Rule 43: REFERRING_TREATING_SAME — Referring = treating (self-referral) ──
+  if (item.treatingProviderNumber?.trim() && item.referringProviderNumber?.trim() &&
+    item.treatingProviderNumber.trim() === item.referringProviderNumber.trim()) {
+    const isSpecialist = item.tariffCode && parseInt(item.tariffCode, 10) >= 141 && parseInt(item.tariffCode, 10) <= 299;
+    if (isSpecialist) {
+      issues.push({
+        lineNumber: ln, field: "referringProviderNumber", code: "REFERRING_TREATING_SAME",
+        severity: "warning", rule: "Self-Referral Detected",
+        message: `Referring and treating provider are the same (${item.treatingProviderNumber}). Specialist claims with self-referral may be queried by schemes.`,
+        suggestion: "Verify the referring provider number. If the patient was referred by a GP, use the GP's BHF number.",
+      });
+    }
+  }
+
+  // ── Rule 44: OUTPATIENT_WITH_ADMISSION — Contradictory flags ──
+  if (item.isOutpatient && item.admissionDate?.trim()) {
+    issues.push({
+      lineNumber: ln, field: "admissionDate", code: "OUTPATIENT_WITH_ADMISSION",
+      severity: "error", rule: "Outpatient Claim With Admission Date",
+      message: "Claim flagged as outpatient but has a hospital admission date. These are contradictory — a claim is either inpatient or outpatient.",
+      suggestion: "Remove the outpatient flag if this is a hospital admission, or remove the admission date if this is an outpatient procedure.",
+    });
+  }
+
+  // ── Rule 45: SCHEME_OPTION_MISSING — Scheme specified but no option ──
+  if (item.scheme?.trim() && !item.schemeOptionCode?.trim()) {
+    // Multi-option schemes
+    const multiOptionSchemes = ["discovery", "gems", "bonitas", "momentum", "medihelp", "bestmed", "fedhealth"];
+    const schemeLower = item.scheme.toLowerCase();
+    if (multiOptionSchemes.some(s => schemeLower.includes(s))) {
+      issues.push({
+        lineNumber: ln, field: "schemeOptionCode", code: "SCHEME_OPTION_MISSING",
+        severity: "warning", rule: "Missing Scheme Option Code",
+        message: `Scheme "${item.scheme}" has multiple plan options but no option code was specified. Benefit limits vary significantly between plans.`,
+        suggestion: "Add the scheme option/plan code to ensure correct benefit routing (e.g., Discovery KeyCare vs Comprehensive have different limits).",
+      });
+    }
+  }
+
+  // ── Rule 46: LOWERCASE_ICD10 — ICD-10 submitted in lowercase ──
+  if (item.rawICD10 && item.rawICD10 !== item.rawICD10.toUpperCase() && /^[a-z]\d/i.test(item.rawICD10)) {
+    issues.push({
+      lineNumber: ln, field: "primaryICD10", code: "LOWERCASE_ICD10",
+      severity: "info", rule: "Lowercase ICD-10 Code",
+      message: `ICD-10 code "${item.rawICD10}" was submitted in lowercase. Codes should be uppercase (${item.rawICD10.toUpperCase()}).`,
+      suggestion: "Auto-corrected to uppercase. Some switches reject lowercase codes — ensure your practice management software outputs uppercase.",
+    });
+  }
+
+  // ── Rule 47: ACCIDENT_DATE_FUTURE — Accident date in the future ──
+  if (item.accidentDate?.trim()) {
+    const accDate = new Date(item.accidentDate);
+    if (!isNaN(accDate.getTime()) && accDate > new Date()) {
+      issues.push({
+        lineNumber: ln, field: "accidentDate", code: "ACCIDENT_DATE_FUTURE",
+        severity: "error", rule: "Future Accident Date",
+        message: `Accident date ${item.accidentDate} is in the future. This is impossible and will be rejected.`,
+        suggestion: "Correct the accident date to the actual date of injury.",
+      });
+    }
+  }
+
+  // ── Rule 48: ACCIDENT_DATE_STALE — Accident date > 2 years ago ──
+  if (item.accidentDate?.trim()) {
+    const accDate = new Date(item.accidentDate);
+    const twoYearsAgo = new Date();
+    twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+    if (!isNaN(accDate.getTime()) && accDate < twoYearsAgo) {
+      issues.push({
+        lineNumber: ln, field: "accidentDate", code: "ACCIDENT_DATE_STALE",
+        severity: "warning", rule: "Old Accident Date",
+        message: `Accident date ${item.accidentDate} is more than 2 years ago. Late IOD/MVA claims may have limitation issues.`,
+        suggestion: "Verify the accident date. COIDA claims must generally be filed within 12 months. RAF claims have a 3-year limitation period.",
+      });
+    }
+  }
+
+  // ── Rule 49: ZERO_QUANTITY — Quantity is zero ──
+  if (item.quantity !== undefined && item.quantity === 0) {
+    issues.push({
+      lineNumber: ln, field: "quantity", code: "ZERO_QUANTITY",
+      severity: "error", rule: "Zero Quantity",
+      message: "Quantity is 0. Claims with zero quantity are meaningless and will be rejected.",
+      suggestion: "Set the quantity to at least 1, or remove this claim line.",
+    });
+  }
+
+  // ── Rule 50: NEGATIVE_QUANTITY — Negative quantity (unless credit note) ──
+  if (item.quantity !== undefined && item.quantity < 0) {
+    issues.push({
+      lineNumber: ln, field: "quantity", code: "NEGATIVE_QUANTITY",
+      severity: "warning", rule: "Negative Quantity",
+      message: `Quantity is ${item.quantity}. Negative quantities are only valid for credit/reversal claims.`,
+      suggestion: "If this is a credit note, ensure the correction type is set to REV. Otherwise, correct the quantity to a positive number.",
+    });
+  }
+
+  // ── Rule 51: PRACTICE_NUMBER_SUSPENDED — Known suspended practices (placeholder) ──
+  // This checks format; in production, would check against BHF suspension registry
+  if (item.practiceNumber && /^\d{7}$/.test(item.practiceNumber)) {
+    const prefix3 = item.practiceNumber.substring(0, 3);
+    // Practice numbers starting with 000 are invalid/test numbers
+    if (prefix3 === "000") {
+      issues.push({
+        lineNumber: ln, field: "practiceNumber", code: "TEST_PRACTICE_NUMBER",
+        severity: "error", rule: "Test Practice Number",
+        message: `Practice number "${item.practiceNumber}" starts with 000 — this is a test/invalid number, not a BHF-registered practice.`,
+        suggestion: "Use a valid BHF-registered 7-digit practice number.",
+      });
+    }
+  }
+
+  // ── Rule 52: PATIENT_NAME_FORMAT — Name validation ──
+  if (item.patientName?.trim()) {
+    const name = item.patientName.trim();
+    // Check for names that are clearly test data
+    const testNames = ["test", "patient", "dummy", "sample", "xxx", "aaa", "unknown patient"];
+    if (testNames.some(t => name.toLowerCase() === t || name.toLowerCase().startsWith(t + " "))) {
+      issues.push({
+        lineNumber: ln, field: "patientName", code: "TEST_PATIENT_NAME",
+        severity: "error", rule: "Test Patient Name Detected",
+        message: `Patient name "${name}" appears to be test data. Claims with test names will be rejected.`,
+        suggestion: "Replace with the actual patient name.",
+      });
+    }
+    // Check for single-character names
+    if (name.length < 2) {
+      issues.push({
+        lineNumber: ln, field: "patientName", code: "NAME_TOO_SHORT",
+        severity: "warning", rule: "Patient Name Too Short",
+        message: `Patient name "${name}" is too short. Switches require a minimum 2-character name.`,
+        suggestion: "Provide the patient's full name as registered with the scheme.",
+      });
+    }
+    // Check for numeric-only names
+    if (/^\d+$/.test(name)) {
+      issues.push({
+        lineNumber: ln, field: "patientName", code: "NUMERIC_PATIENT_NAME",
+        severity: "error", rule: "Numeric Patient Name",
+        message: `Patient name "${name}" contains only numbers. This is likely a data mapping error.`,
+        suggestion: "Check your CSV column mapping — the patient name field may be mapped to an ID number column.",
+      });
+    }
+  }
+
+  // ── Rule 53: SA_ID_CHECKSUM — Luhn check digit validation ──
+  if (item.patientIdNumber?.trim() && /^\d{13}$/.test(item.patientIdNumber)) {
+    const id = item.patientIdNumber;
+    // Luhn algorithm for SA ID number
+    let sum = 0;
+    for (let i = 0; i < 13; i++) {
+      let digit = parseInt(id[i], 10);
+      if (i % 2 === 1) {
+        digit *= 2;
+        if (digit > 9) digit -= 9;
+      }
+      sum += digit;
+    }
+    if (sum % 10 !== 0) {
+      issues.push({
+        lineNumber: ln, field: "patientIdNumber", code: "SA_ID_CHECKSUM_FAIL",
+        severity: "error", rule: "SA ID Check Digit Failed",
+        message: `SA ID number "${id}" fails the Luhn check digit validation. This is not a valid SA ID.`,
+        suggestion: "Verify the ID number. The 13th digit is a check digit computed from the first 12.",
+      });
+    }
+  }
+
+  // ── Rule 54: SA_ID_CITIZENSHIP — Citizenship digit validation ──
+  if (item.patientIdNumber?.trim() && /^\d{13}$/.test(item.patientIdNumber)) {
+    const citizenDigit = parseInt(item.patientIdNumber[10], 10);
+    if (citizenDigit !== 0 && citizenDigit !== 1) {
+      issues.push({
+        lineNumber: ln, field: "patientIdNumber", code: "SA_ID_CITIZEN_INVALID",
+        severity: "warning", rule: "Invalid Citizenship Digit",
+        message: `SA ID position 11 is "${citizenDigit}" — must be 0 (SA citizen) or 1 (permanent resident).`,
+        suggestion: "Verify the ID number. This may indicate a transcription error.",
+      });
+    }
+  }
+
+  // ── Rule 55: MEMBER_NUMBER_SHORT — Membership number too short ──
+  if (item.membershipNumber?.trim() && item.membershipNumber.trim().length < 4) {
+    issues.push({
+      lineNumber: ln, field: "membershipNumber", code: "MEMBER_NUMBER_SHORT",
+      severity: "warning", rule: "Membership Number Too Short",
+      message: `Membership number "${item.membershipNumber}" is unusually short (${item.membershipNumber.trim().length} chars). Most scheme membership numbers are 8-15 digits.`,
+      suggestion: "Verify the full membership number including any leading zeros.",
+    });
+  }
+
+  // ── Rule 56: DEPENDENT_CODE_FORMAT — Must be 2 digits 00-99 ──
+  if (item.dependentCode?.trim() && !/^\d{2}$/.test(item.dependentCode.trim())) {
+    issues.push({
+      lineNumber: ln, field: "dependentCode", code: "DEPENDENT_CODE_FORMAT",
+      severity: "error", rule: "Invalid Dependent Code Format",
+      message: `Dependent code "${item.dependentCode}" is not a valid 2-digit code. Must be 00 (main member) through 99.`,
+      suggestion: "Use 00 for the main member, 01 for spouse, 02+ for children.",
+    });
+  }
+
+  // ── Rule 57: ICD10_Z_CODE_PRIMARY — Z-code as primary in claims ──
+  if (item.primaryICD10 && /^Z/i.test(code) && !item.secondaryICD10?.length) {
+    // Z-codes alone are often rejected — they need supporting codes
+    const problematicZ = ["Z00", "Z01", "Z02", "Z76"];
+    const isProblematic = problematicZ.some(z => code.startsWith(z));
+    if (isProblematic) {
+      issues.push({
+        lineNumber: ln, field: "primaryICD10", code: "Z_CODE_STANDALONE",
+        severity: "warning", rule: "Z-Code Without Supporting Diagnosis",
+        message: `Z-code "${code}" used as sole diagnosis. Screening/examination Z-codes without supporting findings are frequently rejected by SA schemes.`,
+        suggestion: "Add a secondary diagnosis code for any findings, or use a more specific primary code if a condition was identified.",
+      });
+    }
+  }
+
+  // ── Rule 58: ICD10_R_CODE_WITH_PROCEDURE — Symptom code with definitive procedure ──
+  if (item.primaryICD10 && /^R/i.test(code) && item.tariffCode) {
+    const tariffNum = parseInt(item.tariffCode, 10);
+    const isDefinitiveProcedure = tariffNum >= 400 && tariffNum <= 799; // Surgical/procedural range
+    if (isDefinitiveProcedure) {
+      issues.push({
+        lineNumber: ln, field: "primaryICD10", code: "R_CODE_WITH_PROCEDURE",
+        severity: "warning", rule: "Symptom Code With Definitive Procedure",
+        message: `Symptom code "${code}" (R-chapter) used with surgical tariff "${item.tariffCode}". Surgery requires a definitive diagnosis, not symptoms.`,
+        suggestion: "Replace the R-code with the confirmed diagnosis that necessitated the surgery.",
+      });
+    }
+  }
+
+  // ── Rule 59: CHRONIC_NO_CDL_FLAG — Chronic condition without CDL routing ──
+  if (item.primaryICD10 && item.nappiCode) {
+    const cdlDiagnoses: Record<string, string> = {
+      "E10": "Type 1 Diabetes", "E11": "Type 2 Diabetes", "I10": "Hypertension",
+      "J45": "Asthma", "N18": "Chronic Renal Disease", "B20": "HIV/AIDS",
+      "G40": "Epilepsy", "I25": "Coronary Artery Disease", "G35": "Multiple Sclerosis",
+      "E05": "Hyperthyroidism", "E03": "Hypothyroidism", "M05": "Rheumatoid Arthritis",
+    };
+    const matchedCDL = Object.entries(cdlDiagnoses).find(([prefix]) => code.startsWith(prefix));
+    if (matchedCDL && !item.schemeOptionCode?.toLowerCase().includes("cdl") &&
+      !item.modifier?.includes("PMB") && !item.motivationText?.toLowerCase().includes("cdl")) {
+      issues.push({
+        lineNumber: ln, field: "primaryICD10", code: "CHRONIC_NO_CDL_FLAG",
+        severity: "info", rule: "Chronic Condition — CDL Routing Check",
+        message: `Diagnosis "${code}" (${matchedCDL[1]}) is a Chronic Disease List condition with medication (NAPPI ${item.nappiCode}). Ensure this is routed to the CDL benefit for unlimited chronic coverage.`,
+        suggestion: "Add CDL/PMB routing indicators to ensure the claim accesses the unlimited chronic benefit, not day-to-day savings.",
+      });
+    }
+  }
+
+  // ── Rule 60: NAPPI_LENGTH_INVALID — NAPPI code length check ──
+  if (item.nappiCode?.trim()) {
+    const nappi = item.nappiCode.trim();
+    if (!/^\d{7}$/.test(nappi) && !/^\d{10}$/.test(nappi)) {
+      issues.push({
+        lineNumber: ln, field: "nappiCode", code: "NAPPI_LENGTH_INVALID",
+        severity: "error", rule: "Invalid NAPPI Code Length",
+        message: `NAPPI code "${nappi}" is ${nappi.length} digits. Valid NAPPI codes are 7 digits (product) or 10 digits (product + 3-digit pack code).`,
+        suggestion: "Verify the NAPPI code. 7-digit codes identify the product; 10-digit codes include the pack size suffix.",
+      });
+    }
+  }
+
+  // ── Rule 61: BILATERAL_NO_MODIFIER — Bilateral procedure without modifier ──
+  if (item.primaryICD10 && item.tariffCode && item.quantity === 2) {
+    const bilateralCodes = ["H25", "H26", "H40", "H65", "H66", "M16", "M17", "G56", "M75"];
+    const isBilateralCondition = bilateralCodes.some(c => code.startsWith(c));
+    const hasBilateralMod = item.modifier?.includes("0002");
+    if (isBilateralCondition && !hasBilateralMod) {
+      issues.push({
+        lineNumber: ln, field: "modifier", code: "BILATERAL_NO_MODIFIER",
+        severity: "warning", rule: "Bilateral Procedure Without Modifier",
+        message: `Quantity 2 with bilateral condition "${code}" but no bilateral modifier (0002). Schemes may reject or reduce payment without the bilateral modifier.`,
+        suggestion: "Add modifier 0002 (bilateral) to claim the bilateral rate instead of submitting quantity 2.",
+      });
+    }
+  }
+
+  // ── Rule 62: REPEAT_NO_MODIFIER — Repeat procedure without modifier ──
+  if (item.modifier !== undefined && item.quantity && item.quantity > 1 && !item.modifier?.includes("0006")) {
+    const repeatTariffs = ["0190", "0191", "0303", "0304"]; // Consults, physio
+    if (item.tariffCode && repeatTariffs.includes(item.tariffCode)) {
+      issues.push({
+        lineNumber: ln, field: "modifier", code: "REPEAT_NO_MODIFIER",
+        severity: "info", rule: "Repeat Procedure Without Modifier",
+        message: `Multiple units of tariff "${item.tariffCode}" without repeat modifier (0006). Consider using the repeat modifier for subsequent visits.`,
+        suggestion: "Modifier 0006 indicates a repeat/follow-up procedure. It may attract a reduced rate but avoids rejection for multiple same-code claims.",
+      });
+    }
+  }
+
+  // ── Rule 63: EMERGENCY_MODIFIER_NO_ECC — Emergency modifier without ECC ──
+  if (item.modifier?.includes("0018") && item.primaryICD10) {
+    const hasECC = item.secondaryICD10?.some(s => /^[VWXY]/i.test(s));
+    if (/^[ST]/i.test(code) && !hasECC) {
+      issues.push({
+        lineNumber: ln, field: "modifier", code: "EMERGENCY_NO_ECC",
+        severity: "warning", rule: "Emergency Modifier Without External Cause",
+        message: `Emergency modifier (0018) with injury code "${code}" but no External Cause Code (V/W/X/Y). Emergency injury claims need both.`,
+        suggestion: "Add the appropriate ECC as a secondary diagnosis code.",
+      });
+    }
+  }
+
+  // ── Rule 64: TELEHEALTH_TARIFF_MISMATCH — Telehealth modifier with in-person procedures ──
+  if (item.modifier?.includes("0023") && item.tariffCode) {
+    const tariffNum = parseInt(item.tariffCode, 10);
+    // Procedures that cannot be done via telehealth
+    const inPersonOnly = tariffNum >= 400 || // Surgery
+      (tariffNum >= 3700 && tariffNum <= 3799) || // X-ray
+      (tariffNum >= 5100 && tariffNum <= 5699); // Imaging
+    if (inPersonOnly) {
+      issues.push({
+        lineNumber: ln, field: "modifier", code: "TELEHEALTH_PROCEDURE_MISMATCH",
+        severity: "error", rule: "Telehealth Modifier on In-Person Procedure",
+        message: `Telehealth modifier (0023) used with tariff "${item.tariffCode}" which requires physical presence (surgery/imaging/procedure).`,
+        suggestion: "Remove the telehealth modifier — this procedure cannot be performed via telehealth.",
+      });
+    }
+  }
+
+  // ── Rule 65: EXTENDED_CONSULT_NO_MOTIVATION — Extended consult modifier without explanation ──
+  if (item.modifier?.includes("0028") && !item.motivationText?.trim()) {
+    issues.push({
+      lineNumber: ln, field: "modifier", code: "EXTENDED_CONSULT_NO_MOTIVATION",
+      severity: "warning", rule: "Extended Consultation Without Motivation",
+      message: "Extended consultation modifier (0028) used without motivation text. Schemes typically require clinical justification for extended consults.",
+      suggestion: "Add motivation explaining why the consultation required extended time (e.g., complex history, multiple conditions, counselling).",
+    });
+  }
+
+  // ── Rule 66: DECISION_SURGERY_NO_PROCEDURE — Decision for surgery modifier without surgical tariff ──
+  if (item.modifier?.includes("0021") && item.tariffCode) {
+    const tariffNum = parseInt(item.tariffCode, 10);
+    if (tariffNum < 400 || tariffNum > 799) {
+      issues.push({
+        lineNumber: ln, field: "modifier", code: "DECISION_SURGERY_NO_PROCEDURE",
+        severity: "warning", rule: "Decision-for-Surgery Without Surgical Tariff",
+        message: `Modifier 0021 (decision for surgery) used with non-surgical tariff "${item.tariffCode}". This modifier should appear with a surgical consultation.`,
+        suggestion: "Verify this is a pre-surgical consultation. The next claim should include the actual surgical procedure tariff.",
+      });
+    }
+  }
+
+  // ── Rule 67: PLACE_OF_SERVICE_MISMATCH — POS vs admission flags ──
+  if (item.placeOfService && item.admissionDate?.trim()) {
+    const outpatientPOS = ["11", "22", "49"]; // Office, outpatient, independent clinic
+    if (outpatientPOS.includes(item.placeOfService)) {
+      issues.push({
+        lineNumber: ln, field: "placeOfService", code: "POS_ADMISSION_MISMATCH",
+        severity: "warning", rule: "Place of Service vs Admission Mismatch",
+        message: `Place of service "${item.placeOfService}" (outpatient) contradicts admission date (${item.admissionDate}). Admitted patients should have POS 21 (inpatient hospital).`,
+        suggestion: "Update the place of service code to 21 (inpatient hospital) if the patient was admitted.",
+      });
+    }
+  }
+
+  // ── Rule 68: AMOUNT_CENTS_CHECK — Amount has more than 2 decimal places ──
+  if (item.rawAmount?.trim()) {
+    const parts = item.rawAmount.trim().split(".");
+    if (parts.length === 2 && parts[1].length > 2) {
+      issues.push({
+        lineNumber: ln, field: "amount", code: "AMOUNT_PRECISION",
+        severity: "warning", rule: "Amount Precision Issue",
+        message: `Amount "${item.rawAmount}" has more than 2 decimal places. EDIFACT amounts must be in Rands and cents (max 2 decimals).`,
+        suggestion: "Round the amount to 2 decimal places (cents). Switches truncate extra decimals.",
+      });
+    }
+  }
+
+  // ── Rule 69: CHILD_ADULT_TARIFF — Paediatric tariff on adult patient ──
+  if (item.patientAge !== undefined && item.tariffCode) {
+    const tariffNum = parseInt(item.tariffCode, 10);
+    // Paediatric tariffs: 0196-0199 (paed consults)
+    const isPaedTariff = tariffNum >= 196 && tariffNum <= 199;
+    if (isPaedTariff && item.patientAge > 12) {
+      issues.push({
+        lineNumber: ln, field: "tariffCode", code: "PAED_TARIFF_ON_ADULT",
+        severity: "error", rule: "Paediatric Tariff on Adult",
+        message: `Paediatric tariff "${item.tariffCode}" used on a ${item.patientAge}-year-old patient. Paediatric tariffs are for patients ≤12 years.`,
+        suggestion: "Use the appropriate adult consultation tariff (e.g., 0190 for GP, 0141 for specialist).",
+      });
+    }
+    // Adult surgical tariff on young child
+    const isMajorSurgery = tariffNum >= 600 && tariffNum <= 799;
+    if (isMajorSurgery && item.patientAge <= 2) {
+      issues.push({
+        lineNumber: ln, field: "tariffCode", code: "MAJOR_SURGERY_ON_INFANT",
+        severity: "warning", rule: "Major Surgery Tariff on Infant",
+        message: `Major surgical tariff "${item.tariffCode}" on a ${item.patientAge}-year-old patient. Paediatric surgery requires specialist motivation and pre-auth.`,
+        suggestion: "Verify the tariff code and add neonatal modifier (0019) if applicable.",
+      });
+    }
+  }
+
+  // ── Rule 70: PROSTHESIS_NO_NAPPI — Prosthetic/implant procedure without NAPPI ──
+  if (item.tariffCode) {
+    const tariffNum = parseInt(item.tariffCode, 10);
+    const isProsthetic = (tariffNum >= 700 && tariffNum <= 749) || // Joint replacement range
+      (tariffNum >= 640 && tariffNum <= 660); // Orthopaedic implant range
+    if (isProsthetic && !item.nappiCode?.trim()) {
+      issues.push({
+        lineNumber: ln, field: "nappiCode", code: "PROSTHESIS_NO_NAPPI",
+        severity: "warning", rule: "Prosthetic Procedure Without NAPPI",
+        message: `Tariff "${item.tariffCode}" (prosthetic/implant procedure) submitted without a NAPPI code for the implant. Schemes require the implant NAPPI for pricing.`,
+        suggestion: "Add the NAPPI code for the prosthetic device. Without it, schemes may reject the device portion of the claim.",
+      });
+    }
+  }
+
+  // ── Rule 71: PATHOLOGY_INDIVIDUAL_TESTS — Individual path tests when panel exists ──
+  if (item.tariffCode) {
+    const panelComponents: Record<string, string[]> = {
+      "4501": ["4515", "4516", "4517", "4518", "4519", "4520", "4521", "4522"], // FBC components
+      "4548": ["4549", "4550", "4551", "4552", "4553"], // Liver panel
+      "4538": ["4539", "4540", "4541", "4542"], // Renal panel
+      "4555": ["4556", "4557", "4558", "4559", "4560"], // Lipogram panel
+    };
+    for (const [panelCode, components] of Object.entries(panelComponents)) {
+      if (components.includes(item.tariffCode)) {
+        issues.push({
+          lineNumber: ln, field: "tariffCode", code: "INDIVIDUAL_TEST_PANEL_EXISTS",
+          severity: "info", rule: "Individual Test — Panel Available",
+          message: `Tariff "${item.tariffCode}" is a component of panel ${panelCode}. Billing the panel is usually cheaper than individual components.`,
+          suggestion: `Consider billing panel code ${panelCode} instead of individual components. Schemes may auto-bundle.`,
+        });
+        break; // Only flag once per line
+      }
+    }
+  }
+
+  // ── Rule 72: ANAESTHESIA_NO_SURGICAL — Anaesthesia without surgical procedure ──
+  if (item.tariffCode && /^1\d{3}$/.test(item.tariffCode)) {
+    const tariffNum = parseInt(item.tariffCode, 10);
+    if (tariffNum >= 1000 && tariffNum <= 1999) {
+      // Anaesthesia tariff — check if motivation or context suggests surgery
+      if (!item.motivationText?.trim()) {
+        issues.push({
+          lineNumber: ln, field: "tariffCode", code: "ANAESTHESIA_NO_CONTEXT",
+          severity: "info", rule: "Anaesthesia Without Surgical Context",
+          message: `Anaesthesia tariff "${item.tariffCode}" without motivation text linking to a surgical procedure. Anaesthesia claims should reference the surgery.`,
+          suggestion: "Add motivation referencing the surgical procedure and surgeon. Schemes cross-reference anaesthesia with surgical claims.",
+        });
+      }
+    }
+  }
+
+  // ── Rule 73: CLAIM_AMOUNT_MICRO — Suspiciously small amount ──
+  if (item.amount !== undefined && item.amount > 0 && item.amount < 10 && item.tariffCode) {
+    issues.push({
+      lineNumber: ln, field: "amount", code: "MICRO_AMOUNT",
+      severity: "warning", rule: "Suspiciously Small Amount",
+      message: `Claim amount R${item.amount.toFixed(2)} is unusually small for tariff "${item.tariffCode}". This may indicate a data entry error or incorrect decimal placement.`,
+      suggestion: "Verify the amount. R9 or less is below the minimum billable for most SA tariffs. Check if the amount should be R${(item.amount * 100).toFixed(2)} (cents vs rands error).",
+    });
+  }
+
+  // ── Rule 74: MOTIVATION_TOO_LONG — Motivation exceeds switch limit ──
+  if (item.motivationText && item.motivationText.length > 500) {
+    issues.push({
+      lineNumber: ln, field: "motivationText", code: "MOTIVATION_TOO_LONG",
+      severity: "warning", rule: "Motivation Text Exceeds Limit",
+      message: `Motivation text is ${item.motivationText.length} characters. Some switches truncate at 500 characters.`,
+      suggestion: "Shorten the motivation to the essential clinical justification. Key findings and diagnosis rationale only.",
+    });
+  }
+
+  // ── Rule 75: SPECIAL_CHARS_IN_FIELDS — Non-EDIFACT characters ──
+  if (item.patientName?.trim()) {
+    // UNOA character set: A-Z, 0-9, space, and a few punctuation marks
+    const invalidChars = item.patientName.match(/[^A-Za-z0-9 ',.\-\/]/g);
+    if (invalidChars && invalidChars.length > 0) {
+      const uniqueChars = [...new Set(invalidChars)].join("");
+      issues.push({
+        lineNumber: ln, field: "patientName", code: "INVALID_EDIFACT_CHARS",
+        severity: "warning", rule: "Invalid EDIFACT Characters",
+        message: `Patient name contains characters "${uniqueChars}" not in the UNOA character set. These may be stripped or cause rejection at the switch.`,
+        suggestion: "Remove special characters. EDIFACT supports: letters, numbers, spaces, hyphens, apostrophes, commas, and periods.",
+      });
+    }
+  }
+
+  // ── Rule 76b: DOB_FUTURE — Date of birth in the future ──
+  if (item.patientDob?.trim()) {
+    const dob = new Date(item.patientDob);
+    if (!isNaN(dob.getTime()) && dob > new Date()) {
+      issues.push({
+        lineNumber: ln, field: "patientDob", code: "DOB_FUTURE",
+        severity: "error", rule: "Future Date of Birth",
+        message: `Date of birth ${item.patientDob} is in the future. This is impossible and will be rejected.`,
+        suggestion: "Correct the date of birth. Check for year transposition errors (e.g., 2096 vs 1996).",
+      });
+    }
+  }
+
+  // ── Rule 77b: DOB_IMPLAUSIBLE — DOB > 120 years ago ──
+  if (item.patientDob?.trim()) {
+    const dob = new Date(item.patientDob);
+    const age120 = new Date();
+    age120.setFullYear(age120.getFullYear() - 120);
+    if (!isNaN(dob.getTime()) && dob < age120) {
+      issues.push({
+        lineNumber: ln, field: "patientDob", code: "DOB_IMPLAUSIBLE",
+        severity: "error", rule: "Implausible Date of Birth",
+        message: `Date of birth ${item.patientDob} implies age > 120 years. This is likely a data entry error.`,
+        suggestion: "Verify the date of birth. Common errors: century wrong (1924 vs 2024), month/day swapped.",
+      });
+    }
+  }
+
+  // ── Rule 78b: OBSTETRIC_ON_MALE — Obstetric diagnosis on male patient ──
+  if (item.primaryICD10 && item.patientGender === "M") {
+    const obstetricPrefixes = ["O0", "O1", "O2", "O3", "O4", "O5", "O6", "O7", "O8", "O9"];
+    if (obstetricPrefixes.some(p => code.startsWith(p))) {
+      issues.push({
+        lineNumber: ln, field: "primaryICD10", code: "OBSTETRIC_ON_MALE",
+        severity: "error", rule: "Obstetric Code on Male Patient",
+        message: `Obstetric ICD-10 code "${code}" (O-chapter: pregnancy/childbirth) assigned to a male patient.`,
+        suggestion: "Verify the patient gender and diagnosis code. O-chapter codes are exclusively for female patients.",
+      });
+    }
+  }
+
+  // ── Rule 79b: NEONATAL_ON_ADULT — Neonatal diagnosis on adult ──
+  if (item.primaryICD10 && item.patientAge !== undefined && item.patientAge > 1) {
+    const neonatalPrefixes = ["P0", "P1", "P2", "P3", "P4", "P5", "P7", "P8", "P9"];
+    if (neonatalPrefixes.some(p => code.startsWith(p))) {
+      issues.push({
+        lineNumber: ln, field: "primaryICD10", code: "NEONATAL_ON_ADULT",
+        severity: "error", rule: "Neonatal Code on Non-Neonate",
+        message: `Neonatal ICD-10 code "${code}" (P-chapter: perinatal conditions) assigned to a ${item.patientAge}-year-old patient.`,
+        suggestion: "P-chapter codes are for conditions originating in the perinatal period (birth to 28 days). Use the appropriate adult diagnosis code.",
+      });
+    }
+  }
+
+  // ── Rule 80b: CONGENITAL_IN_ELDERLY — Congenital diagnosis first coded in elderly ──
+  if (item.primaryICD10 && item.patientAge !== undefined && item.patientAge > 65) {
+    if (code.startsWith("Q")) {
+      issues.push({
+        lineNumber: ln, field: "primaryICD10", code: "CONGENITAL_IN_ELDERLY",
+        severity: "warning", rule: "Congenital Code on Elderly Patient",
+        message: `Congenital malformation code "${code}" (Q-chapter) first coded on a ${item.patientAge}-year-old patient. While possible, this is unusual.`,
+        suggestion: "Verify this is not a coding error. Congenital conditions are typically diagnosed earlier in life. Consider if an acquired condition code is more appropriate.",
+      });
+    }
+  }
+
+  // ── Rule 81b: INJURY_NO_PLACE — Injury code without place of service ──
+  if (item.primaryICD10 && /^[ST]/i.test(code) && !item.placeOfService?.trim()) {
+    issues.push({
+      lineNumber: ln, field: "placeOfService", code: "INJURY_NO_POS",
+      severity: "info", rule: "Injury Without Place of Service",
+      message: `Injury code "${code}" without place of service specified. Emergency department (POS 23) vs office (POS 11) affects reimbursement and modifier applicability.`,
+      suggestion: "Add the place of service code. ED claims may qualify for emergency modifiers.",
+    });
+  }
+
+  // ── Rule 82b: MISSING_PATIENT_ID — No SA ID or membership number ──
+  if (!item.patientIdNumber?.trim() && !item.membershipNumber?.trim()) {
+    issues.push({
+      lineNumber: ln, field: "patientIdNumber", code: "NO_PATIENT_IDENTIFIER",
+      severity: "error", rule: "No Patient Identifier",
+      message: "Neither SA ID number nor scheme membership number provided. The switch cannot identify the patient.",
+      suggestion: "Provide at least one identifier: SA ID number (13 digits) or scheme membership number.",
+    });
+  }
+
+  // ── Rule 83b: GENDER_NOT_SPECIFIED — Gender unknown/unspecified ──
+  if (item.patientGender === "U" || (!item.patientGender && item.primaryICD10)) {
+    issues.push({
+      lineNumber: ln, field: "patientGender", code: "GENDER_UNSPECIFIED",
+      severity: "warning", rule: "Gender Not Specified",
+      message: "Patient gender is unknown or unspecified. Gender-specific validation (ICD-10 restrictions, age-based tariffs) cannot be performed.",
+      suggestion: "Specify the patient's gender (M/F) for accurate validation. Gender-restricted codes will not be checked without this.",
+    });
+  }
+
+  // ── Rule 84b: COSMETIC_PROCEDURE — Known cosmetic tariffs ──
+  if (item.tariffCode) {
+    const cosmeticTariffs = ["0850", "0851", "0852", "0853", "0860", "0861", "0870", "0871"];
+    if (cosmeticTariffs.includes(item.tariffCode)) {
+      issues.push({
+        lineNumber: ln, field: "tariffCode", code: "COSMETIC_PROCEDURE",
+        severity: "error", rule: "Cosmetic Procedure — Not Covered",
+        message: `Tariff "${item.tariffCode}" is a cosmetic procedure. Cosmetic procedures are excluded by all SA medical schemes unless medically motivated (e.g., post-trauma reconstruction).`,
+        suggestion: "If this is medically necessary (not cosmetic), add clinical motivation and use the appropriate reconstructive tariff code.",
+      });
+    }
+  }
+
+  // ── Rule 85b: SERVICE_DATE_DOB_MISMATCH — Service date before DOB ──
+  if (item.dateOfService && item.patientDob?.trim()) {
+    const svc = new Date(item.dateOfService);
+    const dob = new Date(item.patientDob);
+    if (!isNaN(svc.getTime()) && !isNaN(dob.getTime()) && svc < dob) {
+      issues.push({
+        lineNumber: ln, field: "dateOfService", code: "SERVICE_BEFORE_DOB",
+        severity: "error", rule: "Service Date Before Date of Birth",
+        message: `Service date (${item.dateOfService}) is before the patient's date of birth (${item.patientDob}). This is impossible.`,
+        suggestion: "Correct the service date or date of birth. This will cause auto-rejection at the switch.",
+      });
+    }
+  }
+
+  // ── Rule 86b: CORRECTION_NO_ORIGINAL — Adjustment/reversal without original reference ──
+  // Note: checks at line level via motivation text since batch metadata may not be per-line
+  if (item.motivationText?.toLowerCase().includes("adjustment") || item.motivationText?.toLowerCase().includes("reversal")) {
+    if (!item.motivationText.toLowerCase().includes("ref") && !item.motivationText.toLowerCase().includes("original")) {
+      issues.push({
+        lineNumber: ln, field: "motivationText", code: "CORRECTION_NO_REFERENCE",
+        severity: "warning", rule: "Correction Without Original Reference",
+        message: "Motivation mentions adjustment/reversal but no original claim reference. Corrections require the original claim number.",
+        suggestion: "Include the original claim reference number in the motivation (e.g., 'Adjustment to original claim ref: CLM-2026-12345').",
+      });
+    }
+  }
+
+  // ── Rule 87b: MENTAL_HEALTH_SESSION_LIMIT — Psychology session awareness ──
+  if (item.tariffCode && item.primaryICD10) {
+    const tariffNum = parseInt(item.tariffCode, 10);
+    const isPsychTariff = tariffNum >= 860 && tariffNum <= 899; // Psychology tariff range
+    const isMentalHealth = /^F/i.test(code); // F-chapter: Mental and behavioural disorders
+    if (isPsychTariff || isMentalHealth) {
+      issues.push({
+        lineNumber: ln, field: "tariffCode", code: "MENTAL_HEALTH_SESSION",
+        severity: "info", rule: "Mental Health Session — Benefit Limit Awareness",
+        message: `Mental health service (${isMentalHealth ? "diagnosis " + code : "tariff " + item.tariffCode}). Most SA schemes limit psychology to 15-21 sessions/year. Track session count.`,
+        suggestion: "Monitor cumulative session count against the scheme's annual limit. Exceeded limits require motivation and pre-auth for continued sessions.",
+      });
+    }
+  }
+
+  // ── Rule 88b: CHRONIC_ACUTE_ICD_CONFLICT — Chronic code with acute modifier ──
+  if (item.primaryICD10 && item.modifier?.includes("0018")) { // Emergency modifier
+    const chronicPrefixes = ["E10", "E11", "I10", "J45", "N18", "G40", "I25", "G35"];
+    if (chronicPrefixes.some(p => code.startsWith(p))) {
+      issues.push({
+        lineNumber: ln, field: "modifier", code: "CHRONIC_WITH_EMERGENCY",
+        severity: "warning", rule: "Chronic Diagnosis With Emergency Modifier",
+        message: `Chronic condition "${code}" billed with emergency modifier (0018). Chronic conditions rarely qualify as emergencies unless it's an acute exacerbation.`,
+        suggestion: "If this is an acute exacerbation (e.g., asthma attack, diabetic crisis), add motivation. Otherwise, remove the emergency modifier.",
+      });
+    }
+  }
+
+  // ── Rule 89b: DENTAL_AGE_PROCEDURE — Age-inappropriate dental procedures ──
+  if (item.tariffCode && item.patientAge !== undefined) {
+    const tariffNum = parseInt(item.tariffCode, 10);
+    // Denture tariffs on children
+    if (tariffNum >= 8700 && tariffNum <= 8799 && item.patientAge < 10) {
+      issues.push({
+        lineNumber: ln, field: "tariffCode", code: "DENTAL_AGE_MISMATCH",
+        severity: "error", rule: "Age-Inappropriate Dental Procedure",
+        message: `Denture tariff "${item.tariffCode}" on a ${item.patientAge}-year-old child. Dentures are for adults or elderly patients.`,
+        suggestion: "Verify the tariff code and patient age. If the child has congenital missing teeth, add motivation.",
+      });
+    }
+    // Wisdom teeth extraction on children under 12
+    if (tariffNum === 8317 && item.patientAge < 12) {
+      issues.push({
+        lineNumber: ln, field: "tariffCode", code: "WISDOM_TOOTH_CHILD",
+        severity: "warning", rule: "Wisdom Tooth Extraction on Child",
+        message: `Wisdom tooth extraction (${item.tariffCode}) on a ${item.patientAge}-year-old. Wisdom teeth typically emerge at 17-25 years.`,
+        suggestion: "Verify the procedure and patient age. If clinically necessary, add motivation.",
+      });
+    }
+  }
+
+  // ── Rule 90: MULTIPLE_ANAESTHETICS_SAME_DAY — Multiple anaesthesia claims ──
+  // (Checked at line level as a flag; cross-line does the actual duplicate check)
+  if (item.tariffCode) {
+    const tariffNum = parseInt(item.tariffCode, 10);
+    if (tariffNum >= 1000 && tariffNum <= 1999) {
+      // Flag anaesthesia claims for cross-line verification
+      issues.push({
+        lineNumber: ln, field: "tariffCode", code: "ANAESTHESIA_FLAGGED",
+        severity: "info", rule: "Anaesthesia Claim — Cross-Reference Required",
+        message: `Anaesthesia tariff "${item.tariffCode}" will be cross-referenced with surgical claims in this batch.`,
+      });
+    }
+  }
+
   return issues;
 }
 
@@ -2292,6 +3169,304 @@ function validateCrossLine(lines: ClaimLineItem[]): ValidationIssue[] {
     }
   }
 
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // NEW CROSS-LINE VALIDATION RULES (Rules 76–100)
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  // ── Rule 76: CHRONIC_ACUTE_SAME_DAY — Chronic and acute claims for same patient ──
+  {
+    const byPatient = new Map<string, ClaimLineItem[]>();
+    for (const line of lines) {
+      const key = (line.patientName || "").toLowerCase() + "|" + (line.dateOfService || "");
+      if (!key || key === "|") continue;
+      const existing = byPatient.get(key) || [];
+      existing.push(line);
+      byPatient.set(key, existing);
+    }
+    for (const [, patientLines] of byPatient) {
+      if (patientLines.length < 2) continue;
+      const cdlPrefixes = ["E10", "E11", "I10", "J45", "N18", "B20", "G40", "I25"];
+      const hasChronic = patientLines.some(l => cdlPrefixes.some(p => l.primaryICD10.toUpperCase().startsWith(p)));
+      const hasAcute = patientLines.some(l => /^[JRST]/i.test(l.primaryICD10) && !cdlPrefixes.some(p => l.primaryICD10.toUpperCase().startsWith(p)));
+      if (hasChronic && hasAcute) {
+        issues.push({
+          lineNumber: patientLines[0].lineNumber, field: "primaryICD10", code: "CHRONIC_ACUTE_SAME_DAY",
+          severity: "info", rule: "Chronic + Acute Claims Same Day",
+          message: "Patient has both chronic (CDL) and acute claims on the same day. Ensure benefit routing separates CDL claims from day-to-day claims.",
+          suggestion: "Chronic medication should be routed to the CDL/PMB benefit; acute services to day-to-day or savings.",
+        });
+      }
+    }
+  }
+
+  // ── Rule 77: MULTI_SPECIALIST_SAME_DAY — Multiple specialist types same patient same day ──
+  {
+    const byPatientDate = new Map<string, { prefixes: Set<string>; lineNumbers: number[] }>();
+    for (const line of lines) {
+      if (!line.practiceNumber || !line.dateOfService) continue;
+      const key = (line.patientName || "").toLowerCase() + "|" + line.dateOfService;
+      const entry = byPatientDate.get(key) || { prefixes: new Set(), lineNumbers: [] };
+      entry.prefixes.add(line.practiceNumber.substring(0, 3));
+      entry.lineNumbers.push(line.lineNumber);
+      byPatientDate.set(key, entry);
+    }
+    for (const [, entry] of byPatientDate) {
+      // More than 3 different practice types on same day is suspicious
+      if (entry.prefixes.size > 3) {
+        issues.push({
+          lineNumber: entry.lineNumbers[0], field: "practiceNumber", code: "MULTI_SPECIALIST_SAME_DAY",
+          severity: "warning", rule: "Multiple Specialist Types Same Day",
+          message: `Patient saw ${entry.prefixes.size} different provider types on the same day. This volume of multi-discipline visits is unusual.`,
+          suggestion: "Verify that all services were necessary on the same day. Schemes flag multi-discipline day visits for review.",
+        });
+      }
+    }
+  }
+
+  // ── Rule 78: ADMISSION_OUTPATIENT_MIX — Same patient has both inpatient and outpatient claims ──
+  {
+    const byPatient = new Map<string, { hasInpatient: boolean; hasOutpatient: boolean; lineNumbers: number[] }>();
+    for (const line of lines) {
+      const key = (line.patientName || "").toLowerCase() + "|" + (line.dateOfService || "");
+      if (!key || key === "|") continue;
+      const entry = byPatient.get(key) || { hasInpatient: false, hasOutpatient: false, lineNumbers: [] };
+      if (line.admissionDate?.trim()) entry.hasInpatient = true;
+      if (line.isOutpatient) entry.hasOutpatient = true;
+      entry.lineNumbers.push(line.lineNumber);
+      byPatient.set(key, entry);
+    }
+    for (const [, entry] of byPatient) {
+      if (entry.hasInpatient && entry.hasOutpatient) {
+        issues.push({
+          lineNumber: entry.lineNumbers[0], field: "admissionDate", code: "ADMISSION_OUTPATIENT_MIX",
+          severity: "error", rule: "Inpatient/Outpatient Conflict",
+          message: "Same patient has both inpatient (admission date) and outpatient claims on the same date. A patient cannot be both admitted and outpatient simultaneously.",
+          suggestion: "Separate inpatient and outpatient claims. Services during admission should be billed under the hospital claim.",
+        });
+      }
+    }
+  }
+
+  // ── Rule 79: BATCH_SINGLE_PATIENT — Entire batch is one patient ──
+  if (lines.length >= 10) {
+    const patients = new Set(lines.map(l => (l.patientName || "").toLowerCase()).filter(n => n));
+    if (patients.size === 1) {
+      issues.push({
+        lineNumber: lines[0].lineNumber, field: "patientName", code: "BATCH_SINGLE_PATIENT",
+        severity: "info", rule: "Single-Patient Batch",
+        message: `All ${lines.length} claims are for the same patient. This may indicate a data export filter issue.`,
+        suggestion: "Verify this is intentional. Batches are typically multi-patient. Single-patient batches with many lines may indicate splitting or unbundling.",
+      });
+    }
+  }
+
+  // ── Rule 80: ICD10_DIVERSITY — Same ICD-10 on every line ──
+  if (lines.length >= 5) {
+    const icdCounts = new Map<string, number>();
+    for (const line of lines) {
+      icdCounts.set(line.primaryICD10, (icdCounts.get(line.primaryICD10) || 0) + 1);
+    }
+    for (const [icdCode, count] of icdCounts) {
+      const pct = Math.round((count / lines.length) * 100);
+      if (pct >= 90 && count >= 5 && icdCode) {
+        issues.push({
+          lineNumber: lines[0].lineNumber, field: "primaryICD10", code: "LOW_ICD10_DIVERSITY",
+          severity: "warning", rule: "Low ICD-10 Diversity",
+          message: `${pct}% of claims use the same ICD-10 code "${icdCode}". This pattern suggests template billing without individual clinical assessment.`,
+          suggestion: "Review whether each patient's diagnosis has been individually assessed. Schemes audit low-diversity billing patterns.",
+        });
+        break; // Only flag once
+      }
+    }
+  }
+
+  // ── Rule 81: TARIFF_DIVERSITY — Same tariff on every line ──
+  if (lines.length >= 5) {
+    const tariffCounts = new Map<string, number>();
+    for (const line of lines) {
+      if (line.tariffCode) tariffCounts.set(line.tariffCode, (tariffCounts.get(line.tariffCode) || 0) + 1);
+    }
+    for (const [tariff, count] of tariffCounts) {
+      const pct = Math.round((count / lines.length) * 100);
+      if (pct >= 90 && count >= 5) {
+        issues.push({
+          lineNumber: lines[0].lineNumber, field: "tariffCode", code: "LOW_TARIFF_DIVERSITY",
+          severity: "info", rule: "Low Tariff Diversity",
+          message: `${pct}% of claims bill tariff "${tariff}". High tariff concentration may indicate limited service scope or template billing.`,
+          suggestion: "Verify service diversity. Practices billing a single tariff may be flagged for practice profiling by schemes.",
+        });
+        break;
+      }
+    }
+  }
+
+  // ── Rule 82: MODIFIER_DISTRIBUTION — Excessive modifier usage across batch ──
+  if (lines.length >= 10) {
+    const modifierCount = lines.filter(l => l.modifier?.trim()).length;
+    const modPct = Math.round((modifierCount / lines.length) * 100);
+    if (modPct > 70) {
+      issues.push({
+        lineNumber: lines[0].lineNumber, field: "modifier", code: "EXCESSIVE_MODIFIER_USAGE",
+        severity: "warning", rule: "Excessive Modifier Usage",
+        message: `${modPct}% of claims have modifiers (${modifierCount}/${lines.length}). SA average is ~15-25%. Excessive modifier usage is a fraud indicator.`,
+        suggestion: "Review modifier usage. High rates of after-hours (0011/0012) or bilateral (0002) modifiers are closely audited.",
+      });
+    }
+  }
+
+  // ── Rule 83: AMOUNT_UNIFORMITY — All amounts identical (suspicious) ──
+  if (lines.length >= 5) {
+    const amounts = lines.filter(l => l.amount && l.amount > 0).map(l => l.amount!);
+    if (amounts.length >= 5) {
+      const uniqueAmounts = new Set(amounts);
+      if (uniqueAmounts.size === 1) {
+        issues.push({
+          lineNumber: lines[0].lineNumber, field: "amount", code: "AMOUNT_UNIFORMITY",
+          severity: "warning", rule: "Uniform Claim Amounts",
+          message: `All ${amounts.length} claims have the identical amount of R${amounts[0].toFixed(2)}. This is unusual for varied patient services.`,
+          suggestion: "Verify individual pricing. Uniform amounts across different patients/diagnoses may indicate flat-rate billing without clinical assessment.",
+        });
+      }
+    }
+  }
+
+  // ── Rule 84: DATE_CLUSTERING — All claims on same date ──
+  if (lines.length >= 10) {
+    const dates = new Set(lines.map(l => l.dateOfService || "").filter(d => d));
+    if (dates.size === 1) {
+      const patients = new Set(lines.map(l => (l.patientName || "").toLowerCase()).filter(n => n));
+      if (patients.size > 5) {
+        issues.push({
+          lineNumber: lines[0].lineNumber, field: "dateOfService", code: "DATE_CLUSTERING",
+          severity: "info", rule: "All Claims Same Date",
+          message: `All ${lines.length} claims (${patients.size} patients) are for the same date. Verify this matches the actual service dates.`,
+          suggestion: "If this is a batch of claims from one day, this is normal for busy practices. If not, check for date auto-fill errors.",
+        });
+      }
+    }
+  }
+
+  // ── Rule 85: ORPHAN_SECONDARY_ICD10 — Secondary codes on one line but not others for same patient ──
+  {
+    const byPatient = new Map<string, { withSecondary: number; without: number; total: number; firstLine: number }>();
+    for (const line of lines) {
+      const key = (line.patientName || "").toLowerCase();
+      if (!key) continue;
+      const entry = byPatient.get(key) || { withSecondary: 0, without: 0, total: 0, firstLine: line.lineNumber };
+      entry.total++;
+      if (line.secondaryICD10?.length) entry.withSecondary++;
+      else entry.without++;
+      byPatient.set(key, entry);
+    }
+    for (const [, entry] of byPatient) {
+      if (entry.total >= 3 && entry.withSecondary > 0 && entry.without > 0 && entry.withSecondary < entry.total * 0.3) {
+        issues.push({
+          lineNumber: entry.firstLine, field: "secondaryICD10", code: "INCONSISTENT_SECONDARY_ICD10",
+          severity: "info", rule: "Inconsistent Secondary ICD-10 Usage",
+          message: `Patient has secondary ICD-10 codes on some claims but not others. Consistent coding improves adjudication accuracy.`,
+          suggestion: "Consider adding relevant secondary codes to all claims for this patient where clinically appropriate.",
+        });
+      }
+    }
+  }
+
+  // ── Rule 86: SCHEME_MIX_IN_BATCH — Multiple schemes in same batch ──
+  if (lines.length >= 2) {
+    const schemes = new Set(lines.map(l => (l.scheme || "").toLowerCase()).filter(s => s));
+    if (schemes.size > 1) {
+      issues.push({
+        lineNumber: lines[0].lineNumber, field: "scheme", code: "MULTI_SCHEME_BATCH",
+        severity: "info", rule: "Multiple Schemes in Batch",
+        message: `Batch contains claims for ${schemes.size} different schemes: ${[...schemes].join(", ")}. Each scheme routes to a different switching house.`,
+        suggestion: "Ensure your switch routing handles multi-scheme batches. Some switches require separate batches per scheme.",
+      });
+    }
+  }
+
+  // ── Rule 87: SEQUENTIAL_LINE_GAP — Gaps in claim line numbering ──
+  if (lines.length >= 3) {
+    const sortedLines = [...lines].sort((a, b) => a.lineNumber - b.lineNumber);
+    const gaps: number[] = [];
+    for (let i = 1; i < sortedLines.length; i++) {
+      if (sortedLines[i].lineNumber - sortedLines[i - 1].lineNumber > 1) {
+        gaps.push(sortedLines[i - 1].lineNumber);
+      }
+    }
+    if (gaps.length > 0 && gaps.length <= 5) {
+      issues.push({
+        lineNumber: gaps[0], field: "lineNumber", code: "LINE_NUMBER_GAPS",
+        severity: "info", rule: "Gaps in Line Numbering",
+        message: `${gaps.length} gap(s) detected in line numbering. Deleted lines may indicate removed claims.`,
+        suggestion: "This is informational — gaps are normal when claims are filtered. Verify no valid claims were accidentally removed.",
+      });
+    }
+  }
+
+  // ── Rule 88: PROVIDER_SCHEME_MISMATCH — Provider not typically associated with scheme ──
+  // Discovery-only practices (certain private hospitals)
+  // This is a lightweight check — production would use a full provider-scheme registry
+  if (lines.length >= 5) {
+    const schemeProviderPairs = new Map<string, Set<string>>();
+    for (const line of lines) {
+      if (!line.scheme || !line.practiceNumber) continue;
+      const key = line.scheme.toLowerCase();
+      const providers = schemeProviderPairs.get(key) || new Set();
+      providers.add(line.practiceNumber);
+      schemeProviderPairs.set(key, providers);
+    }
+    // Flag if a single provider bills to 5+ different schemes — may indicate data quality issue
+    const providerSchemes = new Map<string, Set<string>>();
+    for (const line of lines) {
+      if (!line.scheme || !line.practiceNumber) continue;
+      const schemes = providerSchemes.get(line.practiceNumber) || new Set();
+      schemes.add(line.scheme.toLowerCase());
+      providerSchemes.set(line.practiceNumber, schemes);
+    }
+    for (const [provider, schemes] of providerSchemes) {
+      if (schemes.size >= 5) {
+        issues.push({
+          lineNumber: lines.find(l => l.practiceNumber === provider)?.lineNumber || lines[0].lineNumber,
+          field: "practiceNumber", code: "PROVIDER_MANY_SCHEMES",
+          severity: "info", rule: "Provider Bills Multiple Schemes",
+          message: `Practice ${provider} bills ${schemes.size} different schemes in this batch. This is valid for multi-scheme practices but worth verifying.`,
+          suggestion: "Ensure the practice is contracted with all listed schemes. Uncontracted claims will be rejected.",
+        });
+      }
+    }
+  }
+
+  // ── Rule 89: SURGICAL_SAME_DAY_BILATERAL — Two identical surgical claims = possible bilateral ──
+  {
+    const surgicalByPatientDate = new Map<string, { tariff: string; count: number; lineNumbers: number[] }[]>();
+    for (const line of lines) {
+      if (!line.tariffCode || !line.dateOfService) continue;
+      const tariffNum = parseInt(line.tariffCode, 10);
+      if (tariffNum < 400 || tariffNum > 799) continue; // Not surgical
+      const key = (line.patientName || "").toLowerCase() + "|" + line.dateOfService;
+      const entries = surgicalByPatientDate.get(key) || [];
+      const existing = entries.find(e => e.tariff === line.tariffCode);
+      if (existing) {
+        existing.count++;
+        existing.lineNumbers.push(line.lineNumber);
+      } else {
+        entries.push({ tariff: line.tariffCode, count: 1, lineNumbers: [line.lineNumber] });
+      }
+      surgicalByPatientDate.set(key, entries);
+    }
+    for (const [, entries] of surgicalByPatientDate) {
+      for (const entry of entries) {
+        if (entry.count === 2 && !lines.find(l => l.lineNumber === entry.lineNumbers[0])?.modifier?.includes("0002")) {
+          issues.push({
+            lineNumber: entry.lineNumbers[0], field: "tariffCode", code: "SURGICAL_BILATERAL_CANDIDATE",
+            severity: "info", rule: "Possible Bilateral Surgical Procedure",
+            message: `Tariff "${entry.tariff}" appears twice for the same patient on the same day. If this is a bilateral procedure, use modifier 0002 instead of two separate claims.`,
+            suggestion: "Bill once with bilateral modifier (0002) for the bilateral rate. Two separate claims may be rejected as duplicates.",
+          });
+        }
+      }
+    }
+  }
+
   // ── FRD-016: Claim amount outlier — >3 standard deviations from peer mean ──
   if (lines.length >= 10) {
     // Group amounts by tariff code to compare like-for-like
@@ -2323,6 +3498,167 @@ function validateCrossLine(lines: ClaimLineItem[]): ValidationIssue[] {
             severity: "error", rule: "Claim Amount Outlier — >3 Standard Deviations",
             message: `Amount ${amountDisplay} for tariff "${tariff}" is ${zScore.toFixed(1)} standard deviations from the batch mean of ${meanDisplay}. This is a statistical outlier.`,
             suggestion: "Verify the amount is correct. Extreme outliers may indicate data entry errors, upcoding, or inflated billing. Cross-reference with the scheme tariff schedule.",
+          });
+        }
+      }
+    }
+  }
+
+  // ── Rule 90b: ANAESTHESIA_NO_SURGICAL — Anaesthesia without matching surgical claim ──
+  {
+    const anaesthesiaLines = lines.filter(l => l.tariffCode && parseInt(l.tariffCode, 10) >= 1000 && parseInt(l.tariffCode, 10) <= 1999);
+    const surgicalLines = lines.filter(l => l.tariffCode && parseInt(l.tariffCode, 10) >= 400 && parseInt(l.tariffCode, 10) <= 799);
+    for (const anaLine of anaesthesiaLines) {
+      const matchingSurgery = surgicalLines.find(s =>
+        (s.patientName || "").toLowerCase() === (anaLine.patientName || "").toLowerCase() &&
+        s.dateOfService === anaLine.dateOfService
+      );
+      if (!matchingSurgery) {
+        issues.push({
+          lineNumber: anaLine.lineNumber, field: "tariffCode", code: "ANAESTHESIA_NO_SURGERY",
+          severity: "warning", rule: "Anaesthesia Without Matching Surgery",
+          message: `Anaesthesia tariff "${anaLine.tariffCode}" without a matching surgical claim for the same patient and date in this batch.`,
+          suggestion: "Ensure the surgical procedure claim is included in this batch. Schemes cross-reference anaesthesia with surgical claims.",
+        });
+      }
+    }
+  }
+
+  // ── Rule 91: PATHOLOGY_DUPLICATE_PANELS — Same pathology panel billed twice ──
+  {
+    const panelsByPatientDate = new Map<string, { tariffs: string[]; lineNumbers: number[] }>();
+    for (const line of lines) {
+      if (!line.tariffCode || !line.dateOfService) continue;
+      const tariffNum = parseInt(line.tariffCode, 10);
+      if (tariffNum < 4400 || tariffNum > 4999) continue; // Not pathology
+      const key = (line.patientName || "").toLowerCase() + "|" + line.dateOfService;
+      const entry = panelsByPatientDate.get(key) || { tariffs: [], lineNumbers: [] };
+      entry.tariffs.push(line.tariffCode);
+      entry.lineNumbers.push(line.lineNumber);
+      panelsByPatientDate.set(key, entry);
+    }
+    for (const [, entry] of panelsByPatientDate) {
+      const tariffSet = new Set(entry.tariffs);
+      if (tariffSet.size < entry.tariffs.length) {
+        // Find duplicated tariffs
+        const seen = new Set<string>();
+        for (let i = 0; i < entry.tariffs.length; i++) {
+          if (seen.has(entry.tariffs[i])) {
+            issues.push({
+              lineNumber: entry.lineNumbers[i], field: "tariffCode", code: "PATHOLOGY_DUPLICATE_PANEL",
+              severity: "error", rule: "Duplicate Pathology Panel",
+              message: `Pathology tariff "${entry.tariffs[i]}" billed twice for the same patient on the same date. This is a duplicate that will be rejected.`,
+              suggestion: "Remove the duplicate pathology claim line.",
+            });
+          }
+          seen.add(entry.tariffs[i]);
+        }
+      }
+    }
+  }
+
+  // ── Rule 92: CONSULT_PROCEDURE_SAME_PROVIDER — Both consult and procedure by same provider ──
+  {
+    const byProviderPatientDate = new Map<string, { hasConsult: boolean; hasProcedure: boolean; lineNumbers: number[] }>();
+    for (const line of lines) {
+      if (!line.practiceNumber || !line.dateOfService) continue;
+      const key = line.practiceNumber + "|" + (line.patientName || "").toLowerCase() + "|" + line.dateOfService;
+      const entry = byProviderPatientDate.get(key) || { hasConsult: false, hasProcedure: false, lineNumbers: [] };
+      const tariffNum = line.tariffCode ? parseInt(line.tariffCode, 10) : 0;
+      if (tariffNum >= 100 && tariffNum <= 199) entry.hasConsult = true; // Consult
+      if (tariffNum >= 400 && tariffNum <= 799) entry.hasProcedure = true; // Procedure
+      entry.lineNumbers.push(line.lineNumber);
+      byProviderPatientDate.set(key, entry);
+    }
+    for (const [, entry] of byProviderPatientDate) {
+      if (entry.hasConsult && entry.hasProcedure) {
+        issues.push({
+          lineNumber: entry.lineNumbers[0], field: "tariffCode", code: "CONSULT_PLUS_PROCEDURE",
+          severity: "info", rule: "Consultation + Procedure Same Visit",
+          message: "Both a consultation and a procedure were billed by the same provider for the same patient on the same day. Some schemes bundle the consultation into the procedure fee.",
+          suggestion: "Verify whether the scheme allows separate consultation billing when a procedure is performed on the same day. Some exclude the consult fee.",
+        });
+      }
+    }
+  }
+
+  // ── Rule 93: IOD_MVA_MIX — Both IOD and MVA claims for same patient ──
+  {
+    for (const line of lines) {
+      if (line.isIOD && line.isMVA) {
+        issues.push({
+          lineNumber: line.lineNumber, field: "isIOD", code: "IOD_MVA_CONFLICT",
+          severity: "error", rule: "IOD/MVA Conflict",
+          message: "Claim flagged as both IOD (injured on duty) and MVA (motor vehicle accident). A claim can only be one or the other.",
+          suggestion: "Determine whether this is a work injury (COIDA) or a motor vehicle accident (RAF). Set only one flag.",
+        });
+      }
+    }
+  }
+
+  // ── Rule 94: MATERNITY_MALE_PATIENT — Maternity flag on male ──
+  {
+    for (const line of lines) {
+      if (line.isMaternity && line.patientGender === "M") {
+        issues.push({
+          lineNumber: line.lineNumber, field: "isMaternity", code: "MATERNITY_MALE",
+          severity: "error", rule: "Maternity Flag on Male Patient",
+          message: "Maternity flag set for a male patient. This is a data error.",
+          suggestion: "Remove the maternity flag or correct the patient gender.",
+        });
+      }
+    }
+  }
+
+  // ── Rule 95: TOTAL_BATCH_AMOUNT — Batch total exceeds plausible limits ──
+  if (lines.length >= 2) {
+    const totalAmount = lines.reduce((sum, l) => sum + (l.amount || 0), 0);
+    if (totalAmount > 5_000_000) {
+      issues.push({
+        lineNumber: lines[0].lineNumber, field: "amount", code: "BATCH_AMOUNT_EXCESSIVE",
+        severity: "warning", rule: "Excessive Batch Total",
+        message: `Batch total is R${totalAmount.toLocaleString("en-ZA", { minimumFractionDigits: 2 })}. Batches over R5M are flagged for enhanced review by switches.`,
+        suggestion: "Verify all amounts in this batch. If correct, be prepared for enhanced review by the switching house.",
+      });
+    }
+  }
+
+  // ── Rule 96: WEEKEND_PROCEDURE — Major procedure on weekend ──
+  {
+    for (const line of lines) {
+      if (!line.dateOfService || !line.tariffCode) continue;
+      const tariffNum = parseInt(line.tariffCode, 10);
+      if (tariffNum < 400 || tariffNum > 799) continue; // Not surgical
+      const dateParts = line.dateOfService.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!dateParts) continue;
+      const svcDate = new Date(parseInt(dateParts[1]), parseInt(dateParts[2]) - 1, parseInt(dateParts[3]));
+      const day = svcDate.getDay();
+      if (day === 0 || day === 6) { // Weekend
+        if (!line.modifier?.includes("0018")) { // No emergency modifier
+          issues.push({
+            lineNumber: line.lineNumber, field: "dateOfService", code: "WEEKEND_SURGERY_NO_EMERGENCY",
+            severity: "info", rule: "Weekend Surgery Without Emergency Modifier",
+            message: `Surgical tariff "${line.tariffCode}" performed on ${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][day]} without emergency modifier. Weekend surgery is typically emergency-only.`,
+            suggestion: "If this was an elective procedure scheduled on the weekend, this is unusual and may be queried. If emergency, add modifier 0018.",
+          });
+        }
+      }
+    }
+  }
+
+  // ── Rule 97: PROVIDER_NOT_IN_BATCH — Referring provider not present as treating provider ──
+  {
+    const treatingProviders = new Set(lines.map(l => l.treatingProviderNumber || l.practiceNumber || "").filter(p => p));
+    for (const line of lines) {
+      if (line.referringProviderNumber?.trim() && treatingProviders.has(line.referringProviderNumber)) {
+        // Referring provider is also treating in this batch — circular referral
+        const isSelfreferral = line.referringProviderNumber === (line.treatingProviderNumber || line.practiceNumber);
+        if (!isSelfreferral) {
+          issues.push({
+            lineNumber: line.lineNumber, field: "referringProviderNumber", code: "CIRCULAR_REFERRAL",
+            severity: "info", rule: "Circular Referral Pattern",
+            message: `Referring provider ${line.referringProviderNumber} is also a treating provider in this batch. While valid, mutual referral patterns between providers are audited by schemes.`,
+            suggestion: "This is informational. Schemes monitor referral patterns for potential kickback arrangements (fee-splitting).",
           });
         }
       }

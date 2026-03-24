@@ -1,0 +1,22 @@
+{
+  "total_chunks": 3311,
+  "categories": {
+    "memory": 99,
+    "playbook": 3,
+    "steinberg": 61,
+    "steinberg_openai": 347,
+    "outreach": 33,
+    "health_kb": 343,
+    "research": 226,
+    "strategy": 211,
+    "health_extracted": 718,
+    "legal": 24,
+    "audit": 59,
+    "policies": 21,
+    "health_intel": 72,
+    "contacts": 36,
+    "healthops": 1058
+  },
+  "generated": "2026-03-22T01:50:40.562851",
+  "note": "Install sentence-transformers and faiss-cpu to build vector index"
+}

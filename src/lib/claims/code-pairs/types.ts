@@ -32,7 +32,12 @@ export type ViolationCategory =
   | "orthopaedic_bundling"
   | "ent_bundling"
   | "urology_bundling"
-  | "mental_health_overlap";
+  | "mental_health_overlap"
+  | "age_mismatch"
+  | "asterisk_primary"
+  | "ecc_requirement"
+  | "acute_chronic_conflict"
+  | "contrast_conflict";
 
 export interface CodePairViolation {
   /** First ICD-10 or tariff code in the pair */
