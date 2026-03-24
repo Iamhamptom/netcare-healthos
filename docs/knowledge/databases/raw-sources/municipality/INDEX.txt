@@ -1,0 +1,119 @@
+SOUTH AFRICA HEALTH FACILITY DATA — MASTER INDEX
+Downloaded: 2026-03-24
+Total Files: 31
+============================================================
+
+## MAJOR DATASETS (with coordinates)
+
+1. hdx_south_africa_facilities.csv (370KB)
+   - 4,303 facilities across ALL 9 provinces with lat/long coordinates
+   - Source: Humanitarian Data Exchange (data.humdata.org)
+   - Columns: Country, Admin1 (province), Facility_n (name), Facility_t (type), Ownership, Lat, Long, LL_source
+   - Breakdown: EC 908, KZN 743, Limpopo 534, Gauteng 453, WC 442, NW 358, Mpumalanga 352, FS 280, NC 233
+
+2. hdx_sub_saharan_health_facilities.xlsx (5.2MB)
+   - Full Sub-Saharan Africa dataset (98,745 facilities, 50 countries)
+   - Contains SA subset extracted as hdx_south_africa_facilities.csv above
+
+3. dsfsi_za_hospitals_v1.csv (311KB)
+   - 945 South African hospitals with detailed data
+   - Source: DSFSI / University of Pretoria (github.com/dsfsi/covid19za)
+   - Columns: Name, Long, Lat, Category, Province, District, Subdistrict, Services, Beds, Surgeons, Theatres, etc.
+
+4. dsfsi_za_hospital_id.csv (24KB)
+   - 888 hospital name-to-ID mappings
+   - Source: DSFSI / University of Pretoria
+
+## METRO MUNICIPALITY FILES
+
+5. capetown_clinics_and_healthcare_facilities.csv — 50 City of Cape Town clinics with addresses
+   Source: capetown.gov.za
+
+6. capetown_clinics_contact_list.pdf (353KB) — Full official clinic contact list PDF
+   Source: resource.capetown.gov.za
+
+7. ekurhuleni_clinics_directory.csv — 37 clinics with addresses, phones, hours
+   Source: ekurhuleni.gov.za (90+ clinics total, page truncated)
+
+8. ekurhuleni_hospitals_and_additional.csv — 15 hospitals and additional clinics
+   Source: openalfa.com
+
+9. ethekwini_hospitals.csv — 17 eThekwini district hospitals
+   Source: kznhealth.gov.za
+
+10. ethekwini_primary_healthcare.csv — 9 eThekwini PHC facilities
+    Source: kznhealth.gov.za
+
+11. tshwane_24_primary_healthcare_clinics.csv — All 24 City of Tshwane managed clinics
+    Source: tshwane.gov.za
+
+12. tshwane_all_health_facilities.csv — 11 Tshwane facilities with full details
+    Source: openalfa.com
+
+13. johannesburg_health_facilities.csv — 14 Johannesburg facilities with details
+    Source: openalfa.com, johannesburglists.com
+
+14. buffalo_city_clinics.csv — 15 East London clinics
+    Source: ivote.co.za
+
+15. nelson_mandela_bay_summary.txt — Summary (41 clinics, 13 mobile, 8 hospitals)
+    Source: Various
+
+16. mangaung_summary.txt — Summary (313 clinics, 122 mobile)
+    Source: Various
+
+## PROVINCIAL FILES
+
+17. gauteng_public_hospitals.csv — 31 Gauteng public hospitals
+    Source: blaauwberg.net
+
+18. kzn_public_hospitals.csv — 35 KwaZulu-Natal public hospitals
+    Source: blaauwberg.net
+
+19. western_cape_public_hospitals.csv — 20 Western Cape hospitals
+    Source: blaauwberg.net
+
+20. eastern_cape_health_institutions.csv — 16 Eastern Cape institutions
+    Source: echealth.gov.za
+
+21. freestate_health_facilities_by_district.csv — 27 Free State facilities by district
+    Source: health.fs.gov.za
+
+22. limpopo_public_hospitals.csv — 34 Limpopo public hospitals
+    Source: blaauwberg.net
+
+23. mpumalanga_public_hospitals.csv — 35 Mpumalanga hospitals (incl. TB specialty)
+    Source: blaauwberg.net
+
+24. north_west_public_hospitals.csv — 22 North West public hospitals
+    Source: blaauwberg.net
+
+25. northern_cape_public_hospitals.csv — 16 Northern Cape hospitals
+    Source: blaauwberg.net
+
+## PDF FILES (need PDF reader to extract)
+
+26. gems_hospital_network_eastern_cape.pdf — GEMS hospital network list (EC)
+27. gems_hospital_network_kzn.pdf — GEMS hospital network list (KZN)
+28. gems_hospital_network_western_cape.pdf — GEMS hospital network list (WC)
+29. gems_hospital_network_freestate.pdf — GEMS hospital network list (FS)
+30. freestate_mangaung_hospitals.pdf — Free State Mangaung hospitals brochure
+31. freestate_health_institutions_contact_list.pdf — FS institutions contact list
+
+============================================================
+SUMMARY STATISTICS:
+- CSV/structured data: 4,303+ unique facilities with coordinates (HDX)
+- CSV/structured data: 945 hospitals with beds/services (DSFSI)
+- CSV/structured data: 888 hospital IDs (DSFSI)
+- Metro clinic lists: ~177 facilities with addresses
+- Provincial hospital lists: ~246 named hospitals across 9 provinces
+- PDF files: 6 documents with additional facility data
+- Total unique facilities across all sources: estimated 4,500+
+
+NOTES:
+- Many SA government websites (joburg.org.za, durban.gov.za, tshwane.gov.za, kznhealth.gov.za)
+  have SSL certificate issues blocking automated fetch
+- The HDX dataset is the most comprehensive single source
+- The DSFSI dataset has the richest per-facility data (beds, services, surgeons)
+- Cape Town has the best open data practices among metros
+- Ekurhuleni has 90+ clinics but the page was truncated at ~37

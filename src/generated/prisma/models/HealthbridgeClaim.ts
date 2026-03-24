@@ -1794,6 +1794,11 @@ export type HealthbridgeClaimFindManyArgs<ExtArgs extends runtime.Types.Extensio
    * Skip the first `n` HealthbridgeClaims.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of HealthbridgeClaims.
+   */
   distinct?: Prisma.HealthbridgeClaimScalarFieldEnum | Prisma.HealthbridgeClaimScalarFieldEnum[]
 }
 

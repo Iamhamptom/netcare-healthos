@@ -1366,6 +1366,11 @@ export type MedicalRecordFindManyArgs<ExtArgs extends runtime.Types.Extensions.I
    * Skip the first `n` MedicalRecords.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of MedicalRecords.
+   */
   distinct?: Prisma.MedicalRecordScalarFieldEnum | Prisma.MedicalRecordScalarFieldEnum[]
 }
 

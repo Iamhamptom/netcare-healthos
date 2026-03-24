@@ -1296,6 +1296,11 @@ export type MedicationFindManyArgs<ExtArgs extends runtime.Types.Extensions.Inte
    * Skip the first `n` Medications.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of Medications.
+   */
   distinct?: Prisma.MedicationScalarFieldEnum | Prisma.MedicationScalarFieldEnum[]
 }
 

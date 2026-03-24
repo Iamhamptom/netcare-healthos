@@ -1,5 +1,8 @@
-// NAPPI code lookup via medicineprices.org.za (open-source, Code4SA)
-// Free API — no API key needed. Returns SA Single Exit Price data.
+// NAPPI code lookup — backed by local SQLite (572K+ records)
+// Seeded from MediKredit PUBDOM + DoH SEP pricing data
+// Falls back to medicineprices.org.za API if DB is unavailable
+
+import { prisma } from "@/lib/prisma";
 
 export interface NAPPIResult {
   nappiCode: string;
@@ -14,32 +17,102 @@ export interface NAPPIResult {
   schedule: string; // S0-S8
 }
 
-/** Search for medicines by name — returns NAPPI codes and SEP prices */
-export async function searchNAPPI(query: string): Promise<NAPPIResult[]> {
+function parseZAR(s: string): number {
+  // "R 399.78" → 39978 (cents)
+  const num = parseFloat(s.replace(/[^0-9.]/g, "") || "0");
+  return Math.round(num * 100);
+}
+
+function toNAPPIResult(row: {
+  nappiCode: string;
+  fullNappiCode: string;
+  name: string;
+  dosageFormDesc: string;
+  packSize: number;
+  manufacturerCode: string;
+  sepPrice: string;
+  dispensingFee: string;
+  schedule: string;
+}): NAPPIResult {
+  return {
+    nappiCode: row.fullNappiCode || row.nappiCode,
+    name: row.name,
+    dosageForm: row.dosageFormDesc,
+    packSize: row.packSize ? String(row.packSize) : "",
+    manufacturer: row.manufacturerCode,
+    sepPrice: parseZAR(row.sepPrice),
+    dispensingFee: parseZAR(row.dispensingFee),
+    schedule: row.schedule,
+  };
+}
+
+/** Search for medicines by name or code — queries 572K local records */
+export async function searchNAPPI(query: string, limit = 20): Promise<NAPPIResult[]> {
+  const q = query.trim();
+  if (!q) return [];
+
+  try {
+    const isCode = /^\d+$/.test(q);
+    const where = isCode
+      ? { OR: [{ nappiCode: { startsWith: q } }, { fullNappiCode: { startsWith: q } }] }
+      : { name: { contains: q } };
+
+    const rows = await prisma.nappiMedicine.findMany({
+      where: { ...where, isActive: true },
+      take: limit,
+      orderBy: [{ category: "asc" }, { name: "asc" }],
+    });
+
+    if (rows.length > 0) return rows.map(toNAPPIResult);
+  } catch {
+    // DB unavailable
+  }
+
+  // Fallback to external API
+  return searchNAPPIExternal(q, limit);
+}
+
+/** Lookup a specific NAPPI code — local DB first, then external API */
+export async function lookupNAPPI(nappiCode: string): Promise<NAPPIResult | null> {
+  const clean = nappiCode.trim().replace(/-/g, "");
+  if (!clean) return null;
+
+  try {
+    let row = await prisma.nappiMedicine.findFirst({
+      where: { fullNappiCode: clean },
+    });
+    if (!row && clean.length <= 7) {
+      row = await prisma.nappiMedicine.findFirst({
+        where: { nappiCode: clean },
+      });
+    }
+    if (row) return toNAPPIResult(row);
+  } catch {
+    // DB unavailable
+  }
+
+  // Fallback to external API
+  return lookupNAPPIExternal(clean);
+}
+
+// ── External API fallbacks ──
+
+async function searchNAPPIExternal(query: string, limit: number): Promise<NAPPIResult[]> {
   try {
     const url = `https://medicineprices.org.za/api/search?q=${encodeURIComponent(query)}`;
     const response = await fetch(url, {
-      headers: { "Accept": "application/json" },
+      headers: { Accept: "application/json" },
       signal: AbortSignal.timeout(10000),
     });
+    if (!response.ok) return searchNAPPIFallback(query);
 
-    if (!response.ok) {
-      console.error(`NAPPI API error: ${response.status}`);
-      return searchNAPPIFallback(query);
-    }
-
-    const data = await response.json() as {
-      nappi_code?: string;
-      name?: string;
-      dosage_form?: string;
-      pack_size?: string;
-      manufacturer?: string;
-      sep?: string;
-      dispensing_fee?: string;
-      schedule?: string;
+    const data = (await response.json()) as {
+      nappi_code?: string; name?: string; dosage_form?: string;
+      pack_size?: string; manufacturer?: string; sep?: string;
+      dispensing_fee?: string; schedule?: string;
     }[];
 
-    return (data || []).slice(0, 20).map((item) => ({
+    return (data || []).slice(0, limit).map((item) => ({
       nappiCode: item.nappi_code || "",
       name: item.name || "",
       dosageForm: item.dosage_form || "",
@@ -54,21 +127,23 @@ export async function searchNAPPI(query: string): Promise<NAPPIResult[]> {
   }
 }
 
-/** Lookup a specific NAPPI code */
-export async function lookupNAPPI(nappiCode: string): Promise<NAPPIResult | null> {
+async function lookupNAPPIExternal(nappiCode: string): Promise<NAPPIResult | null> {
   try {
     const url = `https://medicineprices.org.za/api/search?q=${encodeURIComponent(nappiCode)}`;
     const response = await fetch(url, {
-      headers: { "Accept": "application/json" },
+      headers: { Accept: "application/json" },
       signal: AbortSignal.timeout(10000),
     });
-
     if (!response.ok) return null;
 
-    const data = await response.json() as { nappi_code?: string; name?: string; dosage_form?: string; pack_size?: string; manufacturer?: string; sep?: string; dispensing_fee?: string; schedule?: string }[];
+    const data = (await response.json()) as {
+      nappi_code?: string; name?: string; dosage_form?: string;
+      pack_size?: string; manufacturer?: string; sep?: string;
+      dispensing_fee?: string; schedule?: string;
+    }[];
     const match = (data || []).find((item) => item.nappi_code === nappiCode);
-
     if (!match) return null;
+
     return {
       nappiCode: match.nappi_code || "",
       name: match.name || "",
@@ -84,11 +159,11 @@ export async function lookupNAPPI(nappiCode: string): Promise<NAPPIResult | null
   }
 }
 
-/** Fallback with common SA medicines when API is unavailable */
+/** Hardcoded fallback for when both DB and API are down */
 function searchNAPPIFallback(query: string): NAPPIResult[] {
   const q = query.toLowerCase();
-  return COMMON_MEDICINES.filter((m) =>
-    m.name.toLowerCase().includes(q) || m.nappiCode.includes(q)
+  return COMMON_MEDICINES.filter(
+    (m) => m.name.toLowerCase().includes(q) || m.nappiCode.includes(q)
   );
 }
 

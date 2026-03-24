@@ -1375,6 +1375,11 @@ export type DailyTaskFindManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
    * Skip the first `n` DailyTasks.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of DailyTasks.
+   */
   distinct?: Prisma.DailyTaskScalarFieldEnum | Prisma.DailyTaskScalarFieldEnum[]
 }
 

@@ -40,7 +40,7 @@ export interface TenantFeatures {
   mlPipeline: boolean;
 }
 
-export type IndustryType = "billing_bureau" | "hospital" | "enterprise_funder" | "software_platform" | "practice_group";
+export type IndustryType = "billing_bureau" | "hospital" | "enterprise_funder" | "software_platform" | "practice_group" | "specialist_practice";
 export type PricingModel = "per_claim" | "monthly" | "enterprise" | "revenue_share";
 
 export interface TenantConfig {
@@ -146,6 +146,20 @@ const LABELS_BY_INDUSTRY: Record<IndustryType, TenantLabels> = {
     claimsSection: "Claims Management",
     analyticsSection: "Practice Analytics",
     welcomeMessage: "Welcome back. Here's your practice overview.",
+  },
+  specialist_practice: {
+    dashboardTitle: "RheumCare Command Centre",
+    mainCta: "Review Patients",
+    kpi1: "Disease Activity (DAS28)",
+    kpi2: "Biologic Pre-Auths Pending",
+    kpi3: "Infusions This Week",
+    kpi4: "GP Referrals This Month",
+    onboardingPrompt: "Add your consultation locations",
+    entityName: "locations",
+    userRole: "Specialist",
+    claimsSection: "Claims & Pre-Authorisation",
+    analyticsSection: "Practice Intelligence",
+    welcomeMessage: "Welcome back, Dr Ziki. Here's your practice at a glance.",
   },
 };
 
@@ -310,6 +324,23 @@ export const DEMO_BRANDS: Record<string, Partial<TenantConfig>> = {
       supportEmail: "ops@netcare.co.za",
       supportPhone: "+27 11 301 0000",
       websiteUrl: "https://www.netcare.co.za",
+    },
+  },
+  rheumcare: {
+    slug: "rheumcare",
+    industryType: "specialist_practice",
+    brand: {
+      name: "RheumCare Clinic",
+      slug: "rheumcare",
+      logoUrl: "/brands/rheumcare-logo.png",
+      faviconUrl: "/brands/rheumcare-favicon.png",
+      primaryColor: "#0D9488",
+      secondaryColor: "#115E59",
+      accentColor: "#F59E0B",
+      tagline: "Specialist Rheumatology — Autoimmune Care You Can Trust",
+      supportEmail: "admin@rheumcare.co.za",
+      supportPhone: "+27 79 208 9987",
+      websiteUrl: "https://www.rheumcare.co.za",
     },
   },
 };

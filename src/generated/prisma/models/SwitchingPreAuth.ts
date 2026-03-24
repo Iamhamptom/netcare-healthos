@@ -1788,6 +1788,11 @@ export type SwitchingPreAuthFindManyArgs<ExtArgs extends runtime.Types.Extension
    * Skip the first `n` SwitchingPreAuths.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of SwitchingPreAuths.
+   */
   distinct?: Prisma.SwitchingPreAuthScalarFieldEnum | Prisma.SwitchingPreAuthScalarFieldEnum[]
 }
 

@@ -1336,6 +1336,11 @@ export type ClaimsAnalysisFindManyArgs<ExtArgs extends runtime.Types.Extensions.
    * Skip the first `n` ClaimsAnalyses.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of ClaimsAnalyses.
+   */
   distinct?: Prisma.ClaimsAnalysisScalarFieldEnum | Prisma.ClaimsAnalysisScalarFieldEnum[]
 }
 

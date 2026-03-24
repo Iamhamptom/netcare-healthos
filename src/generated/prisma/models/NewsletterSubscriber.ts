@@ -1010,6 +1010,11 @@ export type NewsletterSubscriberFindManyArgs<ExtArgs extends runtime.Types.Exten
    * Skip the first `n` NewsletterSubscribers.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of NewsletterSubscribers.
+   */
   distinct?: Prisma.NewsletterSubscriberScalarFieldEnum | Prisma.NewsletterSubscriberScalarFieldEnum[]
 }
 

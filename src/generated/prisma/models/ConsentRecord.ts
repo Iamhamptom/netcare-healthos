@@ -1366,6 +1366,11 @@ export type ConsentRecordFindManyArgs<ExtArgs extends runtime.Types.Extensions.I
    * Skip the first `n` ConsentRecords.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of ConsentRecords.
+   */
   distinct?: Prisma.ConsentRecordScalarFieldEnum | Prisma.ConsentRecordScalarFieldEnum[]
 }
 

@@ -1,0 +1,20 @@
+Nelson Mandela Bay Metropolitan Municipality - Health Facilities Summary
+Source: Various (web search results, medpages.info, nelsonmandelabay.gov.za)
+Date: 2026-03-24
+
+OVERVIEW:
+- 41 permanent and satellite clinics
+- 13 mobile clinics
+- 8 hospitals total
+  - 3 state hospitals
+  - 4 provincial hospitals
+  - 4 private hospitals
+  - 3 day hospitals
+- 52 Eastern Cape Department of Health clinics throughout the city and region
+- Municipal Health Dept: 191 Goven Mbeki Street, Gqeberha, 6001
+- Phone: +27 41 506 1911
+
+NOTES:
+- Complete facility-level list not publicly available on website
+- Detailed data requires contact with municipality or EC Dept of Health GIS system
+- Eastern Cape has 3,211 total public health facilities (267 PHCs, 2,870 clinics, 74 hospitals)

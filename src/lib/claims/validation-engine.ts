@@ -103,6 +103,7 @@ const COLUMN_ALIASES: Record<keyof ColumnMapping, string[]> = {
   motivationText: ["motivation", "motivation_text", "clinical_motivation", "clinical_notes", "notes", "justification", "reason"],
   placeOfService: ["place_of_service", "pos", "service_place", "facility_type"],
   membershipNumber: ["membership_number", "membership", "member_no", "member_number", "scheme_number", "medical_aid_number"],
+  patientDob: ["dob", "date_of_birth", "dateofbirth", "patient_dob", "birth_date", "birthdate", "patient_date_of_birth"],
 };
 
 export function autoMapColumns(headers: string[], rows?: Record<string, string>[]): ColumnMapping {
@@ -254,6 +255,7 @@ export function extractClaimLines(
       rawDateOfService: mapping.dateOfService ? row[mapping.dateOfService]?.trim() : undefined,
       placeOfService: mapping.placeOfService ? row[mapping.placeOfService]?.trim() : undefined,
       membershipNumber: mapping.membershipNumber ? row[mapping.membershipNumber]?.trim() : undefined,
+      patientDob: mapping.patientDob ? row[mapping.patientDob]?.trim() : undefined,
     };
   });
 }
@@ -348,11 +350,108 @@ const DAGGER_ASTERISK_PAIRS: { dagger: string; asterisk: string; description: st
   { dagger: "M05.0", asterisk: "L99.0", description: "Rheumatoid vasculitis" },
 ];
 
+// ─── BLANKET EXCLUSIONS (FIN-016) ────────────────────────────────
+// ICD-10 codes / tariff codes that are universally excluded by SA medical
+// schemes. Cosmetic, experimental, and lifestyle procedures are not covered.
+const BLANKET_EXCLUSION_ICD10: { prefix: string; reason: string }[] = [
+  { prefix: "Z41.1", reason: "Cosmetic surgery — not covered by any SA medical scheme" },
+  { prefix: "Z41.0", reason: "Hair transplant — cosmetic, not medically indicated" },
+  { prefix: "L91.8", reason: "Cosmetic skin procedure — excluded unless medically indicated (e.g., post-burn reconstruction)" },
+  { prefix: "Z53", reason: "Procedure not carried out — cannot claim for services not rendered" },
+  { prefix: "Z76.5", reason: "Malingerer — not a valid clinical diagnosis for claiming" },
+  { prefix: "Z72.0", reason: "Tobacco use — lifestyle, not a covered condition (cessation programs may differ)" },
+];
+const BLANKET_EXCLUSION_TARIFFS: { code: string; reason: string }[] = [
+  { code: "0850", reason: "Cosmetic procedure — excluded across all SA schemes" },
+  { code: "0851", reason: "Cosmetic procedure — excluded across all SA schemes" },
+  { code: "0852", reason: "Cosmetic rhinoplasty — excluded unless post-trauma reconstruction" },
+  { code: "0853", reason: "Cosmetic blepharoplasty — excluded unless functional impairment documented" },
+  { code: "0860", reason: "Laser skin resurfacing (cosmetic) — excluded" },
+  { code: "0861", reason: "Botox (cosmetic) — excluded unless for spasticity/dystonia" },
+  { code: "0870", reason: "Liposuction — excluded across all SA schemes" },
+  { code: "0871", reason: "Abdominoplasty (cosmetic) — excluded unless post-bariatric" },
+];
+
+// ─── BILATERAL CONDITION CODES (ICD-020) ────────────────────────
+// Conditions that commonly affect one or both sides — schemes require
+// laterality specification via modifier to prevent duplicate claims.
+const BILATERAL_CONDITION_PREFIXES: { prefix: string; description: string }[] = [
+  { prefix: "H25", description: "Senile cataract" },
+  { prefix: "H26", description: "Other cataract" },
+  { prefix: "H40", description: "Glaucoma" },
+  { prefix: "H65", description: "Nonsuppurative otitis media" },
+  { prefix: "H66", description: "Suppurative otitis media" },
+  { prefix: "H90", description: "Conductive/sensorineural hearing loss" },
+  { prefix: "M16", description: "Coxarthrosis (hip OA)" },
+  { prefix: "M17", description: "Gonarthrosis (knee OA)" },
+  { prefix: "M75", description: "Shoulder lesions" },
+  { prefix: "S52", description: "Fracture of forearm" },
+  { prefix: "S62", description: "Fracture of wrist/hand" },
+  { prefix: "S82", description: "Fracture of lower leg" },
+  { prefix: "S92", description: "Fracture of foot" },
+  { prefix: "G56", description: "Carpal tunnel / mononeuropathy upper limb" },
+  { prefix: "M20", description: "Acquired deformities of fingers/toes (bunion)" },
+  { prefix: "N60", description: "Benign mammary dysplasia" },
+];
+
 // ─── VALIDATION RULES ────────────────────────────────────────────
 
 function validateLine(item: ClaimLineItem): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const ln = item.lineNumber;
+
+  // ── Rule MBR-009: Missing date of birth ──
+  // PHISC MEDCLM: DTM+329 (patient DOB) is mandatory for member verification.
+  // Without DOB, the switch cannot match the patient to scheme records.
+  if (item.patientDob !== undefined && !item.patientDob?.trim()) {
+    issues.push({
+      lineNumber: ln, field: "patientDob", code: "MISSING_DOB",
+      severity: "error", rule: "Missing Date of Birth",
+      message: "No patient date of birth provided. SA switching houses (Healthbridge, MediKredit, SwitchOn) require DOB for member verification — claims without DOB are auto-rejected at the switch level.",
+      suggestion: "Add the patient's date of birth in YYYY-MM-DD format. This is used for member matching, age validation, and dependent verification.",
+    });
+  }
+
+  // ── Rule MBR-014: Dependent age limit exceeded ──
+  // SA schemes: children dependents are covered until age 21 (most schemes)
+  // or 25/26 if full-time student. Dependent code 02+ with age >21 = flag.
+  if (item.dependentCode && item.patientAge !== undefined) {
+    const depCode = parseInt(item.dependentCode, 10);
+    if (depCode >= 2 && !isNaN(depCode)) {
+      // Dependent codes 02+ are typically children
+      if (item.patientAge > 26) {
+        issues.push({
+          lineNumber: ln, field: "dependentCode", code: "DEPENDENT_AGE_EXCEEDED",
+          severity: "error", rule: "Dependent Age Limit Exceeded",
+          message: `Dependent code ${item.dependentCode} (child) with patient age ${item.patientAge}. SA schemes terminate child dependent cover at age 21 (or 25-26 for full-time students). This claim will be rejected.`,
+          suggestion: "Verify dependent status. If the patient is over 21, they must be registered as a main member or adult dependent. If a full-time student (21-26), add proof of enrollment in the motivation.",
+        });
+      } else if (item.patientAge > 21) {
+        issues.push({
+          lineNumber: ln, field: "dependentCode", code: "DEPENDENT_AGE_WARNING",
+          severity: "warning", rule: "Dependent Age Near Limit",
+          message: `Dependent code ${item.dependentCode} (child) with patient age ${item.patientAge}. Most SA schemes cap child dependents at 21 unless a full-time student (up to 25-26).`,
+          suggestion: "If the dependent is a full-time student, ensure proof of enrollment is on file with the scheme. Otherwise, register as an adult dependent.",
+        });
+      }
+    }
+  }
+
+  // ── Rule DTE-006: Service date before membership start ──
+  // STUB: Requires MediSwitch eligibility response (member_start_date).
+  // When MediSwitch integration is live, this will compare item.dateOfService
+  // against the member's coverage start date from the eligibility check.
+  // if (item.dateOfService && memberEligibility?.startDate) {
+  //   if (new Date(item.dateOfService) < new Date(memberEligibility.startDate)) → error
+  // }
+
+  // ── Rule DTE-010: Resubmission window exceeded (60 days from rejection) ──
+  // STUB: Requires rejection tracking (original_rejection_date on resubmissions).
+  // When claims tracking DB is live, this will check if a resubmission is within
+  // 60 days of the original rejection date per Medical Schemes Act.
+  // if (item.isResubmission && item.originalRejectionDate) {
+  //   if (daysSince(item.originalRejectionDate) > 60) → error
+  // }
 
   // ── Rule 0a: Practice number must be present ──
   // SA BHF (Board of Healthcare Funders) requires a practice number on every claim
@@ -860,6 +959,85 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
         severity: "warning", rule: "Pregnancy Code Age Check",
         message: `"${code}" is an obstetric code but patient age (${item.patientAge}) is outside typical reproductive range (12-55).`,
         suggestion: "Verify patient age. Schemes may flag this as unusual.",
+      });
+    }
+  }
+
+  // ── Rule ICD-017: Morphology code missing for neoplasm ──
+  // C00-D48 neoplasm codes should have a morphology code (M8xxx-M9xxx) as
+  // secondary when the claim includes surgery or pathology, because the
+  // morphology determines the histological type and guides treatment.
+  if (/^[CD][0-4]\d/i.test(code)) {
+    const hasMorphology = item.secondaryICD10?.some(sec => /^M[89]\d{3}/i.test(sec));
+    // Only flag when surgery (04xx-07xx) or pathology (44xx-46xx) is billed
+    if (!hasMorphology && item.tariffCode) {
+      const tariffNum = parseInt(item.tariffCode, 10);
+      const isSurgeryOrPath = (tariffNum >= 400 && tariffNum <= 799) || (tariffNum >= 4400 && tariffNum <= 4699);
+      if (isSurgeryOrPath) {
+        issues.push({
+          lineNumber: ln, field: "secondaryICD10", code: "NEOPLASM_MISSING_MORPHOLOGY",
+          severity: "warning", rule: "Neoplasm Missing Morphology Code",
+          message: `Neoplasm code "${code}" billed with surgical/pathology tariff "${item.tariffCode}" but no morphology code (M8xxx-M9xxx) in secondary diagnoses. Schemes may query this for clinical completeness.`,
+          suggestion: "Add the morphology code from the histology report (e.g., M8140/3 for adenocarcinoma). This improves clinical accuracy and reduces query risk.",
+        });
+      }
+    }
+  }
+
+  // ── Rule ICD-020: Laterality not specified for bilateral conditions ──
+  // Conditions affecting paired organs (eyes, ears, hips, knees) require
+  // a laterality modifier to prevent duplicate claims for the same side.
+  if (item.primaryICD10) {
+    const bilateralMatch = BILATERAL_CONDITION_PREFIXES.find(b => code.startsWith(b.prefix));
+    if (bilateralMatch) {
+      const modifiers = (item.modifier || "").toLowerCase();
+      const hasLaterality = modifiers.includes("0007") || modifiers.includes("0008") || // SA left/right modifiers
+        modifiers.includes("left") || modifiers.includes("right") ||
+        modifiers.includes("bilateral") || modifiers.includes("0009");
+      if (!hasLaterality) {
+        issues.push({
+          lineNumber: ln, field: "modifier", code: "MISSING_LATERALITY",
+          severity: "info", rule: "Laterality Not Specified",
+          message: `"${code}" (${bilateralMatch.description}) affects a paired structure but no laterality modifier found. SA schemes use this to detect duplicate claims for the same side.`,
+          suggestion: "Add laterality modifier: 0007 (left), 0008 (right), or 0009 (bilateral). This prevents rejection when the same procedure is claimed for the opposite side later.",
+        });
+      }
+    }
+  }
+
+  // ── Rule ICD-021: Excessive diagnosis codes per line ──
+  // PHISC MEDCLM allows up to 8 diagnosis codes per claim line. More than 8
+  // suggests data quality issues or copy-paste from clinical notes.
+  if (item.secondaryICD10 && item.secondaryICD10.length > 8) {
+    issues.push({
+      lineNumber: ln, field: "secondaryICD10", code: "EXCESSIVE_DIAGNOSIS_CODES",
+      severity: "warning", rule: "Excessive Diagnosis Codes Per Line",
+      message: `${item.secondaryICD10.length + 1} diagnosis codes on this line (1 primary + ${item.secondaryICD10.length} secondary). PHISC MEDCLM supports a maximum of 8 per line — excess codes are truncated by the switching house.`,
+      suggestion: "Reduce to the most clinically relevant codes. The primary diagnosis should be the main reason for the visit. Secondary codes should be comorbidities directly relevant to the service rendered.",
+    });
+  }
+
+  // ── Rule FIN-016: Service not covered — blanket exclusions ──
+  // Check against universally excluded ICD-10 codes (cosmetic, lifestyle, etc.)
+  for (const excl of BLANKET_EXCLUSION_ICD10) {
+    if (code.startsWith(excl.prefix)) {
+      issues.push({
+        lineNumber: ln, field: "primaryICD10", code: "SERVICE_NOT_COVERED",
+        severity: "error", rule: "Service Not Covered — Blanket Exclusion",
+        message: `"${code}" — ${excl.reason}. This diagnosis code is excluded across all SA medical scheme plans.`,
+        suggestion: "If this service has a medical indication (e.g., reconstructive surgery post-trauma), use the medically indicated ICD-10 code instead and attach clinical motivation.",
+      });
+    }
+  }
+  // Check against universally excluded tariff codes
+  if (item.tariffCode) {
+    const tariffExcl = BLANKET_EXCLUSION_TARIFFS.find(e => e.code === item.tariffCode);
+    if (tariffExcl) {
+      issues.push({
+        lineNumber: ln, field: "tariffCode", code: "TARIFF_NOT_COVERED",
+        severity: "error", rule: "Tariff Not Covered — Blanket Exclusion",
+        message: `Tariff "${item.tariffCode}" — ${tariffExcl.reason}. This procedure is excluded across all SA medical scheme plans.`,
+        suggestion: "If this procedure has a functional/medical indication, use the medically indicated tariff code and attach clinical motivation documenting medical necessity.",
       });
     }
   }

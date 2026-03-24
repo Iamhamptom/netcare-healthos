@@ -1128,6 +1128,11 @@ export type ClaimsRuleFindManyArgs<ExtArgs extends runtime.Types.Extensions.Inte
    * Skip the first `n` ClaimsRules.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of ClaimsRules.
+   */
   distinct?: Prisma.ClaimsRuleScalarFieldEnum | Prisma.ClaimsRuleScalarFieldEnum[]
 }
 

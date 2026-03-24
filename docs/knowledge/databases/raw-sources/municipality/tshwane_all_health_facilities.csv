@@ -1,0 +1,12 @@
+Facility Name,Address,Phone,Type,Hours,Source
+@Health Medical Centre,"Jean Ave, Die Hoewes, Centurion",+27 126640617,Clinic,Mon-Fri 07:00-18:00,openalfa.com
+Atteridgeville Clinic,"Mareka Street, Pretoria",+27 12 358 3920,Clinic,Mon-Fri 07:30-16:00,openalfa.com
+BMR Family Health Clinic,"Mokhetle Drive, Soshanguve",+27 129426611,Clinic,Mon-Fri 08:00-18:00; Sa 08:00-14:00,openalfa.com
+Hatfield Clinic,"Robert Sobukwe Street, Sunnyside",+27 12 4202500,Clinic,Mon-Sun 09:00-22:00,openalfa.com
+Kalafong Hospital-OPD,"Kalafong Road, Atteridgeville",+27 12 373 1000,Hospital,24/7,openalfa.com
+Mamelodi Hospital,"Serapeng Avenue, Tswane",,Hospital,24/7,openalfa.com
+1 Military Hospital,"Voortrekker Road, Pretoria",+27 123140999,Hospital,24/7,openalfa.com
+Bougainville Hospital,"Redelinghuys Street, Pretoria",+27 12 377 5700,Hospital,24/7,openalfa.com
+Heart Hospital,"Park Street, Arcadia",+27 12 440 0200,Hospital,24/7,openalfa.com
+Steve Biko Academic Hospital,Capital Park,+27 12 354 1000,Hospital,24/7,openalfa.com
+Tshwane District Hospital,"Doctor Savage Road, Pretoria",+27 12 354 7000,Hospital,24/7,openalfa.com

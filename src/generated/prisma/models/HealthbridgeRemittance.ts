@@ -1268,6 +1268,11 @@ export type HealthbridgeRemittanceFindManyArgs<ExtArgs extends runtime.Types.Ext
    * Skip the first `n` HealthbridgeRemittances.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of HealthbridgeRemittances.
+   */
   distinct?: Prisma.HealthbridgeRemittanceScalarFieldEnum | Prisma.HealthbridgeRemittanceScalarFieldEnum[]
 }
 

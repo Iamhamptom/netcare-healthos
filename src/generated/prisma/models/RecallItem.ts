@@ -1226,6 +1226,11 @@ export type RecallItemFindManyArgs<ExtArgs extends runtime.Types.Extensions.Inte
    * Skip the first `n` RecallItems.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of RecallItems.
+   */
   distinct?: Prisma.RecallItemScalarFieldEnum | Prisma.RecallItemScalarFieldEnum[]
 }
 

@@ -1720,6 +1720,11 @@ export type OutreachCampaignFindManyArgs<ExtArgs extends runtime.Types.Extension
    * Skip the first `n` OutreachCampaigns.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of OutreachCampaigns.
+   */
   distinct?: Prisma.OutreachCampaignScalarFieldEnum | Prisma.OutreachCampaignScalarFieldEnum[]
 }
 

@@ -232,7 +232,22 @@ export type SwitchingBatchJob = Prisma.SwitchingBatchJobModel
  */
 export type SwitchingERA = Prisma.SwitchingERAModel
 /**
+ * Model Tenant
+ * 
+ */
+export type Tenant = Prisma.TenantModel
+/**
+ * Model TenantPractice
+ * 
+ */
+export type TenantPractice = Prisma.TenantPracticeModel
+/**
  * Model SwitchingVendor
  * 
  */
 export type SwitchingVendor = Prisma.SwitchingVendorModel
+/**
+ * Model NappiMedicine
+ * 
+ */
+export type NappiMedicine = Prisma.NappiMedicineModel

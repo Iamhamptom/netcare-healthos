@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     }
 
     // Use Gemini 2.0 Flash multimodal for transcription
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const result = await model.generateContent([
       {
@@ -79,7 +79,7 @@ Return ONLY the transcription text, nothing else.`,
     return NextResponse.json({
       transcript,
       duration: null, // Gemini doesn't return duration metadata
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash",
       timestamp: new Date().toISOString(),
     });
   } catch (err) {

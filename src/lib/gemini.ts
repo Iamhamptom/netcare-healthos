@@ -10,7 +10,7 @@ export async function generateText(
   options?: { temperature?: number; maxTokens?: number }
 ): Promise<string> {
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash",
     systemInstruction: systemPrompt,
     generationConfig: {
       temperature: options?.temperature ?? 0.7,
@@ -29,7 +29,7 @@ export async function chat(
   options?: { temperature?: number; maxTokens?: number }
 ): Promise<string> {
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash",
     systemInstruction: systemPrompt,
     generationConfig: {
       temperature: options?.temperature ?? 0.7,
@@ -58,7 +58,7 @@ export async function chatWithTools(
   options?: { maxSteps?: number }
 ): Promise<{ reply: string; toolsUsed: string[] }> {
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash",
     systemInstruction: systemPrompt,
     tools: [{ functionDeclarations: tools }],
     generationConfig: {

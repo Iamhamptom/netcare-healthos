@@ -1,0 +1,429 @@
+[
+  {
+    "Id": 0,
+    "Ou3Code": "0",
+    "DistrictName": "All",
+    "Province": "Eastern Cape",
+    "Ou2Code": "431111"
+  },
+  {
+    "Id": 19,
+    "Ou3Code": "444212    ",
+    "DistrictName": "Alfred Nzo District Municipality",
+    "Province": "Eastern Cape",
+    "Ou2Code": "431111"
+  },
+  {
+    "Id": 16,
+    "Ou3Code": "252803    ",
+    "DistrictName": "Amathole District Municipality",
+    "Province": "Eastern Cape",
+    "Ou2Code": "431111"
+  },
+  {
+    "Id": 20,
+    "Ou3Code": "528712    ",
+    "DistrictName": "Buffalo City Metropolitan Municipality",
+    "Province": "Eastern Cape",
+    "Ou2Code": "431111"
+  },
+  {
+    "Id": 23,
+    "Ou3Code": "732412    ",
+    "DistrictName": "Chris Hani District Municipality",
+    "Province": "Eastern Cape",
+    "Ou2Code": "431111"
+  },
+  {
+    "Id": 18,
+    "Ou3Code": "404230    ",
+    "DistrictName": "Joe Gqabi District Municipality",
+    "Province": "Eastern Cape",
+    "Ou2Code": "431111"
+  },
+  {
+    "Id": 22,
+    "Ou3Code": "678321    ",
+    "DistrictName": "Nelson Mandela Bay Municipality",
+    "Province": "Eastern Cape",
+    "Ou2Code": "431111"
+  },
+  {
+    "Id": 17,
+    "Ou3Code": "264903    ",
+    "DistrictName": "Oliver Tambo District Municipality",
+    "Province": "Eastern Cape",
+    "Ou2Code": "431111"
+  },
+  {
+    "Id": 21,
+    "Ou3Code": "621012    ",
+    "DistrictName": "Sarah Baartman District Municipality",
+    "Province": "Eastern Cape",
+    "Ou2Code": "431111"
+  },
+  {
+    "Id": 0,
+    "Ou3Code": "0",
+    "DistrictName": "All",
+    "Province": "Free State",
+    "Ou2Code": "217302"
+  },
+  {
+    "Id": 4,
+    "Ou3Code": "543412    ",
+    "DistrictName": "Fezile Dabi District Municipality",
+    "Province": "Free State",
+    "Ou2Code": "217302"
+  },
+  {
+    "Id": 1,
+    "Ou3Code": "129112    ",
+    "DistrictName": "Lejweleputswa District Municipality",
+    "Province": "Free State",
+    "Ou2Code": "217302"
+  },
+  {
+    "Id": 2,
+    "Ou3Code": "441412    ",
+    "DistrictName": "Mangaung Metropolitan Municipality",
+    "Province": "Free State",
+    "Ou2Code": "217302"
+  },
+  {
+    "Id": 5,
+    "Ou3Code": "651821    ",
+    "DistrictName": "Thabo Mofutsanyana District Municipality",
+    "Province": "Free State",
+    "Ou2Code": "217302"
+  },
+  {
+    "Id": 3,
+    "Ou3Code": "541712    ",
+    "DistrictName": "Xhariep District Municipality",
+    "Province": "Free State",
+    "Ou2Code": "217302"
+  },
+  {
+    "Id": 0,
+    "Ou3Code": "0",
+    "DistrictName": "All",
+    "Province": "Gauteng",
+    "Ou2Code": "333920"
+  },
+  {
+    "Id": 14,
+    "Ou3Code": "757012    ",
+    "DistrictName": "City of Johannesburg Metropolitan Municipality",
+    "Province": "Gauteng",
+    "Ou2Code": "333920"
+  },
+  {
+    "Id": 11,
+    "Ou3Code": "213103    ",
+    "DistrictName": "City of Tshwane Metropolitan Municipality",
+    "Province": "Gauteng",
+    "Ou2Code": "333920"
+  },
+  {
+    "Id": 13,
+    "Ou3Code": "565703    ",
+    "DistrictName": "Ekurhuleni Metropolitan Municipality",
+    "Province": "Gauteng",
+    "Ou2Code": "333920"
+  },
+  {
+    "Id": 12,
+    "Ou3Code": "364303    ",
+    "DistrictName": "Sedibeng District Municipality",
+    "Province": "Gauteng",
+    "Ou2Code": "333920"
+  },
+  {
+    "Id": 15,
+    "Ou3Code": "785121    ",
+    "DistrictName": "West Rand District Municipality",
+    "Province": "Gauteng",
+    "Ou2Code": "333920"
+  },
+  {
+    "Id": 0,
+    "Ou3Code": "0",
+    "DistrictName": "All",
+    "Province": "KwaZulu-Natal",
+    "Ou2Code": "446311"
+  },
+  {
+    "Id": 33,
+    "Ou3Code": "863112    ",
+    "DistrictName": "Amajuba District Municipality",
+    "Province": "KwaZulu-Natal",
+    "Ou2Code": "446311"
+  },
+  {
+    "Id": 28,
+    "Ou3Code": "391012    ",
+    "DistrictName": "eThekwini Metropolitan Municipality",
+    "Province": "KwaZulu-Natal",
+    "Ou2Code": "446311"
+  },
+  {
+    "Id": 34,
+    "Ou3Code": "866912    ",
+    "DistrictName": "Harry Gwala District Municipality",
+    "Province": "KwaZulu-Natal",
+    "Ou2Code": "446311"
+  },
+  {
+    "Id": 32,
+    "Ou3Code": "585430    ",
+    "DistrictName": "iLembe District Municipality",
+    "Province": "KwaZulu-Natal",
+    "Ou2Code": "446311"
+  },
+  {
+    "Id": 27,
+    "Ou3Code": "367621    ",
+    "DistrictName": "King Cetshwayo District Municipality",
+    "Province": "KwaZulu-Natal",
+    "Ou2Code": "446311"
+  },
+  {
+    "Id": 30,
+    "Ou3Code": "546212    ",
+    "DistrictName": "Ugu District Municipality",
+    "Province": "KwaZulu-Natal",
+    "Ou2Code": "446311"
+  },
+  {
+    "Id": 31,
+    "Ou3Code": "575421    ",
+    "DistrictName": "uMgungundlovu District Municipality",
+    "Province": "KwaZulu-Natal",
+    "Ou2Code": "446311"
+  },
+  {
+    "Id": 26,
+    "Ou3Code": "364630    ",
+    "DistrictName": "Umkhanyakude District Municipality",
+    "Province": "KwaZulu-Natal",
+    "Ou2Code": "446311"
+  },
+  {
+    "Id": 29,
+    "Ou3Code": "433121    ",
+    "DistrictName": "Umzinyathi District Municipality",
+    "Province": "KwaZulu-Natal",
+    "Ou2Code": "446311"
+  },
+  {
+    "Id": 25,
+    "Ou3Code": "353812    ",
+    "DistrictName": "Uthukela District Municipality",
+    "Province": "KwaZulu-Natal",
+    "Ou2Code": "446311"
+  },
+  {
+    "Id": 24,
+    "Ou3Code": "272903    ",
+    "DistrictName": "Zululand District Municipality",
+    "Province": "KwaZulu-Natal",
+    "Ou2Code": "446311"
+  },
+  {
+    "Id": 0,
+    "Ou3Code": "0",
+    "DistrictName": "All",
+    "Province": "Limpopo",
+    "Ou2Code": "325111"
+  },
+  {
+    "Id": 6,
+    "Ou3Code": "173403    ",
+    "DistrictName": "Capricorn District Municipality",
+    "Province": "Limpopo",
+    "Ou2Code": "325111"
+  },
+  {
+    "Id": 9,
+    "Ou3Code": "524721    ",
+    "DistrictName": "Mopani District Municipality",
+    "Province": "Limpopo",
+    "Ou2Code": "325111"
+  },
+  {
+    "Id": 7,
+    "Ou3Code": "220621    ",
+    "DistrictName": "Sekhukhune District Municipality",
+    "Province": "Limpopo",
+    "Ou2Code": "325111"
+  },
+  {
+    "Id": 8,
+    "Ou3Code": "487121    ",
+    "DistrictName": "Vhembe District Municipality",
+    "Province": "Limpopo",
+    "Ou2Code": "325111"
+  },
+  {
+    "Id": 10,
+    "Ou3Code": "704412    ",
+    "DistrictName": "Waterberg District Municipality",
+    "Province": "Limpopo",
+    "Ou2Code": "325111"
+  },
+  {
+    "Id": 0,
+    "Ou3Code": "0",
+    "DistrictName": "All",
+    "Province": "Mpumalanga",
+    "Ou2Code": "827311"
+  },
+  {
+    "Id": 47,
+    "Ou3Code": "976421    ",
+    "DistrictName": "Ehlanzeni District Municipality",
+    "Province": "Mpumalanga",
+    "Ou2Code": "827311"
+  },
+  {
+    "Id": 45,
+    "Ou3Code": "334903    ",
+    "DistrictName": "Gert Sibande District Municipality",
+    "Province": "Mpumalanga",
+    "Ou2Code": "827311"
+  },
+  {
+    "Id": 46,
+    "Ou3Code": "631203    ",
+    "DistrictName": "Nkangala District Municipality",
+    "Province": "Mpumalanga",
+    "Ou2Code": "827311"
+  },
+  {
+    "Id": 0,
+    "Ou3Code": "0",
+    "DistrictName": "All",
+    "Province": "North West",
+    "Ou2Code": "568802"
+  },
+  {
+    "Id": 36,
+    "Ou3Code": "705721    ",
+    "DistrictName": "Bojanala Platinum District Municipality",
+    "Province": "North West",
+    "Ou2Code": "568802"
+  },
+  {
+    "Id": 35,
+    "Ou3Code": "497630    ",
+    "DistrictName": "Dr Kenneth Kaunda District Municipality",
+    "Province": "North West",
+    "Ou2Code": "568802"
+  },
+  {
+    "Id": 38,
+    "Ou3Code": "841921    ",
+    "DistrictName": "Dr Ruth Segomotsi Mompati District Municipality",
+    "Province": "North West",
+    "Ou2Code": "568802"
+  },
+  {
+    "Id": 37,
+    "Ou3Code": "740203    ",
+    "DistrictName": "Ngaka Modiri Molema District Municipality",
+    "Province": "North West",
+    "Ou2Code": "568802"
+  },
+  {
+    "Id": 0,
+    "Ou3Code": "0",
+    "DistrictName": "All",
+    "Province": "Northern Cape",
+    "Ou2Code": "866402"
+  },
+  {
+    "Id": 50,
+    "Ou3Code": "495430    ",
+    "DistrictName": "Frances Baard District Municipality",
+    "Province": "Northern Cape",
+    "Ou2Code": "866402"
+  },
+  {
+    "Id": 49,
+    "Ou3Code": "334321    ",
+    "DistrictName": "John Taolo Gaetsewe District Municipality",
+    "Province": "Northern Cape",
+    "Ou2Code": "866402"
+  },
+  {
+    "Id": 48,
+    "Ou3Code": "259530    ",
+    "DistrictName": "Namakwa District Municipality",
+    "Province": "Northern Cape",
+    "Ou2Code": "866402"
+  },
+  {
+    "Id": 51,
+    "Ou3Code": "646121    ",
+    "DistrictName": "Pixley ka Seme District Municipality",
+    "Province": "Northern Cape",
+    "Ou2Code": "866402"
+  },
+  {
+    "Id": 52,
+    "Ou3Code": "741212    ",
+    "DistrictName": "Zwelentlanga Fatman Mgcawu District Municipality",
+    "Province": "Northern Cape",
+    "Ou2Code": "866402"
+  },
+  {
+    "Id": 0,
+    "Ou3Code": "0",
+    "DistrictName": "All",
+    "Province": "Western Cape",
+    "Ou2Code": "584611"
+  },
+  {
+    "Id": 41,
+    "Ou3Code": "541221    ",
+    "DistrictName": "Cape Winelands District Municipality",
+    "Province": "Western Cape",
+    "Ou2Code": "584611"
+  },
+  {
+    "Id": 43,
+    "Ou3Code": "842812    ",
+    "DistrictName": "Central Karoo District Municipality",
+    "Province": "Western Cape",
+    "Ou2Code": "584611"
+  },
+  {
+    "Id": 40,
+    "Ou3Code": "472412    ",
+    "DistrictName": "City of Cape Town Metropolitan Municipality",
+    "Province": "Western Cape",
+    "Ou2Code": "584611"
+  },
+  {
+    "Id": 44,
+    "Ou3Code": "853430    ",
+    "DistrictName": "Eden District Municipality",
+    "Province": "Western Cape",
+    "Ou2Code": "584611"
+  },
+  {
+    "Id": 42,
+    "Ou3Code": "685330    ",
+    "DistrictName": "Overberg District Municipality",
+    "Province": "Western Cape",
+    "Ou2Code": "584611"
+  },
+  {
+    "Id": 39,
+    "Ou3Code": "322303    ",
+    "DistrictName": "West Coast District Municipality",
+    "Province": "Western Cape",
+    "Ou2Code": "584611"
+  }
+]

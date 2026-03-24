@@ -4797,6 +4797,11 @@ export type PracticeFindManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Skip the first `n` Practices.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of Practices.
+   */
   distinct?: Prisma.PracticeScalarFieldEnum | Prisma.PracticeScalarFieldEnum[]
 }
 

@@ -23,6 +23,42 @@ export interface ClaimLineItem {
   rawDateOfService?: string;
   placeOfService?: string;
   membershipNumber?: string;
+  // Extended fields for EDIFACT / switchboard validation
+  patientIdNumber?: string;     // SA ID number (RFF+AHI segment — 13 digits)
+  patientDob?: string;          // Date of birth (DTM+329 segment)
+  treatingProviderNumber?: string; // Treating doctor BHF (NAD+TDN)
+  referringProviderNumber?: string; // Referring doctor BHF (NAD+RDN)
+  authorizationNumber?: string; // Pre-auth number (RFF+AE)
+  schemeOptionCode?: string;    // Scheme plan/option code
+  admissionDate?: string;       // Hospital admission date (DTM+194)
+  dischargeDate?: string;       // Hospital discharge date (DTM+96)
+  accidentDate?: string;        // IOD/accident date (DTM+290)
+  prescriptionNumber?: string;  // Pharmacy prescription ref (RFF+PRE)
+  dispensingDate?: string;      // Pharmacy dispensing date (DTM+292)
+  vatRate?: number;             // VAT rate (TAX+7 segment, default 15%)
+  depositAmount?: number;       // Patient payment/deposit (PAT+14)
+  isIOD?: boolean;              // Injured on duty flag (RFF+IOD)
+  isMVA?: boolean;              // Motor vehicle accident (RFF+MVA)
+  isMaternity?: boolean;        // Maternity flag (RFF+MAT)
+  isOutpatient?: boolean;       // Outpatient flag (RFF+OUT)
+}
+
+/** Batch-level metadata for EDIFACT structural validation */
+export interface ClaimBatchMetadata {
+  batchNumber?: string;           // BGM batch number (18 digits zero-filled)
+  batchCreationDate?: string;     // BGM creation date
+  messageReferenceNumber?: string; // UNH message ref (up to 14 chars)
+  correctionType?: "ADJ" | "ADD" | "REV" | "RSV" | "INT"; // DCR segment
+  originalClaimReference?: string; // Original claim number for ADJ/REV
+  supplierBatchNumber?: string;   // DCR+SBN — original supplier batch
+  isResubmission?: boolean;       // Whether this is a resubmission
+  isRealTime?: boolean;           // Real-time vs batch submission
+  isEmergency?: boolean;          // Emergency priority flag
+  lateSubmissionMotivation?: string; // Required when claim > 90 days old
+  submittingPracticeNumber?: string; // The practice submitting (may differ from rendering)
+  renderingPracticeNumber?: string;  // The practice that rendered the service
+  switchContractActive?: boolean;    // Whether practice has active switch contract
+  switchRegistrationDate?: string;   // When practice registered with switch
 }
 
 export type ValidationSeverity = "error" | "warning" | "info";
@@ -128,4 +164,5 @@ export interface ColumnMapping {
   motivationText?: string;
   placeOfService?: string;
   membershipNumber?: string;
+  patientDob?: string;
 }

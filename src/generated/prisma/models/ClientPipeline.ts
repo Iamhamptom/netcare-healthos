@@ -1698,6 +1698,11 @@ export type ClientPipelineFindManyArgs<ExtArgs extends runtime.Types.Extensions.
    * Skip the first `n` ClientPipelines.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of ClientPipelines.
+   */
   distinct?: Prisma.ClientPipelineScalarFieldEnum | Prisma.ClientPipelineScalarFieldEnum[]
 }
 

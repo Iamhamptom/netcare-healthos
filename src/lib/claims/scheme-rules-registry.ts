@@ -10,6 +10,8 @@
 //   - scheme-cdl-rules.ts          → 27 CDL condition protocols with per-scheme variants
 //   - scheme-pmb-rules.ts          → 71+ DTP rules + 8 emergency rules
 //   - scheme-adjudication-rules.ts → 70+ adjudication flowchart rules
+//   - scheme-exclusion-rules.ts   → Exclusions, CDA, treatment baskets, modifiers, rejection codes
+//   - scheme-benefit-limits.ts    → Per-plan Rand limits from official brochures (Bestmed, Medshield, GEMS, Bankmed, Discovery)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 import {
@@ -69,6 +71,40 @@ import {
   type DTPRule,
   type EmergencyRule,
 } from "./scheme-pmb-rules";
+
+import {
+  ALL_BENEFIT_LIMIT_RULES,
+  getBenefitLimits,
+  getBenefitLimitRuleCount,
+  type BenefitLimitRule,
+  type BenefitCategory,
+} from "./scheme-benefit-limits";
+
+import {
+  ALL_EXTENDED_BENEFIT_LIMITS,
+  getExtendedBenefitLimitRuleCount,
+} from "./scheme-benefit-limits-extended";
+
+import {
+  EXCLUSION_RULES,
+  DISCOVERY_CDA_RULES,
+  DISCOVERY_TREATMENT_BASKETS,
+  MODIFIER_RULES,
+  REJECTION_CODE_RULES,
+  TARIFF_RANGE_RULES,
+  getExclusionRules,
+  getDiscoveryCDA,
+  getTreatmentBasket,
+  getRejectionCodeInfo,
+  getTariffRange,
+  getExclusionRuleCount,
+  type ExclusionRule,
+  type CDARule,
+  type TreatmentBasketRule,
+  type ModifierRule,
+  type RejectionCodeRule,
+  type TariffRangeRule,
+} from "./scheme-exclusion-rules";
 
 import {
   ADJUDICATION_RULES,
@@ -218,6 +254,13 @@ export interface RuleCountBreakdown {
   dtpRules: number;
   emergencyRules: number;
   adjudicationRules: number;
+  exclusionRules: number;
+  cdaRules: number;
+  treatmentBasketRules: number;
+  modifierRules: number;
+  rejectionCodeRules: number;
+  tariffRangeRules: number;
+  benefitLimitRules: number;
   total: number;
 }
 
@@ -231,6 +274,13 @@ export function getRuleCountBreakdown(): RuleCountBreakdown {
   const tariffRules = getTariffRuleCount();
 
   const adjudicationRules = getAdjudicationRuleCount();
+  const exclusionRuleCount = EXCLUSION_RULES.length;
+  const cdaRuleCount = DISCOVERY_CDA_RULES.length;
+  const treatmentBasketCount = DISCOVERY_TREATMENT_BASKETS.length;
+  const modifierCount = MODIFIER_RULES.length;
+  const rejectionCodeCount = REJECTION_CODE_RULES.length;
+  const tariffRangeCount = TARIFF_RANGE_RULES.length;
+  const benefitLimitCount = getBenefitLimitRuleCount() + getExtendedBenefitLimitRuleCount();
 
   return {
     coreSchemeProfiles: SCHEME_PROFILES.length,
@@ -243,7 +293,14 @@ export function getRuleCountBreakdown(): RuleCountBreakdown {
     dtpRules,
     emergencyRules: EMERGENCY_RULES.length,
     adjudicationRules,
-    total: coreCustomRules + extCustomRules + planRules + tariffRules + cdlRules + dtpRules + EMERGENCY_RULES.length + adjudicationRules,
+    exclusionRules: exclusionRuleCount,
+    cdaRules: cdaRuleCount,
+    treatmentBasketRules: treatmentBasketCount,
+    modifierRules: modifierCount,
+    rejectionCodeRules: rejectionCodeCount,
+    tariffRangeRules: tariffRangeCount,
+    benefitLimitRules: benefitLimitCount,
+    total: coreCustomRules + extCustomRules + planRules + tariffRules + cdlRules + dtpRules + EMERGENCY_RULES.length + adjudicationRules + exclusionRuleCount + cdaRuleCount + treatmentBasketCount + modifierCount + rejectionCodeCount + tariffRangeCount + benefitLimitCount,
   };
 }
 
@@ -296,6 +353,23 @@ export {
   getAdjudicationRulesByStep,
   getAutoCorrectable,
   getHighRiskRules,
+
+  // Benefit limits (per-plan Rand limits)
+  ALL_BENEFIT_LIMIT_RULES,
+  getBenefitLimits,
+
+  // Exclusion & benefit rules
+  EXCLUSION_RULES,
+  DISCOVERY_CDA_RULES,
+  DISCOVERY_TREATMENT_BASKETS,
+  MODIFIER_RULES,
+  REJECTION_CODE_RULES,
+  TARIFF_RANGE_RULES,
+  getExclusionRules,
+  getDiscoveryCDA,
+  getTreatmentBasket,
+  getRejectionCodeInfo,
+  getTariffRange,
 };
 
 // Type re-exports
@@ -310,4 +384,12 @@ export type {
   EmergencyRule,
   AdjudicationRule,
   AdjudicationStep,
+  ExclusionRule,
+  CDARule,
+  TreatmentBasketRule,
+  ModifierRule,
+  RejectionCodeRule,
+  TariffRangeRule,
+  BenefitLimitRule,
+  BenefitCategory,
 };

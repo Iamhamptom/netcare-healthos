@@ -80,12 +80,12 @@ export type PrismaVersion = {
 }
 
 /**
- * Prisma Client JS version: 7.4.2
- * Query Engine version: 94a226be1cf2967af2541cca5529f0f7ba866919
+ * Prisma Client JS version: 7.5.0
+ * Query Engine version: 280c870be64f457428992c43c1f6d557fab6e29e
  */
 export const prismaVersion: PrismaVersion = {
-  client: "7.4.2",
-  engine: "94a226be1cf2967af2541cca5529f0f7ba866919"
+  client: "7.5.0",
+  engine: "280c870be64f457428992c43c1f6d557fab6e29e"
 }
 
 /**
@@ -422,7 +422,10 @@ export const ModelName = {
   SwitchingPreAuth: 'SwitchingPreAuth',
   SwitchingBatchJob: 'SwitchingBatchJob',
   SwitchingERA: 'SwitchingERA',
-  SwitchingVendor: 'SwitchingVendor'
+  Tenant: 'Tenant',
+  TenantPractice: 'TenantPractice',
+  SwitchingVendor: 'SwitchingVendor',
+  NappiMedicine: 'NappiMedicine'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -438,7 +441,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "practice" | "patient" | "allergy" | "medication" | "medicalRecord" | "vitals" | "conversation" | "message" | "booking" | "review" | "recallItem" | "auditLog" | "invoice" | "payment" | "checkIn" | "notification" | "consentRecord" | "investorNote" | "creditLedger" | "apiKey" | "opsDocument" | "clientPipeline" | "clientActivity" | "referral" | "dailyTask" | "newsletterSubscriber" | "outreachCampaign" | "outreachTarget" | "outreachEmail" | "healthbridgeClaim" | "healthbridgeRemittance" | "healthbridgeEligibility" | "claimsAnalysis" | "claimsRule" | "switchingPreAuth" | "switchingBatchJob" | "switchingERA" | "switchingVendor"
+    modelProps: "user" | "practice" | "patient" | "allergy" | "medication" | "medicalRecord" | "vitals" | "conversation" | "message" | "booking" | "review" | "recallItem" | "auditLog" | "invoice" | "payment" | "checkIn" | "notification" | "consentRecord" | "investorNote" | "creditLedger" | "apiKey" | "opsDocument" | "clientPipeline" | "clientActivity" | "referral" | "dailyTask" | "newsletterSubscriber" | "outreachCampaign" | "outreachTarget" | "outreachEmail" | "healthbridgeClaim" | "healthbridgeRemittance" | "healthbridgeEligibility" | "claimsAnalysis" | "claimsRule" | "switchingPreAuth" | "switchingBatchJob" | "switchingERA" | "tenant" | "tenantPractice" | "switchingVendor" | "nappiMedicine"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3254,6 +3257,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Tenant: {
+      payload: Prisma.$TenantPayload<ExtArgs>
+      fields: Prisma.TenantFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TenantFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TenantFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPayload>
+        }
+        findFirst: {
+          args: Prisma.TenantFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TenantFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPayload>
+        }
+        findMany: {
+          args: Prisma.TenantFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPayload>[]
+        }
+        create: {
+          args: Prisma.TenantCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPayload>
+        }
+        createMany: {
+          args: Prisma.TenantCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.TenantCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPayload>[]
+        }
+        delete: {
+          args: Prisma.TenantDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPayload>
+        }
+        update: {
+          args: Prisma.TenantUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPayload>
+        }
+        deleteMany: {
+          args: Prisma.TenantDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TenantUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.TenantUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPayload>[]
+        }
+        upsert: {
+          args: Prisma.TenantUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPayload>
+        }
+        aggregate: {
+          args: Prisma.TenantAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTenant>
+        }
+        groupBy: {
+          args: Prisma.TenantGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TenantGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TenantCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TenantCountAggregateOutputType> | number
+        }
+      }
+    }
+    TenantPractice: {
+      payload: Prisma.$TenantPracticePayload<ExtArgs>
+      fields: Prisma.TenantPracticeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TenantPracticeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPracticePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TenantPracticeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPracticePayload>
+        }
+        findFirst: {
+          args: Prisma.TenantPracticeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPracticePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TenantPracticeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPracticePayload>
+        }
+        findMany: {
+          args: Prisma.TenantPracticeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPracticePayload>[]
+        }
+        create: {
+          args: Prisma.TenantPracticeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPracticePayload>
+        }
+        createMany: {
+          args: Prisma.TenantPracticeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.TenantPracticeCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPracticePayload>[]
+        }
+        delete: {
+          args: Prisma.TenantPracticeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPracticePayload>
+        }
+        update: {
+          args: Prisma.TenantPracticeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPracticePayload>
+        }
+        deleteMany: {
+          args: Prisma.TenantPracticeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TenantPracticeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.TenantPracticeUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPracticePayload>[]
+        }
+        upsert: {
+          args: Prisma.TenantPracticeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TenantPracticePayload>
+        }
+        aggregate: {
+          args: Prisma.TenantPracticeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTenantPractice>
+        }
+        groupBy: {
+          args: Prisma.TenantPracticeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TenantPracticeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TenantPracticeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TenantPracticeCountAggregateOutputType> | number
+        }
+      }
+    }
     SwitchingVendor: {
       payload: Prisma.$SwitchingVendorPayload<ExtArgs>
       fields: Prisma.SwitchingVendorFieldRefs
@@ -3325,6 +3476,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.SwitchingVendorCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.SwitchingVendorCountAggregateOutputType> | number
+        }
+      }
+    }
+    NappiMedicine: {
+      payload: Prisma.$NappiMedicinePayload<ExtArgs>
+      fields: Prisma.NappiMedicineFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.NappiMedicineFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NappiMedicinePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.NappiMedicineFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NappiMedicinePayload>
+        }
+        findFirst: {
+          args: Prisma.NappiMedicineFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NappiMedicinePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.NappiMedicineFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NappiMedicinePayload>
+        }
+        findMany: {
+          args: Prisma.NappiMedicineFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NappiMedicinePayload>[]
+        }
+        create: {
+          args: Prisma.NappiMedicineCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NappiMedicinePayload>
+        }
+        createMany: {
+          args: Prisma.NappiMedicineCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.NappiMedicineCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NappiMedicinePayload>[]
+        }
+        delete: {
+          args: Prisma.NappiMedicineDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NappiMedicinePayload>
+        }
+        update: {
+          args: Prisma.NappiMedicineUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NappiMedicinePayload>
+        }
+        deleteMany: {
+          args: Prisma.NappiMedicineDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.NappiMedicineUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.NappiMedicineUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NappiMedicinePayload>[]
+        }
+        upsert: {
+          args: Prisma.NappiMedicineUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NappiMedicinePayload>
+        }
+        aggregate: {
+          args: Prisma.NappiMedicineAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateNappiMedicine>
+        }
+        groupBy: {
+          args: Prisma.NappiMedicineGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NappiMedicineGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.NappiMedicineCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NappiMedicineCountAggregateOutputType> | number
         }
       }
     }
@@ -4132,6 +4357,67 @@ export const SwitchingERAScalarFieldEnum = {
 export type SwitchingERAScalarFieldEnum = (typeof SwitchingERAScalarFieldEnum)[keyof typeof SwitchingERAScalarFieldEnum]
 
 
+export const TenantScalarFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  name: 'name',
+  industryType: 'industryType',
+  status: 'status',
+  logoUrl: 'logoUrl',
+  faviconUrl: 'faviconUrl',
+  primaryColor: 'primaryColor',
+  secondaryColor: 'secondaryColor',
+  accentColor: 'accentColor',
+  tagline: 'tagline',
+  supportEmail: 'supportEmail',
+  supportPhone: 'supportPhone',
+  websiteUrl: 'websiteUrl',
+  featureClaimsAnalyzer: 'featureClaimsAnalyzer',
+  featureFhirHub: 'featureFhirHub',
+  featureSwitchingEngine: 'featureSwitchingEngine',
+  featureWhatsapp: 'featureWhatsapp',
+  featurePlaceo: 'featurePlaceo',
+  featureCareonBridge: 'featureCareonBridge',
+  featurePatientPortal: 'featurePatientPortal',
+  featureBilling: 'featureBilling',
+  featureBookings: 'featureBookings',
+  featureRecall: 'featureRecall',
+  featureReferrals: 'featureReferrals',
+  featureOpsHub: 'featureOpsHub',
+  featureInvestorPortal: 'featureInvestorPortal',
+  featureOutreach: 'featureOutreach',
+  featureMlPipeline: 'featureMlPipeline',
+  pricingModel: 'pricingModel',
+  rate: 'rate',
+  commissionSplit: 'commissionSplit',
+  paymentTerms: 'paymentTerms',
+  billingEmail: 'billingEmail',
+  vatNumber: 'vatNumber',
+  paystackSubId: 'paystackSubId',
+  agreementTemplate: 'agreementTemplate',
+  customTerms: 'customTerms',
+  signedAt: 'signedAt',
+  signedBy: 'signedBy',
+  trialEndsAt: 'trialEndsAt',
+  onboardedAt: 'onboardedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TenantScalarFieldEnum = (typeof TenantScalarFieldEnum)[keyof typeof TenantScalarFieldEnum]
+
+
+export const TenantPracticeScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  practiceId: 'practiceId',
+  role: 'role',
+  addedAt: 'addedAt'
+} as const
+
+export type TenantPracticeScalarFieldEnum = (typeof TenantPracticeScalarFieldEnum)[keyof typeof TenantPracticeScalarFieldEnum]
+
+
 export const SwitchingVendorScalarFieldEnum = {
   id: 'id',
   vendorName: 'vendorName',
@@ -4152,6 +4438,32 @@ export const SwitchingVendorScalarFieldEnum = {
 } as const
 
 export type SwitchingVendorScalarFieldEnum = (typeof SwitchingVendorScalarFieldEnum)[keyof typeof SwitchingVendorScalarFieldEnum]
+
+
+export const NappiMedicineScalarFieldEnum = {
+  id: 'id',
+  nappiCode: 'nappiCode',
+  packCode: 'packCode',
+  fullNappiCode: 'fullNappiCode',
+  name: 'name',
+  strength: 'strength',
+  dosageForm: 'dosageForm',
+  dosageFormDesc: 'dosageFormDesc',
+  packSize: 'packSize',
+  manufacturerCode: 'manufacturerCode',
+  category: 'category',
+  schedule: 'schedule',
+  sepPrice: 'sepPrice',
+  costPerUnit: 'costPerUnit',
+  dispensingFee: 'dispensingFee',
+  isGeneric: 'isGeneric',
+  ingredients: 'ingredients',
+  regNumber: 'regNumber',
+  isActive: 'isActive',
+  lastUpdated: 'lastUpdated'
+} as const
+
+export type NappiMedicineScalarFieldEnum = (typeof NappiMedicineScalarFieldEnum)[keyof typeof NappiMedicineScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -4343,7 +4655,10 @@ export type GlobalOmitConfig = {
   switchingPreAuth?: Prisma.SwitchingPreAuthOmit
   switchingBatchJob?: Prisma.SwitchingBatchJobOmit
   switchingERA?: Prisma.SwitchingERAOmit
+  tenant?: Prisma.TenantOmit
+  tenantPractice?: Prisma.TenantPracticeOmit
   switchingVendor?: Prisma.SwitchingVendorOmit
+  nappiMedicine?: Prisma.NappiMedicineOmit
 }
 
 /* Types for Logging */

@@ -89,7 +89,10 @@ export const ModelName = {
   SwitchingPreAuth: 'SwitchingPreAuth',
   SwitchingBatchJob: 'SwitchingBatchJob',
   SwitchingERA: 'SwitchingERA',
-  SwitchingVendor: 'SwitchingVendor'
+  Tenant: 'Tenant',
+  TenantPractice: 'TenantPractice',
+  SwitchingVendor: 'SwitchingVendor',
+  NappiMedicine: 'NappiMedicine'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -873,6 +876,67 @@ export const SwitchingERAScalarFieldEnum = {
 export type SwitchingERAScalarFieldEnum = (typeof SwitchingERAScalarFieldEnum)[keyof typeof SwitchingERAScalarFieldEnum]
 
 
+export const TenantScalarFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  name: 'name',
+  industryType: 'industryType',
+  status: 'status',
+  logoUrl: 'logoUrl',
+  faviconUrl: 'faviconUrl',
+  primaryColor: 'primaryColor',
+  secondaryColor: 'secondaryColor',
+  accentColor: 'accentColor',
+  tagline: 'tagline',
+  supportEmail: 'supportEmail',
+  supportPhone: 'supportPhone',
+  websiteUrl: 'websiteUrl',
+  featureClaimsAnalyzer: 'featureClaimsAnalyzer',
+  featureFhirHub: 'featureFhirHub',
+  featureSwitchingEngine: 'featureSwitchingEngine',
+  featureWhatsapp: 'featureWhatsapp',
+  featurePlaceo: 'featurePlaceo',
+  featureCareonBridge: 'featureCareonBridge',
+  featurePatientPortal: 'featurePatientPortal',
+  featureBilling: 'featureBilling',
+  featureBookings: 'featureBookings',
+  featureRecall: 'featureRecall',
+  featureReferrals: 'featureReferrals',
+  featureOpsHub: 'featureOpsHub',
+  featureInvestorPortal: 'featureInvestorPortal',
+  featureOutreach: 'featureOutreach',
+  featureMlPipeline: 'featureMlPipeline',
+  pricingModel: 'pricingModel',
+  rate: 'rate',
+  commissionSplit: 'commissionSplit',
+  paymentTerms: 'paymentTerms',
+  billingEmail: 'billingEmail',
+  vatNumber: 'vatNumber',
+  paystackSubId: 'paystackSubId',
+  agreementTemplate: 'agreementTemplate',
+  customTerms: 'customTerms',
+  signedAt: 'signedAt',
+  signedBy: 'signedBy',
+  trialEndsAt: 'trialEndsAt',
+  onboardedAt: 'onboardedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TenantScalarFieldEnum = (typeof TenantScalarFieldEnum)[keyof typeof TenantScalarFieldEnum]
+
+
+export const TenantPracticeScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  practiceId: 'practiceId',
+  role: 'role',
+  addedAt: 'addedAt'
+} as const
+
+export type TenantPracticeScalarFieldEnum = (typeof TenantPracticeScalarFieldEnum)[keyof typeof TenantPracticeScalarFieldEnum]
+
+
 export const SwitchingVendorScalarFieldEnum = {
   id: 'id',
   vendorName: 'vendorName',
@@ -893,6 +957,32 @@ export const SwitchingVendorScalarFieldEnum = {
 } as const
 
 export type SwitchingVendorScalarFieldEnum = (typeof SwitchingVendorScalarFieldEnum)[keyof typeof SwitchingVendorScalarFieldEnum]
+
+
+export const NappiMedicineScalarFieldEnum = {
+  id: 'id',
+  nappiCode: 'nappiCode',
+  packCode: 'packCode',
+  fullNappiCode: 'fullNappiCode',
+  name: 'name',
+  strength: 'strength',
+  dosageForm: 'dosageForm',
+  dosageFormDesc: 'dosageFormDesc',
+  packSize: 'packSize',
+  manufacturerCode: 'manufacturerCode',
+  category: 'category',
+  schedule: 'schedule',
+  sepPrice: 'sepPrice',
+  costPerUnit: 'costPerUnit',
+  dispensingFee: 'dispensingFee',
+  isGeneric: 'isGeneric',
+  ingredients: 'ingredients',
+  regNumber: 'regNumber',
+  isActive: 'isActive',
+  lastUpdated: 'lastUpdated'
+} as const
+
+export type NappiMedicineScalarFieldEnum = (typeof NappiMedicineScalarFieldEnum)[keyof typeof NappiMedicineScalarFieldEnum]
 
 
 export const SortOrder = {

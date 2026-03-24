@@ -1445,6 +1445,11 @@ export type OutreachEmailFindManyArgs<ExtArgs extends runtime.Types.Extensions.I
    * Skip the first `n` OutreachEmails.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of OutreachEmails.
+   */
   distinct?: Prisma.OutreachEmailScalarFieldEnum | Prisma.OutreachEmailScalarFieldEnum[]
 }
 

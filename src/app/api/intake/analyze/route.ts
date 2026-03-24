@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       patientId: patientId || null,
       analyzedAt: new Date().toISOString(),
       transcriptLength: transcript.length,
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash",
     });
   } catch (err) {
     console.error("[intake/analyze] Error:", err);

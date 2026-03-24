@@ -1,0 +1,15 @@
+Mangaung Metropolitan Municipality - Health Facilities Summary
+Source: Various (health.fs.gov.za, cogta.gov.za, web search results)
+Date: 2026-03-24
+
+OVERVIEW:
+- 4 health subdistricts: Bloemfontein, Botshabelo, Naledi, Thaba Nchu
+- 313 clinics
+- 122 mobile clinics
+- Major hospitals listed in freestate_health_facilities_by_district.csv
+
+NOTES:
+- Full clinic-level list not publicly available on municipality website
+- Detailed data available via Free State Department of Health
+- Address: 4th Floor, Block C West, Bophelo House, Cnr Harvey & Charlotte Maxeke Street, Bloemfontein, 9300
+- Call Centre: 0800 111 300
