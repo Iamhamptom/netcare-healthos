@@ -161,6 +161,7 @@ export interface ColumnMapping {
   dependentCode?: string;
   practiceNumber?: string;
   scheme?: string;
+  schemeOptionCode?: string;
   motivationText?: string;
   placeOfService?: string;
   membershipNumber?: string;

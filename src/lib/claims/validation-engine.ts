@@ -100,6 +100,7 @@ const COLUMN_ALIASES: Record<keyof ColumnMapping, string[]> = {
   dependentCode: ["dependent", "dependent_code", "dep_code", "dep", "dependant", "dependant_code"],
   practiceNumber: ["practice", "practice_number", "practice_no", "provider_no", "provider_number", "practice_id", "bhf_number"],
   scheme: ["scheme", "scheme_code", "scheme_name", "medical_aid", "medical_scheme", "funder"],
+  schemeOptionCode: ["scheme_option_code", "option_code", "plan_code", "benefit_plan", "scheme_plan", "coverage_option", "plan", "option", "scheme_option", "plan_option"],
   motivationText: ["motivation", "motivation_text", "clinical_motivation", "clinical_notes", "notes", "justification", "reason"],
   placeOfService: ["place_of_service", "pos", "service_place", "facility_type"],
   membershipNumber: ["membership_number", "membership", "member_no", "member_number", "scheme_number", "medical_aid_number"],
@@ -250,6 +251,7 @@ export function extractClaimLines(
       dependentCode: mapping.dependentCode ? row[mapping.dependentCode]?.trim() : undefined,
       practiceNumber: mapping.practiceNumber ? row[mapping.practiceNumber]?.trim() : undefined,
       scheme: mapping.scheme ? row[mapping.scheme]?.trim() : undefined,
+      schemeOptionCode: mapping.schemeOptionCode ? row[mapping.schemeOptionCode]?.trim() : undefined,
       motivationText: mapping.motivationText ? row[mapping.motivationText]?.trim() : undefined,
       rawAmount: mapping.amount ? row[mapping.amount]?.trim() : undefined,
       rawDateOfService: mapping.dateOfService ? row[mapping.dateOfService]?.trim() : undefined,
@@ -752,19 +754,21 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
   }
 
   // Specificity check — from curated DB or MIT
+  // Downgraded to warning: SA GPs commonly submit 3-character codes (e.g., R10 for abdominal pain)
+  // for undifferentiated presentations. Schemes may reject, but it's not always an error.
   if (entry && !entry.isValid) {
     issues.push({
       lineNumber: ln, field: "primaryICD10", code: "NON_SPECIFIC",
-      severity: "error", rule: "Insufficient Specificity",
-      message: `"${code}" (${entry.description}) requires greater specificity. This code needs a 4th or 5th character.`,
+      severity: "warning", rule: "Insufficient Specificity",
+      message: `"${code}" (${entry.description}) requires greater specificity. This code needs a 4th or 5th character. Some schemes will reject this.`,
       suggestion: `Use a more specific code under the ${code} category. For example, ${code}.0 or ${code}.9.`,
     });
   } else if (!entry && mitEntry && !mitEntry.isValidClinical) {
     // MIT says code exists but isn't valid for clinical use
     issues.push({
       lineNumber: ln, field: "primaryICD10", code: "NON_SPECIFIC",
-      severity: "error", rule: "Insufficient Specificity",
-      message: `"${code}" (${mitEntry.description}) is not valid for clinical use per the SA MIT. A more specific code is required.`,
+      severity: "warning", rule: "Insufficient Specificity",
+      message: `"${code}" (${mitEntry.description}) is not valid for clinical use per the SA MIT. A more specific code is recommended.`,
       suggestion: `Use a more specific subcategory code under ${code}.`,
     });
   }
@@ -1352,14 +1356,25 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     const isImaging = item.tariffCode.startsWith("51") || item.tariffCode.startsWith("52") || item.tariffCode.startsWith("37");
     const isSurgical = item.tariffCode.startsWith("04") || item.tariffCode.startsWith("05") || item.tariffCode.startsWith("06");
 
-    // X-ray/imaging for common cold/URI (J06, J00-J06) = contradiction
-    const isCommonCold = ["J06", "J00", "J01", "J02", "J03", "J04", "J05"].some(c => code.startsWith(c));
-    if (isImaging && isCommonCold) {
+    // X-ray/imaging for common cold/URI — CXR (5101/5102) is standard GP practice for lower resp symptoms
+    // to rule out pneumonia. Only flag non-CXR imaging (MRI, CT) with common cold codes.
+    const isCommonCold = ["J06", "J00"].some(c => code.startsWith(c));
+    const isCXR = item.tariffCode === "5101" || item.tariffCode === "5102" || item.tariffCode.startsWith("37");
+    const isLowerResp = ["J01", "J02", "J03", "J04", "J05"].some(c => code.startsWith(c));
+    if (isImaging && isCommonCold && !isCXR) {
+      // Non-CXR imaging for a common cold is genuinely contraindicated
       issues.push({
         lineNumber: ln, field: "tariffCode", code: "PROCEDURE_DIAGNOSIS_CONTRADICTION",
         severity: "error", rule: "Procedure-Diagnosis Contradiction",
-        message: `Imaging tariff "${item.tariffCode}" billed with "${code}" (upper respiratory infection). X-ray/imaging is not clinically indicated for a common cold.`,
+        message: `Imaging tariff "${item.tariffCode}" billed with "${code}" (common cold). Advanced imaging is not clinically indicated for an uncomplicated cold.`,
         suggestion: "If imaging was performed for a different condition (e.g., trauma), update the ICD-10 code to reflect the actual reason for imaging.",
+      });
+    } else if (isImaging && (isCommonCold || isLowerResp) && isCXR) {
+      // CXR with respiratory infection is standard — downgrade to info
+      issues.push({
+        lineNumber: ln, field: "tariffCode", code: "IMAGING_RESPIRATORY_INFO",
+        severity: "info", rule: "Chest X-ray With Respiratory Diagnosis",
+        message: `Chest X-ray "${item.tariffCode}" with respiratory diagnosis "${code}". CXR to rule out pneumonia is standard GP practice.`,
       });
     }
 
@@ -1514,11 +1529,20 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
       } else if (tariffNum < scope.min || tariffNum > scope.max) {
         const isGP = prefix3 === "014" || prefix3 === "015";
         const isSpecialistTariff = tariffNum >= 200;
-        if (isGP && isSpecialistTariff) {
+        // GPs routinely bill these non-consultation tariffs — they are GP-appropriate
+        const GP_ALLOWED_TARIFFS = [
+          "0401", "0402", "0403", "0404", // Minor procedures (incision, wound care, etc.)
+          "0407",                          // Wound suturing
+          "4501", "4502", "4503", "4504", "4505", "4506", "4507", "4508", "4509", "4510", // Common pathology
+          "4518", "4519", "4520",          // Urine dipstick, culture, glucose
+          "5101", "5102",                  // Chest X-ray (single/double view)
+          "0141", "0142",                  // Specialist consultation (GP referral follow-up)
+        ];
+        if (isGP && isSpecialistTariff && !GP_ALLOWED_TARIFFS.includes(item.tariffCode)) {
           issues.push({
             lineNumber: ln, field: "tariffCode", code: "DISCIPLINE_TARIFF_SCOPE",
             severity: "error", rule: "Discipline-Tariff Scope Mismatch",
-            message: `GP practice (${item.practiceNumber}, prefix ${prefix3}) billing specialist tariff "${item.tariffCode}" (code 0200+). GPs can only bill GP consultation tariffs (0190-0199).`,
+            message: `GP practice (${item.practiceNumber}, prefix ${prefix3}) billing specialist tariff "${item.tariffCode}" (code 0200+). GPs can only bill GP consultation tariffs (0190-0199) and standard GP procedures (minor ops, pathology, X-ray).`,
             suggestion: "Use the correct GP tariff code (e.g., 0190 for standard GP consultation) or verify the practice number.",
           });
         } else {
@@ -2145,8 +2169,8 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
   // ── Rule 69: CHILD_ADULT_TARIFF — Paediatric tariff on adult patient ──
   if (item.patientAge !== undefined && item.tariffCode) {
     const tariffNum = parseInt(item.tariffCode, 10);
-    // Paediatric tariffs: 0196-0199 (paed consults)
-    const isPaedTariff = tariffNum >= 196 && tariffNum <= 199;
+    // Paediatric tariffs: 0196-0198 (paed consults). NOTE: 0199 is chronic prescription repeat/script, NOT paediatric.
+    const isPaedTariff = tariffNum >= 196 && tariffNum <= 198;
     if (isPaedTariff && item.patientAge > 12) {
       issues.push({
         lineNumber: ln, field: "tariffCode", code: "PAED_TARIFF_ON_ADULT",
@@ -2900,11 +2924,16 @@ function validateCrossLine(lines: ClaimLineItem[]): ValidationIssue[] {
     // Check for after-hours modifier
     const hasAfterHoursModifier = line.modifier && ["0010", "0011", "0012", "0013", "0014"].includes(line.modifier);
     if (!hasAfterHoursModifier) {
+      // Saturday mornings are normal GP hours in SA — many practices open 08:00-13:00
+      // Only flag Sunday/public holidays as warning; Saturday is info-level
+      const isSunday = dayOfWeek === 0;
       issues.push({
         lineNumber: line.lineNumber, field: "modifier", code: "WEEKEND_NO_AFTER_HOURS",
-        severity: "warning", rule: "Weekend Billing Without After-Hours Modifier",
-        message: `Consultation "${line.tariffCode}" on ${line.dateOfService} (${dayOfWeek === 0 ? "Sunday" : "Saturday"}) without after-hours modifier. Weekend consultations should carry modifier 0010-0014 unless the practice is registered for weekend hours.`,
-        suggestion: "Add the appropriate after-hours modifier, or if the practice operates regular weekend hours, document this. Schemes may reject weekend claims without modifiers.",
+        severity: isSunday ? "warning" : "info", rule: "Weekend Billing Without After-Hours Modifier",
+        message: `Consultation "${line.tariffCode}" on ${line.dateOfService} (${isSunday ? "Sunday" : "Saturday"}) without after-hours modifier.${isSunday ? " Sunday consultations should carry modifier 0010-0014." : " Saturday morning consultations are common GP practice in SA."}`,
+        suggestion: isSunday
+          ? "Add the appropriate after-hours modifier (0012 for Sundays/public holidays). Schemes may reject Sunday claims without modifiers."
+          : "If this was after 13:00, add the appropriate after-hours modifier. Saturday morning consultations typically don't require a modifier.",
       });
     }
   }
@@ -3495,7 +3524,7 @@ function validateCrossLine(lines: ClaimLineItem[]): ValidationIssue[] {
             : `R${mean.toFixed(2)}`;
           issues.push({
             lineNumber: data.lineNumbers[i], field: "amount", code: "AMOUNT_OUTLIER",
-            severity: "error", rule: "Claim Amount Outlier — >3 Standard Deviations",
+            severity: "warning", rule: "Claim Amount Outlier — >3 Standard Deviations",
             message: `Amount ${amountDisplay} for tariff "${tariff}" is ${zScore.toFixed(1)} standard deviations from the batch mean of ${meanDisplay}. This is a statistical outlier.`,
             suggestion: "Verify the amount is correct. Extreme outliers may indicate data entry errors, upcoding, or inflated billing. Cross-reference with the scheme tariff schedule.",
           });
