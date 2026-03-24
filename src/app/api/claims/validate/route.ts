@@ -7,6 +7,7 @@ import { isHealthbridgeFormat, parseHealthbridgeClaims } from "@/lib/claims/heal
 import { generateAutoCorrections } from "@/lib/claims/auto-correct";
 import { runAdvancedValidation } from "@/lib/claims/advanced-rules";
 import { detectAnomalies } from "@/lib/claims/statistical-anomaly";
+import { detectGeographicFraud } from "@/lib/claims/geographic-fraud";
 import { validateForSwitchboard, SWITCHBOARD_LIST } from "@/lib/claims/switchboard-rules";
 import type { ColumnMapping, ValidationIssue, ClaimLineItem } from "@/lib/claims/types";
 
@@ -417,6 +418,10 @@ export async function POST(req: NextRequest) {
     // Analyzes the entire batch for patterns no single-claim rule can catch
     const { anomalies: statisticalAnomalies, batchProfile } = detectAnomalies(claimLines);
 
+    // ── Layer 3: Geographic Fraud Detection ──
+    // Detects geographic impossibility patterns (provider/patient location fraud)
+    const geoFraudAlerts = detectGeographicFraud(claimLines);
+
     // Auto-corrections for deterministic fixes
     const autoCorrections = generateAutoCorrections(claimLines, result.issues);
 
@@ -439,6 +444,7 @@ export async function POST(req: NextRequest) {
       autoCorrections,
       selfDiagnosis,
       statisticalAnomalies,
+      geoFraudAlerts,
       batchProfile: {
         totalClaims: batchProfile.totalClaims,
         uniquePatients: batchProfile.uniquePatients,
