@@ -1401,7 +1401,7 @@ export default function ClaimsAnalyzerPage() {
                     {saved ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
                     {saved ? "Saved" : "Save"}
                   </button>
-                  {result.invalidClaims > 0 && (
+                  {(result.invalidClaims > 0 || result.warningClaims > 0) && (
                     <button onClick={() => handleFixFile(true)} disabled={fixing}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-[12px] font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50">
                       {fixing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
