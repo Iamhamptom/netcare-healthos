@@ -791,14 +791,14 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     const tariffNum = parseInt(item.tariffCode, 10);
     // Dental tariff codes: 8100-8999 range (SA dental procedures)
     const isDentalTariff = tariffNum >= 8100 && tariffNum <= 8999;
-    // Practice number prefix indicates discipline — 01xxxx = GP, 04xxxx = dental
-    const isGPPractice = item.practiceNumber?.startsWith("014") || item.practiceNumber?.startsWith("015");
-    if (isDentalTariff && isGPPractice) {
+    // Dental tariffs should only be billed with dental diagnoses (K00-K14)
+    const isDentalDiagnosis = /^K0[0-9]|^K1[0-4]/.test(code);
+    if (isDentalTariff && !isDentalDiagnosis) {
       issues.push({
         lineNumber: ln, field: "tariffCode", code: "TARIFF_DISCIPLINE_MISMATCH",
-        severity: "error", rule: "Discipline/Tariff Mismatch",
-        message: `Dental tariff "${item.tariffCode}" billed by a GP practice (${item.practiceNumber}). Dental procedures must be billed by a registered dental practitioner.`,
-        suggestion: "Verify the tariff code and practice number. Dental tariffs require a dental BHF number.",
+        severity: "error", rule: "Dental Tariff Mismatch",
+        message: `Dental tariff "${item.tariffCode}" billed with non-dental diagnosis "${code}". Dental tariffs (8100-8999) should only be billed with dental diagnoses (K00-K14).`,
+        suggestion: "Use the correct tariff for the diagnosis, or update the diagnosis to the dental condition being treated.",
       });
     }
 
