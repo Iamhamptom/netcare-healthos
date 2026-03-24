@@ -65,6 +65,29 @@ export function recordHealthEvent(
     eventLog.splice(0, eventLog.length - EVENT_LOG_MAX);
   }
 
+  // Persist to Supabase (fire-and-forget, survives cold starts)
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (supabaseUrl && supabaseKey) {
+    fetch(`${supabaseUrl}/rest/v1/ho_learning_events`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": supabaseKey,
+        "Authorization": `Bearer ${supabaseKey}`,
+        "Prefer": "return=minimal",
+      },
+      body: JSON.stringify({
+        event_id: `health-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        event_type: `${source}:${type}`,
+        outcome: "neutral",
+        data: { source, type, ...data },
+        applied: false,
+        created_at: event.timestamp,
+      }),
+    }).catch(() => { /* silent — in-memory is fallback */ });
+  }
+
   // Route to specialized handlers based on source
   try {
     switch (source) {

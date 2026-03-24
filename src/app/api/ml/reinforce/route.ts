@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     const { action } = body as { action?: string };
 
     if (action === "metrics") {
-      return NextResponse.json(getLearningMetrics());
+      return NextResponse.json(await getLearningMetrics());
     }
 
     if (action === "analyze") {
@@ -44,9 +44,30 @@ export async function POST(req: Request) {
       return NextResponse.json(result);
     }
 
+    if (action === "status") {
+      const metrics = await getLearningMetrics();
+      return NextResponse.json({
+        status: "operational",
+        metrics,
+        persistence: "supabase:ho_learning_events",
+        cron: "0 4 * * * (daily)",
+        triggers: [
+          "claims_analyzer:validation_complete",
+          "healthbridge:claim_response",
+          "switching_engine:claim_outcome",
+          "whatsapp_router:message_received",
+          "whatsapp_router:triage_completed",
+          "billing:payment_success",
+          "patient_records:record_created",
+          "claims_analyzer:geo_fraud_scan",
+        ],
+        timestamp: new Date().toISOString(),
+      });
+    }
+
     return NextResponse.json({
-      metrics: getLearningMetrics(),
-      actions: ["metrics", "analyze", "cycle"],
+      metrics: await getLearningMetrics(),
+      actions: ["metrics", "analyze", "cycle", "status"],
     });
   } catch (err) {
     return NextResponse.json({ error: err instanceof Error ? err.message : "Failed" }, { status: 500 });
