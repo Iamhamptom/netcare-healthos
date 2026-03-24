@@ -1217,7 +1217,9 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
       preAuthReason = "CT/MRI/specialist imaging";
     }
     // Surgery (04xx) where amount > R5000
-    if (item.tariffCode.startsWith("04") && item.amount && item.amount > 5000) {
+    // Surgical procedures (04xx) over R5,000 — but NOT GP minor procedures (0401-0407)
+    const GP_MINOR_PROCEDURES = ["0401", "0402", "0403", "0404", "0405", "0406", "0407"];
+    if (item.tariffCode.startsWith("04") && item.amount && item.amount > 5000 && !GP_MINOR_PROCEDURES.includes(item.tariffCode)) {
       needsPreAuth = true;
       preAuthReason = "surgical procedure over R5,000";
     }
@@ -1488,18 +1490,36 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     }
   }
 
-  // ── Rule 22: Referring provider required for specialist/pathology/radiology ──
+  // ── Rule 22: Referring provider required for specialist consultations ──
+  // NOTE: Only applies to SPECIALIST CONSULTATIONS (02xx), not GP-scope tariffs.
+  // GPs billing pathology (45xx), radiology (51xx), or minor procedures (04xx) do NOT
+  // need a referring provider — they ARE the treating provider.
   if (item.tariffCode) {
-    const referralPrefixes = ["02", "04", "45", "51"];
-    const needsReferral = referralPrefixes.some(p => item.tariffCode!.startsWith(p));
-    if (needsReferral) {
+    const tariffNum = parseInt(item.tariffCode, 10);
+    const isGP = item.practiceNumber && (item.practiceNumber.startsWith("014") || item.practiceNumber.startsWith("015"));
+
+    // GP-scope tariffs that NEVER need a referral
+    const GP_NO_REFERRAL = [
+      "0401", "0402", "0403", "0404", "0407",  // Minor procedures
+      "4501", "4502", "4503", "4504", "4505", "4506", "4507", "4508", "4509", "4510", // Pathology
+      "4518", "4519", "4520", "4537",           // Urine/glucose/other pathology
+      "5101", "5102",                            // Chest X-ray
+      "0190", "0191", "0192", "0193", "0194", "0195", "0196", "0197", "0198", "0199", // GP consults
+      "3948",                                    // ECG
+    ];
+
+    // Only flag specialist consultation tariffs (02xx) or truly specialist-only procedures
+    const isSpecialistConsult = tariffNum >= 200 && tariffNum <= 299;
+    const needsReferral = isSpecialistConsult && !isGP;
+
+    if (needsReferral && !GP_NO_REFERRAL.includes(item.tariffCode)) {
       const motivationLower = (item.motivationText || "").toLowerCase();
       const hasReferralInfo = motivationLower.includes("referred by") || motivationLower.includes("ref:");
       if (!hasReferralInfo) {
         issues.push({
           lineNumber: ln, field: "tariffCode", code: "MISSING_REFERRING_PROVIDER",
           severity: "warning", rule: "Missing Referring Provider",
-          message: `Specialist/pathology/radiology tariff "${item.tariffCode}" typically requires a referring provider. No referral indicator found in motivation text.`,
+          message: `Specialist consultation tariff "${item.tariffCode}" typically requires a referring provider. No referral indicator found in motivation text.`,
           suggestion: "Include referring provider details in motivation text (e.g., 'Referred by: Dr Smith, PR 0123456'). Schemes may reject specialist claims without a referral.",
         });
       }
