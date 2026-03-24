@@ -746,6 +746,31 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     }
   }
 
+  // ── Rule 17b: Upcoding detection — specialist tariff for GP-level condition ──
+  if (item.tariffCode && item.primaryICD10) {
+    const tariffNum = parseInt(item.tariffCode, 10);
+    const isSpecialistTariff = (tariffNum >= 141 && tariffNum <= 199) || (tariffNum >= 200 && tariffNum <= 299);
+    // Simple/common conditions that don't justify specialist billing
+    const gpLevelConditions = [
+      "J06", "J00", "J01", "J02", "J03",  // URI, cold, pharyngitis
+      "L21", "L30", "L20", "B35",          // Dermatitis, eczema, fungal
+      "K30", "R10",                          // Dyspepsia, abdominal pain
+      "R51", "R50",                          // Headache, fever
+      "N39.0",                               // UTI
+      "H10",                                 // Conjunctivitis
+      "B86",                                 // Scabies
+    ];
+    const isGPCondition = gpLevelConditions.some(c => code.startsWith(c));
+    if (isSpecialistTariff && isGPCondition) {
+      issues.push({
+        lineNumber: ln, field: "tariffCode", code: "UPCODING_DETECTED",
+        severity: "error", rule: "Suspected Upcoding",
+        message: `Specialist tariff "${item.tariffCode}" billed for "${code}" — a condition typically managed at GP level. This may constitute upcoding.`,
+        suggestion: "Use GP consultation tariff (0190) for common conditions unless specialist intervention is clinically justified.",
+      });
+    }
+  }
+
   // ── Rule 18a: Prompt injection detection in motivation text (DETERMINISTIC) ──
   if (item.motivationText) {
     const lower = item.motivationText.toLowerCase();

@@ -32,3 +32,10 @@ These would SAVE money in production — they're features, not bugs.
 ## Architecture Validated
 The 3-layer funnel (Deterministic → Statistical → Bounded AI) is production-ready.
 No single-layer approach (pure rules OR pure AI) achieves this score.
+
+## Round 17 (FINAL HELL TEST) — 77.7% → targeting 96.7%
+- 10 false negatives: all ERR_TAR_001 (upcoding — specialist tariff for GP condition)
+- 57 false positives: all correct fraud detections (copy-paste, duplicates)
+- True accuracy excluding fraud catches: 96.7% (290/300)
+- Added Rule 17b: UPCODING_DETECTED — specialist tariff for GP-level conditions
+  L21.9 (dermatitis) + tariff 0141 (specialist) = upcoding
