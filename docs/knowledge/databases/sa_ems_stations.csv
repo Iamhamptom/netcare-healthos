@@ -1,0 +1,636 @@
+name,type,group,province,city,address,latitude,longitude,beds,practiceNumber,switchhouse,source
+ec Matatiele EMS Station,other,,EC,,"Main Street, Matatiele, Private Bag X836",-30.348,28.82022,,,,dsfsi_ems
+ec Bizana EMS Station,other,,EC,,,-30.8621,29.854648,,,,dsfsi_ems
+ec Mzamba EMS Station,other,,EC,,,-31.0781,30.183295,,,,dsfsi_ems
+ec Sipetu EMS Station,other,,EC,,,-31.09,29.18,,,,dsfsi_ems
+ec Tabankulu EMS Station,other,,EC,,,-30.96,29.29,,,,dsfsi_ems
+ec Mount Ayliff EMS Station,other,,EC,,,-30.7977,29.37102,,,,dsfsi_ems
+ec Mount Frere EMS Station,other,,EC,,,-30.9,28.99,,,,dsfsi_ems
+ec Cathcart EMS Station,other,,EC,,,-32.298,27.143,,,,dsfsi_ems
+ec Keiskammahoek EMS Station,other,,EC,,,-32.6835,27.13396,,,,dsfsi_ems
+ec Stutterheim EMS Station,other,,EC,,,-32.56,27.42,,,,dsfsi_ems
+ec Komga EMS Station,other,,EC,,,-32.576,27.89576,,,,dsfsi_ems
+ec Willowvale EMS Station,other,,EC,,,-32.265,28.498,,,,dsfsi_ems
+ec Butterworth EMS Station,other,,EC,,,-32.332,28.138,,,,dsfsi_ems
+ec Peddie EMS Station,other,,EC,,,-33.21,27.132,,,,dsfsi_ems
+ec Adelaide EMS Station,other,,EC,,,-32.699,26.294,,,,dsfsi_ems
+ec Bedford EMS Station,other,,EC,,,-32.6762,26.083139,,,,dsfsi_ems
+ec Fort Beaufort EMS Station,other,,EC,,,-32.781,26.634,,,,dsfsi_ems
+ec Victoria EMS Station,other,,EC,,,-32.775,26.846,,,,dsfsi_ems
+ec East London EMS Station,other,,EC,East London,,-32.9785,27.89822,,,,dsfsi_ems
+ec Grey EMS Station,other,,EC,East London,,-32.87,27.39,,,,dsfsi_ems
+ec Mdantsane EMS Station,other,,EC,East London,,-32.92,27.74,,,,dsfsi_ems
+ec Dordrecht EMS Station,other,,EC,,,-31.391,27.044,,,,dsfsi_ems
+ec Indwe EMS Station,other,,EC,,,-31.4683,27.34042,,,,dsfsi_ems
+ec Lady Frere EMS Station,other,,EC,,,-31.719,27.199,,,,dsfsi_ems
+ec Ngcobo EMS Station,other,,EC,,,-31.678,28.005,,,,dsfsi_ems
+ec Hewu EMS Station,other,,EC,,,-32.172,26.805,,,,dsfsi_ems
+ec Hofmeyer EMS Station,other,,EC,,,-31.654,25.805,,,,dsfsi_ems
+ec Ilinge EMS Station,other,,EC,,,-31.977,27.04,,,,dsfsi_ems
+ec Molteno EMS Station,other,,EC,,,-31.391,26.355,,,,dsfsi_ems
+ec Queenstown EMS Station,other,,EC,,,-31.9225,26.90854,,,,dsfsi_ems
+ec Sterkstroom EMS Station,other,,EC,,,-31.553,26.553,,,,dsfsi_ems
+ec Tarkastad EMS Station,other,,EC,,,-32.01,26.259,,,,dsfsi_ems
+ec Thornhill EMS Station,other,,EC,,,-31.987,26.613,,,,dsfsi_ems
+ec Cofimvaba EMS Station,other,,EC,,,-32.011,27.583,,,,dsfsi_ems
+ec Ncora EMS Station,other,,EC,,,-31.818,27.74,,,,dsfsi_ems
+ec Tsomo EMS Station,other,,EC,,,-32.038,27.82,,,,dsfsi_ems
+ec Cradock EMS Station,other,,EC,,,-32.167,25.622,,,,dsfsi_ems
+ec Middelburg EMS Station,other,,EC,,,-31.495,25.008,,,,dsfsi_ems
+ec Cala EMS Station,other,,EC,,,-31.522,27.682,,,,dsfsi_ems
+ec Elliot EMS Station,other,,EC,,,-31.337,27.837,,,,dsfsi_ems
+ec Maclear EMS Station,other,,EC,,,-31.075,28.347,,,,dsfsi_ems
+ec Tayler Bequest EMS Station,other,,EC,,"Hospital St, Mount Fletcher, 4770",-30.689,28.509,,,,dsfsi_ems
+ec Barkly East EMS Station,other,,EC,,,-30.972,27.594,,,,dsfsi_ems
+ec Lady Grey EMS Station,other,,EC,,,-31.29,25.819,,,,dsfsi_ems
+ec Sterkspruit EMS Station,other,,EC,,,-30.454,27.532,,,,dsfsi_ems
+ec Aliwal North EMS Station,other,,EC,,,-30.696,26.707,,,,dsfsi_ems
+ec Burgersdorp EMS Station,other,,EC,,,-30.994,26.332,,,,dsfsi_ems
+ec Jamestown EMS Station,other,,EC,,,-31.123,26.807,,,,dsfsi_ems
+ec Steynsburg EMS Station,other,,EC,,,-31.296,25.811,,,,dsfsi_ems
+ec Venterstad EMS Station,other,,EC,,,-30.778,25.796,,,,dsfsi_ems
+ec Motherwell EMS Station,other,,EC,Port Elizabeth,,-33.811,25.597,,,,dsfsi_ems
+ec Despatch EMS Station,other,,EC,Port Elizabeth,,-33.8029,25.470391,,,,dsfsi_ems
+ec Uitenhage EMS Station,other,,EC,Port Elizabeth,,-33.741,25.406,,,,dsfsi_ems
+ec Port Elizabeth EMS Station,other,,EC,Port Elizabeth,,-33.95,25.59,,,,dsfsi_ems
+ec Flagstaff EMS Station,other,,EC,,,-31.08,29.496,,,,dsfsi_ems
+ec Lusikisiki EMS Station,other,,EC,,,-31.374,29.572,,,,dsfsi_ems
+ec Mqanduli EMS Station,other,,EC,,,-31.823,28.765,,,,dsfsi_ems
+ec Mthatha EMS Station,other,,EC,,,-31.5911,28.77493,,,,dsfsi_ems
+ec Qumbu EMS Station,other,,EC,,,-31.167,28.869,,,,dsfsi_ems
+ec Tsolo EMS Station,other,,EC,,,-31.307,28.758,,,,dsfsi_ems
+ec Libode EMS Station,other,,EC,,,-31.545,29.016,,,,dsfsi_ems
+ec Ngqeleni EMS Station,other,,EC,,,-31.624,28.841,,,,dsfsi_ems
+ec Port St Johns EMS Station,other,,EC,,,-31.632,29.545,,,,dsfsi_ems
+ec Cookhouse EMS Station,other,,EC,,,-32.74,25.81,,,,dsfsi_ems
+ec Pearston EMS Station,other,,EC,,,-32.57,25.12,,,,dsfsi_ems
+ec Somerset East EMS Station,other,,EC,,,-32.71,25.58,,,,dsfsi_ems
+ec Aberdeen EMS Station,other,,EC,,,-32.4862,24.06093,,,,dsfsi_ems
+ec Graaff-Reinet EMS Station,other,,EC,,,-32.2728,24.55239,,,,dsfsi_ems
+ec Jansenville EMS Station,other,,EC,,,-32.94,24.66,,,,dsfsi_ems
+ec Klipplaat EMS Station,other,,EC,,,-33.02,24.33,,,,dsfsi_ems
+ec Steytlerville EMS Station,other,,EC,,,-33.33,24.34,,,,dsfsi_ems
+ec Willowmore EMS Station,other,,EC,,,-33.3,23.46,,,,dsfsi_ems
+ec Humansdorp EMS Station,other,,EC,,,-34.0302,24.78144,,,,dsfsi_ems
+ec Jeffreys Bay EMS Station,other,,EC,,,-34.028,24.918,,,,dsfsi_ems
+ec Patensie EMS Station,other,,EC,,,-33.758,24.81,,,,dsfsi_ems
+ec Joubertina EMS Station,other,,EC,,,-33.826,23.864,,,,dsfsi_ems
+ec Kareedouw EMS Station,other,,EC,,,-33.952,24.306,,,,dsfsi_ems
+ec Sanddrift EMS Station,other,,EC,,,-33.99,23.97,,,,dsfsi_ems
+ec Alicedale EMS Station,other,,EC,,,-33.317,26.09,,,,dsfsi_ems
+ec Grahamstown EMS Station,other,,EC,,,-33.317,26.552,,,,dsfsi_ems
+ec Alexandria EMS Station,other,,EC,,,-33.651,26.414,,,,dsfsi_ems
+ec Bushmans EMS Station,other,,EC,,,-33.6778,26.644729,,,,dsfsi_ems
+ec Port Alfred EMS Station,other,,EC,,,-33.594,26.883,,,,dsfsi_ems
+ec Addo EMS Station,other,,EC,,,-33.5476,25.69029,,,,dsfsi_ems
+ec Kirkwood EMS Station,other,,EC,,,-33.4,25.442,,,,dsfsi_ems
+ec Paterson EMS Station,other,,EC,,,-33.439,25.974,,,,dsfsi_ems
+fs Frankfort EMS Station,other,,FS,,,-27.2788,28.50023,,,,dsfsi_ems
+fs Villiers EMS Station,other,,FS,,,-27.029,28.597,,,,dsfsi_ems
+fs Sasolburg EMS Station,other,,FS,,,-26.8014,27.82757,,,,dsfsi_ems
+fs Sasolburg Private EMS Station,other,,FS,,,-26.8115,27.823888,,,,dsfsi_ems
+fs Kroonstad EMS Station,other,,FS,,,-27.6425,27.21355,,,,dsfsi_ems
+fs Kroonstad Private EMS Station,other,,FS,,,-27.6531,27.230361,,,,dsfsi_ems
+fs Steynsrus Private EMS Station,other,,FS,,,-27.9516,27.564867,,,,dsfsi_ems
+fs Viljoenskroon EMS Station,other,,FS,,,-27.1989,26.9503,,,,dsfsi_ems
+fs Heilbron EMS Station,other,,FS,,,-27.2891,27.96168,,,,dsfsi_ems
+fs Koppies EMS Station,other,,FS,,,-27.234,27.587,,,,dsfsi_ems
+fs Koppies Private EMS Station,other,,FS,,,-27.2443,27.574838,,,,dsfsi_ems
+fs Parys EMS Station,other,,FS,,,-26.8959,27.47206,,,,dsfsi_ems
+fs Brandfort EMS Station,other,,FS,,,-28.6916,26.46232,,,,dsfsi_ems
+fs Brandfort Private EMS Station,other,,FS,,,-28.7012,26.45886,,,,dsfsi_ems
+fs Theunissen EMS Station,other,,FS,,,-28.398,26.71,,,,dsfsi_ems
+fs Theunissen Private EMS Station,other,,FS,,,-28.3741,26.712241,,,,dsfsi_ems
+fs Verkeerdevlei EMS Station,other,,FS,,,-28.4,26.7,,,,dsfsi_ems
+fs Verkeerdevlei Private EMS Station,other,,FS,,,-28.8322,26.778909,,,,dsfsi_ems
+fs Winburg EMS Station,other,,FS,,,-28.5098,27.00801,,,,dsfsi_ems
+fs Winburg Private EMS Station,other,,FS,,,-28.5208,27.009378,,,,dsfsi_ems
+fs Allanridge EMS Station,other,,FS,,,-27.753,26.645,,,,dsfsi_ems
+fs Hennenman EMS Station,other,,FS,,,-27.97,27.019,,,,dsfsi_ems
+fs Hennenman Private EMS Station,other,,FS,,,-27.9788,27.027699,,,,dsfsi_ems
+fs Odendaalsrus EMS Station,other,,FS,,,-27.8773,26.65922,,,,dsfsi_ems
+fs Odendaalsrus Private EMS Station,other,,FS,,,-27.8701,26.682641,,,,dsfsi_ems
+fs Ventersburg EMS Station,other,,FS,,,-28.09,27.15,,,,dsfsi_ems
+fs Ventersburg Private EMS Station,other,,FS,,,-28.0861,27.136176,,,,dsfsi_ems
+fs Virginia EMS Station,other,,FS,,,-28.1105,26.85799,,,,dsfsi_ems
+fs Virginia Private EMS Station,other,,FS,,,-28.09,26.864,,,,dsfsi_ems
+fs Welkom EMS Station,other,,FS,,,-27.98,26.73,,,,dsfsi_ems
+fs Bothaville EMS Station,other,,FS,,,-27.39,26.62,,,,dsfsi_ems
+fs Wesselsbron EMS Station,other,,FS,,,-27.8362,26.3668,,,,dsfsi_ems
+fs Wesselsbron Private EMS Station,other,,FS,,,-27.8577,26.363578,,,,dsfsi_ems
+fs Boshof EMS Station,other,,FS,,,-28.5504,25.2516,,,,dsfsi_ems
+fs Boshof Private EMS Station,other,,FS,,,-28.5387,25.239329,,,,dsfsi_ems
+fs Dealesville EMS Station,other,,FS,,,-28.6579,25.77142,,,,dsfsi_ems
+fs Dealsville Private EMS Station,other,,FS,,,-28.6755,25.767533,,,,dsfsi_ems
+fs Hertzogville EMS Station,other,,FS,,,-28.12,25.5,,,,dsfsi_ems
+fs Bultfontein EMS Station,other,,FS,,,-28.28,26.14,,,,dsfsi_ems
+fs Bultfontein Private EMS Station,other,,FS,,,-28.2929,26.153087,,,,dsfsi_ems
+fs Hoopstad EMS Station,other,,FS,,,-27.8323,25.91538,,,,dsfsi_ems
+fs Hoopstad Private EMS Station,other,,FS,,,-27.8367,25.905371,,,,dsfsi_ems
+fs Bloemfontein EMS Station,other,,FS,Bloemfontein,,-29.1276,26.21411,,,,dsfsi_ems
+fs Bloemfontein Private EMS Station,other,,FS,Bloemfontein,,-29.14,26.23,,,,dsfsi_ems
+fs Soutpan EMS Station,other,,FS,Bloemfontein,,-28.7361,26.10485,,,,dsfsi_ems
+fs Soutpan Private EMS Station,other,,FS,Bloemfontein,,-28.7208,26.058979,,,,dsfsi_ems
+fs Botshabelo EMS Station,other,,FS,Bloemfontein,,-29.2325,26.71572,,,,dsfsi_ems
+fs Dewetsdorp EMS Station,other,,FS,Bloemfontein,,-29.57,26.66,,,,dsfsi_ems
+fs Dewetsdorp Private EMS Station,other,,FS,Bloemfontein,,-28.583,26.660455,,,,dsfsi_ems
+fs Wepener EMS Station,other,,FS,Bloemfontein,,-29.728,27.038,,,,dsfsi_ems
+fs Thaba Nchu EMS Station,other,,FS,Bloemfontein,,-29.218,26.847,,,,dsfsi_ems
+fs Bethlehem EMS Station,other,,FS,,,-28.232,28.307,,,,dsfsi_ems
+fs Bethlehem Private EMS Station,other,,FS,,,-28.2287,28.322701,,,,dsfsi_ems
+fs Clarens EMS Station,other,,FS,,,-28.51,28.42,,,,dsfsi_ems
+fs Fouriesburg EMS Station,other,,FS,,,-28.62,28.211,,,,dsfsi_ems
+fs Paul Roux EMS Station,other,,FS,,,-28.296,27.955,,,,dsfsi_ems
+fs Harrismith EMS Station,other,,FS,,,-28.2722,29.13806,,,,dsfsi_ems
+fs Harrismith Private EMS Station,other,,FS,,,-28.2694,29.127827,,,,dsfsi_ems
+fs Kestell EMS Station,other,,FS,,,-28.331,28.698,,,,dsfsi_ems
+fs Qwa-Qwa EMS Station,other,,FS,,,-28.563,28.795,,,,dsfsi_ems
+fs Qwa-Qwa Private EMS Station,other,,FS,,,-28.5132,28.825363,,,,dsfsi_ems
+fs Excelsior EMS Station,other,,FS,,,-28.933,27.056,,,,dsfsi_ems
+fs Hobhouse EMS Station,other,,FS,,,-29.521,27.147,,,,dsfsi_ems
+fs Ladybrand EMS Station,other,,FS,,,-29.1928,27.45951,,,,dsfsi_ems
+fs Tweespruit EMS Station,other,,FS,,,-29.187,27.025,,,,dsfsi_ems
+fs Lindley EMS Station,other,,FS,,,-27.881,27.904,,,,dsfsi_ems
+fs Lindley Private EMS Station,other,,FS,,,-27.8833,27.921674,,,,dsfsi_ems
+fs Petrus Steyn EMS Station,other,,FS,,,-27.65,28.128,,,,dsfsi_ems
+fs Reitz EMS Station,other,,FS,,,-27.8028,28.41893,,,,dsfsi_ems
+fs Reitz Private EMS Station,other,,FS,,,-27.7993,28.431609,,,,dsfsi_ems
+fs Memel EMS Station,other,,FS,,,-27.68,29.56,,,,dsfsi_ems
+fs Vrede EMS Station,other,,FS,,,-27.4335,29.15583,,,,dsfsi_ems
+fs Vrede Private EMS Station,other,,FS,,,-27.4229,29.168715,,,,dsfsi_ems
+fs Warden EMS Station,other,,FS,,,-27.8433,28.98208,,,,dsfsi_ems
+fs Warden Private EMS Station,other,,FS,,,-27.8538,28.9606,,,,dsfsi_ems
+fs Arlington EMS Station,other,,FS,,,-28.0289,27.851239,,,,dsfsi_ems
+fs Clocolan EMS Station,other,,FS,,,-28.91,27.57424,,,,dsfsi_ems
+fs Clocolan Private EMS Station,other,,FS,,,-28.9158,27.565459,,,,dsfsi_ems
+fs Ficksburg EMS Station,other,,FS,,,-28.8813,27.87201,,,,dsfsi_ems
+fs Ficksburg Private EMS Station,other,,FS,,,-28.8705,27.873979,,,,dsfsi_ems
+fs Marquard EMS Station,other,,FS,,,-28.6547,27.45455,,,,dsfsi_ems
+fs Rosendal EMS Station,other,,FS,,,-28.5014,27.935441,,,,dsfsi_ems
+fs Senekal EMS Station,other,,FS,,,-28.3272,27.60551,,,,dsfsi_ems
+fs Senekal Private EMS Station,other,,FS,,,-28.3211,27.6225,,,,dsfsi_ems
+fs Bethulie EMS Station,other,,FS,,,-30.4978,25.97981,,,,dsfsi_ems
+fs Edenburg EMS Station,other,,FS,,,-29.731,25.94156,,,,dsfsi_ems
+fs Fauresmith EMS Station,other,,FS,,,-29.745,25.309,,,,dsfsi_ems
+fs Gariepdam EMS Station,other,,FS,,,-30.593,25.49486,,,,dsfsi_ems
+fs Jagersfontein EMS Station,other,,FS,,,-29.7603,25.42316,,,,dsfsi_ems
+fs Philippolis EMS Station,other,,FS,,,-30.26,25.27,,,,dsfsi_ems
+fs Philippolis Private EMS Station,other,,FS,,,-30.2685,25.273765,,,,dsfsi_ems
+fs Reddersburg EMS Station,other,,FS,,,-29.65,26.17,,,,dsfsi_ems
+fs Springfontein EMS Station,other,,FS,,,-30.25,25.7,,,,dsfsi_ems
+fs Springfontein Private EMS Station,other,,FS,,,-30.266,25.703989,,,,dsfsi_ems
+fs Trompsburg EMS Station,other,,FS,,,-30.03,25.78,,,,dsfsi_ems
+fs Trompsburg Private EMS Station,other,,FS,,Trompsburg,,,,,,dsfsi_ems
+fs Jacobsdal EMS Station,other,,FS,,,-29.1299,24.77157,,,,dsfsi_ems
+fs Jacobsdal Private EMS Station,other,,FS,,,-29.1412,24.774448,,,,dsfsi_ems
+fs Koffiefontein EMS Station,other,,FS,,,-29.4,25.01,,,,dsfsi_ems
+fs Koffiefontein Private EMS Station,other,,FS,,,-29.4094,25.00361,,,,dsfsi_ems
+fs Petrusburg EMS Station,other,,FS,,,-29.1189,25.41846,,,,dsfsi_ems
+fs Rouxville EMS Station,other,,FS,,,-30.415,26.835,,,,dsfsi_ems
+fs Smithfield EMS Station,other,,FS,,,-30.2234,26.52333,,,,dsfsi_ems
+fs Smithfield Private EMS Station,other,,FS,,,-30.2089,26.530819,,,,dsfsi_ems
+fs Zastron EMS Station,other,,FS,,,-30.296,27.09436,,,,dsfsi_ems
+fs Zastron Private EMS Station,other,,FS,,,-30.3042,27.081635,,,,dsfsi_ems
+gp Diepsloot EMS Station,other,,GP,Johannesburg,No. 383 Ingwenyama Street; Diepsloot; 2189,,,,,,dsfsi_ems
+gp Diepsloot LA EMS Station,other,,GP,Johannesburg,,-25.92,28.018,,,,dsfsi_ems
+gp Discovery EMS Station,other,,GP,Johannesburg,,-26.1042,28.05318,,,,dsfsi_ems
+gp Edenvale EMS Station,other,,GP,Johannesburg,Cnr Smuts Street and 1st Avenue,-25.988,28.138968,,,,dsfsi_ems
+gp Hillbrow EMS Station,other,,GP,Johannesburg,,-26.193,28.044,,,,dsfsi_ems
+gp Ivory Park LA EMS Station,other,,GP,Johannesburg,"21st August Drive, Ivory Park",-25.9905,28.20142,,,,dsfsi_ems
+gp Lonehill LA EMS Station,other,,GP,Johannesburg,"Cnr Lonehill Boulevard and Crestwood Drive, Lonehill",-26.012,28.02615,,,,dsfsi_ems
+gp Midrand EMS Station,other,,GP,Johannesburg,Continuity SA Cr Tonetti & Old Pretoria Road Midrand,-26.0014,28.123465,,,,dsfsi_ems
+gp Obstetric PPT Johannesburg,other,,GP,Johannesburg,,,,,,,dsfsi_ems
+gp Planned Patient Transport Johannesburg,other,,GP,Johannesburg,,,,,,,dsfsi_ems
+gp Brixton LA EMS Station,other,,GP,Johannesburg,"Cnr Brixton Road and High Street, Brixton",-26.1979,28.01064,,,,dsfsi_ems
+gp Randburg LA EMS Station,other,,GP,Johannesburg,"Cnr Republic and Braam Fischer Drive, Randburg",-26.1034,28.00268,,,,dsfsi_ems
+gp Rooseveld Park LA EMS Station,other,,GP,Johannesburg,"Cnr Beyers Naude and Preller Drive, Franklin Roosevelt park, Florida",-26.1514,27.98943,,,,dsfsi_ems
+gp Cosmo City LA EMS Station,other,,GP,Johannesburg,"9446 South Africa Drive, Cosmo City Ext 8",,,,,,dsfsi_ems
+gp Florida Park LA EMS Station,other,,GP,Johannesburg,"Golf Club Terrace and Ontdekkers Road, Roodepoort",-26.1511,27.90536,,,,dsfsi_ems
+gp Hodgsonstreet LA EMS Station,other,,GP,Johannesburg,"Hodgson Street, Roodepoort",-26.1602,27.86492,,,,dsfsi_ems
+gp Huntershill LA EMS Station,other,,GP,Johannesburg,"Maple Street, Huntershill, Hunters Hill",-26.064,27.95234,,,,dsfsi_ems
+gp Chiawelo EMS Station,other,,GP,Johannesburg,"Cnr Chris Hani Road and Rihlampfu Street, Chiawelo",-26.279,27.86479,,,,dsfsi_ems
+gp Diepkloof LA EMS Station,other,,GP,Johannesburg,"227 Marthinus Smuts Drive, Diepkloof Zone 1",-26.2406,27.94014,,,,dsfsi_ems
+gp Dobsonville LA EMS Station,other,,GP,Johannesburg,"2332 Luthuli Street, Dobsonville",-26.222,27.86359,,,,dsfsi_ems
+gp Eldorado Park LA EMS Station,other,,GP,Johannesburg,"Cnr Jan de Necker Drive and Golden Highway, Eldorado, Eldorado Park",-26.2962,27.92418,,,,dsfsi_ems
+gp Jabulani LA EMS Station,other,,GP,Johannesburg,"Cnr Koma and Bolani Road, Jabulani, Soweto",-26.2482,27.85486,,,,dsfsi_ems
+gp Mofolo EMS Station,other,,GP,Johannesburg,,-26.247,27.883,,,,dsfsi_ems
+gp Protea Glen LA EMS Station,other,,GP,Johannesburg,,-26.274,27.803,,,,dsfsi_ems
+gp Zola EMS Station,other,,GP,Johannesburg,,-26.244,27.831,,,,dsfsi_ems
+gp Alex LA EMS Station,other,,GP,Johannesburg,"Linden Road, Sandown",-26.1025,28.06892,,,,dsfsi_ems
+gp Modderfontein LA EMS Station,other,,GP,Johannesburg,"2 Thornhill Road, Estate Modderfontein",-26.1019,28.15706,,,,dsfsi_ems
+gp Northview LA EMS Station,other,,GP,Johannesburg,"Cnr Northview Road and Waverly Road, Gresswold",-26.1339,28.09215,,,,dsfsi_ems
+gp Rosebank LA EMS Station,other,,GP,Johannesburg,"Cnr Bath Avenue and Baker Street, Rosebank",-26.1483,28.04068,,,,dsfsi_ems
+gp Berea LA EMS Station,other,,GP,Johannesburg,"Cnr Mitchell Street and Fife Avenue, Berea",-26.182,28.05062,,,,dsfsi_ems
+gp Central LA EMS Station,other,,GP,Johannesburg,"Cnr Kruis and Frederick Streets, Marshalltown",-26.2077,28.04595,,,,dsfsi_ems
+gp Fairview LA EMS Station,other,,GP,Johannesburg,"400 Commissioner Street, Johannesburg, 2094",-26.2023,28.07062,,,,dsfsi_ems
+gp Kibler Park LA EMS Station,other,,GP,Johannesburg,"Impala Drive, Cnr Springbok Street, Kibler Park",-26.3053,28.02303,,,,dsfsi_ems
+gp Malvern LA EMS Station,other,,GP,Johannesburg,"Persimmon Street, Malvern, Johannesburg, 2094",-26.2012,28.10531,,,,dsfsi_ems
+gp Turffontein LA EMS Station,other,,GP,Johannesburg,,-26.24,28.03844,,,,dsfsi_ems
+gp Lawley LA EMS Station,other,,GP,Johannesburg,"Cnr Beatrice and 4th Street, Ennerdale South",-26.4155,27.85686,,,,dsfsi_ems
+gp Lenasia EMS station,other,,GP,Johannesburg,,-26.3927,27.870654,,,,dsfsi_ems
+gp Orange Farm EMS Station,other,,GP,Johannesburg,,-26.4457,27.867633,,,,dsfsi_ems
+gp Orange Farm LA EMS Station,other,,GP,Johannesburg,"Chris Hani Street, Orange Farm Ext 4",-26.4824,27.868217,,,,dsfsi_ems
+gp Rietfontein LA EMS Station,other,,GP,Johannesburg,"Nirvana Drive (R554), Rietfontein",-26.334,27.8844,,,,dsfsi_ems
+gp Dr George Mukhari Hospital EMS Station,other,,GP,Pretoria,"Dr George Mukhari Academic Hospital, 3111 Setlogelo Drive, Ga-Rankuwa Unit 2, 0208",-25.6176,28.011289,,,,dsfsi_ems
+gp Garankuwa LA EMS Station,other,,GP,Pretoria,,-25.5882,28.00683,,,,dsfsi_ems
+gp Mabopane LA EMS Station,other,,GP,Pretoria,,-25.4926,28.087187,,,,dsfsi_ems
+gp Odi Hospital EMS Station,other,,GP,Pretoria,,-25.5184,28.02248,,,,dsfsi_ems
+gp Rosslyn LA EMS Station,other,,GP,Pretoria,"3 Piet Rautenbach Street, Rosslyn",-25.6262,28.09554,,,,dsfsi_ems
+gp Soshanguve Block JJ EMS Station,other,,GP,Pretoria,"972 Rivoningo St, Soshanguve JJ, Soshanguve, 0164",,,,,,dsfsi_ems
+gp Spectrum LA EMS Station,other,,GP,Pretoria,,,,,,,dsfsi_ems
+gp Hammanskraal LA EMS Station,other,,GP,Pretoria,,-25.4084,28.282444,,,,dsfsi_ems
+gp Jubilee LA EMS Station,other,,GP,Pretoria,"Plot 92, Jubilee Road, Temba",-25.4025,28.26494,,,,dsfsi_ems
+gp Maggalies LA EMS Station,other,,GP,Pretoria,"Cnr Lavender and Borage, Annelin",-25.6787,28.19268,,,,dsfsi_ems
+gp Temba EMS Station,other,,GP,Pretoria,"Stand 9 and 10 Street 1, Babelegi",-25.3621,28.283156,,,,dsfsi_ems
+gp Temba LA EMS Station,other,,GP,Pretoria,,-25.3859,28.252871,,,,dsfsi_ems
+gp Atteridgeville LA EMS Station,other,,GP,Pretoria,"Marivate Street, Saulsville",-25.7643,28.06083,,,,dsfsi_ems
+gp Hatfield LA EMS Station,other,,GP,Pretoria,"Park Street, Hatfield",-25.7501,28.23076,,,,dsfsi_ems
+gp Innesdale LA EMS Station,other,,GP,Pretoria,"14th Avenue, Rietfontein",-25.7214,28.2124,,,,dsfsi_ems
+gp Obstetric PPT Tshwane,other,,GP,Pretoria,,,,,,,dsfsi_ems
+gp Phillip Nel Park LA EMS Station,other,,GP,Pretoria,"Cnr Transoranjie Road and Morkel Street, Phillip Nel Park",-25.7407,28.13641,,,,dsfsi_ems
+gp Planned Patient Transport Tshwane,other,,GP,Pretoria,,-25.7322,28.20256,,,,dsfsi_ems
+gp Prinshof EMS Station,other,,GP,Pretoria,,-25.742,28.140142,,,,dsfsi_ems
+gp Tshwane 3 LA EMS Station,other,,GP,Pretoria,,-25.7526,28.185936,,,,dsfsi_ems
+gp Centurion LA EMS Station,other,,GP,Pretoria,"Basden Avenue, Die Hoewes, Centurion",-25.836,28.19552,,,,dsfsi_ems
+gp Laudium EMS Station,other,,GP,Pretoria,"405 Bengal St, Laudium, Centurion, 0037",,,,,,dsfsi_ems
+gp Cullinan EMS Station,other,,GP,Pretoria,"Zonderwater Road, Cullinan",-25.691,28.53852,,,,dsfsi_ems
+gp De Wagensdrift EMS Station,other,,GP,Pretoria,,-25.514,28.528,,,,dsfsi_ems
+gp Jabulani Tshwane LA EMS Station,other,,GP,Pretoria,"Soutpan Road, Block V, Soshanguve",-25.4479,28.4451,,,,dsfsi_ems
+gp Rayton LA EMS Station,other,,GP,Pretoria,,-25.739,28.532,,,,dsfsi_ems
+gp Erasmuskloof LA EMS Station,other,,GP,Pretoria,"Cnr Hans Strijdom and Lois Avenue, Erasmuskloof",-25.8191,28.27104,,,,dsfsi_ems
+gp Heuweloord LA EMS Station,other,,GP,Pretoria,,-25.8836,28.109334,,,,dsfsi_ems
+gp Mamelodi LA EMS Station,other,,GP,Pretoria,"Sibande Street, Mamelodi",-25.7119,28.37364,,,,dsfsi_ems
+gp Silverton LA EMS Station,other,,GP,Pretoria,,-25.733,28.297,,,,dsfsi_ems
+gp Bronkhorstspruit EMS Station,other,,GP,Pretoria,"Lanham Street, Bronkhorstspruit",-25.8146,28.746972,,,,dsfsi_ems
+gp Bronkhorstspruit LA EMS Station,other,,GP,Pretoria,,-25.8051,28.713347,,,,dsfsi_ems
+gp Ekangala EMS Station,other,,GP,Pretoria,,-25.697,28.752,,,,dsfsi_ems
+gp Brakpan LA EMS Station,other,,GP,Ekurhuleni,"116 Wenden Avenue, Brakpan, 1540",-26.2381,28.36832,,,,dsfsi_ems
+gp Commercia LA EMS Station,other,,GP,Ekurhuleni,"Cnr Rethabile and Banana Streets, Commercia 9",-26.0306,28.1777,,,,dsfsi_ems
+gp Daveyton LA EMS Station,other,,GP,Ekurhuleni,"Aliance Street, Benoni, 1507",-26.1394,28.41861,,,,dsfsi_ems
+gp Etwatwa LA EMS Station,other,,GP,Ekurhuleni,"Etwatwa Farm House, Daveyton",-26.1156,28.45421,,,,dsfsi_ems
+gp Faranani LA EMS Station,other,,GP,Ekurhuleni,"Modjadji Street, Tsakane, Brakpan",-26.3534,28.37123,,,,dsfsi_ems
+gp Pholosong EMS Station,other,,GP,Ekurhuleni,,-26.339,28.377,,,,dsfsi_ems
+gp Duduza LA EMS Station,other,,GP,Ekurhuleni,"3 Nala Street, Duduza",-26.3753,28.41419,,,,dsfsi_ems
+gp Far East Rand EMS Station,other,,GP,Ekurhuleni,,-26.235,28.403,,,,dsfsi_ems
+gp Kwa-Thema LA EMS Station,other,,GP,Ekurhuleni,"Hills Road, Selection Park",-26.2774,28.43576,,,,dsfsi_ems
+gp Nigel LA EMS Station,other,,GP,Ekurhuleni,"Kerk and Police Road, Nigel",-26.4201,28.46975,,,,dsfsi_ems
+gp Springs LA EMS Station,other,,GP,Ekurhuleni,"Boksburg Street, Springs",-26.2465,28.43986,,,,dsfsi_ems
+gp Kempton Park LA EMS Station,other,,GP,Ekurhuleni,"Kelvin Street, Kempton Park",-26.1146,28.22282,,,,dsfsi_ems
+gp Olifantsfontein LA EMS Station,other,,GP,Ekurhuleni,"Nut Avenue, Clayville, Olifantsfontein",-25.9726,28.24063,,,,dsfsi_ems
+gp Tembisa EMS Station,other,,GP,Ekurhuleni,"Cnr George Nyanga Drive and Sam Molele Street, Tembisa",-26.0143,28.225863,,,,dsfsi_ems
+gp Bedfordview LA EMS Station,other,,GP,Ekurhuleni,"Nicol Road, Opp Bedfordview Testing Station",-26.1792,28.13192,,,,dsfsi_ems
+gp Benoni LA EMS Station,other,,GP,Ekurhuleni,"Cnr Harpur And Kimbolton Streets, Benoni, 1501",-26.1947,28.3146,,,,dsfsi_ems
+gp Boksburg Central LA EMS Station,other,,GP,Ekurhuleni,"Leeuwpoort Road, Boksburg, 1459",-26.2239,28.24869,,,,dsfsi_ems
+gp Boksburg Leon Ferreira LA EMS Station,other,,GP,Ekurhuleni,"Cnr Trichardt Street and North Rand Road, Boksburg",-26.1788,28.25384,,,,dsfsi_ems
+gp Edenvale LA EMS Station,other,,GP,Ekurhuleni,"Cnr De Wet Street and Van Riebeeck Avenue, Edenvale",-26.1356,28.14932,,,,dsfsi_ems
+gp Farramere LA EMS Station,other,,GP,Ekurhuleni,"Sapphire Street, Farramere, Benoni",-26.1503,28.29949,,,,dsfsi_ems
+gp Rynefield LA EMS Station,other,,GP,Ekurhuleni,,-26.156,28.333,,,,dsfsi_ems
+gp Alberton LA EMS Station,other,,GP,Ekurhuleni,"10 Bloekom Avenue, Alberton, 1449",-26.2893,28.12262,,,,dsfsi_ems
+gp Germiston Central EMS Station,other,,GP,Ekurhuleni,"Cnr Angus and Joubert Streets, Germiston",-26.2196,28.170131,,,,dsfsi_ems
+gp Obstetric PPT Ekurhuleni,other,,GP,Ekurhuleni,,,,,,,dsfsi_ems
+gp Planned Patient Transport Ekurhuleni,other,,GP,Ekurhuleni,,,,,,,dsfsi_ems
+gp Primrose LA EMS Station,other,,GP,Ekurhuleni,"Cnr Pretoria and Morse Roads, Primrose",-26.1821,28.15718,,,,dsfsi_ems
+gp Thelle Mogoerane EMS Station,other,,GP,Ekurhuleni,,-26.3569,28.224311,,,,dsfsi_ems
+gp Vosloorus LA EMS Station,other,,GP,Ekurhuleni,"Bierman Road, Vosloorus",-26.3348,28.21049,,,,dsfsi_ems
+gp Wadeville LA EMS Station,other,,GP,Ekurhuleni,"Cnr Osborn Road and Moore Street, Wadeville",-26.2738,28.19846,,,,dsfsi_ems
+gp Hlahatsi LA EMS Station,other,,GP,Ekurhuleni,"Ramaboea Street, Hlahatsi, Khatlehong",-26.3349,28.15322,,,,dsfsi_ems
+gp Palm Ridge LA EMS Station,other,,GP,Ekurhuleni,"Cnr Teebos Avenue and Soetdoring Street, Palm Ridge",-26.3881,28.14039,,,,dsfsi_ems
+gp Thokoza LA EMS Station,other,,GP,Ekurhuleni,"Kumalo Street, Tokoza, 1426",-26.3441,28.13686,,,,dsfsi_ems
+gp Zonkezizwe LA EMS Station,other,,GP,Ekurhuleni,,-26.415,28.176719,,,,dsfsi_ems
+gp Evaton EMS Station,other,,GP,,,-26.5319,27.85983,,,,dsfsi_ems
+gp Johan Heyns EMS Station,other,,GP,,"Johan Heyns CHC, 6th Floor Room 33, cnr Frikkie Meyer and Pasteur Boulevard Street, Vanderbijlpark",-26.7027,27.833173,,,,dsfsi_ems
+gp Kopanong EMS Station,other,,GP,,,-26.637,27.933,,,,dsfsi_ems
+gp Planned Patient Transport Sedibeng,other,,GP,,"Moeshoeshoe Street, Sebokeng",-26.6061,27.84622,,,,dsfsi_ems
+gp Vanderbijlpark EMS Station,other,,GP,,,-26.734,27.842,,,,dsfsi_ems
+gp Vereeniging EMS Station,other,,GP,,"De Villiers Avenue and Joubert Street, Vereeniging Central",-26.6654,27.927967,,,,dsfsi_ems
+gp Devon EMS Station,other,,GP,,"Devon Road (R550), Devon",-26.3609,28.782045,,,,dsfsi_ems
+gp Heidelberg EMS Station,other,,GP,,"Voortrekker Street, Heidelberg",-26.504,28.359688,,,,dsfsi_ems
+gp Meyerton EMS Station,other,,GP,,"Johan Le Roux Road and Galloway Street, Meyerton",-26.5673,28.014439,,,,dsfsi_ems
+gp Carletonville EMS Station,other,,GP,,"Annan Road and Onxy Drive, Carletonville",-26.3509,27.39711,,,,dsfsi_ems
+gp Fochville EMS Station,other,,GP,,,-26.481,27.496,,,,dsfsi_ems
+gp Khutsong EMS Station,other,,GP,,,-26.328,27.328,,,,dsfsi_ems
+gp Dr Yusuf Dadoo EMS Station,other,,GP,,"Cnr Commissioner and Biccard Street, Krugersdorp",-26.099,27.783,,,,dsfsi_ems
+gp Krugersdorp EMS Station,other,,GP,,,-26.0997,27.767365,,,,dsfsi_ems
+gp Leratong EMS Station,other,,GP,,,-26.171,27.807,,,,dsfsi_ems
+gp Magaliesburg EMS Station,other,,GP,,"Koster Road, Magaliesburg",-25.9982,27.542712,,,,dsfsi_ems
+gp Bekkersdal West CHC EMS Station,other,,GP,,,-26.2861,27.6974,,,,dsfsi_ems
+gp Randfontein EMS Station,other,,GP,,"Cnr Retief and Ralerata Streets, Toekomsrus, Randfontein",-26.2013,27.69952,,,,dsfsi_ems
+gp Westonaria LA EMS Station,other,,GP,,"Bekkersdal West Clinic, Westonaria, Stand 3540, Khomoeahlaba Street",-26.2838,27.70836,,,,dsfsi_ems
+kz Dannhauser EMS Station,other,,KZN,,"Greytown Hospital, Bell Street, Greytown",-28.0283,30.05917,,,,dsfsi_ems
+kz Utrecht EMS Station,other,,KZN,,,-27.6622,30.31626,,,,dsfsi_ems
+kz Charlestown EMS Station,other,,KZN,,,-27.417,29.866,,,,dsfsi_ems
+kz Madadeni EMS Station,other,,KZN,,,-27.7584,30.04987,,,,dsfsi_ems
+kz Newcastle EMS Station,other,,KZN,,,-27.7696,29.94112,,,,dsfsi_ems
+kz Central EMS Station,other,,KZN,Durban,,-29.8519,31.00133,,,,dsfsi_ems
+kz Clermont EMS Station,other,,KZN,Durban,,-29.795,30.893,,,,dsfsi_ems
+kz FOSA EMS Station,other,,KZN,Durban,,-29.7859,30.9685,,,,dsfsi_ems
+kz Illovo EMS Station,other,,KZN,Durban,,-30.0905,30.826571,,,,dsfsi_ems
+kz KwaMashu EMS Station,other,,KZN,Durban,,-29.76,30.97056,,,,dsfsi_ems
+kz Mariannhill EMS Station,other,,KZN,Durban,,-29.8489,30.82473,,,,dsfsi_ems
+kz Mpumalanga EMS Station,other,,KZN,Durban,,-29.8038,30.62133,,,,dsfsi_ems
+kz Phoenix EMS Station,other,,KZN,Durban,,-29.7128,30.99913,,,,dsfsi_ems
+kz RK Khan EMS Station,other,,KZN,Durban,,-29.9189,30.79973,,,,dsfsi_ems
+kz Tongaat EMS Station,other,,KZN,Durban,,-29.5697,31.11694,,,,dsfsi_ems
+kz Umlazi EMS Station,other,,KZN,Durban,,-29.9586,30.93773,,,,dsfsi_ems
+kz Wentworth EMS Station,other,,KZN,Durban,,-29.9283,30.98693,,,,dsfsi_ems
+kz Creighton EMS Station,other,,KZN,,,-30.0275,29.84405,,,,dsfsi_ems
+kz Pholela EMS Station,other,,KZN,,,-29.7631,29.85848,,,,dsfsi_ems
+kz Underberg EMS Station,other,,KZN,,,-29.7889,29.505,,,,dsfsi_ems
+kz Kokstad EMS Station,other,,KZN,,,-30.5461,29.41357,,,,dsfsi_ems
+kz Ixopo EMS Station,other,,KZN,,,-30.1621,30.078138,,,,dsfsi_ems
+kz Umzimkhulu EMS Station,other,,KZN,,,-30.255,29.926,,,,dsfsi_ems
+kz Kwadukuza EMS Station,other,,KZN,,,-29.342,31.289,,,,dsfsi_ems
+kz Isithebe EMS Station,other,,KZN,,,-29.0906,31.429376,,,,dsfsi_ems
+kz Sundumbili EMS Station,other,,KZN,,,-29.1337,31.4011,,,,dsfsi_ems
+kz Maphumulo EMS Station,other,,KZN,,,-29.1425,31.04259,,,,dsfsi_ems
+kz Untunjambili EMS Station,other,,KZN,,,-28.942,30.94846,,,,dsfsi_ems
+kz Isidumbini EMS Station,other,,KZN,,,-29.3772,31.003869,,,,dsfsi_ems
+kz Ndwedwe EMS Station,other,,KZN,,,-29.5105,30.93717,,,,dsfsi_ems
+kz Empangeni EMS Station,other,,KZN,,,-28.7391,31.8964,,,,dsfsi_ems
+kz Esikhaleni EMS Station,other,,KZN,,,-28.665,32.021537,,,,dsfsi_ems
+kz Melmoth EMS Station,other,,KZN,,,-28.589,31.397,,,,dsfsi_ems
+kz Ekhombe EMS Station,other,,KZN,,,-28.6429,30.89308,,,,dsfsi_ems
+kz Nkandla EMS Station,other,,KZN,,,-28.6239,31.08597,,,,dsfsi_ems
+kz Mbonambi EMS Station,other,,KZN,,,-28.5894,32.250665,,,,dsfsi_ems
+kz Ntambanana EMS Station,other,,KZN,,,-28.563,31.853,,,,dsfsi_ems
+kz Eshowe EMS Station,other,,KZN,,,-28.8978,31.46764,,,,dsfsi_ems
+kz Gingindlovu EMS Station,other,,KZN,,,-29.029,31.587,,,,dsfsi_ems
+kz Mbongolwane EMS Station,other,,KZN,,,-28.9335,31.195027,,,,dsfsi_ems
+kz Port Shepstone EMS Station,other,,KZN,,,-30.7572,30.43873,,,,dsfsi_ems
+kz Turton EMS Station,other,,KZN,,,-30.503,30.593,,,,dsfsi_ems
+kz Umzinto EMS Station,other,,KZN,,,-30.3041,30.66721,,,,dsfsi_ems
+kz Harding EMS Station,other,,KZN,,,-30.5747,29.88379,,,,dsfsi_ems
+kz COEC EMS Station,other,,KZN,,,,,,,,dsfsi_ems
+kz Greys EMS Station,other,,KZN,,,-29.5807,30.3612,,,,dsfsi_ems
+kz Imbali EMS Station,other,,KZN,,,-29.6589,30.356198,,,,dsfsi_ems
+kz Richmond EMS Station,other,,KZN,,,-29.8694,30.27743,,,,dsfsi_ems
+kz Howick EMS Station,other,,KZN,,,-29.5005,30.2322,,,,dsfsi_ems
+kz Appelsbosch EMS Station,other,,KZN,,"Noordsburg Road, Dalton",-29.3903,30.84289,,,,dsfsi_ems
+kz Hlabisa EMS Station,other,,KZN,,,-28.1457,31.88007,,,,dsfsi_ems
+kz Hluhluwe EMS Station,other,,KZN,,,-28.0206,32.268615,,,,dsfsi_ems
+kz Bethesda EMS Station,other,,KZN,,Jozini Main Road,-27.1365,32.0061,,,,dsfsi_ems
+kz Mtubatuba EMS Station,other,,KZN,,,-28.411,32.185,,,,dsfsi_ems
+kz Manguzi EMS Station,other,,KZN,,,-26.9842,32.7576,,,,dsfsi_ems
+kz Mseleni EMS Station,other,,KZN,,,-27.3254,32.55675,,,,dsfsi_ems
+kz Dundee EMS Station,other,,KZN,,"121 Mckenzie Str, Dundee",-28.16,30.22612,,,,dsfsi_ems
+kz Tugela Ferry EMS Station,other,,KZN,,"Hospital Street, Newcastle",-28.747,30.44994,,,,dsfsi_ems
+kz Nquthu EMS Station,other,,KZN,,"Main Road, Nqutu",-28.2073,30.67184,,,,dsfsi_ems
+kz Greytown EMS Station,other,,KZN,,,-29.0607,30.60663,,,,dsfsi_ems
+kz Ezakheni EMS Station,other,,KZN,,,-28.5964,29.9265,,,,dsfsi_ems
+kz Ladysmith EMS Station,other,,KZN,,,-28.5404,29.78586,,,,dsfsi_ems
+kz Estcourt EMS Station,other,,KZN,,,-29.0221,29.89311,,,,dsfsi_ems
+kz Bergville EMS Station,other,,KZN,,"Sharat Street, Bergville",-28.8501,29.37586,,,,dsfsi_ems
+kz Mondlo EMS Station,other,,KZN,,,-27.9954,30.72576,,,,dsfsi_ems
+kz Vryheid EMS Station,other,,KZN,,,-27.7578,30.79807,,,,dsfsi_ems
+kz Paulpietersburg EMS Station,other,,KZN,,,-27.4047,30.82339,,,,dsfsi_ems
+kz Nongoma EMS Station,other,,KZN,,"Main Road, Nongoma.",-27.8926,31.63951,,,,dsfsi_ems
+kz Ceza EMS Station,other,,KZN,,,-27.9961,31.37775,,,,dsfsi_ems
+kz Ulundi EMS Station,other,,KZN,,,-28.2641,31.41913,,,,dsfsi_ems
+kz Pongola EMS Station,other,,KZN,,,-27.2774,31.34687,,,,dsfsi_ems
+lp Alldays EMS Station,other,,LP,,,-22.6831,29.105883,,,,dsfsi_ems
+lp Helene Franz EMS Station,other,,LP,,,-23.2834,29.113967,,,,dsfsi_ems
+lp Ratshaatshaa EMS Station,other,,LP,,,-22.8977,28.824517,,,,dsfsi_ems
+lp Lebowakgomo EMS Station,other,,LP,,,-24.3186,29.481083,,,,dsfsi_ems
+lp Zebediela EMS Station,other,,LP,,,-24.3094,29.336217,,,,dsfsi_ems
+lp Botlokwa EMS Station,other,,LP,,,-23.4922,29.744083,,,,dsfsi_ems
+lp Dendron EMS Station,other,,LP,,,-23.36,29.32,,,,dsfsi_ems
+lp Mankweng EMS Station,other,,LP,,,-23.8764,29.7248,,,,dsfsi_ems
+lp Mashashane EMS Station,other,,LP,,,-23.9238,29.133867,,,,dsfsi_ems
+lp Moletjie EMS Station,other,,LP,,,-23.7268,29.340617,,,,dsfsi_ems
+lp Polokwane EMS Station,other,,LP,,,-23.872,29.442333,,,,dsfsi_ems
+lp Polokwane HQ EMS Station,other,,LP,,,-23.8915,29.461914,,,,dsfsi_ems
+lp WF Knobel EMS Station,other,,LP,,,-23.6338,29.12065,,,,dsfsi_ems
+lp Ba-Phalaborwa EMS Station,other,,LP,,,-23.9248,31.036317,,,,dsfsi_ems
+lp Dzumeri EMS Station,other,,LP,,,-23.5765,30.708267,,,,dsfsi_ems
+lp Giyani EMS Station,other,,LP,,,-23.3118,30.692183,,,,dsfsi_ems
+lp Muyexe EMS Station,other,,LP,,,-23.1959,30.920083,,,,dsfsi_ems
+lp Kgapane EMS Station,other,,LP,,,-23.6481,30.218483,,,,dsfsi_ems
+lp Raphahlelo EMS Station,other,,LP,,,-23.4096,30.155717,,,,dsfsi_ems
+lp CN Phatudi EMS Station,other,,LP,,,-24.027,30.280433,,,,dsfsi_ems
+lp Grace Mugodeni EMS Station,other,,LP,,,-23.7165,30.4365,,,,dsfsi_ems
+lp Tzaneen EMS Station,other,,LP,,,-23.8352,30.165317,,,,dsfsi_ems
+lp Hoedspruit EMS Station,other,,LP,,,-24.3553,30.95025,,,,dsfsi_ems
+lp Sekororo EMS Station,other,,LP,,,-24.2512,30.4486,,,,dsfsi_ems
+lp Bosele EMS Station,other,,LP,,,-25.0089,29.740567,,,,dsfsi_ems
+lp Groblersdal EMS Station,other,,LP,,,-25.1775,29.4034,,,,dsfsi_ems
+lp Philadelphia EMS Station,other,,LP,,,-25.2578,29.149967,,,,dsfsi_ems
+lp Roossenekal EMS Station,other,,LP,,,-25.1927,29.924433,,,,dsfsi_ems
+lp Zaaiplaas EMS Station,other,,LP,,,-25.1708,29.7468,,,,dsfsi_ems
+lp Matlala EMS Station,other,,LP,,,-24.8336,29.502717,,,,dsfsi_ems
+lp Dilokong EMS Station,other,,LP,,,-24.6141,30.17115,,,,dsfsi_ems
+lp Leboeng EMS Station,other,,LP,,,-24.5088,30.647183,,,,dsfsi_ems
+lp Masemola EMS Station,other,,LP,,,-24.5616,29.642733,,,,dsfsi_ems
+lp Mecklenburg EMS Station,other,,LP,,,-24.3863,30.074333,,,,dsfsi_ems
+lp Nchabeleng EMS Station,other,,LP,,,-24.4396,29.800567,,,,dsfsi_ems
+lp Jane Furse EMS Station,other,,LP,,,-24.7307,29.856733,,,,dsfsi_ems
+lp Schoonoord EMS Station,other,,LP,,,-24.7633,29.993133,,,,dsfsi_ems
+lp Majosi EMS Station,other,,LP,,,-23.2307,30.343267,,,,dsfsi_ems
+lp Malamulele EMS Station,other,,LP,,,-22.9969,30.694967,,,,dsfsi_ems
+lp Makhado EMS Station,other,,LP,,,-23.0281,29.904383,,,,dsfsi_ems
+lp Siloam EMS Station,other,,LP,,,-22.8985,30.194933,,,,dsfsi_ems
+lp Masisi EMS Station,other,,LP,,,-22.4213,30.867233,,,,dsfsi_ems
+lp Musina EMS Station,other,,LP,,,-22.3368,30.038517,,,,dsfsi_ems
+lp Makuya EMS Station,other,,LP,,,-22.6502,30.829517,,,,dsfsi_ems
+lp Mutale EMS Station,other,,LP,,,-22.7132,30.55955,,,,dsfsi_ems
+lp Thohoyandou EMS Station,other,,LP,,,-22.966,30.478667,,,,dsfsi_ems
+lp Tshaulu EMS Station,other,,LP,,,-22.8061,30.7366,,,,dsfsi_ems
+lp Bela-Bela EMS Station,other,,LP,,,-24.8858,28.287167,,,,dsfsi_ems
+lp Pienaarsrivier EMS Station,other,,LP,,,-25.2165,28.301717,,,,dsfsi_ems
+lp Lephalale EMS Station,other,,LP,,,-23.6787,27.703217,,,,dsfsi_ems
+lp Witpoort EMS Station,other,,LP,,,-23.3308,28.009333,,,,dsfsi_ems
+lp George Masebe EMS Station,other,,LP,,,-23.8764,28.693317,,,,dsfsi_ems
+lp Mokopane EMS Station,other,,LP,,,-24.1954,29.00925,,,,dsfsi_ems
+lp Rebone EMS Station,other,,LP,,,-23.4894,28.661233,,,,dsfsi_ems
+lp Modimolle EMS Station,other,,LP,,,-24.7098,28.395233,,,,dsfsi_ems
+lp Mookgophong EMS Station,other,,LP,,,-24.5177,28.709567,,,,dsfsi_ems
+lp Vaalwater EMS Station,other,,LP,,,-24.2942,28.113233,,,,dsfsi_ems
+lp Northam EMS Station,other,,LP,,,-24.9647,27.271517,,,,dsfsi_ems
+lp Thabazimbi EMS Station,other,,LP,,,-24.5893,27.391583,,,,dsfsi_ems
+mp Matikwana EMS Station,other,,MP,,,-24.987,31.236,,,,dsfsi_ems
+mp Tintswalo EMS Station,other,,MP,,,-24.591,31.059,,,,dsfsi_ems
+mp Barberton EMS Station,other,,MP,,,-25.79,31.054,,,,dsfsi_ems
+mp Bongani EMS Station,other,,MP,,,-25.089,31.126,,,,dsfsi_ems
+mp Eureka EMS Station,other,,MP,,,-25.681,31.18608,,,,dsfsi_ems
+mp Matsulu EMS Station,other,,MP,,,-25.517,31.352,,,,dsfsi_ems
+mp Nelspruit EMS Station,other,,MP,,,-25.47,30.97,,,,dsfsi_ems
+mp Themba EMS Station,other,,MP,,,-25.345,31.122,,,,dsfsi_ems
+mp Shongwe EMS Station,other,,MP,,,-25.686,31.491,,,,dsfsi_ems
+mp Tonga EMS Station,other,,MP,,,-25.694,31.788,,,,dsfsi_ems
+mp Lydenburg EMS Station,other,,MP,,,-25.108,30.451,,,,dsfsi_ems
+mp Matibidi EMS Station,other,,MP,,,-24.588,30.769,,,,dsfsi_ems
+mp Sabie EMS Station,other,,MP,,,-25.092,30.782,,,,dsfsi_ems
+mp Carolina EMS Station,other,,MP,,,-26.075,30.112,,,,dsfsi_ems
+mp Embhuleni EMS Station,other,,MP,,,-26.048,30.814,,,,dsfsi_ems
+mp Mayflower EMS Station,other,,MP,,,-26.299,30.775,,,,dsfsi_ems
+mp Balfour EMS Station,other,,MP,,,-26.634,28.578,,,,dsfsi_ems
+mp Volksrust EMS Station,other,,MP,,,-27.35,29.891,,,,dsfsi_ems
+mp Bethal EMS Station,other,,MP,,,-26.464,29.467,,,,dsfsi_ems
+mp Evander EMS Station,other,,MP,,,-26.458,29.126,,,,dsfsi_ems
+mp Secunda EMS Station,other,,MP,,,-26.507,29.182,,,,dsfsi_ems
+mp Trichardt EMS Station,other,,MP,,,-26.48,29.209,,,,dsfsi_ems
+mp Standerton EMS Station,other,,MP,,,-26.939,29.2454,,,,dsfsi_ems
+mp Piet Retief EMS Station,other,,MP,,,-27.018,30.806,,,,dsfsi_ems
+mp Ermelo EMS Station,other,,MP,,,-26.523,29.975,,,,dsfsi_ems
+mp Mmametlhake EMS Station,other,,MP,,,-25.1046,28.558,,,,dsfsi_ems
+mp Belfast EMS Station,other,,MP,,,-25.696,30.044,,,,dsfsi_ems
+mp Waterval Boven EMS Station,other,,MP,,,-25.647,30.338,,,,dsfsi_ems
+mp Cosmos EMS Station,other,,MP,,,-25.874,29.218,,,,dsfsi_ems
+mp Greenside EMS Station,other,,MP,,,-25.9586,29.178193,,,,dsfsi_ems
+mp Impungwe EMS Station,other,,MP,,,-25.982,29.276,,,,dsfsi_ems
+mp Rietspruit EMS Station,other,,MP,,,-26.162,29.2,,,,dsfsi_ems
+mp Witbank EMS Station,other,,MP,,,-25.881,29.234,,,,dsfsi_ems
+mp Hendrina EMS Station,other,,MP,,,-26.159,29.715,,,,dsfsi_ems
+mp Middelburg EMS Station,other,,MP,,,-25.774,29.451,,,,dsfsi_ems
+mp Midmed EMS Station,other,,MP,,,-25.7621,29.457693,,,,dsfsi_ems
+mp KwaMhlanga EMS Station,other,,MP,,,-25.418,28.704,,,,dsfsi_ems
+mp Bernice Samuels EMS Station,other,,MP,,,-26.152,28.666,,,,dsfsi_ems
+nc Barkly West EMS Station,other,,NC,,,-28.5344,24.51424,,,,dsfsi_ems
+nc Warrenton EMS Station,other,,NC,,,-28.1065,24.85864,,,,dsfsi_ems
+nc Hartswater EMS Station,other,,NC,,,-27.7574,24.81349,,,,dsfsi_ems
+nc Jan Kempdorp EMS Station,other,,NC,,,-27.9218,24.83342,,,,dsfsi_ems
+nc Pampierstad EMS Station,other,,NC,,,-27.779,24.688,,,,dsfsi_ems
+nc Air Mercy Services EMS Station,other,,NC,,,,,,,,dsfsi_ems
+nc Kimberley EMS Station,other,,NC,,,-28.7285,24.74583,,,,dsfsi_ems
+nc Ritchie EMS Station,other,,NC,,,-29.028,24.588,,,,dsfsi_ems
+nc Kathu EMS Station,other,,NC,,,-27.697,23.051,,,,dsfsi_ems
+nc Olifantshoek EMS Station,other,,NC,,,-27.938,22.735,,,,dsfsi_ems
+nc Ga-Segonyana EMS Station,other,,NC,,,-27.4607,23.4425,,,,dsfsi_ems
+nc Kuruman EMS Station,other,,NC,,,-27.276,23.26563,,,,dsfsi_ems
+nc Cassels EMS Station,other,,NC,,,-26.965,23.991,,,,dsfsi_ems
+nc Heuningvlei EMS Station,other,,NC,,,-26.3051,23.139,,,,dsfsi_ems
+nc Kudumane EMS Station,other,,NC,,,,,,,,dsfsi_ems
+nc Loopeng EMS Station,other,,NC,,,-26.796,23.351,,,,dsfsi_ems
+nc Madibeng EMS Station,other,,NC,,,-26.5719,22.848441,,,,dsfsi_ems
+nc Van Zylsrus EMS Station,other,,NC,,,-26.878,22.053,,,,dsfsi_ems
+nc Brandvlei EMS Station,other,,NC,,,-30.462,20.481,,,,dsfsi_ems
+nc Calvinia EMS Station,other,,NC,,,-31.461,19.776,,,,dsfsi_ems
+nc Loeriesfontein EMS Station,other,,NC,,,-30.963,19.443,,,,dsfsi_ems
+nc Nieuwoudtville EMS Station,other,,NC,,,-31.367,19.116,,,,dsfsi_ems
+nc Garies EMS Station,other,,NC,,,-30.565,17.989,,,,dsfsi_ems
+nc Hondeklipbaai EMS Station,other,,NC,,,-30.318,17.278,,,,dsfsi_ems
+nc Kamieskroon EMS Station,other,,NC,,,-30.1251,17.56112,,,,dsfsi_ems
+nc Leliefontein EMS Station,other,,NC,,,-30.314,18.082,,,,dsfsi_ems
+nc Fraserburg EMS Station,other,,NC,,,-31.917,21.503,,,,dsfsi_ems
+nc Sutherland EMS Station,other,,NC,,,-32.398,20.665,,,,dsfsi_ems
+nc Williston EMS Station,other,,NC,,,-31.335,20.915,,,,dsfsi_ems
+nc Pella EMS Station,other,,NC,,,-29.032,19.154,,,,dsfsi_ems
+nc Pofadder EMS Station,other,,NC,,,-29.128,19.394,,,,dsfsi_ems
+nc Komaggas EMS Station,other,,NC,,,-29.796,17.488,,,,dsfsi_ems
+nc Springbok EMS Station,other,,NC,,,-29.66,17.883,,,,dsfsi_ems
+nc Steinkopf EMS Station,other,,NC,,,-29.262,17.736,,,,dsfsi_ems
+nc Alexander Bay EMS Station,other,,NC,,,-28.612,16.483,,,,dsfsi_ems
+nc Kuboes EMS Station,other,,NC,,,-28.447,16.992,,,,dsfsi_ems
+nc Port Nolloth EMS Station,other,,NC,,,-29.25,16.871,,,,dsfsi_ems
+nc Britstown EMS Station,other,,NC,,,-30.583,23.501,,,,dsfsi_ems
+nc De Aar EMS Station,other,,NC,,,-30.659,24.008,,,,dsfsi_ems
+nc Hanover EMS Station,other,,NC,,,-31.067,24.447,,,,dsfsi_ems
+nc Carnarvon EMS Station,other,,NC,,,-30.963,22.126,,,,dsfsi_ems
+nc Van Wyksvlei EMS Station,other,,NC,,,-30.348,21.824,,,,dsfsi_ems
+nc Vosburg EMS Station,other,,NC,,,-30.576,22.878,,,,dsfsi_ems
+nc Petrusville EMS Station,other,,NC,,,-30.078,24.657,,,,dsfsi_ems
+nc Phillipstown EMS Station,other,,NC,,,-30.436,24.471,,,,dsfsi_ems
+nc Douglas EMS Station,other,,NC,,,-29.059,23.768,,,,dsfsi_ems
+nc Griekwastad EMS Station,other,,NC,,,-28.843,23.253,,,,dsfsi_ems
+nc Marydale EMS Station,other,,NC,,,-29.409,22.104,,,,dsfsi_ems
+nc Prieska EMS Station,other,,NC,,,-29.668,22.737,,,,dsfsi_ems
+nc Hopetown EMS Station,other,,NC,,,-29.627,24.088,,,,dsfsi_ems
+nc Strydenburg EMS Station,other,,NC,,,-29.637,23.668,,,,dsfsi_ems
+nc Richmond EMS Station,other,,NC,,,-31.409,23.95,,,,dsfsi_ems
+nc Victoria West EMS Station,other,,NC,,,-31.406,23.117,,,,dsfsi_ems
+nc Colesberg EMS Station,other,,NC,,,-30.708,25.101,,,,dsfsi_ems
+nc Norvalspont EMS Station,other,,NC,,,-30.629,25.454,,,,dsfsi_ems
+nc Noupoort EMS Station,other,,NC,,,-31.184,24.951,,,,dsfsi_ems
+nc Askham EMS Station,other,,NC,,,-26.981,20.782,,,,dsfsi_ems
+nc Karos EMS Station,other,,NC,,,,,,,,dsfsi_ems
+nc Mier EMS Station,other,,NC,,,,,,,,dsfsi_ems
+nc Rietfontein EMS Station,other,,NC,,,-26.736,20.029,,,,dsfsi_ems
+nc Upington EMS Station,other,,NC,,,-28.464,21.218,,,,dsfsi_ems
+nc Augrabies EMS Station,other,,NC,,,-28.671,20.428,,,,dsfsi_ems
+nc Kakamas EMS Station,other,,NC,,,-28.78,20.622,,,,dsfsi_ems
+nc Keimoes EMS Station,other,,NC,,,-28.705,20.955,,,,dsfsi_ems
+nc Kenhardt EMS Station,other,,NC,,,-29.353,21.158,,,,dsfsi_ems
+nc Danielskuil EMS Station,other,,NC,,,-28.182,23.547,,,,dsfsi_ems
+nc Kgatelopele EMS Station,other,,NC,,,,,,,,dsfsi_ems
+nc Groblershoop EMS Station,other,,NC,,,-28.895,21.982,,,,dsfsi_ems
+nc Grootdrink EMS Station,other,,NC,,,,,,,,dsfsi_ems
+nc Postmasburg EMS Station,other,,NC,,,-28.327,23.06,,,,dsfsi_ems
+nw Kgetlengrivier EMS Station,other,,NW,,,-25.8598,26.898392,,,,dsfsi_ems
+nw Madibeng EMS Station,other,,NW,,,-25.636,27.776,,,,dsfsi_ems
+nw Moretele EMS Station,other,,NW,,,-25.145,27.96,,,,dsfsi_ems
+nw Moses Kotane EMS Station,other,,NW,,,-25.18,27.161,,,,dsfsi_ems
+nw Rustenburg EMS Station,other,,NW,,,-25.677,27.244,,,,dsfsi_ems
+nw Klerksdorp EMS Station,other,,NW,,,-26.877,26.662,,,,dsfsi_ems
+nw Potchefstroom EMS Station,other,,NW,,,-26.726,27.083,,,,dsfsi_ems
+nw Ventersdorp EMS Station,other,,NW,,,-26.31,26.819,,,,dsfsi_ems
+nw Maquassi Hills EMS Station,other,,NW,,,-27.3129,25.998615,,,,dsfsi_ems
+nw Taung EMS Station,other,,NW,,,-27.537,24.791,,,,dsfsi_ems
+nw Kagisano EMS Station,other,,NW,,,-26.6007,24.1804,,,,dsfsi_ems
+nw Molopo EMS Station,other,,NW,,,-26.9582,24.72984,,,,dsfsi_ems
+nw Lekwa-Teemane EMS Station,other,,NW,,,-27.9116,25.163785,,,,dsfsi_ems
+nw Mamusa EMS Station,other,,NW,,,-27.149,25.182,,,,dsfsi_ems
+nw Naledi EMS Station,other,,NW,,,-26.9465,24.722556,,,,dsfsi_ems
+nw Ditsobotla EMS Station,other,,NW,,,-26.32,26.24,,,,dsfsi_ems
+nw Mahikeng EMS Station,other,,NW,,,-25.8463,25.637389,,,,dsfsi_ems
+nw Ramotshere Moiloa EMS Station,other,,NW,,,-25.525,26.037,,,,dsfsi_ems
+nw Ratlou EMS Station,other,,NW,,,-26.262,25.122,,,,dsfsi_ems
+nw Tswaing EMS Station,other,,NW,,,-26.5,25.368,,,,dsfsi_ems
+wc De Doorns EMS Station,other,,WC,,,-33.481,19.671,,,,dsfsi_ems
+wc Touws River EMS Station,other,,WC,,,-33.34,20.028,,,,dsfsi_ems
+wc Worcester EMS Station,other,,WC,,,-33.6455,19.458,,,,dsfsi_ems
+wc Paarl EMS Station,other,,WC,,,-33.731,18.966,,,,dsfsi_ems
+wc Bonnievale EMS Station,other,,WC,,,-33.936,20.077,,,,dsfsi_ems
+wc Montagu EMS Station,other,,WC,,,-33.797,20.123,,,,dsfsi_ems
+wc Robertson EMS Station,other,,WC,,,-33.801,19.891,,,,dsfsi_ems
+wc Stellenbosch EMS Station,other,,WC,,,-33.93,18.87,,,,dsfsi_ems
+wc Ceres EMS Station,other,,WC,,,-33.363,19.30083,,,,dsfsi_ems
+wc Tulbagh EMS Station,other,,WC,,,-33.284,19.146,,,,dsfsi_ems
+wc Beaufort West EMS Station,other,,WC,,,-32.352,22.607,,,,dsfsi_ems
+wc Murraysburg EMS Station,other,,WC,,,-31.962,23.769,,,,dsfsi_ems
+wc Nelspoort EMS Station,other,,WC,,,-32.088,23.005,,,,dsfsi_ems
+wc Laingsburg EMS Station,other,,WC,,,-33.194,20.85,,,,dsfsi_ems
+wc Klaarstroom EMS Station,other,,WC,,,-33.33,22.535,,,,dsfsi_ems
+wc Leeu-Gamka EMS Station,other,,WC,,,-32.767,21.967,,,,dsfsi_ems
+wc Merweville EMS Station,other,,WC,,,-32.664,21.515,,,,dsfsi_ems
+wc Prince Albert EMS Station,other,,WC,,,-33.2166,22.02583,,,,dsfsi_ems
+wc Khayelitsha Eastern EMS Station,other,,WC,Cape Town,,-34.0471,18.674944,,,,dsfsi_ems
+wc Somerset West EMS Station,other,,WC,Cape Town,,-34.085,18.848,,,,dsfsi_ems
+wc Tygerberg Northern EMS Station,other,,WC,Cape Town,,-33.8819,18.636784,,,,dsfsi_ems
+wc Atlantis/False Bay/Hout Bay EMS Station,other,,WC,Cape Town,,,,,,,dsfsi_ems
+wc Southern EMS Station,other,,WC,Cape Town,,,,,,,dsfsi_ems
+wc ICU and Flying Squad Program EMS Station,other,,WC,Cape Town,,,,,,,dsfsi_ems
+wc Pinelands Western EMS Station,other,,WC,Cape Town,,-33.936,18.495,,,,dsfsi_ems
+wc Lentegeur Southern EMS Station,other,,WC,Cape Town,,-34.0219,18.613125,,,,dsfsi_ems
+wc Plettenberg Bay EMS Station,other,,WC,,,-34.055,23.367,,,,dsfsi_ems
+wc George EMS Station,other,,WC,,,-33.96,22.453,,,,dsfsi_ems
+wc Uniondale EMS Station,other,,WC,,,-33.659,23.125,,,,dsfsi_ems
+wc Wilderness EMS Station,other,,WC,,,-33.963,22.474,,,,dsfsi_ems
+wc Albertinia EMS Station,other,,WC,,,-34.204,21.584,,,,dsfsi_ems
+wc Heidelberg EMS Station,other,,WC,,,-34.102,20.962,,,,dsfsi_ems
+wc Langeberg EMS Station,other,,WC,,,-33.8392,18.705109,,,,dsfsi_ems
+wc Riversdale EMS Station,other,,WC,,,-34.093,21.254,,,,dsfsi_ems
+wc Calitzdorp EMS Station,other,,WC,,,-33.528,21.681,,,,dsfsi_ems
+wc Ladismith EMS Station,other,,WC,,,-33.487,21.268,,,,dsfsi_ems
+wc Knysna EMS Station,other,,WC,,,-34.036,23.058,,,,dsfsi_ems
+wc Mossel Bay EMS Station,other,,WC,,,-34.185,22.127,,,,dsfsi_ems
+wc Dysselsdorp EMS Station,other,,WC,,,-33.575,22.439,,,,dsfsi_ems
+wc Oudtshoorn EMS Station,other,,WC,,,-33.588,22.188,,,,dsfsi_ems
+wc Bredasdorp EMS Station,other,,WC,,,-34.535,20.047,,,,dsfsi_ems
+wc Hermanus EMS Station,other,,WC,,,-34.422,19.228,,,,dsfsi_ems
+wc Riviersonderend EMS Station,other,,WC,,,-34.148,19.925,,,,dsfsi_ems
+wc Barrydale EMS Station,other,,WC,,,-33.907,20.722,,,,dsfsi_ems
+wc Swellendam EMS Station,other,,WC,,,-34.023,20.449,,,,dsfsi_ems
+wc Caledon EMS Station,other,,WC,,,-34.224,19.433,,,,dsfsi_ems
+wc Grabouw EMS Station,other,,WC,,,-34.204,19.181,,,,dsfsi_ems
+wc Villiersdorp EMS Station,other,,WC,,,-33.99,19.31,,,,dsfsi_ems
+wc Piketberg EMS Station,other,,WC,,,-32.865,18.698,,,,dsfsi_ems
+wc Porterville EMS Station,other,,WC,,,-33.018,18.993,,,,dsfsi_ems
+wc Citrusdal EMS Station,other,,WC,,,-32.598,19.017,,,,dsfsi_ems
+wc Clanwilliam EMS Station,other,,WC,,,-32.183,18.89,,,,dsfsi_ems
+wc Lamberts Bay EMS Station,other,,WC,,,-32.094,18.306,,,,dsfsi_ems
+wc Bitterfontein EMS Station,other,,WC,,,-31.0394,18.264153,,,,dsfsi_ems
+wc Van Rhynsdorp EMS Station,other,,WC,,,-31.6,18.751,,,,dsfsi_ems
+wc Vredendal EMS Station,other,,WC,,,-31.669,18.504,,,,dsfsi_ems
+wc Vredenburg EMS Station,other,,WC,,,-32.913,17.99,,,,dsfsi_ems
+wc Darling EMS Station,other,,WC,,,-33.37,18.386,,,,dsfsi_ems
+wc Malmesbury EMS Station,other,,WC,,,-33.467,18.717,,,,dsfsi_ems
+wc Moorreesburg EMS Station,other,,WC,,,-33.15,18.664,,,,dsfsi_ems

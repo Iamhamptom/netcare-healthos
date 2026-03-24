@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   if (!q || q.length < 2) return NextResponse.json({ results: [] });
 
   const results = type === "nappi"
-    ? searchNAPPI(q, 20)
+    ? await searchNAPPI(q, 20)
     : type === "tariff"
       ? searchTariffs(q).slice(0, 20)
       : searchICD10(q, 20);

@@ -964,3 +964,40 @@ model SwitchingVendor {
 
   @@index([status])
 }
+
+// ── NAPPI Medicine Reference Database ──────────────────────────────
+// Full MediKredit NAPPI catalogue (487K products) + SEP pricing data
+// Source: MediKredit PUBDOM (daily) + DoH SEP (medicineprices.org.za)
+model NappiMedicine {
+  id              String   @id @default(cuid())
+  nappiCode       String   // 7-digit NAPPI code
+  packCode        String   @default("001") // 3-digit pack variant
+  fullNappiCode   String   // nappiCode + packCode (10-digit)
+  name            String   // Product trade name
+  strength        String   @default("") // e.g. "500mg", "125mg/5mL"
+  dosageForm      String   @default("") // TAB, CAP, INJ, SYR, SUS, CRE, etc.
+  dosageFormDesc  String   @default("") // Human-readable: Tablets, Capsules, etc.
+  packSize        Int      @default(0)
+  manufacturerCode String  @default("") // 3-5 char manufacturer identifier
+  // Category
+  category        String   @default("medicine") // medicine | device | consumable | implant
+  // SEP pricing (populated for ~10K medicines)
+  schedule        String   @default("") // S0-S8, E0
+  sepPrice        String   @default("") // e.g. "R 399.78"
+  costPerUnit     String   @default("")
+  dispensingFee   String   @default("")
+  isGeneric       String   @default("") // "Generic" or "Originator"
+  ingredients     String   @default("[]") // JSON: [{name, strength, unit}]
+  regNumber       String   @default("") // SAHPRA registration number
+  // Metadata
+  isActive        Boolean  @default(true) // false = discontinued
+  lastUpdated     DateTime @default(now())
+
+  @@unique([nappiCode, packCode])
+  @@index([nappiCode])
+  @@index([fullNappiCode])
+  @@index([name])
+  @@index([dosageForm])
+  @@index([category])
+  @@index([schedule])
+}

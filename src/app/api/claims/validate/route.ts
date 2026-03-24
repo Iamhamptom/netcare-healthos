@@ -9,7 +9,7 @@ import { runAdvancedValidation } from "@/lib/claims/advanced-rules";
 import { detectAnomalies } from "@/lib/claims/statistical-anomaly";
 import { detectGeographicFraud } from "@/lib/claims/geographic-fraud";
 import { validateForSwitchboard, SWITCHBOARD_LIST } from "@/lib/claims/switchboard-rules";
-import { checkCodePairViolations } from "@/lib/claims/code-pair-violations";
+import { checkCodePairViolations } from "@/lib/claims/code-pairs";
 import { compareToSchemeRate } from "@/lib/claims/scheme-tariff-rates";
 import { findNearestFacility, calculateDistance, lookupFacilityByPracticeNumber } from "@/lib/claims/facility-database";
 import { getBehaviorStore } from "@/lib/claims/historical-behavior";

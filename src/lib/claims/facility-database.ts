@@ -1,8 +1,12 @@
 /**
- * South African Healthcare Facility Database
- * ============================================
- * Comprehensive database of SA healthcare facilities for geographic fraud detection,
- * claims routing, and facility validation.
+ * South African Healthcare Facility Database — CURATED
+ * =====================================================
+ * 310 manually validated facilities for claims routing and switchhouse mapping.
+ * These records have practice numbers, switchhouse assignments, and verified GPS.
+ *
+ * For the full 6,600+ facility database (12 merged public sources),
+ * see: ./facility-database-extended.ts
+ * CSV: docs/knowledge/databases/sa_facilities_merged.csv
  *
  * Sources:
  *  - Netcare official website (netcare.co.za) — 49+ hospitals, 55+ Medicross clinics, 15 Akeso facilities
@@ -53,7 +57,8 @@ export interface FacilityRecord {
 }
 
 // ---------------------------------------------------------------------------
-// Facility Database — 400+ records
+// Curated Facility Database — 310 records (claims routing + switchhouse)
+// For full 6,600+ DB see facility-database-extended.ts
 // ---------------------------------------------------------------------------
 
 export const SA_FACILITIES: FacilityRecord[] = [

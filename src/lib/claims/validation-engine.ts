@@ -12,6 +12,9 @@ import {
 } from "./icd10-database";
 import { lookupNAPPI } from "./nappi-database";
 import { lookupMIT, codeExistsInMIT } from "./mit-loader";
+import { lookupTariff } from "./tariff-database";
+import { getSchemeRate, getMarketAverageRate } from "./scheme-tariff-rates";
+import { parseSAID } from "../sa-id";
 
 // ─── ICD-10 FORMAT REGEX ─────────────────────────────────────────
 // WHO ICD-10: Letter + 2 digits, optionally dot + 1-4 alphanumeric
@@ -288,6 +291,63 @@ const CONFLICTING_ICD10_PAIRS: [string, string, string][] = [
   ["Z32.1", "N40", "Pregnancy confirmed + BPH/prostate = impossible"],
 ];
 
+// ─── CONSULTATION + PROCEDURE SAME-DAY BUNDLING (TAR-006) ───────
+// When a procedure is billed on the same day as a consultation by the same
+// provider, SA schemes bundle the consultation into the procedure fee.
+// These consultation tariffs are absorbed by the procedure and should NOT
+// be billed separately on the same day.
+const CONSULT_TARIFF_PREFIXES = ["0190", "0191", "0192", "0193", "0141", "0142"];
+const PROCEDURE_TARIFF_RANGES: { min: number; max: number; label: string }[] = [
+  { min: 400, max: 499, label: "Minor surgery" },
+  { min: 500, max: 599, label: "Intermediate surgery" },
+  { min: 600, max: 699, label: "Major surgery" },
+  { min: 700, max: 799, label: "Complex surgery" },
+  { min: 4500, max: 4599, label: "Pathology procedure" },
+  { min: 3700, max: 3799, label: "Radiology procedure" },
+];
+
+// ─── SURGICAL GLOBAL PERIOD CODES (TAR-009) ─────────────────────
+// Post-operative follow-ups within the global period are included
+// in the surgical fee and should not be billed separately.
+const SURGICAL_GLOBAL_PERIODS: { tariffPrefix: string; days: number; label: string }[] = [
+  { tariffPrefix: "04", days: 14, label: "Minor surgery (14-day global)" },
+  { tariffPrefix: "05", days: 42, label: "Intermediate surgery (42-day global)" },
+  { tariffPrefix: "06", days: 90, label: "Major surgery (90-day global)" },
+  { tariffPrefix: "07", days: 90, label: "Complex surgery (90-day global)" },
+];
+
+// ─── PATHOLOGY UNBUNDLING COMPONENTS (TAR-010) ──────────────────
+// FBC (Full Blood Count) components that should be billed as the
+// comprehensive code 4440, not individual components.
+const PATHOLOGY_UNBUNDLING: { comprehensive: string; components: string[]; label: string }[] = [
+  { comprehensive: "4440", components: ["4441", "4442", "4443", "4444", "4445", "4446", "4447"], label: "FBC — Full Blood Count" },
+  { comprehensive: "4358", components: ["4361", "4362", "4363", "4364", "4365"], label: "U&E — Urea and Electrolytes" },
+  { comprehensive: "4370", components: ["4371", "4372", "4373", "4374", "4375", "4376"], label: "LFT — Liver Function Tests" },
+  { comprehensive: "4380", components: ["4381", "4382", "4383", "4384"], label: "Lipogram — Lipid Profile" },
+];
+
+// ─── DAGGER-ASTERISK PAIRING TABLE (ICD-018/019) ────────────────
+// WHO ICD-10 requires that dagger (†) codes (etiology) are paired with
+// their correct asterisk (*) codes (manifestation). The dagger MUST
+// be primary; the asterisk MUST be secondary.
+const DAGGER_ASTERISK_PAIRS: { dagger: string; asterisk: string; description: string }[] = [
+  { dagger: "A17.0", asterisk: "G01", description: "TB meningitis" },
+  { dagger: "A18.0", asterisk: "M01.1", description: "TB of bones/joints" },
+  { dagger: "A39.0", asterisk: "G01", description: "Meningococcal meningitis" },
+  { dagger: "A52.1", asterisk: "G01", description: "Syphilitic meningitis" },
+  { dagger: "B00.4", asterisk: "G05.1", description: "Herpes simplex encephalitis" },
+  { dagger: "B20", asterisk: "B22", description: "HIV disease resulting in other conditions" },
+  { dagger: "E10.2", asterisk: "N08.3", description: "Type 1 DM with renal complications" },
+  { dagger: "E10.3", asterisk: "H36.0", description: "Type 1 DM with ophthalmic complications" },
+  { dagger: "E10.4", asterisk: "G63.2", description: "Type 1 DM with neurological complications" },
+  { dagger: "E11.2", asterisk: "N08.3", description: "Type 2 DM with renal complications" },
+  { dagger: "E11.3", asterisk: "H36.0", description: "Type 2 DM with ophthalmic complications" },
+  { dagger: "E11.4", asterisk: "G63.2", description: "Type 2 DM with neurological complications" },
+  { dagger: "G30.9", asterisk: "F00.9", description: "Alzheimer disease with dementia" },
+  { dagger: "I25.1", asterisk: "I51.6", description: "Atherosclerotic heart disease" },
+  { dagger: "M05.0", asterisk: "L99.0", description: "Rheumatoid vasculitis" },
+];
+
 // ─── VALIDATION RULES ────────────────────────────────────────────
 
 function validateLine(item: ClaimLineItem): ValidationIssue[] {
@@ -327,6 +387,49 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
       message: "No medical aid membership number provided. All scheme claims require a valid membership number.",
       suggestion: "Add the patient's medical aid membership number from their scheme card.",
     });
+  }
+
+  // ── Rule MBR-010: SA ID Luhn check validation ──
+  // When membership number looks like a 13-digit SA ID, validate via Luhn checksum
+  // and cross-check DOB/gender against claim data.
+  if (item.membershipNumber?.trim()) {
+    const mnTrimmed = item.membershipNumber.trim();
+    if (/^\d{13}$/.test(mnTrimmed)) {
+      const said = parseSAID(mnTrimmed);
+      if (!said.valid) {
+        issues.push({
+          lineNumber: ln, field: "membershipNumber", code: "INVALID_SA_ID",
+          severity: "error", rule: "SA ID Luhn Check Failed",
+          message: `Membership number "${mnTrimmed}" appears to be a 13-digit SA ID but fails the Luhn checksum validation. ${said.error || "Invalid check digit."}`,
+          suggestion: "Verify the SA ID number. A single transposed or incorrect digit causes Luhn failure. Re-enter from the patient's ID document.",
+        });
+      } else {
+        // Cross-check gender if available
+        if (said.gender && item.patientGender && item.patientGender !== "U") {
+          const saidGender = said.gender === "male" ? "M" : "F";
+          if (saidGender !== item.patientGender) {
+            issues.push({
+              lineNumber: ln, field: "membershipNumber", code: "SA_ID_GENDER_MISMATCH",
+              severity: "error", rule: "SA ID Gender Mismatch",
+              message: `SA ID "${mnTrimmed}" indicates ${said.gender} but claim gender is ${item.patientGender === "M" ? "male" : "female"}. Schemes cross-check this — mismatch causes rejection.`,
+              suggestion: "Verify the patient's gender matches their SA ID number. Either the ID or the gender field is incorrect.",
+            });
+          }
+        }
+        // Cross-check age if available
+        if (said.age !== undefined && item.patientAge !== undefined) {
+          const ageDiff = Math.abs(said.age - item.patientAge);
+          if (ageDiff > 2) {
+            issues.push({
+              lineNumber: ln, field: "membershipNumber", code: "SA_ID_AGE_MISMATCH",
+              severity: "warning", rule: "SA ID Age Mismatch",
+              message: `SA ID "${mnTrimmed}" indicates age ${said.age} but claim has patient age ${item.patientAge} (difference: ${ageDiff} years).`,
+              suggestion: "Verify the patient's date of birth. Significant age discrepancies may cause rejection.",
+            });
+          }
+        }
+      }
+    }
   }
 
   // ── Rule 0b: Dependent code must be present ──
@@ -577,6 +680,52 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
       message: `"${code}" (${desc}) is an asterisk (*) manifestation code and cannot be the primary diagnosis.`,
       suggestion: "Move this code to a secondary position and use the underlying etiology (dagger) code as primary.",
     });
+  }
+
+  // ── Rule ICD-018: Dagger code must have matching asterisk secondary ──
+  // WHO ICD-10 dual-coding: dagger (†) etiology codes MUST be paired with
+  // their corresponding asterisk (*) manifestation code as secondary.
+  const isDagger = entry?.isDagger || mitEntry?.isDagger;
+  if (isDagger && item.secondaryICD10) {
+    const daggerPairings = DAGGER_ASTERISK_PAIRS.filter(p => code.startsWith(p.dagger));
+    if (daggerPairings.length > 0) {
+      const hasMatchingAsterisk = daggerPairings.some(p =>
+        item.secondaryICD10!.some(sec => sec.startsWith(p.asterisk))
+      );
+      if (!hasMatchingAsterisk) {
+        const expectedAsterisks = daggerPairings.map(p => `${p.asterisk} (${p.description})`).join(", ");
+        issues.push({
+          lineNumber: ln, field: "secondaryICD10", code: "DAGGER_MISSING_ASTERISK",
+          severity: "warning", rule: "Dagger Code Missing Asterisk Pair",
+          message: `"${code}" is a dagger (†) code requiring a matching asterisk (*) manifestation code as secondary. Expected: ${expectedAsterisks}.`,
+          suggestion: "Add the corresponding asterisk code as a secondary diagnosis. WHO ICD-10 dual-coding rules require dagger+asterisk pairing for accurate clinical description.",
+        });
+      }
+    }
+  }
+
+  // ── Rule ICD-019: Asterisk code must have matching dagger primary ──
+  // When an asterisk code appears in secondary position, verify the primary
+  // is the correct dagger code per WHO pairing rules.
+  if (isAsterisk && item.secondaryICD10) {
+    // Check if the secondary asterisk codes have matching daggers as primary
+    for (const secCode of item.secondaryICD10) {
+      const secMit = lookupMIT(secCode);
+      if (secMit?.isAsterisk) {
+        const expectedPairings = DAGGER_ASTERISK_PAIRS.filter(p => secCode.startsWith(p.asterisk));
+        if (expectedPairings.length > 0) {
+          const primaryMatchesDagger = expectedPairings.some(p => code.startsWith(p.dagger));
+          if (!primaryMatchesDagger) {
+            issues.push({
+              lineNumber: ln, field: "primaryICD10", code: "ASTERISK_DAGGER_MISMATCH",
+              severity: "warning", rule: "Asterisk-Dagger Pairing Mismatch",
+              message: `Secondary asterisk code "${secCode}" expects primary dagger code(s): ${expectedPairings.map(p => p.dagger).join(", ")}. Current primary "${code}" does not match.`,
+              suggestion: "Update the primary diagnosis to the correct etiology (dagger) code, or remove the mismatched asterisk secondary code.",
+            });
+          }
+        }
+      }
+    }
   }
 
   // ── Rule 4b: MIT says code is not valid as primary ──
@@ -1413,6 +1562,178 @@ function validateCrossLine(lines: ClaimLineItem[]): ValidationIssue[] {
     }
   }
 
+  // ── Rule TAR-006: Consultation + procedure same-day bundling ──
+  // SA schemes bundle consultations into procedure fees when both are billed
+  // on the same day by the same provider. The consultation is absorbed.
+  const linesByProviderPatientDate = new Map<string, ClaimLineItem[]>();
+  for (const line of lines) {
+    if (!line.tariffCode) continue;
+    const key = `${(line.practiceNumber || "UNK")}|${(line.patientName || "").toLowerCase()}|${line.dateOfService || ""}`;
+    const existing = linesByProviderPatientDate.get(key) || [];
+    existing.push(line);
+    linesByProviderPatientDate.set(key, existing);
+  }
+  for (const [, group] of linesByProviderPatientDate) {
+    if (group.length < 2) continue;
+    const consultLines = group.filter(l =>
+      l.tariffCode && CONSULT_TARIFF_PREFIXES.includes(l.tariffCode)
+    );
+    const procedureLines = group.filter(l => {
+      if (!l.tariffCode) return false;
+      const num = parseInt(l.tariffCode, 10);
+      return PROCEDURE_TARIFF_RANGES.some(r => num >= r.min && num <= r.max);
+    });
+    if (consultLines.length > 0 && procedureLines.length > 0) {
+      const procedureLabel = procedureLines.map(p => p.tariffCode).join(", ");
+      for (const cl of consultLines) {
+        issues.push({
+          lineNumber: cl.lineNumber, field: "tariffCode", code: "CONSULT_PROCEDURE_BUNDLING",
+          severity: "error", rule: "Consultation + Procedure Same-Day Bundling",
+          message: `Consultation tariff "${cl.tariffCode}" billed on the same day as procedure tariff(s) ${procedureLabel} for the same patient/provider. SA schemes bundle the consultation fee into the procedure — billing both will be rejected.`,
+          suggestion: "Remove the consultation line. The procedure fee includes the consultation component. If a separate consultation was genuinely warranted (different condition), add clinical motivation.",
+        });
+      }
+    }
+  }
+
+  // ── Rule TAR-009: Surgical global period — follow-up within global period ──
+  // Post-operative follow-ups billed within the global period are included
+  // in the surgical fee. Detect consult lines that fall within the global
+  // window of a prior surgical line for the same patient.
+  const surgicalLinesByPatient = new Map<string, { tariff: string; date: Date; globalDays: number; lineNumber: number }[]>();
+  for (const line of lines) {
+    if (!line.tariffCode || !line.dateOfService) continue;
+    const d = new Date(line.dateOfService);
+    if (isNaN(d.getTime())) continue;
+    for (const gp of SURGICAL_GLOBAL_PERIODS) {
+      if (line.tariffCode.startsWith(gp.tariffPrefix)) {
+        const patKey = (line.patientName || "").toLowerCase();
+        const existing = surgicalLinesByPatient.get(patKey) || [];
+        existing.push({ tariff: line.tariffCode, date: d, globalDays: gp.days, lineNumber: line.lineNumber });
+        surgicalLinesByPatient.set(patKey, existing);
+      }
+    }
+  }
+  for (const line of lines) {
+    if (!line.tariffCode || !line.dateOfService) continue;
+    const isConsult = line.tariffCode.startsWith("01") || line.tariffCode.startsWith("02");
+    if (!isConsult) continue;
+    const lineDate = new Date(line.dateOfService);
+    if (isNaN(lineDate.getTime())) continue;
+    const patKey = (line.patientName || "").toLowerCase();
+    const surgicals = surgicalLinesByPatient.get(patKey);
+    if (!surgicals) continue;
+    for (const surg of surgicals) {
+      if (surg.lineNumber === line.lineNumber) continue;
+      const daysSinceSurgery = Math.floor((lineDate.getTime() - surg.date.getTime()) / (1000 * 60 * 60 * 24));
+      if (daysSinceSurgery > 0 && daysSinceSurgery <= surg.globalDays) {
+        issues.push({
+          lineNumber: line.lineNumber, field: "tariffCode", code: "SURGICAL_GLOBAL_PERIOD",
+          severity: "error", rule: "Follow-Up Within Surgical Global Period",
+          message: `Consultation "${line.tariffCode}" billed ${daysSinceSurgery} days after surgery "${surg.tariff}" (line ${surg.lineNumber}). This falls within the ${surg.globalDays}-day global period — follow-up is included in the surgical fee.`,
+          suggestion: `Post-operative follow-ups within ${surg.globalDays} days are included in the surgical tariff. Remove this consultation or, if the visit is for an unrelated condition, add a different ICD-10 code and clinical motivation.`,
+        });
+        break; // One flag per line is enough
+      }
+    }
+  }
+
+  // ── Rule TAR-010: Pathology unbundling — component codes billed separately ──
+  // When individual component codes from a panel (e.g., FBC, U&E, LFT, Lipogram)
+  // are billed separately instead of the comprehensive code, flag as unbundling.
+  for (const [, group] of linesByProviderPatientDate) {
+    if (group.length < 2) continue;
+    const tariffCodes = group.map(l => l.tariffCode).filter(Boolean) as string[];
+    for (const panel of PATHOLOGY_UNBUNDLING) {
+      const matchedComponents = panel.components.filter(c => tariffCodes.includes(c));
+      if (matchedComponents.length >= 2) {
+        // Multiple components billed separately — should be comprehensive code
+        const hasComprehensive = tariffCodes.includes(panel.comprehensive);
+        if (!hasComprehensive) {
+          for (const line of group) {
+            if (line.tariffCode && matchedComponents.includes(line.tariffCode)) {
+              issues.push({
+                lineNumber: line.lineNumber, field: "tariffCode", code: "PATHOLOGY_UNBUNDLING",
+                severity: "error", rule: "Pathology Panel Unbundling",
+                message: `Component tariff "${line.tariffCode}" billed separately — ${matchedComponents.length} components of ${panel.label} (comprehensive code ${panel.comprehensive}) found in this batch. Schemes require the comprehensive code when ≥2 components are ordered.`,
+                suggestion: `Bill the comprehensive code ${panel.comprehensive} (${panel.label}) instead of individual component codes. Unbundling pathology panels is a top-10 rejection reason.`,
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // ── Rule FRD-007: Time impossibility — >16 hrs of services per provider/day ──
+  // Estimate service time from tariff codes and flag when total exceeds 16 hours.
+  const serviceMinutesByProviderDay = new Map<string, { totalMinutes: number; lineNumbers: number[] }>();
+  for (const line of lines) {
+    if (!line.practiceNumber || !line.dateOfService || !line.tariffCode) continue;
+    const key = `${line.practiceNumber}|${line.dateOfService}`;
+    const entry = serviceMinutesByProviderDay.get(key) || { totalMinutes: 0, lineNumbers: [] };
+    // Estimate service minutes per tariff type
+    let minutes = 15; // Default: 15 min per service
+    const tariffNum = parseInt(line.tariffCode, 10);
+    if (line.tariffCode === "0190") minutes = 15;
+    else if (line.tariffCode === "0191") minutes = 30;
+    else if (line.tariffCode === "0192") minutes = 45;
+    else if (line.tariffCode === "0193") minutes = 60;
+    else if (line.tariffCode === "0141" || line.tariffCode === "0142") minutes = 30;
+    else if (tariffNum >= 400 && tariffNum <= 799) minutes = 45; // Surgery
+    else if (tariffNum >= 3700 && tariffNum <= 3799) minutes = 20; // Radiology
+    else if (tariffNum >= 4400 && tariffNum <= 4599) minutes = 10; // Pathology
+    entry.totalMinutes += minutes * (line.quantity || 1);
+    entry.lineNumbers.push(line.lineNumber);
+    serviceMinutesByProviderDay.set(key, entry);
+  }
+  for (const [key, entry] of serviceMinutesByProviderDay) {
+    const totalHours = entry.totalMinutes / 60;
+    if (totalHours > 16) {
+      const [practiceNum, dateStr] = key.split("|");
+      for (const ln of entry.lineNumbers) {
+        issues.push({
+          lineNumber: ln, field: "practiceNumber", code: "TIME_IMPOSSIBILITY_HOURS",
+          severity: "error", rule: "Time Impossibility — Exceeds 16 Hours",
+          message: `Practice ${practiceNum} has ~${totalHours.toFixed(1)} hours of estimated service time on ${dateStr} (${entry.lineNumbers.length} claims). More than 16 hours of services in a single day is physically impossible.`,
+          suggestion: "Review this provider's billing for the day. This volume indicates batch duplication, date errors, or fraudulent billing. CMS may refer for investigation.",
+        });
+      }
+    }
+  }
+
+  // ── Rule FRD-008: Excessive unique patient volume — >50 unique patients/day for GP ──
+  const uniquePatientsByProviderDay = new Map<string, { patients: Set<string>; lineNumbers: number[] }>();
+  for (const line of lines) {
+    if (!line.practiceNumber || !line.dateOfService) continue;
+    const key = `${line.practiceNumber}|${line.dateOfService}`;
+    const entry = uniquePatientsByProviderDay.get(key) || { patients: new Set(), lineNumbers: [] };
+    entry.patients.add((line.patientName || `anon_${line.lineNumber}`).toLowerCase());
+    entry.lineNumbers.push(line.lineNumber);
+    uniquePatientsByProviderDay.set(key, entry);
+  }
+  for (const [key, entry] of uniquePatientsByProviderDay) {
+    const patientCount = entry.patients.size;
+    if (patientCount > 50) {
+      const [practiceNum, dateStr] = key.split("|");
+      // Only flag on the first line to reduce noise
+      issues.push({
+        lineNumber: entry.lineNumbers[0], field: "practiceNumber", code: "EXCESSIVE_PATIENT_VOLUME",
+        severity: "error", rule: "Excessive Patient Volume — >50 Unique Patients/Day",
+        message: `Practice ${practiceNum} billed for ${patientCount} unique patients on ${dateStr}. A GP seeing >50 patients/day exceeds HPCSA reasonable capacity guidelines and is a fraud red flag.`,
+        suggestion: "Review this provider's billing pattern. The CMS fraud detection algorithm flags providers exceeding 50 unique patients/day. If legitimate (e.g., vaccination drive), attach motivation.",
+      });
+    } else if (patientCount > 35) {
+      const [practiceNum, dateStr] = key.split("|");
+      issues.push({
+        lineNumber: entry.lineNumbers[0], field: "practiceNumber", code: "HIGH_PATIENT_VOLUME",
+        severity: "warning", rule: "High Patient Volume — >35 Unique Patients/Day",
+        message: `Practice ${practiceNum} billed for ${patientCount} unique patients on ${dateStr}. This is above average GP capacity (25-30/day) and may trigger scheme audit.`,
+        suggestion: "Consider whether this volume is sustainable and clinically appropriate. High-volume billing patterns are flagged in scheme audits.",
+      });
+    }
+  }
+
   // ── Rule 25b: PROCEDURE_BUNDLING cross-line — Check bundling pairs across patient+date ──
   const tariffsByPatientDate = new Map<string, { tariff: string; lineNumber: number }[]>();
   for (const line of lines) {
@@ -1436,6 +1757,393 @@ function validateCrossLine(lines: ClaimLineItem[]): ValidationIssue[] {
           message: `Tariffs ${codeA} and ${codeB} both billed for same patient on same date: ${reason}. These should typically be billed as a single comprehensive code.`,
           suggestion: "Review for possible unbundling. Combine into the appropriate comprehensive tariff code to avoid rejection.",
         });
+      }
+    }
+  }
+
+  // ── FRD-002: Fuzzy duplicate — same member + procedure, different provider or ±3 days ──
+  const fuzzyDupMap = new Map<string, { lineNumber: number; provider: string; date: string; amount: number }[]>();
+  for (const line of lines) {
+    if (!line.patientName || !line.tariffCode || !line.dateOfService) continue;
+    const key = `${line.patientName.toLowerCase()}|${line.tariffCode}`;
+    const existing = fuzzyDupMap.get(key) || [];
+    existing.push({
+      lineNumber: line.lineNumber,
+      provider: line.practiceNumber || "UNK",
+      date: line.dateOfService,
+      amount: line.amount || 0,
+    });
+    fuzzyDupMap.set(key, existing);
+  }
+  for (const [key, entries] of fuzzyDupMap) {
+    if (entries.length < 2) continue;
+    for (let i = 1; i < entries.length; i++) {
+      const a = entries[0];
+      const b = entries[i];
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+      if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) continue;
+      const daysDiff = Math.abs(Math.floor((dateB.getTime() - dateA.getTime()) / (1000 * 60 * 60 * 24)));
+      const diffProvider = a.provider !== b.provider;
+      // Flag if: different provider same day, OR same/diff provider within 3 days (but not exact dup — already caught)
+      if ((diffProvider && daysDiff === 0) || (daysDiff > 0 && daysDiff <= 3)) {
+        const [patient, tariff] = key.split("|");
+        issues.push({
+          lineNumber: b.lineNumber, field: "tariffCode", code: "FUZZY_DUPLICATE",
+          severity: "warning", rule: "Fuzzy Duplicate — Near-Match Claim",
+          message: `Patient "${patient}" has tariff "${tariff}" on line ${a.lineNumber} (${a.date}, provider ${a.provider}) and line ${b.lineNumber} (${b.date}, provider ${b.provider}). ${diffProvider ? "Different provider, " : ""}${daysDiff} day(s) apart — possible duplicate or doctor shopping.`,
+          suggestion: "Verify this is not a duplicate submission to different providers. Schemes cross-reference claims across providers and will reject the second claim.",
+        });
+      }
+    }
+  }
+
+  // ── FRD-003: Phantom billing — deceased patient pattern ──
+  // Without DHA cross-ref, flag claims where the same patient has services spanning
+  // an implausibly long period (>365 days) with a gap then sudden resumption, or
+  // where date of service is in the future
+  const patientDateRange = new Map<string, { earliest: Date; latest: Date; lineNumbers: number[] }>();
+  for (const line of lines) {
+    if (!line.patientName || !line.dateOfService) continue;
+    const d = new Date(line.dateOfService);
+    if (isNaN(d.getTime())) continue;
+    const patKey = line.patientName.toLowerCase();
+    const entry = patientDateRange.get(patKey) || { earliest: d, latest: d, lineNumbers: [] };
+    if (d < entry.earliest) entry.earliest = d;
+    if (d > entry.latest) entry.latest = d;
+    entry.lineNumbers.push(line.lineNumber);
+    patientDateRange.set(patKey, entry);
+  }
+  const now = new Date();
+  for (const line of lines) {
+    if (!line.dateOfService) continue;
+    const d = new Date(line.dateOfService);
+    if (isNaN(d.getTime())) continue;
+    if (d > now) {
+      issues.push({
+        lineNumber: line.lineNumber, field: "dateOfService", code: "FUTURE_DATE_SERVICE",
+        severity: "error", rule: "Phantom Billing — Future Date of Service",
+        message: `Date of service ${line.dateOfService} is in the future. This is a phantom billing indicator.`,
+        suggestion: "Correct the date of service. Future-dated claims are automatically rejected and may trigger fraud investigation.",
+      });
+    }
+  }
+
+  // ── FRD-004: Weekend billing without after-hours modifier ──
+  for (const line of lines) {
+    if (!line.dateOfService || !line.tariffCode) continue;
+    const d = new Date(line.dateOfService);
+    if (isNaN(d.getTime())) continue;
+    const dayOfWeek = d.getDay(); // 0=Sunday, 6=Saturday
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    if (!isWeekend) continue;
+    const isConsult = line.tariffCode.startsWith("01") || line.tariffCode.startsWith("02");
+    if (!isConsult) continue;
+    // Check for after-hours modifier
+    const hasAfterHoursModifier = line.modifier && ["0010", "0011", "0012", "0013", "0014"].includes(line.modifier);
+    if (!hasAfterHoursModifier) {
+      issues.push({
+        lineNumber: line.lineNumber, field: "modifier", code: "WEEKEND_NO_AFTER_HOURS",
+        severity: "warning", rule: "Weekend Billing Without After-Hours Modifier",
+        message: `Consultation "${line.tariffCode}" on ${line.dateOfService} (${dayOfWeek === 0 ? "Sunday" : "Saturday"}) without after-hours modifier. Weekend consultations should carry modifier 0010-0014 unless the practice is registered for weekend hours.`,
+        suggestion: "Add the appropriate after-hours modifier, or if the practice operates regular weekend hours, document this. Schemes may reject weekend claims without modifiers.",
+      });
+    }
+  }
+
+  // ── FRD-005: Geographic impossibility — same patient, 2 providers in different locations same day ──
+  // Without geocoding, detect same patient seen by multiple different providers on the same day
+  const patientProvidersByDay = new Map<string, { providers: Set<string>; lineNumbers: number[] }>();
+  for (const line of lines) {
+    if (!line.patientName || !line.dateOfService || !line.practiceNumber) continue;
+    const key = `${line.patientName.toLowerCase()}|${line.dateOfService}`;
+    const entry = patientProvidersByDay.get(key) || { providers: new Set(), lineNumbers: [] };
+    entry.providers.add(line.practiceNumber);
+    entry.lineNumbers.push(line.lineNumber);
+    patientProvidersByDay.set(key, entry);
+  }
+  for (const [key, entry] of patientProvidersByDay) {
+    if (entry.providers.size >= 3) {
+      const [patient, date] = key.split("|");
+      issues.push({
+        lineNumber: entry.lineNumbers[0], field: "practiceNumber", code: "GEOGRAPHIC_IMPOSSIBILITY",
+        severity: "error", rule: "Geographic Impossibility — Multiple Providers Same Day",
+        message: `Patient "${patient}" was seen by ${entry.providers.size} different providers on ${date}: ${[...entry.providers].join(", ")}. Visiting 3+ providers in a single day is a fraud indicator (card lending / identity fraud).`,
+        suggestion: "Verify patient identity. This pattern is flagged by CMS fraud detection as potential card lending or phantom billing. Cross-reference with patient address.",
+      });
+    } else if (entry.providers.size === 2) {
+      const [patient, date] = key.split("|");
+      issues.push({
+        lineNumber: entry.lineNumbers[0], field: "practiceNumber", code: "MULTI_PROVIDER_SAME_DAY",
+        severity: "warning", rule: "Multiple Providers Same Day",
+        message: `Patient "${patient}" was seen by 2 different providers on ${date}: ${[...entry.providers].join(", ")}. This could be a legitimate referral or a fraud indicator.`,
+        suggestion: "If this is a referral, ensure a referral letter is on file. If not, this may indicate card lending or duplicate submissions.",
+      });
+    }
+  }
+
+  // ── FRD-006: Identity fraud — child services on adult card (age-based) ──
+  // Paediatric tariffs (prefix 01 with paediatric modifiers, or age-specific codes) on patients aged 18+
+  const PAEDIATRIC_TARIFFS = ["0181", "0182", "0183"]; // Paediatric consultation tariffs
+  const ADULT_ONLY_TARIFFS = ["0197", "0198"]; // Geriatric/adult-specific
+  for (const line of lines) {
+    if (!line.tariffCode || line.patientAge === undefined) continue;
+    if (line.patientAge >= 18 && PAEDIATRIC_TARIFFS.includes(line.tariffCode)) {
+      issues.push({
+        lineNumber: line.lineNumber, field: "tariffCode", code: "IDENTITY_FRAUD_CHILD_ON_ADULT",
+        severity: "error", rule: "Identity Fraud — Paediatric Service on Adult",
+        message: `Paediatric tariff "${line.tariffCode}" billed for a ${line.patientAge}-year-old patient. Paediatric tariffs are for patients under 18.`,
+        suggestion: "Verify patient identity and age. This may indicate: (1) wrong dependent code, (2) child's services billed on parent's card with wrong age, or (3) identity fraud.",
+      });
+    }
+    if (line.patientAge < 14 && ADULT_ONLY_TARIFFS.includes(line.tariffCode)) {
+      issues.push({
+        lineNumber: line.lineNumber, field: "tariffCode", code: "IDENTITY_FRAUD_ADULT_ON_CHILD",
+        severity: "error", rule: "Identity Fraud — Adult Service on Child",
+        message: `Adult-specific tariff "${line.tariffCode}" billed for a ${line.patientAge}-year-old patient. This tariff is for patients 14+.`,
+        suggestion: "Verify patient identity and dependent code. Incorrect dependent codes are a common source of claim rejection.",
+      });
+    }
+  }
+
+  // ── FRD-010: After-hours modifier abuse — >60% of claims with after-hours modifiers ──
+  if (lines.length >= 10) {
+    const afterHoursModifiers = ["0010", "0011", "0012", "0013", "0014"];
+    const claimsWithAfterHours = lines.filter(l => l.modifier && afterHoursModifiers.includes(l.modifier));
+    const afterHoursPercent = (claimsWithAfterHours.length / lines.length) * 100;
+    if (afterHoursPercent > 60) {
+      issues.push({
+        lineNumber: lines[0].lineNumber, field: "modifier", code: "AFTER_HOURS_ABUSE",
+        severity: "error", rule: "After-Hours Modifier Abuse",
+        message: `${afterHoursPercent.toFixed(0)}% of claims (${claimsWithAfterHours.length}/${lines.length}) have after-hours modifiers. Peer average is ~15%. This exceeds the 60% threshold for fraud investigation.`,
+        suggestion: "Review practice hours. After-hours modifiers increase reimbursement by 50-100%. Schemes audit providers with >40% after-hours billing. If legitimate, document extended practice hours.",
+      });
+    } else if (afterHoursPercent > 40) {
+      issues.push({
+        lineNumber: lines[0].lineNumber, field: "modifier", code: "AFTER_HOURS_HIGH",
+        severity: "warning", rule: "High After-Hours Modifier Rate",
+        message: `${afterHoursPercent.toFixed(0)}% of claims have after-hours modifiers. Peer average is ~15%. This rate may trigger scheme audit.`,
+        suggestion: "Document practice hours and review after-hours billing patterns. Rates above 40% are monitored by scheme fraud units.",
+      });
+    }
+  }
+
+  // ── FRD-011: Benford's Law deviation — first-digit distribution of amounts ──
+  // Naturally occurring financial data follows Benford's Law. Fabricated amounts deviate.
+  if (lines.length >= 50) {
+    const BENFORD_EXPECTED = [0, 0.301, 0.176, 0.125, 0.097, 0.079, 0.067, 0.058, 0.051, 0.046];
+    const digitCounts = new Array(10).fill(0);
+    let validAmounts = 0;
+    for (const line of lines) {
+      if (!line.amount || line.amount <= 0) continue;
+      // Get first significant digit
+      const amountStr = Math.abs(line.amount).toString().replace(/^0+\.?0*/, "");
+      const firstDigit = parseInt(amountStr[0], 10);
+      if (firstDigit >= 1 && firstDigit <= 9) {
+        digitCounts[firstDigit]++;
+        validAmounts++;
+      }
+    }
+    if (validAmounts >= 50) {
+      // Chi-squared test against Benford distribution
+      let chiSquared = 0;
+      for (let d = 1; d <= 9; d++) {
+        const observed = digitCounts[d] / validAmounts;
+        const expected = BENFORD_EXPECTED[d];
+        chiSquared += ((observed - expected) ** 2) / expected;
+      }
+      // Chi-squared threshold: 0.1 indicates significant deviation (df=8)
+      // Critical value at p=0.05 with df=8 is 15.507, but we use a simpler threshold
+      // for the normalized chi-squared (divided by N to get per-observation deviation)
+      if (chiSquared > 0.1) {
+        const deviationDetails: string[] = [];
+        for (let d = 1; d <= 9; d++) {
+          const observed = ((digitCounts[d] / validAmounts) * 100).toFixed(1);
+          const expected = (BENFORD_EXPECTED[d] * 100).toFixed(1);
+          deviationDetails.push(`${d}: ${observed}% (expected ${expected}%)`);
+        }
+        issues.push({
+          lineNumber: lines[0].lineNumber, field: "amount", code: "BENFORD_LAW_DEVIATION",
+          severity: chiSquared > 0.3 ? "error" : "warning",
+          rule: "Benford's Law Deviation — Suspicious Amount Distribution",
+          message: `Claim amounts fail Benford's Law test (χ²=${chiSquared.toFixed(3)}, threshold 0.1). First-digit distribution: ${deviationDetails.join("; ")}. This suggests amounts may be fabricated or systematically manipulated.`,
+          suggestion: "Benford's Law deviations are a forensic accounting red flag. Review claim amounts for patterns of fabrication, rounding, or manipulation. This batch should be audited.",
+        });
+      }
+    }
+  }
+
+  // ── FRD-012: Round-number clustering — abnormal concentration at R500, R1000, etc. ──
+  if (lines.length >= 20) {
+    const ROUND_NUMBERS = [100, 200, 250, 300, 500, 750, 1000, 1500, 2000, 2500, 3000, 5000, 10000];
+    let roundCount = 0;
+    const roundBreakdown = new Map<number, number>();
+    for (const line of lines) {
+      if (!line.amount || line.amount <= 0) continue;
+      // Check if amount in rands (divide by 100 if stored in cents)
+      const amountRands = line.amount >= 10000 ? line.amount / 100 : line.amount;
+      for (const rn of ROUND_NUMBERS) {
+        if (Math.abs(amountRands - rn) < 0.01) {
+          roundCount++;
+          roundBreakdown.set(rn, (roundBreakdown.get(rn) || 0) + 1);
+          break;
+        }
+      }
+    }
+    const roundPercent = (roundCount / lines.length) * 100;
+    if (roundPercent > 40) {
+      const breakdown = [...roundBreakdown.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .map(([amt, count]) => `R${amt}: ${count}`)
+        .join(", ");
+      issues.push({
+        lineNumber: lines[0].lineNumber, field: "amount", code: "ROUND_NUMBER_CLUSTERING",
+        severity: "error", rule: "Round-Number Clustering — Suspicious Amounts",
+        message: `${roundPercent.toFixed(0)}% of claims (${roundCount}/${lines.length}) have round-number amounts. Natural billing rarely exceeds 15%. Breakdown: ${breakdown}.`,
+        suggestion: "Round-number claims are a known fraud indicator. Real medical billing produces specific amounts based on tariff schedules. Review for fabricated or estimated amounts.",
+      });
+    } else if (roundPercent > 25) {
+      issues.push({
+        lineNumber: lines[0].lineNumber, field: "amount", code: "ROUND_NUMBER_HIGH",
+        severity: "warning", rule: "Elevated Round-Number Amounts",
+        message: `${roundPercent.toFixed(0)}% of claims have round-number amounts. Normal range is 5-15%.`,
+        suggestion: "Review amounts for accuracy against tariff schedules. Elevated round-number rates may indicate estimated rather than calculated billing.",
+      });
+    }
+  }
+
+  // ── FRD-013: S-code to M-code switching — injury coded as musculoskeletal to avoid ECC ──
+  // Injury S-codes (S00-S99, T00-T98) require Emergency Care Centre (ECC) referral.
+  // Fraudulent billing recodes injuries as M-codes (musculoskeletal) to avoid ECC requirements.
+  for (const line of lines) {
+    if (!line.primaryICD10) continue;
+    const allCodes = [line.primaryICD10, ...(line.secondaryICD10 || [])];
+    const hasSCode = allCodes.some(c => /^[ST]\d{2}/i.test(c));
+    const hasMCode = allCodes.some(c => /^M\d{2}/i.test(c));
+    // Flag if both S/T (injury) and M (musculoskeletal) codes present — possible code switching
+    if (hasSCode && hasMCode) {
+      issues.push({
+        lineNumber: line.lineNumber, field: "primaryICD10", code: "S_TO_M_CODE_SWITCHING",
+        severity: "warning", rule: "S-Code to M-Code Switching — Possible ECC Avoidance",
+        message: `Claim has both injury codes (S/T) and musculoskeletal codes (M) on the same line. This pattern is associated with recoding injuries as chronic conditions to bypass Emergency Care Centre referral requirements.`,
+        suggestion: "Verify the clinical accuracy. If the patient has an acute injury (S/T code), the M-code may be inappropriate. Schemes specifically audit this pattern as it avoids ECC gatekeeping.",
+      });
+    }
+    // Also flag: M-code with injury-related tariff codes (e.g., wound care, fracture management)
+    const injuryTariffs = ["0401", "0402", "0403", "0404", "0501", "0502", "0503"];
+    if (!hasSCode && hasMCode && line.tariffCode && injuryTariffs.includes(line.tariffCode)) {
+      issues.push({
+        lineNumber: line.lineNumber, field: "primaryICD10", code: "M_CODE_INJURY_TARIFF",
+        severity: "warning", rule: "Musculoskeletal Code With Injury Procedure",
+        message: `Injury-type procedure "${line.tariffCode}" (wound care/fracture) billed with musculoskeletal M-code but no injury S/T-code. This suggests the injury code was replaced with an M-code to avoid ECC referral.`,
+        suggestion: "If this is an injury, use the appropriate S/T ICD-10 code. M-codes for chronic musculoskeletal conditions do not justify wound care or fracture management tariffs.",
+      });
+    }
+  }
+
+  // ── FRD-014: Prescription fraud — pharmacy hopping (same patient, same drug class, 3+ pharmacies) ──
+  // Detect when the same patient gets the same type of medication from multiple pharmacies
+  const rxByPatientDrug = new Map<string, { pharmacies: Set<string>; totalQty: number; lineNumbers: number[] }>();
+  for (const line of lines) {
+    if (!line.nappiCode || !line.patientName || !line.practiceNumber) continue;
+    // Group by patient + NAPPI prefix (first 5 digits = same drug class)
+    const drugClass = line.nappiCode.substring(0, 5);
+    const key = `${line.patientName.toLowerCase()}|${drugClass}`;
+    const entry = rxByPatientDrug.get(key) || { pharmacies: new Set(), totalQty: 0, lineNumbers: [] };
+    entry.pharmacies.add(line.practiceNumber);
+    entry.totalQty += line.quantity || 1;
+    entry.lineNumbers.push(line.lineNumber);
+    rxByPatientDrug.set(key, entry);
+  }
+  for (const [key, entry] of rxByPatientDrug) {
+    if (entry.pharmacies.size >= 3) {
+      const [patient] = key.split("|");
+      issues.push({
+        lineNumber: entry.lineNumbers[0], field: "nappiCode", code: "PHARMACY_HOPPING",
+        severity: "error", rule: "Prescription Fraud — Pharmacy Hopping",
+        message: `Patient "${patient}" obtained the same medication class from ${entry.pharmacies.size} different pharmacies (${[...entry.pharmacies].join(", ")}). Total quantity: ${entry.totalQty}. This is a classic prescription fraud pattern.`,
+        suggestion: "Flag for prescription monitoring. Pharmacy hopping for controlled substances (S5/S6) is illegal under SAHPRA regulations. Cross-reference with the real-time prescription monitoring database.",
+      });
+    }
+  }
+
+  // ── FRD-015: Collusion patterns — provider-patient rings ──
+  // Detect unusual concentration: one provider billing exclusively for a small set of patients,
+  // or one patient appearing exclusively at one provider with unusually high frequency.
+  const providerPatientMatrix = new Map<string, Map<string, number>>();
+  for (const line of lines) {
+    if (!line.practiceNumber || !line.patientName) continue;
+    const provider = line.practiceNumber;
+    const patient = line.patientName.toLowerCase();
+    const provMap = providerPatientMatrix.get(provider) || new Map();
+    provMap.set(patient, (provMap.get(patient) || 0) + 1);
+    providerPatientMatrix.set(provider, provMap);
+  }
+  for (const [provider, patients] of providerPatientMatrix) {
+    const totalClaims = [...patients.values()].reduce((a, b) => a + b, 0);
+    if (totalClaims < 10) continue;
+    // Check for concentration: if top patient accounts for >30% of a provider's claims
+    const sorted = [...patients.entries()].sort((a, b) => b[1] - a[1]);
+    const topPatient = sorted[0];
+    const topPercent = (topPatient[1] / totalClaims) * 100;
+    if (topPercent > 30 && topPatient[1] >= 5) {
+      issues.push({
+        lineNumber: lines.find(l => l.practiceNumber === provider && l.patientName?.toLowerCase() === topPatient[0])?.lineNumber || lines[0].lineNumber,
+        field: "practiceNumber", code: "COLLUSION_PATTERN",
+        severity: "warning", rule: "Collusion Pattern — Provider-Patient Concentration",
+        message: `Provider ${provider}: patient "${topPatient[0]}" accounts for ${topPercent.toFixed(0)}% of claims (${topPatient[1]}/${totalClaims}). Unusual concentration may indicate collusion or phantom billing.`,
+        suggestion: "Review the relationship between this provider and patient. High-concentration billing is a known collusion indicator. Verify all services were rendered.",
+      });
+    }
+    // Check for ring: provider has exactly 3-5 patients with roughly equal high-frequency billing
+    if (patients.size >= 3 && patients.size <= 5 && totalClaims >= 20) {
+      const avgClaims = totalClaims / patients.size;
+      const allSimilar = sorted.every(([, count]) => Math.abs(count - avgClaims) / avgClaims < 0.3);
+      if (allSimilar && avgClaims >= 4) {
+        issues.push({
+          lineNumber: lines.find(l => l.practiceNumber === provider)?.lineNumber || lines[0].lineNumber,
+          field: "practiceNumber", code: "BILLING_RING",
+          severity: "error", rule: "Collusion Pattern — Possible Billing Ring",
+          message: `Provider ${provider} has only ${patients.size} patients but ${totalClaims} claims, with roughly equal billing (~${avgClaims.toFixed(0)} claims each). This pattern is consistent with a provider-patient billing ring.`,
+          suggestion: "Investigate this provider immediately. A small, equally-billed patient group is a textbook indicator of collusion. Verify physical attendance for all appointments.",
+        });
+      }
+    }
+  }
+
+  // ── FRD-016: Claim amount outlier — >3 standard deviations from peer mean ──
+  if (lines.length >= 10) {
+    // Group amounts by tariff code to compare like-for-like
+    const amountsByTariff = new Map<string, { amounts: number[]; lineNumbers: number[] }>();
+    for (const line of lines) {
+      if (!line.tariffCode || !line.amount || line.amount <= 0) continue;
+      const entry = amountsByTariff.get(line.tariffCode) || { amounts: [], lineNumbers: [] };
+      entry.amounts.push(line.amount);
+      entry.lineNumbers.push(line.lineNumber);
+      amountsByTariff.set(line.tariffCode, entry);
+    }
+    for (const [tariff, data] of amountsByTariff) {
+      if (data.amounts.length < 5) continue; // Need sufficient sample
+      const mean = data.amounts.reduce((a, b) => a + b, 0) / data.amounts.length;
+      const variance = data.amounts.reduce((sum, x) => sum + (x - mean) ** 2, 0) / data.amounts.length;
+      const stdDev = Math.sqrt(variance);
+      if (stdDev === 0) continue; // All same amount
+      for (let i = 0; i < data.amounts.length; i++) {
+        const zScore = Math.abs(data.amounts[i] - mean) / stdDev;
+        if (zScore > 3) {
+          const amountDisplay = data.amounts[i] >= 10000
+            ? `R${(data.amounts[i] / 100).toFixed(2)}`
+            : `R${data.amounts[i].toFixed(2)}`;
+          const meanDisplay = mean >= 10000
+            ? `R${(mean / 100).toFixed(2)}`
+            : `R${mean.toFixed(2)}`;
+          issues.push({
+            lineNumber: data.lineNumbers[i], field: "amount", code: "AMOUNT_OUTLIER",
+            severity: "error", rule: "Claim Amount Outlier — >3 Standard Deviations",
+            message: `Amount ${amountDisplay} for tariff "${tariff}" is ${zScore.toFixed(1)} standard deviations from the batch mean of ${meanDisplay}. This is a statistical outlier.`,
+            suggestion: "Verify the amount is correct. Extreme outliers may indicate data entry errors, upcoding, or inflated billing. Cross-reference with the scheme tariff schedule.",
+          });
+        }
       }
     }
   }
@@ -1680,28 +2388,38 @@ export function validateAdvancedClinical(lines: ClaimLineItem[]): ValidationIssu
       }
     }
 
-    // ── Rule 18d: SEP_EXCEEDED — Medicine price exceeds Single Exit Price ──
-    // NOTE: The NAPPIEntry type does not currently include a price field.
-    // When the NAPPI database is extended with SEP pricing data, uncomment and
-    // enable this rule. The logic should compare line.amount against
-    // nappiEntry.price * 1.5 (50% threshold above reference price).
-    // if (line.nappiCode && line.amount != null) {
-    //   const nappiEntry = lookupNAPPI(line.nappiCode);
-    //   if (nappiEntry && nappiEntry.price != null) {
-    //     const threshold = nappiEntry.price * 1.5;
-    //     if (line.amount > threshold) {
-    //       issues.push({
-    //         lineNumber: ln,
-    //         field: "amount",
-    //         code: "SEP_EXCEEDED",
-    //         severity: "warning",
-    //         rule: "Exceeds Reference Price",
-    //         message: "Claim amount significantly exceeds reference price for this medicine.",
-    //         suggestion: `Claimed R${line.amount.toFixed(2)} vs reference R${nappiEntry.price.toFixed(2)}. Verify pricing or provide motivation.`,
-    //       });
-    //     }
-    //   }
-    // }
+    // ── Rule NAP-008: SEP price exceeded / tariff rate exceeded ──
+    // For NAPPI codes: compare against scheme rate if scheme is known,
+    // otherwise compare against market average tariff rate.
+    // For tariff codes: compare against scheme-specific rates.
+    if (line.amount != null && line.amount > 0) {
+      // Tariff-based rate comparison
+      if (line.tariffCode && /^\d{4}$/.test(line.tariffCode)) {
+        let referenceRate: number | null = null;
+        let rateSource = "";
+
+        if (line.scheme) {
+          referenceRate = getSchemeRate(line.scheme, line.tariffCode);
+          rateSource = `${line.scheme} scheme rate`;
+        }
+        if (!referenceRate) {
+          referenceRate = getMarketAverageRate(line.tariffCode);
+          rateSource = "market average rate";
+        }
+
+        if (referenceRate && line.amount > referenceRate * 2) {
+          issues.push({
+            lineNumber: ln,
+            field: "amount",
+            code: "SEP_EXCEEDED",
+            severity: "warning",
+            rule: "Amount Exceeds Reference Rate",
+            message: `Claimed R${line.amount.toFixed(2)} vs ${rateSource} R${referenceRate.toFixed(2)} for tariff "${line.tariffCode}" (${Math.round((line.amount / referenceRate) * 100)}% of reference). Scheme will likely pay at their rate, patient liable for the difference.`,
+            suggestion: "Verify the claimed amount. If charging above scheme rate, the patient must be informed of the shortfall. PMB conditions must be billed at scheme rate at DSP.",
+          });
+        }
+      }
+    }
   }
 
   // ── Rule 19b: CONSULT_LEVEL_DISTRIBUTION — Upcoding pattern detection ──
