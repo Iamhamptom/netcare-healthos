@@ -944,7 +944,7 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
   // ── Rule 17b: Upcoding detection — specialist tariff for GP-level condition ──
   if (item.tariffCode && item.primaryICD10) {
     const tariffNum = parseInt(item.tariffCode, 10);
-    const isSpecialistTariff = (tariffNum >= 141 && tariffNum <= 199) || (tariffNum >= 200 && tariffNum <= 299);
+    const isSpecialistTariff = (tariffNum >= 141 && tariffNum <= 189) || (tariffNum >= 200 && tariffNum <= 299);
     // Simple/common conditions that don't justify specialist billing
     const gpLevelConditions = [
       "J06", "J00", "J01", "J02", "J03",  // URI, cold, pharyngitis

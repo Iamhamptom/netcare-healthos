@@ -155,14 +155,14 @@ export function validateForSwitchboard(
     // ── Required fields check (switch auto-rejects these) ──
     const fieldMap: Record<string, string | undefined> = {
       "PROVIDER_NO": line.practiceNumber,
-      "MEMBER_NO": undefined, // We don't track membership separately yet
+      "MEMBER_NO": line.membershipNumber,
       "DEPENDENT_CODE": line.dependentCode,
       "ICD10_1": line.primaryICD10,
       "TARIFF_CODE": line.tariffCode,
       "AMOUNT": line.amount?.toString(),
       "CLAIM_DATE": line.dateOfService,
       "PATIENT_SURNAME": line.patientName,
-      "PATIENT_GENDER": line.patientGender === "U" ? undefined : line.patientGender,
+      "PATIENT_GENDER": line.patientGender,
     };
 
     for (const field of sw.requiredFields) {
