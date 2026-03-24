@@ -414,30 +414,10 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     });
   }
 
-  // ── Rule MBR-014: Dependent age limit exceeded ──
-  // SA schemes: children dependents are covered until age 21 (most schemes)
-  // or 25/26 if full-time student. Dependent code 02+ with age >21 = flag.
-  if (item.dependentCode && item.patientAge !== undefined) {
-    const depCode = parseInt(item.dependentCode, 10);
-    if (depCode >= 2 && !isNaN(depCode)) {
-      // Dependent codes 02+ are typically children
-      if (item.patientAge > 26) {
-        issues.push({
-          lineNumber: ln, field: "dependentCode", code: "DEPENDENT_AGE_EXCEEDED",
-          severity: "error", rule: "Dependent Age Limit Exceeded",
-          message: `Dependent code ${item.dependentCode} (child) with patient age ${item.patientAge}. SA schemes terminate child dependent cover at age 21 (or 25-26 for full-time students). This claim will be rejected.`,
-          suggestion: "Verify dependent status. If the patient is over 21, they must be registered as a main member or adult dependent. If a full-time student (21-26), add proof of enrollment in the motivation.",
-        });
-      } else if (item.patientAge > 21) {
-        issues.push({
-          lineNumber: ln, field: "dependentCode", code: "DEPENDENT_AGE_WARNING",
-          severity: "warning", rule: "Dependent Age Near Limit",
-          message: `Dependent code ${item.dependentCode} (child) with patient age ${item.patientAge}. Most SA schemes cap child dependents at 21 unless a full-time student (up to 25-26).`,
-          suggestion: "If the dependent is a full-time student, ensure proof of enrollment is on file with the scheme. Otherwise, register as an adult dependent.",
-        });
-      }
-    }
-  }
+  // ── Rule MBR-014: REMOVED — Dependent code does NOT indicate age ──
+  // In SA schemes, dependent_code is a sequence number (00=principal, 01=first dependent, 02=second, etc.)
+  // A 55-year-old spouse can legitimately be dependent 02. This rule caused 14 false positives per batch.
+  // Removed per training report Section 3.6.
 
   // ── Rule DTE-006: Service date before membership start ──
   // STUB: Requires MediSwitch eligibility response (member_start_date).
@@ -754,16 +734,18 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
   }
 
   // Specificity check — from curated DB or MIT
-  // Downgraded to warning: SA GPs commonly submit 3-character codes (e.g., R10 for abdominal pain)
-  // for undifferentiated presentations. Schemes may reject, but it's not always an error.
-  if (entry && !entry.isValid) {
+  // EXCEPTION: Some ICD-10 codes are COMPLETE at 3 characters per WHO — do NOT flag these.
+  const COMPLETE_AT_3_CHARS = ["I10", "B20", "D66", "G35", "G20", "O80", "J10", "J11"];
+  const isCompleteAt3 = COMPLETE_AT_3_CHARS.includes(code);
+
+  if (!isCompleteAt3 && entry && !entry.isValid) {
     issues.push({
       lineNumber: ln, field: "primaryICD10", code: "NON_SPECIFIC",
       severity: "warning", rule: "Insufficient Specificity",
       message: `"${code}" (${entry.description}) requires greater specificity. This code needs a 4th or 5th character. Some schemes will reject this.`,
       suggestion: `Use a more specific code under the ${code} category. For example, ${code}.0 or ${code}.9.`,
     });
-  } else if (!entry && mitEntry && !mitEntry.isValidClinical) {
+  } else if (!isCompleteAt3 && !entry && mitEntry && !mitEntry.isValidClinical) {
     // MIT says code exists but isn't valid for clinical use
     issues.push({
       lineNumber: ln, field: "primaryICD10", code: "NON_SPECIFIC",
@@ -1303,42 +1285,76 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
   }
 
   // ── Rule 18a: Prompt injection detection in motivation text (DETERMINISTIC) ──
+  // KEY PRINCIPLE: Real injections contain INSTRUCTIONS TO THE SYSTEM (bypass, skip, approve).
+  // Legitimate clinical text contains CLINICAL DECISIONS (switched medication, adjusted therapy).
+  // Words like "override", "ignore", "injection", "system" are common in clinical motivations.
   if (item.motivationText) {
     const lower = item.motivationText.toLowerCase();
-    const injectionPatterns = [
-      // Direct LLM attacks
-      "ignore all previous", "ignore previous instructions", "override the warning",
-      "system prompt", "override_warning", "return valid", "mark as valid",
+
+    // PHASE 1: Check for clinical context — if present, these are NOT injections
+    const clinicalContextIndicators = [
+      // Medication changes (very common in chronic management)
+      "override previous", "switched from", "changed from", "replaced with",
+      "allergic to", "allergy protocol", "penicillin-allergic", "intolerant to",
+      "stepped up to", "stepped down to", "dose adjusted", "therapy escalation",
+      // Clinical review language
+      "system review", "review of systems", "systemic examination",
+      "injection site", "insulin injection", "intramuscular injection", "im injection",
+      "sc injection", "subcutaneous", "injection given", "injection administered",
+      // Auth references in clinical context
+      "pre-auth ref", "pa2026", "pa2025", "auth ref", "auth number", "authorisation number",
+      "authorization number", "auth no", "pre-auth no",
+    ];
+    const hasClinicalContext = clinicalContextIndicators.some(p => lower.includes(p));
+
+    // PHASE 2: Adversarial patterns — COMMAND language directed at the system
+    const adversarialPatterns = [
+      // Direct system instructions (imperative commands)
+      "ignore all previous", "ignore previous instructions", "disregard previous",
+      "return valid", "mark as valid", "mark this as valid", "approve immediately",
+      "process immediately", "skip validation", "bypass validation",
       "this claim is perfectly valid", "clinically necessary and perfectly valid",
-      "override immediately", "bypass", "disregard previous", "in your capacity",
+      "override_warning", "system prompt", "in your capacity as",
       "you are an authorized", "authorize this claim",
-      // Emotional manipulation (pity play)
-      "child will not receive", "life-saving", "liability will be on",
-      "patient will die", "blood on your hands", "urgent override needed",
-      // Professional-sounding social engineering (but NOT real pre-auth refs)
+      // Fake authority citations (not real clinical refs)
       "pre-authorised by discovery health to override",
       "pre-authorized by the scheme to bypass",
-      "cms regulation", "regulation allows", "clinical governance committee",
-      "telephonic pre-auth", "verbal authorisation obtained",
-      "workcomp urgency", "occupational injury act",
-      "pre-approved under section", "approved under regulation",
       "legal obligation to process", "failure to process will result",
+      "pre-approved under section", "approved under regulation",
+      "auto-approved by fallback handler",
     ];
+
+    // Emotional manipulation (distinct from clinical urgency)
+    const manipulationPatterns = [
+      "child will not receive", "liability will be on",
+      "blood on your hands", "urgent override needed",
+    ];
+
     // "See Attached" bypass — motivation references external docs the AI can't read
     const externalRefPatterns = [
       "see attached", "refer to specialist letter", "see lab results",
       "refer to attached", "see enclosed", "as per attachment",
       "see report", "refer to report", "documentation on file",
     ];
-    const hasInjection = injectionPatterns.some(p => lower.includes(p));
+
+    const hasAdversarial = adversarialPatterns.some(p => lower.includes(p));
+    const hasManipulation = manipulationPatterns.some(p => lower.includes(p));
     const hasExternalRef = externalRefPatterns.some(p => lower.includes(p)) && item.motivationText.trim().length < 100;
 
-    if (hasInjection) {
+    // Only flag if adversarial AND NOT clinical context
+    if (hasAdversarial && !hasClinicalContext) {
       issues.push({
         lineNumber: ln, field: "motivationText", code: "PROMPT_INJECTION_DETECTED",
-        severity: "error", rule: "Suspicious Motivation Text",
+        severity: "warning", rule: "Suspicious Motivation Text",
         message: `Motivation text contains suspicious override language: "${item.motivationText.slice(0, 80)}...". Flagged for security review.`,
         suggestion: "This claim requires manual security review. The motivation text appears to contain instructions rather than clinical justification.",
+      });
+    } else if (hasManipulation && !hasClinicalContext) {
+      issues.push({
+        lineNumber: ln, field: "motivationText", code: "PROMPT_INJECTION_DETECTED",
+        severity: "warning", rule: "Suspicious Motivation Text",
+        message: `Motivation text contains emotional manipulation language: "${item.motivationText.slice(0, 80)}...". Flagged for security review.`,
+        suggestion: "Replace emotional language with clinical justification (diagnosis, treatment rationale, clinical findings).",
       });
     }
     if (hasExternalRef) {

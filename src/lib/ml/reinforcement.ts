@@ -17,6 +17,113 @@
 import { join } from "path";
 import { scrubJSON, scrubTrainingExample } from "./pii-scrubber";
 
+// ─── Supabase Direct Persistence (survives cold starts) ─────────────────────
+
+/**
+ * Fire-and-forget write to Supabase ho_learning_events table.
+ * Called on EVERY event so data survives Vercel cold starts.
+ * Falls back silently — never blocks the request path.
+ */
+function persistEventToSupabase(event: LearningEvent): void {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !supabaseKey) return;
+
+  // Fire-and-forget — don't await, don't block
+  fetch(`${supabaseUrl}/rest/v1/ho_learning_events`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": supabaseKey,
+      "Authorization": `Bearer ${supabaseKey}`,
+      "Prefer": "return=minimal",
+    },
+    body: JSON.stringify({
+      event_id: event.id,
+      event_type: event.type,
+      outcome: event.outcome || "neutral",
+      data: event.data,
+      applied: event.applied,
+      created_at: event.timestamp,
+    }),
+  }).catch(() => {
+    // Silent failure — in-memory log is the fallback
+  });
+}
+
+/**
+ * Load persisted events from Supabase on first access (cold start recovery).
+ * Loads last 24h of events to rebuild in-memory state.
+ */
+let coldStartRecovered = false;
+async function recoverFromColdStart(): Promise<void> {
+  if (coldStartRecovered) return;
+  coldStartRecovered = true;
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !supabaseKey) return;
+
+  try {
+    const since = new Date(Date.now() - 86400000).toISOString();
+    const res = await fetch(
+      `${supabaseUrl}/rest/v1/ho_learning_events?created_at=gte.${since}&order=created_at.asc&limit=5000`,
+      {
+        headers: {
+          "apikey": supabaseKey,
+          "Authorization": `Bearer ${supabaseKey}`,
+        },
+      }
+    );
+    if (!res.ok) return;
+    const rows = await res.json() as { event_id: string; event_type: string; outcome: string; data: Record<string, unknown>; applied: boolean; created_at: string }[];
+    for (const row of rows) {
+      // Skip if already in memory (dedup by ID)
+      if (learningLog.some(e => e.id === row.event_id)) continue;
+      learningLog.push({
+        id: row.event_id,
+        type: row.event_type as LearningEventType,
+        timestamp: row.created_at,
+        data: row.data,
+        outcome: row.outcome as "positive" | "negative" | "neutral",
+        applied: row.applied,
+      });
+
+      // Rebuild rejection tracker from recovered events
+      if (row.event_type === "claim_rejected" && row.data) {
+        const d = row.data;
+        const rejCode = d.rejectionCode as string;
+        const icd10s = (d.icd10Codes as string[])?.join(",") || "";
+        if (rejCode) {
+          const key = `${rejCode}|${icd10s}`;
+          const existing = rejectionTracker.get(key);
+          if (existing) {
+            existing.count++;
+            if (d.scheme) existing.schemes.add(d.scheme as string);
+            existing.lastSeen = row.created_at;
+          } else {
+            rejectionTracker.set(key, {
+              count: 1,
+              schemes: new Set(d.scheme ? [d.scheme as string] : []),
+              lastSeen: row.created_at,
+            });
+          }
+        }
+      }
+
+      // Rebuild prediction tracker
+      if (row.event_type === "rejection_predicted_correctly") predictionTracker.correct++;
+      if (row.event_type === "rejection_predicted_incorrectly") predictionTracker.incorrect++;
+      if (row.event_type === "claim_rejected") predictionTracker.total++;
+    }
+    if (rows.length > 0) {
+      console.log(`[RL] Cold start recovery: loaded ${rows.length} events from last 24h`);
+    }
+  } catch {
+    // Silent — in-memory fresh start
+  }
+}
+
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 export interface LearningEvent {
@@ -96,6 +203,7 @@ export function recordClaimOutcome(data: {
   };
 
   learningLog.push(event);
+  persistEventToSupabase(event);
 
   // Track rejection patterns
   if (data.status === "rejected" && data.rejectionCode) {
@@ -331,7 +439,8 @@ export function checkForKBUpdates(lastEmbedTimestamp: string): {
 /**
  * Get comprehensive learning metrics.
  */
-export function getLearningMetrics(): LearningMetrics {
+export async function getLearningMetrics(): Promise<LearningMetrics> {
+  await recoverFromColdStart();
   const analysis = analyzePatterns();
 
   return {
@@ -357,6 +466,7 @@ export async function runLearningCycle(): Promise<{
   reembedNeeded: boolean;
   summary: string;
 }> {
+  await recoverFromColdStart();
   const analysis = analyzePatterns();
   const newExamples = generateLearningExamples();
   const kbCheck = checkForKBUpdates(new Date(Date.now() - 86400000).toISOString());

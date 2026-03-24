@@ -27,15 +27,17 @@ const HARDCODED_NAPPI: NAPPIEntry[] = [
   { code: "0700920", description: "Salbutamol syrup (Vari)", strength: "2mg/5ml", packSize: "100ml", manufacturer: "Vari", schedule: "S2", category: "respiratory" },
   // Neurological
   { code: "3001174", description: "Carbamazepine (Gulf)", strength: "200mg", packSize: "100", manufacturer: "Gulf", schedule: "S5", category: "neurological" },
-  // Added from blind test — common GP medicines flagged as UNKNOWN_NAPPI
-  { code: "7024601", description: "Ibuprofen (Adco)", strength: "400mg", packSize: "24", manufacturer: "Adco", schedule: "S1", category: "analgesic" },
-  { code: "7031401", description: "Diclofenac (Adco)", strength: "25mg", packSize: "30", manufacturer: "Adco", schedule: "S2", category: "analgesic" },
-  { code: "7044901", description: "Lansoprazole (Pharma Dynamics)", strength: "30mg", packSize: "28", manufacturer: "Pharma Dynamics", schedule: "S3", category: "gastrointestinal" },
-  { code: "7119501", description: "Prednisone (Aspen)", strength: "5mg", packSize: "30", manufacturer: "Aspen", schedule: "S4", category: "corticosteroid" },
-  { code: "7155101", description: "Amitriptyline (Austell)", strength: "25mg", packSize: "100", manufacturer: "Austell", schedule: "S5", category: "antidepressant" },
-  { code: "7161901", description: "Cetirizine (Austell)", strength: "10mg", packSize: "30", manufacturer: "Austell", schedule: "S2", category: "antihistamine" },
-  { code: "7175002", description: "Enalapril (Pharma Dynamics)", strength: "10mg", packSize: "30", manufacturer: "Pharma Dynamics", schedule: "S3", category: "cardiovascular" },
-  { code: "7211301", description: "Fluoxetine (Austell)", strength: "20mg", packSize: "30", manufacturer: "Austell", schedule: "S5", category: "antidepressant" },
+  // Added from blind test + training report — common SA chronic medicines
+  // Descriptions aligned with Claims Engine Training Report (25 March 2026)
+  { code: "7024601", description: "Simvastatin 20mg", strength: "20mg", packSize: "30", manufacturer: "Adco", schedule: "S3", category: "cardiovascular" },
+  { code: "7031401", description: "Enalapril 10mg", strength: "10mg", packSize: "30", manufacturer: "Pharma Dynamics", schedule: "S3", category: "cardiovascular" },
+  { code: "7044901", description: "Hydrochlorothiazide 25mg", strength: "25mg", packSize: "30", manufacturer: "Adco", schedule: "S3", category: "cardiovascular" },
+  { code: "7119501", description: "Amlodipine 5mg", strength: "5mg", packSize: "30", manufacturer: "Oethmaan", schedule: "S3", category: "cardiovascular" },
+  { code: "7155101", description: "Salbutamol inhaler 100mcg", strength: "100mcg", packSize: "200 doses", manufacturer: "GSK", schedule: "S2", category: "respiratory" },
+  { code: "7161901", description: "Carbamazepine 200mg", strength: "200mg", packSize: "100", manufacturer: "Gulf", schedule: "S5", category: "neurological" },
+  { code: "7175002", description: "Metformin 850mg", strength: "850mg", packSize: "60", manufacturer: "Austell", schedule: "S3", category: "diabetes" },
+  { code: "7211301", description: "Levothyroxine 50mcg", strength: "50mcg", packSize: "100", manufacturer: "Aspen", schedule: "S4", category: "endocrine" },
+  { code: "7237801", description: "Omeprazole 20mg", strength: "20mg", packSize: "28", manufacturer: "Sandoz", schedule: "S3", category: "gastrointestinal" },
 ];
 
 const hardcodedMap = new Map<string, NAPPIEntry>();
