@@ -6,6 +6,7 @@ import { requireClaimsAuth, validateFileSize } from "@/lib/claims/auth-guard";
 import { isHealthbridgeFormat, parseHealthbridgeClaims } from "@/lib/claims/healthbridge-parser";
 import { generateAutoCorrections } from "@/lib/claims/auto-correct";
 import { runAdvancedValidation } from "@/lib/claims/advanced-rules";
+import { detectAnomalies } from "@/lib/claims/statistical-anomaly";
 import type { ColumnMapping, ValidationIssue, ClaimLineItem } from "@/lib/claims/types";
 
 // Max rows to prevent O(n²) timeout
@@ -400,6 +401,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // ── Layer 2: Statistical Anomaly Detection ──
+    // Analyzes the entire batch for patterns no single-claim rule can catch
+    const { anomalies: statisticalAnomalies, batchProfile } = detectAnomalies(claimLines);
+
     // Auto-corrections for deterministic fixes
     const autoCorrections = generateAutoCorrections(claimLines, result.issues);
 
@@ -421,6 +426,17 @@ export async function POST(req: NextRequest) {
       detectedFormat,
       autoCorrections,
       selfDiagnosis,
+      statisticalAnomalies,
+      batchProfile: {
+        totalClaims: batchProfile.totalClaims,
+        uniquePatients: batchProfile.uniquePatients,
+        uniquePractices: batchProfile.uniquePractices,
+        uniqueDiagnoses: batchProfile.uniqueDiagnoses,
+        totalValue: batchProfile.totalValue,
+        avgClaimValue: Math.round(batchProfile.avgClaimValue),
+        claimsPerPatient: Math.round(batchProfile.claimsPerPatient * 10) / 10,
+        dateSpanDays: batchProfile.dateRange.spanDays,
+      },
       parseErrors: parsed.errors,
       columnMapping: detectedFormat === "healthbridge" ? { primaryICD10: "ICD10_1", autoDetected: true } : autoMapColumns(parsed.headers, parsed.rows),
       headers: parsed.headers,
