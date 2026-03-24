@@ -8,3 +8,14 @@ tsconfig.tsbuildinfo
 ml/rag-index/embeddings.npy
 ml/rag-index/embeddings.npy
 ml/rag-index/*.npy
+
+# ML training data (>100MB, stored locally)
+ml/training-data/*.jsonl
+ml/training-data/combined/
+ml/training-data/deep-health/
+ml/training-data/mega/
+ml/training-data/v2/
+ml/training-data/visiocorp/
+ml/models/
+ml/rag-index/*.faiss
+ml/learning-fallback/
