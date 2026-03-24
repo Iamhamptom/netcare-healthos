@@ -958,7 +958,8 @@ function validateCrossLine(lines: ClaimLineItem[]): ValidationIssue[] {
     motivationCounts.set(normalized, entry);
   }
   for (const [, lineNums] of motivationCounts) {
-    if (lineNums.length >= 3) {
+    // Threshold: 5+ identical motivations = suspicious. 3-4 could be legitimate (flu season)
+    if (lineNums.length >= 5) {
       for (const ln of lineNums) {
         issues.push({
           lineNumber: ln, field: "motivationText", code: "COPY_PASTE_MOTIVATION",
