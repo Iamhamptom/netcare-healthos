@@ -362,13 +362,13 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
         suggestion: "Replace the comma with a dot in the amount field.",
       });
     }
-    // Currency symbol prefix: R450.00, R 450, ZAR450
-    if (/^[RZ]/i.test(raw)) {
+    // Currency symbols — prefix (R450.00, ZAR450) or suffix (450.00 ZAR, 450 R)
+    if (/^[RZ]/i.test(raw) || /[A-Za-z]/.test(raw)) {
       issues.push({
         lineNumber: ln, field: "amount", code: "INVALID_AMOUNT_FORMAT",
         severity: "error", rule: "Invalid Amount Format",
-        message: `Amount "${raw}" contains a currency symbol/prefix. Submit numeric values only (e.g., 450.00 not R450.00).`,
-        suggestion: "Remove the 'R' or 'ZAR' prefix — amounts must be plain numbers.",
+        message: `Amount "${raw}" contains non-numeric characters. Submit numeric values only (e.g., 450.00 not R450.00 or 450.00 ZAR).`,
+        suggestion: "Remove currency symbols (R, ZAR) — amounts must be plain numbers.",
       });
     }
   }
