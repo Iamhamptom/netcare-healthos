@@ -99,6 +99,7 @@ const COLUMN_ALIASES: Record<keyof ColumnMapping, string[]> = {
   scheme: ["scheme", "scheme_code", "scheme_name", "medical_aid", "medical_scheme", "funder"],
   motivationText: ["motivation", "motivation_text", "clinical_motivation", "clinical_notes", "notes", "justification", "reason"],
   placeOfService: ["place_of_service", "pos", "service_place", "facility_type"],
+  membershipNumber: ["membership_number", "membership", "member_no", "member_number", "scheme_number", "medical_aid_number"],
 };
 
 export function autoMapColumns(headers: string[], rows?: Record<string, string>[]): ColumnMapping {
@@ -249,6 +250,7 @@ export function extractClaimLines(
       rawAmount: mapping.amount ? row[mapping.amount]?.trim() : undefined,
       rawDateOfService: mapping.dateOfService ? row[mapping.dateOfService]?.trim() : undefined,
       placeOfService: mapping.placeOfService ? row[mapping.placeOfService]?.trim() : undefined,
+      membershipNumber: mapping.membershipNumber ? row[mapping.membershipNumber]?.trim() : undefined,
     };
   });
 }
@@ -282,6 +284,16 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
         suggestion: "Check the BHF registration. Valid format: 0141234 (7 digits, numeric only).",
       });
     }
+  }
+
+  // ── Rule 0a3: Membership number must be present ──
+  if (item.membershipNumber !== undefined && !item.membershipNumber?.trim()) {
+    issues.push({
+      lineNumber: ln, field: "membershipNumber", code: "MISSING_MEMBERSHIP",
+      severity: "error", rule: "Missing Membership Number",
+      message: "No medical aid membership number provided. All scheme claims require a valid membership number.",
+      suggestion: "Add the patient's medical aid membership number from their scheme card.",
+    });
   }
 
   // ── Rule 0b: Dependent code must be present ──
@@ -813,6 +825,20 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     }
   }
 
+  // ── Rule 17a2: Pre-auth tariff requirement ──
+  if (item.tariffCode) {
+    const preAuthTariffs = ["5608", "5609", "5201", "5202", "5501", "5502", "5101", "5102"];
+    const needsPreAuth = preAuthTariffs.some(t => item.tariffCode!.startsWith(t.substring(0, 4)));
+    if (needsPreAuth && !item.motivationText?.toLowerCase().includes("pre-auth")) {
+      issues.push({
+        lineNumber: ln, field: "tariffCode", code: "PREAUTH_REQUIRED",
+        severity: "warning", rule: "Pre-Authorisation May Be Required",
+        message: `Tariff "${item.tariffCode}" (CT/MRI/specialist imaging) typically requires pre-authorisation. No pre-auth reference found in motivation text.`,
+        suggestion: "Include the pre-auth reference number in the motivation text (e.g., 'Pre-auth ref: PA2026-12345').",
+      });
+    }
+  }
+
   // ── Rule 17b: Upcoding detection — specialist tariff for GP-level condition ──
   if (item.tariffCode && item.primaryICD10) {
     const tariffNum = parseInt(item.tariffCode, 10);
@@ -853,9 +879,9 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
       // Emotional manipulation (pity play)
       "child will not receive", "life-saving", "liability will be on",
       "patient will die", "blood on your hands", "urgent override needed",
-      // Professional-sounding social engineering
-      "pre-authorised by discovery", "pre-authorized by", "auth ref:",
-      "authorisation reference", "authorization reference",
+      // Professional-sounding social engineering (but NOT real pre-auth refs)
+      "pre-authorised by discovery health to override",
+      "pre-authorized by the scheme to bypass",
       "cms regulation", "regulation allows", "clinical governance committee",
       "telephonic pre-auth", "verbal authorisation obtained",
       "workcomp urgency", "occupational injury act",

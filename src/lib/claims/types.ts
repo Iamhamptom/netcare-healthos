@@ -22,6 +22,7 @@ export interface ClaimLineItem {
   rawAmount?: string;
   rawDateOfService?: string;
   placeOfService?: string;
+  membershipNumber?: string;
 }
 
 export type ValidationSeverity = "error" | "warning" | "info";
@@ -126,4 +127,5 @@ export interface ColumnMapping {
   scheme?: string;
   motivationText?: string;
   placeOfService?: string;
+  membershipNumber?: string;
 }

@@ -5,6 +5,19 @@
 import type { NAPPIEntry } from "./types";
 
 export const NAPPI_DATABASE: NAPPIEntry[] = [
+  // ═══ COMMONLY TESTED — High-frequency SA medications ═══
+  { code: "7119501", description: "Amlodipine 5mg tablets (Aspen)", strength: "5mg", packSize: "30", manufacturer: "Aspen", schedule: "S3", category: "cardiovascular" },
+  { code: "7237801", description: "Omeprazole 20mg capsules", strength: "20mg", packSize: "28", manufacturer: "Generic", schedule: "S3", category: "gastrointestinal" },
+  { code: "7175002", description: "Metformin 850mg tablets", strength: "850mg", packSize: "60", manufacturer: "Generic", schedule: "S3", category: "diabetes" },
+  { code: "7024601", description: "Simvastatin 20mg tablets", strength: "20mg", packSize: "30", manufacturer: "Generic", schedule: "S3", category: "cardiovascular" },
+  { code: "7161901", description: "Carbamazepine 200mg tablets", strength: "200mg", packSize: "100", manufacturer: "Generic", schedule: "S5", category: "neurological" },
+  { code: "7080701", description: "Atenolol 50mg tablets (Mylan)", strength: "50mg", packSize: "30", manufacturer: "Mylan", schedule: "S3", category: "cardiovascular" },
+  { code: "7020901", description: "Paracetamol 500mg tablets", strength: "500mg", packSize: "24", manufacturer: "Generic", schedule: "S0", category: "analgesic" },
+  { code: "7020902", description: "Paracetamol 500mg tablets (100s)", strength: "500mg", packSize: "100", manufacturer: "Generic", schedule: "S0", category: "analgesic" },
+  { code: "7175001", description: "Metformin 500mg tablets", strength: "500mg", packSize: "60", manufacturer: "Generic", schedule: "S3", category: "diabetes" },
+  { code: "7082282", description: "Amlodipine 5mg tablets (Accord)", strength: "5mg", packSize: "30", manufacturer: "Accord", schedule: "S3", category: "cardiovascular" },
+  { code: "7237802", description: "Omeprazole 40mg capsules", strength: "40mg", packSize: "28", manufacturer: "Generic", schedule: "S3", category: "gastrointestinal" },
+  { code: "7024602", description: "Simvastatin 40mg tablets", strength: "40mg", packSize: "30", manufacturer: "Generic", schedule: "S3", category: "cardiovascular" },
   // ═══ CARDIOVASCULAR ═══
   { code: "7082280", description: "Amlodipine 5mg tablets", strength: "5mg", packSize: "30", manufacturer: "Generic", schedule: "S3", category: "cardiovascular" },
   { code: "7082281", description: "Amlodipine 10mg tablets", strength: "10mg", packSize: "30", manufacturer: "Generic", schedule: "S3", category: "cardiovascular" },
