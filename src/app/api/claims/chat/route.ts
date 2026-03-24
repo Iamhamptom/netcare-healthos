@@ -416,14 +416,25 @@ async function executeTool(
 // 3. Falls back to null (uses embedded rules in system prompt)
 
 async function getRAGContext(query: string): Promise<string | null> {
-  // Direct import — no HTTP calls, works everywhere (Vercel + local)
+  // RAG v3 — hybrid search (pgvector + BM25 + reranking)
   try {
-    const { retrieveWithMetrics } = await import("@/lib/rag");
-    const { context } = retrieveWithMetrics(query);
-    return context && context.length > 50 ? context : null;
+    const { retrieve } = await import("@/lib/rag-v3");
+    const result = await retrieve(query, { limit: 5, rerank: true });
+    if (result.chunks.length > 0) {
+      const context = result.chunks.map(c =>
+        `[${c.metadata?.source || c.category}] ${c.contextPrefix ? c.contextPrefix + " " : ""}${c.content}`
+      ).join("\n\n---\n\n");
+      return context.length > 50 ? context : null;
+    }
   } catch {
-    return null; // Falls back to embedded rules in system prompt
+    // Fall back to v2
+    try {
+      const { retrieveWithMetrics } = await import("@/lib/rag");
+      const { context } = retrieveWithMetrics(query);
+      return context && context.length > 50 ? context : null;
+    } catch { /* silent */ }
   }
+  return null;
 }
 
 // ─── Gemini Agent Loop ──────────────────────────────────────────────────
