@@ -39,3 +39,13 @@ No single-layer approach (pure rules OR pure AI) achieves this score.
 - True accuracy excluding fraud catches: 96.7% (290/300)
 - Added Rule 17b: UPCODING_DETECTED — specialist tariff for GP-level conditions
   L21.9 (dermatitis) + tariff 0141 (specialist) = upcoding
+
+## Opus 4.6 Incognito Test (100 claims) — 81% → targeting 95%+
+Tested by Claude Opus 4.6 directly. Gaps found:
+- ERR_PRC_002: Practice number format (alpha prefix ABC1234) — FIXED: 7-digit numeric validation
+- ERR_NAP_001: Fabricated NAPPI (9999999) — FIXED: pattern detection for repeated/sequential digits
+- ERR_AMT_001: Empty amount, zero-width characters — FIXED: Unicode detection + empty check
+- ERR_DAT_001: Impossible dates (Feb 30) — FIXED: calendar validation
+- ERR_MEM_001: Missing membership number — noted, needs column mapping
+- Social engineering injections: fake auth refs, fake CMS regulations — FIXED: expanded patterns
+- Severity: upcoding as warning not error, near-stale as info not warning

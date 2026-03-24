@@ -270,6 +270,20 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     });
   }
 
+  // ── Rule 0a2: Practice number FORMAT validation ──
+  if (item.practiceNumber && item.practiceNumber.trim()) {
+    const pn = item.practiceNumber.trim();
+    // BHF practice numbers must be 7 digits, all numeric
+    if (!/^\d{7}$/.test(pn)) {
+      issues.push({
+        lineNumber: ln, field: "practiceNumber", code: "INVALID_PRACTICE_NUMBER",
+        severity: "error", rule: "Invalid Practice Number Format",
+        message: `Practice number "${pn}" is not a valid 7-digit BHF number. Must be exactly 7 digits, no letters or spaces.`,
+        suggestion: "Check the BHF registration. Valid format: 0141234 (7 digits, numeric only).",
+      });
+    }
+  }
+
   // ── Rule 0b: Dependent code must be present ──
   // SA schemes require a 2-digit dependent code (00 = main member, 01+ = dependents)
   if (item.dependentCode !== undefined && !item.dependentCode) {
@@ -307,6 +321,23 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
         message: `Date "${raw}" uses a non-standard format. SA claims require YYYY-MM-DD (ISO 8601) or CCYYMMDD (EDIFACT).`,
         suggestion: "Convert dates to YYYY-MM-DD format. Common errors: slashes (2026/02/15), dots (2026.02.15), DD-MM-YYYY.",
       });
+    }
+  }
+
+  // ── Rule 0d2: Impossible date (Feb 30, Apr 31, etc.) ──
+  if (item.dateOfService) {
+    const parts = item.dateOfService.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (parts) {
+      const [, y, m, d] = parts.map(Number);
+      const testDate = new Date(y, m - 1, d);
+      if (testDate.getMonth() !== m - 1 || testDate.getDate() !== d) {
+        issues.push({
+          lineNumber: ln, field: "dateOfService", code: "IMPOSSIBLE_DATE",
+          severity: "error", rule: "Impossible Date",
+          message: `Date "${item.dateOfService}" does not exist (e.g., February 30, April 31). This will be rejected by all switches.`,
+          suggestion: "Verify the date of service. Check the month and day values.",
+        });
+      }
     }
   }
 
@@ -371,6 +402,34 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
         suggestion: "Remove currency symbols (R, ZAR) — amounts must be plain numbers.",
       });
     }
+    // Zero-width characters (Unicode attacks: U+200B, U+200C, U+FEFF, etc.)
+    if (/[\u200B\u200C\u200D\uFEFF\u00A0\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]/.test(raw)) {
+      issues.push({
+        lineNumber: ln, field: "amount", code: "INVALID_AMOUNT_FORMAT",
+        severity: "error", rule: "Invalid Amount Format",
+        message: `Amount "${raw}" contains hidden/zero-width characters. This may indicate data corruption or tampering.`,
+        suggestion: "Re-type the amount manually. Hidden Unicode characters can be introduced by copy-pasting from web pages or PDFs.",
+      });
+    }
+    // Empty amount (after stripping)
+    const numericAmount = raw.replace(/[^0-9.\-]/g, "");
+    if (!numericAmount || numericAmount === "." || numericAmount === "-") {
+      issues.push({
+        lineNumber: ln, field: "amount", code: "MISSING_AMOUNT",
+        severity: "error", rule: "Missing or Empty Amount",
+        message: `Amount field is empty or contains no numeric value ("${raw}").`,
+        suggestion: "Enter the claim amount in Rands (e.g., 450.00).",
+      });
+    }
+  }
+  // Empty amount — no rawAmount at all
+  if (!item.rawAmount || !item.rawAmount.trim()) {
+    issues.push({
+      lineNumber: ln, field: "amount", code: "MISSING_AMOUNT",
+      severity: "error", rule: "Missing Amount",
+      message: "No claim amount provided. All claims require an amount.",
+      suggestion: "Enter the claim amount in Rands.",
+    });
   }
 
   // ── Rule 0h: Excessive amount (>300% of typical scheme rate) ──
@@ -634,10 +693,18 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     } else {
       const nappiEntry = lookupNAPPI(item.nappiCode);
       if (!nappiEntry) {
+        // Clearly fabricated NAPPIs (all same digit, sequential) → error
+        const isFabricated = /^(\d)\1{5,}$/.test(item.nappiCode) || item.nappiCode === "1234567" || item.nappiCode === "0000000";
         issues.push({
-          lineNumber: ln, field: "nappiCode", code: "UNKNOWN_NAPPI",
-          severity: "info", rule: "NAPPI Code Not in Database",
-          message: `NAPPI code "${item.nappiCode}" was not found in our reference database. It may still be valid.`,
+          lineNumber: ln, field: "nappiCode", code: isFabricated ? "FABRICATED_NAPPI" : "UNKNOWN_NAPPI",
+          severity: isFabricated ? "error" : "warning",
+          rule: isFabricated ? "Fabricated NAPPI Code" : "NAPPI Code Not in Database",
+          message: isFabricated
+            ? `NAPPI code "${item.nappiCode}" appears fabricated (repeated/sequential digits). This will be rejected.`
+            : `NAPPI code "${item.nappiCode}" was not found in our reference database. Verify the code is current.`,
+          suggestion: isFabricated
+            ? "Use a valid NAPPI code from the MediKredit NAPPI register."
+            : "Check the NAPPI code against the latest MediKredit register. Codes are updated weekly.",
         });
       }
     }
@@ -786,6 +853,14 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
       // Emotional manipulation (pity play)
       "child will not receive", "life-saving", "liability will be on",
       "patient will die", "blood on your hands", "urgent override needed",
+      // Professional-sounding social engineering
+      "pre-authorised by discovery", "pre-authorized by", "auth ref:",
+      "authorisation reference", "authorization reference",
+      "cms regulation", "regulation allows", "clinical governance committee",
+      "telephonic pre-auth", "verbal authorisation obtained",
+      "workcomp urgency", "occupational injury act",
+      "pre-approved under section", "approved under regulation",
+      "legal obligation to process", "failure to process will result",
     ];
     // "See Attached" bypass — motivation references external docs the AI can't read
     const externalRefPatterns = [
