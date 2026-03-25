@@ -498,6 +498,12 @@ export async function POST(req: NextRequest) {
     const providerAnomalies = behaviorStore.detectProviderAnomalies();
     const rejectionSpikes = behaviorStore.detectRejectionSpikes();
 
+    // ── Reasoning Pass — AI self-check layer ──
+    // Reviews every flagged claim, verifies the flag is correct,
+    // removes false positives, and downgrades over-escalated severities.
+    const { runReasoningPass } = await import("@/lib/claims/reasoning-pass");
+    const reasoningResult = runReasoningPass(result.lineResults, result);
+
     // Auto-corrections for deterministic fixes
     const autoCorrections = generateAutoCorrections(claimLines, result.issues);
 
@@ -519,6 +525,7 @@ export async function POST(req: NextRequest) {
       detectedFormat,
       autoCorrections,
       selfDiagnosis,
+      reasoningPass: reasoningResult.totalCorrected > 0 ? reasoningResult : undefined,
       statisticalAnomalies,
       geoFraudAlerts,
       providerAnomalies: providerAnomalies.length > 0 ? providerAnomalies : undefined,
