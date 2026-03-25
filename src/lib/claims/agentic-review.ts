@@ -80,32 +80,69 @@ async function reasonAboutClaim(
   const prompt = "You are a senior SA medical claims reviewer with 20 years experience. Your job is to PROTECT VALID CLAIMS from being wrongly flagged. The rule engine is over-cautious — your role is to catch false positives.\n\nCLAIM:\n" + claimContext + "\n\nRULE ENGINE FLAGS:\n" + issueList + "\n\nRULE ENGINE VERDICT: " + ruleVerdict + "\n\nYOUR ROLE: Find false positives. If a claim is clinically reasonable, override the flag.\n\nNEVER OVERRIDE (genuine errors):\n- MISSING_ICD10, INVALID_FORMAT, GENDER_MISMATCH, FABRICATED_NAPPI, FUTURE_DATE, DUPLICATE, STALE_CLAIM, ECC_AS_PRIMARY, NEONATAL_ON_ADULT, MISSING_PATIENT_NAME, EXCESSIVE_QUANTITY\n- Injury codes (S/T) without external cause (V/W/X/Y) — real error\n\nSHOULD OVERRIDE TO VALID (common false positives):\n- TARIFF_DIAGNOSIS_MISMATCH: If the tariff and ICD-10 are in the same clinical domain (respiratory+CXR, hypertension+ECG, diabetes+pathology), it's VALID\n- ABOVE_SCHEME_RATE / SEP_EXCEEDED: Amount above scheme rate is NOT a rejection reason. The practice can charge above rate — the patient pays the gap. Override to VALID.\n- CDL_AUTH_REQUIRED: If the claim has a CDL diagnosis (hypertension=I10, diabetes=E11, asthma=J45, epilepsy=G40, HIV=B20, hypothyroidism=E03) with a standard CDL medication, it's routine. Override to VALID.\n- DISCIPLINE_TARIFF_SCOPE: GP practices (014/015 prefix) can bill 0190-0199, 0401-0407, 3948, 4025, 4501-4537, 5101-5102. Override to VALID.\n- GP billing pathology/radiology: GPs order their own tests — no referral needed. Override MISSING_REFERRING_PROVIDER to VALID.\n- PREAUTH_REQUIRED on GP X-rays (5101/5102): No pre-auth for routine CXR. Override to VALID.\n- ABOVE_SCHEME_RATE for any amount: Billing above scheme rate is legal in SA. Override to VALID.\n- CODE_PAIR_VIOLATION: If the claim has a valid clinical reason (different body sites, different conditions), override to VALID. Only keep if exact same procedure billed twice.\n- PMB_MODIFIER_MISSING: Missing PMB modifier is WARNING at most, never REJECTED.\n- CLINICAL_APPROPRIATENESS: If motivation text provides clinical justification, override to VALID.\n- NON_SPECIFIC ICD-10: If code is I10, B20, D66, G35, G20 (complete at 3 chars), override to VALID.\n- SYMPTOM_CODE: R-codes (R05, R10, R50, R51) as primary for acute undifferentiated presentation = VALID.\n\nSHOULD KEEP (genuine issues):\n- PROMPT_INJECTION_DETECTED: Keep as WARNING\n- MISSING_ECC: Injury without external cause — keep\n- SCHEME_OPTION_MISSING: Keep as REJECTED (Healthbridge requires it)\n\nRespond in JSON:\n{\"verdict\": \"VALID\" or \"WARNING\" or \"REJECTED\", \"reasoning\": \"2-3 sentences\", \"confidence\": 0.0-1.0, \"suggestions\": []}";
 
   try {
-    const res = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.1, maxOutputTokens: 500, responseMimeType: "application/json" },
-        }),
-      }
-    );
+    // Try gemini-2.5-flash first, fallback to gemini-2.0-flash
+    let text = "";
+    for (const model of ["gemini-2.5-flash", "gemini-2.0-flash-001"]) {
+      try {
+        const res = await fetch(
+          "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + apiKey,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: { temperature: 0.2, maxOutputTokens: 500, responseMimeType: "application/json" },
+            }),
+          }
+        );
 
-    if (!res.ok) {
-      return { verdict: ruleVerdict, reasoning: "AI unavailable (" + res.status + ")", confidence: 0.5, suggestions: [] };
+        if (!res.ok) {
+          const errText = await res.text().catch(function() { return ""; });
+          if (model === "gemini-2.0-flash-001") {
+            return { verdict: ruleVerdict, reasoning: "AI unavailable (" + res.status + "): " + errText.slice(0, 80), confidence: 0.5, suggestions: [] };
+          }
+          continue; // Try next model
+        }
+
+        const data = await res.json();
+        text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        if (text) break; // Got a response
+      } catch {
+        if (model === "gemini-2.0-flash-001") {
+          return { verdict: ruleVerdict, reasoning: "AI fetch failed for both models", confidence: 0.3, suggestions: [] };
+        }
+        continue;
+      }
     }
 
-    const data = await res.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    const parsed = JSON.parse(text);
+    if (!text) {
+      return { verdict: ruleVerdict, reasoning: "Empty AI response from both models", confidence: 0.3, suggestions: [] };
+    }
 
-    return {
-      verdict: parsed.verdict || ruleVerdict,
-      reasoning: parsed.reasoning || "No reasoning",
-      confidence: parsed.confidence || 0.5,
-      suggestions: parsed.suggestions || [],
-    };
+    // Robust JSON parsing — handle markdown fences, trailing text
+    let jsonStr = text;
+    const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (fenceMatch) jsonStr = fenceMatch[1];
+    jsonStr = jsonStr.trim();
+
+    try {
+      const parsed = JSON.parse(jsonStr);
+      return {
+        verdict: parsed.verdict || ruleVerdict,
+        reasoning: parsed.reasoning || "No reasoning provided",
+        confidence: typeof parsed.confidence === "number" ? parsed.confidence : 0.5,
+        suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions : [],
+      };
+    } catch {
+      // Try extracting verdict from raw text
+      const verdictMatch = text.match(/"verdict"\s*:\s*"(VALID|WARNING|REJECTED)"/i);
+      return {
+        verdict: verdictMatch ? verdictMatch[1].toUpperCase() : ruleVerdict,
+        reasoning: "Parsed from raw: " + text.slice(0, 150),
+        confidence: 0.6,
+        suggestions: [],
+      };
+    }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return { verdict: ruleVerdict, reasoning: "AI error: " + msg.slice(0, 100), confidence: 0.3, suggestions: [] };
