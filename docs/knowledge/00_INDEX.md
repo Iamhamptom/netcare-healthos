@@ -8,11 +8,12 @@
 This knowledge base gives VisioCorp AI agents (Steinberg, Claims Analyzer, HealthOps, Netcare Health OS) end-to-end understanding of the SA healthcare claims ecosystem — the law, the codes, the schemes, the tech, the fraud patterns, and the compliance requirements.
 
 ## HOW TO USE
-- **Before ANY claims work**: Read files 01-06, 13 (clinical guidelines for validation)
+- **Before ANY claims work**: Read files 01-06, 13, 22 (clinical guidelines + human reasoning patterns)
 - **Before building features**: Read files 07-08
 - **Before building practice management software**: Read file 19
 - **Before telehealth/digital health/WhatsApp/payment features**: Read file 16
-- **Before sales/pitch work**: Read files 09-10
+- **Before sales/pitch work**: Read files 09-10, 21
+- **Before enterprise/partnership meetings**: Read file 21 (benchmarks, financials, compliance)
 - **Before clinical validation/formulary work**: Read file 13
 - **Before NHI/DRG/capitation work**: Read file 17
 - **Use `kb_read_file`** for full content (system prompt only shows 500-char preview)
@@ -41,6 +42,8 @@ This knowledge base gives VisioCorp AI agents (Steinberg, Claims Analyzer, Healt
 | 18 | `18_scheme_pricing_comparison.md` | **Sales Intel** | What 6 major schemes pay for same procedures: consultation rates (GP/specialist/after-hours/telehealth), procedure rates (ECG/spirometry/pathology/radiology/dental), benefit limits (day-to-day/dental/optometry/physio/psych/chronic), payment behavior (days-to-pay/rejection rates/co-payments/clawbacks/PMB compliance), DSP network sizes, scheme financial health, revenue optimization by scheme |
 | 20 | `20_ehr_clinical_standards.md` | **EHR/Clinical** | HPCSA Booklet 9 record requirements (18 elements), medico-legal documentation, informed consent (Booklet 4), referral letter standards, sick note/prescription requirements, pathology/radiology request forms, EHR minimum dataset (HPRS-aligned), ICD-10 auto-suggest workflow, allergy/medication/problem list management, EPI-SA immunisation schedule, growth charts (WHO z-scores), HL7 v2/FHIR interoperability, TIER.Net/HIV-TB integration, maternal/child health tracking (MCR/RTH), multi-language support, offline-first architecture, CHW data capture, RBAC role matrix, break-the-glass access, audit trails, POPIA de-identification, consent management |
 | 19 | `19_practice_workflows.md` | **Practice Ops** | End-to-end workflows: GP patient journey (arrival→billing→payment→reconciliation), specialist referral/pre-auth/hospital admission, dental billing (FDI tooth numbering, SADA codes, surface notation), pharmacy dispensing (chronic 28-day cycle, S5/S6 controls, generic substitution), allied health (physio/psych session limits), practice admin (EOD reconciliation, monthly reporting, debt collection, January renewal chaos), staff roles (reception/practice manager/billing clerk/clinical), PMS market, claim lifecycle state machine, software integration points |
+| 21 | `21_enterprise_benchmarks.md` | **Benchmarks & Intel** | Enterprise benchmarks, competitive analysis, Netcare financials (R25.5B revenue, R400-550M bad debt, 58-63 debtor days), claims rejection data across 15 SA industries, interoperability standards, compliance readiness (10 documents ready), AI model chain (7 layers), 557K knowledge base details, revenue cycle coverage (12/14 stages), financial impact projections (R89M/year), SaaS pricing model, legal framework |
+| 22 | `22_sa_claims_reasoning_patterns.md` | **Human Reasoning** | How SA GPs, billing clerks, and scheme adjudicators actually think and reason when processing claims. GP clinical reasoning, ICD-10 coding workflow, consultation code selection, clerk translation patterns, 12 common clerk mistakes, rejection handling psychology, adjudication pipeline, false positive prevention, scope matrices, decision frameworks. |
 | 16 | `16_telehealth_digital.md` | **Telehealth/Digital** | Telehealth tariff codes (0190-0192 video, 0130 telephonic, 0197 virtual), rate comparison (telehealth 30-40% lower), scheme-specific rules (Discovery DrConnect, GEMS, Bonitas WhatsUpDoctor, Momentum Hello Doctor), after-hours modifiers (0148/0149), prescriptions by schedule (S0-S4 yes, S5 restricted, S6+ no), e-prescribing workflow (ECT Act), documentation checklist, RPM (no SA billing code), AI triage (not billable), digital mental health (12-15 sessions/year), WhatsApp in healthcare (HPCSA/POPIA rules), patient payment collection (Yoco/Paystack/gap cover), medical debt (3-year prescription), COVID legacy (5,708% telehealth growth, permanent HPCSA changes), regulatory framework summary |
 
 ---
