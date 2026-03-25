@@ -337,17 +337,31 @@ function validateTariffCategoryDiagnosis(line: ClaimLineItem): ValidationIssue[]
   }
 
   // Radiology codes for clearly unrelated body systems
-  // 51xx = chest X-ray — should be J (respiratory), I (cardiac), R (symptoms), S/T (injury chest), C (neoplasm)
-  if (tariffPrefix === "51" && !["J", "I", "R", "S", "T", "C"].includes(diagPrefix)) {
-    issues.push({
-      lineNumber: line.lineNumber,
-      field: "tariffCode",
-      code: "IMAGING_DIAGNOSIS_MISMATCH",
-      severity: "info",
-      rule: "Imaging-Diagnosis Mismatch",
-      message: `Chest X-ray (${line.tariffCode}) billed for diagnosis "${line.primaryICD10}" — chest imaging is typically for respiratory (J), cardiac (I), or trauma (S/T) conditions.`,
-      suggestion: "Verify the imaging study matches the clinical indication. Schemes may query unrelated imaging.",
-    });
+  // 51xx = chest X-ray — genuinely inappropriate for some conditions
+  if (tariffPrefix === "51") {
+    const cxrValidPrefixes = ["J", "I", "S", "T", "C"]; // Respiratory, cardiac, trauma, neoplasm
+    const cxrWarningICD = ["N39", "N30", "R51", "M54", "K", "L", "H"]; // UTI, headache, back pain, GI, skin, eye
+    const codeBase = line.primaryICD10.replace(/\.\d+$/, "");
+
+    if (cxrWarningICD.some(function(c) { return codeBase.startsWith(c); })) {
+      // Genuinely inappropriate: CXR for UTI, headache, back pain, GI, skin, eye
+      issues.push({
+        lineNumber: line.lineNumber, field: "tariffCode",
+        code: "IMAGING_DIAGNOSIS_MISMATCH", severity: "warning",
+        rule: "Imaging-Diagnosis Mismatch",
+        message: `Chest X-ray (${line.tariffCode}) billed for "${line.primaryICD10}" — CXR is not typically indicated for this condition.`,
+        suggestion: "Verify the imaging matches the clinical indication. If CXR was to rule out a respiratory condition, update the ICD-10 code.",
+      });
+    } else if (!cxrValidPrefixes.includes(diagPrefix) && diagPrefix !== "R") {
+      // Other non-respiratory — info level
+      issues.push({
+        lineNumber: line.lineNumber, field: "tariffCode",
+        code: "IMAGING_DIAGNOSIS_MISMATCH", severity: "info",
+        rule: "Imaging-Diagnosis Mismatch",
+        message: `Chest X-ray (${line.tariffCode}) billed for "${line.primaryICD10}" — verify imaging matches clinical indication.`,
+        suggestion: "If imaging was for a different condition, update the ICD-10 code.",
+      });
+    }
   }
 
   // Minor procedure (0401) with non-procedural diagnoses
@@ -362,7 +376,7 @@ function validateTariffCategoryDiagnosis(line: ClaimLineItem): ValidationIssue[]
         lineNumber: line.lineNumber,
         field: "tariffCode",
         code: "PROCEDURE_DIAGNOSIS_MISMATCH",
-        severity: "warning",
+        severity: (line.practiceNumber?.startsWith("014") || line.practiceNumber?.startsWith("015")) ? "info" : "warning",
         rule: "Procedure-Diagnosis Mismatch",
         message: `Minor procedure (0401) billed for "${line.primaryICD10}" — this condition is typically managed with medication, not procedures.`,
         suggestion: "Verify a procedure was clinically performed. Use consultation tariffs if this was a consult-only visit.",

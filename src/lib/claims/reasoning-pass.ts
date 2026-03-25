@@ -63,8 +63,10 @@ function motivationExplainsFlag(motivation: string, issueCode: string): boolean 
 
   switch (issueCode) {
     case "PROCEDURE_DIAGNOSIS_CONTRADICTION":
-      // Motivation mentions wound/laceration/injury → procedure is explained
-      return /wound|lacerat|sutur|incis|abscess|drain|injur|trauma|fall|assault|bite|burn|cut|tear/.test(m);
+      // Even if motivation explains the procedure, the ICD-10 is WRONG.
+      // The claim should stay as WARNING so the clerk fixes the ICD code.
+      // Motivation confirming the procedure actually makes it MORE wrong — the code doesn't match.
+      return false;
 
     case "PREAUTH_REQUIRED":
       // Motivation has a pre-auth reference

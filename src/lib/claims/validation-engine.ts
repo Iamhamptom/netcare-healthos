@@ -1597,10 +1597,15 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
           // Valid GP billing — do nothing
         } else if (isGP && !GP_ALLOWED_TARIFFS.includes(item.tariffCode)) {
           // GP billing a tariff NOT in the allowed list
+          // Anaesthesia (12xx), dental (81xx), oncology (97xx) are NEVER GP scope → error
+          const NEVER_GP_TARIFFS = tariffNum >= 1200 && tariffNum <= 1299 // Anaesthesia
+            || tariffNum >= 8100 && tariffNum <= 8999 // Dental
+            || tariffNum >= 9700 && tariffNum <= 9799; // Oncology
           issues.push({
             lineNumber: ln, field: "tariffCode", code: "DISCIPLINE_TARIFF_SCOPE",
-            severity: "warning", rule: "Discipline-Tariff Scope Mismatch",
-            message: `GP practice (${item.practiceNumber}, prefix ${prefix3}) billing tariff "${item.tariffCode}" which is outside the typical GP range. Verify this is correct.`,
+            severity: NEVER_GP_TARIFFS ? "error" : "warning",
+            rule: "Discipline-Tariff Scope Mismatch",
+            message: `GP practice (${item.practiceNumber}, prefix ${prefix3}) billing tariff "${item.tariffCode}" which is outside the typical GP range.${NEVER_GP_TARIFFS ? " This discipline is NOT GP scope." : " Verify this is correct."}`,
             suggestion: "GPs typically bill 0190-0199 (consults), 0401-0407 (minor procedures), 4518-4537 (pathology), 5101-5102 (X-ray). If this tariff is clinically justified, add motivation.",
           });
         } else {

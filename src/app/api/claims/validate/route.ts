@@ -439,7 +439,9 @@ export async function POST(req: NextRequest) {
         if (!existing) {
           result.issues.push({
             lineNumber: line.lineNumber, field: "primaryICD10", code: "CODE_PAIR_VIOLATION",
-            severity: v.type === "never_together" || v.type === "mutually_exclusive" ? "error" : "warning",
+            severity: (v.type === "never_together" || v.type === "mutually_exclusive")
+              && !(line.practiceNumber?.startsWith("014") || line.practiceNumber?.startsWith("015"))
+              ? "error" : "warning",
             rule: "Code-Pair Violation",
             message: `${v.code1} + ${v.code2}: ${v.reason} (${v.source})`,
             suggestion: v.type === "needs_modifier" ? "Add the appropriate modifier to allow this combination." : "Review the code combination — these should not appear together.",
@@ -448,7 +450,8 @@ export async function POST(req: NextRequest) {
           const lr = result.lineResults.find(r => r.lineNumber === line.lineNumber);
           if (lr) {
             lr.issues.push(result.issues[result.issues.length - 1]);
-            if ((v.type === "never_together" || v.type === "mutually_exclusive") && lr.status !== "error") {
+            const isGPLine = line.practiceNumber?.startsWith("014") || line.practiceNumber?.startsWith("015");
+            if ((v.type === "never_together" || v.type === "mutually_exclusive") && !isGPLine && lr.status !== "error") {
               if (lr.status === "valid") result.validClaims--;
               else if (lr.status === "warning") result.warningClaims--;
               lr.status = "error";
