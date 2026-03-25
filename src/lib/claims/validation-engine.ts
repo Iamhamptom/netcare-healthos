@@ -1913,6 +1913,21 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     }
   }
 
+  // ── Rule 45c: KeyCare CDL without motivation — KeyCare plans have network constraints ──
+  if (item.schemeOptionCode && item.primaryICD10) {
+    const isKeycare = ["KCPLUS", "KCCORE", "KCSTART"].includes(item.schemeOptionCode.toUpperCase());
+    const cdlCodes = ["I10", "E11", "J45", "G40", "B20", "E03", "F32", "E78", "J44"];
+    const isCDL = cdlCodes.some(c => item.primaryICD10.startsWith(c));
+    if (isKeycare && isCDL && !item.motivationText?.trim()) {
+      issues.push({
+        lineNumber: ln, field: "motivationText", code: "KEYCARE_CDL_NO_MOTIVATION",
+        severity: "warning", rule: "KeyCare CDL Without Motivation",
+        message: `KeyCare plan "${item.schemeOptionCode}" with CDL condition "${item.primaryICD10}" but no clinical motivation. KeyCare plans have network constraints that may affect benefit routing.`,
+        suggestion: "Add clinical motivation for CDL claims on KeyCare plans to ensure correct benefit routing.",
+      });
+    }
+  }
+
   // ── Rule 46: LOWERCASE_ICD10 — ICD-10 submitted in lowercase ──
   if (item.rawICD10 && item.rawICD10 !== item.rawICD10.toUpperCase() && /^[a-z]\d/i.test(item.rawICD10)) {
     issues.push({
