@@ -280,7 +280,9 @@ export function runDoctorReasoning(
       if (issue.severity !== "warning") continue; // Only review warnings
 
       // Check if the claim matches a known GP clinical pattern
-      if (issue.code === "TARIFF_DIAGNOSIS_MISMATCH" || issue.code === "PROCEDURE_DIAGNOSIS_MISMATCH") {
+      if (issue.code === "TARIFF_DIAGNOSIS_MISMATCH" || issue.code === "PROCEDURE_DIAGNOSIS_MISMATCH"
+          || issue.code === "PROCEDURE_DIAGNOSIS_CONTRADICTION" || issue.code === "CLINICAL_APPROPRIATENESS"
+          || issue.code === "IMAGING_DIAGNOSIS_MISMATCH") {
         if (claim.primaryICD10 && claim.tariffCode && isClinicallyReasonable(claim.tariffCode, claim.primaryICD10)) {
           issuesToDowngrade.push(i);
           const matchedPattern = GP_CLINICAL_PATTERNS.find(p =>
