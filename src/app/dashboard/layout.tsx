@@ -1,23 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { AnimatePresence } from "framer-motion";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import FeatureGuide from "@/components/dashboard/FeatureGuide";
 import NetcareAssistant from "@/components/dashboard/NetcareAssistant";
+import ProductCourse from "@/components/dashboard/ProductCourse";
 import { Menu, X } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showCourse, setShowCourse] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (searchParams.get("course") === "1") {
+      setShowCourse(true);
+      const url = new URL(window.location.href);
+      url.searchParams.delete("course");
+      router.replace(url.pathname, { scroll: false });
+    }
+  }, [searchParams, router]);
 
   return (
     <div className="flex h-screen bg-[#1D3443]">
-      {/* Skip navigation link */}
+      <AnimatePresence>
+        {showCourse && <ProductCourse onComplete={() => setShowCourse(false)} />}
+      </AnimatePresence>
+
       <a href="#main-content" className="skip-nav">
         Skip to main content
       </a>
 
-      {/* Mobile overlay */}
       {mobileOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -26,14 +43,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         />
       )}
 
-      {/* Sidebar — hidden on mobile, shown in overlay when toggled */}
       <div className={`
         fixed inset-y-0 left-0 z-50 lg:relative lg:z-auto
         transition-transform duration-300 ease-in-out
         ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
       `}>
         <div className="relative h-full">
-          {/* Mobile close button */}
           <button
             onClick={() => setMobileOpen(false)}
             aria-label="Close menu"
@@ -46,7 +61,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden rounded-tl-2xl">
-        {/* Header with mobile hamburger */}
         <div className="relative">
           <button
             onClick={() => setMobileOpen(true)}

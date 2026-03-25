@@ -6,7 +6,7 @@ import {
   Shield, Upload, FileText, AlertTriangle, CheckCircle2,
   Info, ChevronDown, ChevronUp, Search, XCircle, Download,
   ArrowRight, TrendingDown, Zap, AlertCircle, Sparkles,
-  FileWarning, BadgeCheck, History, Brain, FileDown,
+  FileWarning, BadgeCheck, History, Brain, FileDown, FileSearch,
   BarChart3, ArrowUpRight, RefreshCw, Save, Clock,
   Building2, ChevronRight, Copy, Send,
 } from "lucide-react";
@@ -594,6 +594,68 @@ export default function ClaimsAnalyzerPage() {
 
   return (
     <div className="p-6 space-y-6 max-w-[1400px] mx-auto">
+      {/* ═══ HERO BANNER ═══ */}
+      {!result && activeTab === "upload" && (
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1D3443] via-[#1A2F3E] to-[#152736] p-8 lg:p-10">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.03%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')] opacity-50" />
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+            <div className="max-w-xl">
+              <div className="flex items-center gap-3 mb-4">
+                <img src="/images/netcare-logo.png" alt="Netcare" className="h-6 brightness-0 invert opacity-70" />
+                <div className="w-px h-4 bg-white/10" />
+                <span className="text-[10px] text-[#3DA9D1] uppercase tracking-[0.2em] font-bold">AI Claims Intelligence</span>
+              </div>
+              <h1 className="text-[28px] lg:text-[32px] font-light text-white leading-tight mb-3">Claims Rejection Analyzer</h1>
+              <p className="text-[14px] text-white/40 leading-relaxed mb-6">14 months of research. 487,086 medicine records. 41,009 ICD-10 codes. Every rejection pattern in South African healthcare — mapped, modelled, and ready to catch your claims before they fail.</p>
+              <div className="flex items-center gap-3 flex-wrap">
+                {[
+                  { dot: true, label: "Engine Online" },
+                  { icon: Brain, label: "98% Accuracy" },
+                  { icon: Shield, label: "POPIA Compliant" },
+                ].map((b, i) => (
+                  <div key={i} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
+                    {b.dot ? <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" /> : b.icon && <b.icon className="w-3 h-3 text-[#3DA9D1]" />}
+                    <span className="text-[11px] text-white/60">{b.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 lg:gap-4 shrink-0">
+              {[
+                { value: "R40B", label: "Annual claims leakage in SA", color: "#EF4444" },
+                { value: "90-98%", label: "Rejections we catch pre-submission", color: "#10B981" },
+                { value: "487K", label: "NAPPI medicine records trained on", color: "#3DA9D1" },
+                { value: "<2%", label: "Hallucination rate (vs 15-30% avg)", color: "#E3964C" },
+              ].map((stat, i) => (
+                <motion.div key={i} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 + i * 0.08 }}
+                  className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 text-center min-w-[140px]">
+                  <div className="text-[24px] font-bold mb-1" style={{ color: stat.color }}>{stat.value}</div>
+                  <div className="text-[10px] text-white/40 leading-snug">{stat.label}</div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+          <div className="relative z-10 mt-8 pt-6 border-t border-white/[0.06] grid grid-cols-2 md:grid-cols-5 gap-4">
+            {[
+              { icon: BadgeCheck, title: "ICD-10-ZA Validation", desc: "41,009 codes with SA-specific rules" },
+              { icon: FileSearch, title: "Scheme Rule Engine", desc: "Discovery, GEMS, Bonitas, Momentum" },
+              { icon: Brain, title: "AI Code Suggestions", desc: "Neuro funnelling model — 98% accuracy" },
+              { icon: Zap, title: "Auto-Fix & Download", desc: "One-click correction of rejectable claims" },
+              { icon: BarChart3, title: "Batch Intelligence", desc: "Pattern detection across your full file" },
+            ].map((cap, i) => (
+              <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.06 }} className="flex items-start gap-2.5">
+                <cap.icon className="w-4 h-4 text-[#3DA9D1] shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-[11px] font-semibold text-white/70">{cap.title}</p>
+                  <p className="text-[10px] text-white/30">{cap.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
       {/* ═══ HEADER ═══ */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">

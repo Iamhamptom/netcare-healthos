@@ -30,6 +30,7 @@ const HARDCODED_NAPPI: NAPPIEntry[] = [
   // Added from blind test + training report — common SA chronic medicines
   // Descriptions aligned with Claims Engine Training Report (25 March 2026)
   { code: "7013801", description: "Aspirin 300mg", strength: "300mg", packSize: "30", manufacturer: "Adco", schedule: "S0", category: "analgesic" },
+  { code: "7020901", description: "Paracetamol (Panado) 500mg", strength: "500mg", packSize: "24", manufacturer: "Adcock Ingram", schedule: "S0", category: "analgesic" },
   { code: "7024601", description: "Simvastatin 20mg", strength: "20mg", packSize: "30", manufacturer: "Adco", schedule: "S3", category: "cardiovascular" },
   { code: "7031401", description: "Enalapril 10mg", strength: "10mg", packSize: "30", manufacturer: "Pharma Dynamics", schedule: "S3", category: "cardiovascular" },
   { code: "7044901", description: "Hydrochlorothiazide 25mg", strength: "25mg", packSize: "30", manufacturer: "Adco", schedule: "S3", category: "cardiovascular" },

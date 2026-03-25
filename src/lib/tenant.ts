@@ -171,9 +171,9 @@ const DEFAULT_TENANT: TenantConfig = {
   industryType: "billing_bureau",
   status: "active",
   brand: {
-    name: "Health OS",
+    name: "Netcare Health OS",
     slug: "demo",
-    logoUrl: "/logo.png",
+    logoUrl: "/images/netcare-logo.png",
     faviconUrl: "/favicon.png",
     primaryColor: "#D4AF37",
     secondaryColor: "#2DD4BF",

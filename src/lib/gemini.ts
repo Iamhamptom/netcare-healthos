@@ -115,3 +115,17 @@ export async function chatWithTools(
 
   return { reply: "I completed the requested actions.", toolsUsed };
 }
+
+/** Transcribe audio using Gemini multimodal */
+export async function transcribeAudio(
+  audioBase64: string,
+  mimeType: string,
+  prompt: string
+): Promise<string> {
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const result = await model.generateContent([
+    { inlineData: { mimeType, data: audioBase64 } },
+    { text: prompt },
+  ]);
+  return result.response.text().trim();
+}

@@ -36,7 +36,7 @@ export default function LoginPage() {
       } else if (data.user?.role === "platform_admin") {
         router.push("/admin");
       } else {
-        router.push("/dashboard");
+        router.push("/dashboard?course=1");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
