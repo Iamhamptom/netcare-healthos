@@ -1403,9 +1403,9 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     if (isSuturing && isAcidReflux) {
       issues.push({
         lineNumber: ln, field: "tariffCode", code: "PROCEDURE_DIAGNOSIS_CONTRADICTION",
-        severity: "error", rule: "Procedure-Diagnosis Contradiction",
-        message: `Surgical tariff "${item.tariffCode}" billed with acid reflux diagnosis "${code}". Suturing is not indicated for acid reflux.`,
-        suggestion: "If a wound was sutured, use the appropriate injury ICD-10 code (e.g., S01.x, T14.1), not the acid reflux code.",
+        severity: "warning", rule: "Procedure-Diagnosis Contradiction",
+        message: `Surgical tariff "${item.tariffCode}" billed with acid reflux diagnosis "${code}". The ICD-10 likely needs correcting — if a wound was sutured, use an injury code.`,
+        suggestion: "If a wound was sutured, use the appropriate injury ICD-10 code (e.g., S01.x for head, S51.x for forearm, T14.1 for unspecified open wound).",
       });
     }
   }
@@ -1566,27 +1566,31 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
         }
       } else if (tariffNum < scope.min || tariffNum > scope.max) {
         const isGP = prefix3 === "014" || prefix3 === "015";
-        const isSpecialistTariff = tariffNum >= 200;
-        // GPs routinely bill these non-consultation tariffs — they are GP-appropriate
+        // Complete GP-allowed tariff list — ALL standard GP-scope billing codes
         const GP_ALLOWED_TARIFFS = [
-          "0401", "0402", "0403", "0404", // Minor procedures (incision, wound care, etc.)
-          "0407",                          // Wound suturing
-          "3948",                          // ECG
-          "4025",                          // Strep test / rapid antigen
+          "0401", "0402", "0403", "0404", "0407", // Minor procedures, wound suturing
+          "0141", "0142",                          // Specialist consult (referral follow-up)
+          "3948",                                  // ECG
+          "4025",                                  // Strep test / rapid antigen
           "4501", "4502", "4503", "4504", "4505", "4506", "4507", "4508", "4509", "4510", // Common pathology
-          "4518", "4519", "4520",          // Urine dipstick, culture, glucose
-          "4537",                          // CRP (C-reactive protein)
-          "5101", "5102",                  // Chest X-ray (single/double view)
-          "0141", "0142",                  // Specialist consultation (GP referral follow-up)
+          "4518", "4519", "4520",                  // Urine dipstick, culture, glucose
+          "4537",                                  // CRP (C-reactive protein)
+          "5101", "5102",                          // Chest X-ray (single/double view)
         ];
-        if (isGP && isSpecialistTariff && !GP_ALLOWED_TARIFFS.includes(item.tariffCode)) {
+
+        // If GP practice + allowed tariff → SKIP ENTIRELY. No flag, no warning, nothing.
+        if (isGP && GP_ALLOWED_TARIFFS.includes(item.tariffCode)) {
+          // Valid GP billing — do nothing
+        } else if (isGP && !GP_ALLOWED_TARIFFS.includes(item.tariffCode)) {
+          // GP billing a tariff NOT in the allowed list
           issues.push({
             lineNumber: ln, field: "tariffCode", code: "DISCIPLINE_TARIFF_SCOPE",
-            severity: "error", rule: "Discipline-Tariff Scope Mismatch",
-            message: `GP practice (${item.practiceNumber}, prefix ${prefix3}) billing specialist tariff "${item.tariffCode}" (code 0200+). GPs can only bill GP consultation tariffs (0190-0199) and standard GP procedures (minor ops, pathology, X-ray).`,
-            suggestion: "Use the correct GP tariff code (e.g., 0190 for standard GP consultation) or verify the practice number.",
+            severity: "warning", rule: "Discipline-Tariff Scope Mismatch",
+            message: `GP practice (${item.practiceNumber}, prefix ${prefix3}) billing tariff "${item.tariffCode}" which is outside the typical GP range. Verify this is correct.`,
+            suggestion: "GPs typically bill 0190-0199 (consults), 0401-0407 (minor procedures), 4518-4537 (pathology), 5101-5102 (X-ray). If this tariff is clinically justified, add motivation.",
           });
         } else {
+          // Non-GP practice outside their discipline range
           issues.push({
             lineNumber: ln, field: "tariffCode", code: "DISCIPLINE_TARIFF_SCOPE",
             severity: "warning", rule: "Discipline-Tariff Scope Mismatch",
@@ -3092,7 +3096,7 @@ function validateCrossLine(lines: ClaimLineItem[]): ValidationIssue[] {
         }
         issues.push({
           lineNumber: lines[0].lineNumber, field: "amount", code: "BENFORD_LAW_DEVIATION",
-          severity: chiSquared > 0.3 ? "error" : "warning",
+          severity: "info", // Benford's is forensic accounting, not claim-level validation
           rule: "Benford's Law Deviation — Suspicious Amount Distribution",
           message: `Claim amounts fail Benford's Law test (χ²=${chiSquared.toFixed(3)}, threshold 0.1). First-digit distribution: ${deviationDetails.join("; ")}. This suggests amounts may be fabricated or systematically manipulated.`,
           suggestion: "Benford's Law deviations are a forensic accounting red flag. Review claim amounts for patterns of fabrication, rounding, or manipulation. This batch should be audited.",
