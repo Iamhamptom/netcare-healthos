@@ -1460,8 +1460,8 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     if (expectedMax && item.amount > expectedMax * 2) {
       issues.push({
         lineNumber: ln, field: "amount", code: "AMOUNT_ABOVE_SCHEME_RATE",
-        severity: "warning", rule: "Amount Above Scheme Rate",
-        message: `R${item.amount.toFixed(2)} is significantly above the typical scheme rate (~R${expectedMax}) for tariff "${item.tariffCode}". The scheme may reduce payment to the scheme rate.`,
+        severity: "info", rule: "Amount Above Scheme Rate",
+        message: `R${item.amount.toFixed(2)} is above the typical scheme rate (~R${expectedMax}) for tariff "${item.tariffCode}". Billing above rate is legal in SA — patient pays the gap.`,
         suggestion: "Verify the amount. Schemes typically reimburse at their own rate tables.",
       });
     }
@@ -4006,7 +4006,7 @@ export function validateAdvancedClinical(lines: ClaimLineItem[]): ValidationIssu
             lineNumber: ln,
             field: "amount",
             code: "SEP_EXCEEDED",
-            severity: "warning",
+            severity: "info",
             rule: "Amount Exceeds Reference Rate",
             message: `Claimed R${line.amount.toFixed(2)} vs ${rateSource} R${referenceRate.toFixed(2)} for tariff "${line.tariffCode}" (${Math.round((line.amount / referenceRate) * 100)}% of reference). Scheme will likely pay at their rate, patient liable for the difference.`,
             suggestion: "Verify the claimed amount. If charging above scheme rate, the patient must be informed of the shortfall. PMB conditions must be billed at scheme rate at DSP.",
