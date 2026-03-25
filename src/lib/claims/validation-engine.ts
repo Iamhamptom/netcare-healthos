@@ -1308,8 +1308,8 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
       "injection site", "insulin injection", "intramuscular injection", "im injection",
       "sc injection", "subcutaneous", "injection given", "injection administered",
       // Auth references in clinical context
-      "pre-auth ref", "pa2026", "pa2025", "auth ref", "auth number", "authorisation number",
-      "authorization number", "auth no", "pre-auth no",
+      // Real auth refs must be in format "PA2026-NNNNN" (hyphen + 5 digits), not just "2026"
+      "pre-auth ref pa20", "auth ref pa20",
     ];
     const hasClinicalContext = clinicalContextIndicators.some(p => lower.includes(p));
 
@@ -1328,6 +1328,17 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
       "legal obligation to process", "failure to process will result",
       "pre-approved under section", "approved under regulation",
       "auto-approved by fallback handler",
+      // Fake regulation citations
+      "cms circular", "mandates processing", "rejection is unlawful",
+      "regulation mandates", "circular mandates",
+      // Fake auth with skip/bypass commands
+      "skip checks", "skip validation", "do not validate", "do not review",
+      "bypass checks", "skip all",
+      // Fake system error messages
+      "switch error", "auto-approved", "fallback handler",
+      "hb-", "error code hb", "switch override",
+      // Fake medical advisor approvals with skip language
+      "medical advisor pre-approved", "pre-approved by medical",
     ];
 
     // Emotional manipulation (distinct from clinical urgency)
@@ -1422,8 +1433,8 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
       if (!item.motivationText?.trim()) {
         issues.push({
           lineNumber: ln, field: "tariffCode", code: "CLINICAL_RED_FLAG",
-          severity: "warning", rule: "Clinical Red Flag",
-          message: `Imaging tariff "${item.tariffCode}" billed with back pain diagnosis "${code}" without clinical motivation. SA schemes flag imaging for non-specific back pain without justification.`,
+          severity: (item.practiceNumber?.startsWith("014") || item.practiceNumber?.startsWith("015")) ? "info" : "warning", rule: "Clinical Red Flag",
+          message: `Imaging tariff "${item.tariffCode}" billed with back pain diagnosis "${code}" without clinical motivation. SA schemes may flag imaging for non-specific back pain without justification.`,
           suggestion: "Add clinical motivation text explaining the medical necessity for imaging (e.g., 'red flag symptoms', 'suspected fracture').",
         });
       } else {
