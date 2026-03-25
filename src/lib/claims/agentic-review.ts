@@ -119,6 +119,9 @@ async function reasonAboutClaim(
   if (flagCodes.includes("IMAGING_DIAGNOSIS_MISMATCH")) {
     overrideGuidance += "\nIMAGING_DIAGNOSIS_MISMATCH: CXR for non-respiratory/cardiac conditions. Keep as WARNING.\n";
   }
+  if (flagCodes.includes("KEYCARE_CDL_NO_MOTIVATION")) {
+    overrideGuidance += "\nKEYCARE_CDL_NO_MOTIVATION: KeyCare plan + CDL condition without motivation. Keep as WARNING — network constraints apply.\n";
+  }
 
   // Default assumption: if it's a GP claim, it's probably valid unless proved otherwise
   const defaultAssumption = isGPClaim ? "VALID (GP claims are valid unless a hard error is present)" : ruleVerdict;
