@@ -6,7 +6,7 @@
 
 import type { EmbeddingResult } from "./types";
 
-const GEMINI_MODEL = "text-embedding-004";
+const GEMINI_MODEL = "gemini-embedding-001";
 const OPENAI_MODEL = "text-embedding-3-small";
 const EMBEDDING_DIM = 1536;
 

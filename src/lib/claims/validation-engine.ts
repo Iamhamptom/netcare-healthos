@@ -1210,8 +1210,9 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     let needsPreAuth = false;
     let preAuthReason = "";
 
-    // Original imaging pre-auth tariffs
-    const imagingPreAuth = ["5608", "5609", "5201", "5202", "5501", "5502", "5101", "5102"];
+    // Imaging pre-auth: CT, MRI, nuclear medicine only. NOT chest X-ray (5101/5102).
+    // GPs order chest X-rays routinely — no pre-auth needed.
+    const imagingPreAuth = ["5608", "5609", "5201", "5202", "5501", "5502"];
     if (imagingPreAuth.some(t => item.tariffCode!.startsWith(t.substring(0, 4)))) {
       needsPreAuth = true;
       preAuthReason = "CT/MRI/specialist imaging";
@@ -1501,11 +1502,12 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     // GP-scope tariffs that NEVER need a referral
     const GP_NO_REFERRAL = [
       "0401", "0402", "0403", "0404", "0407",  // Minor procedures
+      "3948",                                    // ECG
+      "4025",                                    // Strep test / rapid antigen
       "4501", "4502", "4503", "4504", "4505", "4506", "4507", "4508", "4509", "4510", // Pathology
-      "4518", "4519", "4520", "4537",           // Urine/glucose/other pathology
+      "4518", "4519", "4520", "4537",           // Urine/glucose/CRP/other pathology
       "5101", "5102",                            // Chest X-ray
       "0190", "0191", "0192", "0193", "0194", "0195", "0196", "0197", "0198", "0199", // GP consults
-      "3948",                                    // ECG
     ];
 
     // Only flag specialist consultation tariffs (02xx) or truly specialist-only procedures
@@ -1569,8 +1571,11 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
         const GP_ALLOWED_TARIFFS = [
           "0401", "0402", "0403", "0404", // Minor procedures (incision, wound care, etc.)
           "0407",                          // Wound suturing
+          "3948",                          // ECG
+          "4025",                          // Strep test / rapid antigen
           "4501", "4502", "4503", "4504", "4505", "4506", "4507", "4508", "4509", "4510", // Common pathology
           "4518", "4519", "4520",          // Urine dipstick, culture, glucose
+          "4537",                          // CRP (C-reactive protein)
           "5101", "5102",                  // Chest X-ray (single/double view)
           "0141", "0142",                  // Specialist consultation (GP referral follow-up)
         ];
