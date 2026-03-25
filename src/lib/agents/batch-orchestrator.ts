@@ -144,6 +144,8 @@ export async function reviewBatchWithAgent(
   let totalSteps = 0;
   let totalToolCalls = 0;
 
+  console.log("[Agent Batch] Starting review of " + flaggedClaims.length + " flagged claims");
+
   // Process in batches of 3 (parallel within batch)
   for (let i = 0; i < flaggedClaims.length; i += 3) {
     const batch = flaggedClaims.slice(i, i + 3);

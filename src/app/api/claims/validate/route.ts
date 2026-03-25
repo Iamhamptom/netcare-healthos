@@ -512,6 +512,10 @@ export async function POST(req: NextRequest) {
     const { runReasoningPass } = await import("@/lib/claims/reasoning-pass");
     const reasoningResult = runReasoningPass(result.lineResults, result);
 
+    // Debug: count flagged claims before Layer 9
+    const flaggedBefore9 = result.lineResults.filter(function(lr) { return lr.status !== "valid"; }).length;
+    console.log("[Layer 9] Flagged claims before agent review: " + flaggedBefore9);
+
     // ── Layer 9: AI SDK Agent Review (tools + multi-step reasoning) ──
     // Each flagged claim gets reviewed by a ToolLoopAgent with 7 tools:
     // ICD-10 lookup, NAPPI lookup, tariff lookup, clinical pattern check,
@@ -550,6 +554,7 @@ export async function POST(req: NextRequest) {
       console.warn("[Agentic Review] Failed:", errMsg);
       // Surface the error in response for debugging
       (result as Record<string, unknown>).agentError = errMsg.slice(0, 500);
+      (result as Record<string, unknown>).flaggedBeforeAgent = flaggedBefore9;
     }
 
     // Auto-corrections for deterministic fixes
