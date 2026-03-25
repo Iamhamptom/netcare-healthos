@@ -64,6 +64,16 @@ export async function POST(request: Request) {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error("[voice/tts] Error:", message);
+
+    // Detect ElevenLabs plan limitation
+    if (message.includes("402") || message.includes("payment_required") || message.includes("paid_plan")) {
+      return NextResponse.json({
+        error: "Voice requires ElevenLabs paid plan",
+        detail: "Upgrade to ElevenLabs Starter ($5/mo) or clone a custom voice to use TTS via API.",
+        fallback: "text", // Signal to frontend to show text instead of playing audio
+      }, { status: 402 });
+    }
+
     return NextResponse.json({ error: "TTS generation failed", detail: message }, { status: 502 });
   }
 }
