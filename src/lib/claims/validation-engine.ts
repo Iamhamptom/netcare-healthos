@@ -1899,6 +1899,20 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     }
   }
 
+  // ── Rule 45b: INVALID_OPTION_CODE — Option code not in scheme's valid list ──
+  if (item.schemeOptionCode?.trim() && item.scheme) {
+    const schemeLower = item.scheme.toLowerCase();
+    const VALID_DISCOVERY_OPTIONS = ["EXEC", "CLCOMP", "CLSAV", "CLESS", "CLPRI", "ESSAV", "ESCOMP", "SMCOMP", "SMPLAN", "COSAV", "KCPLUS", "KCCORE", "KCSTART", "DELSAV"];
+    if (schemeLower.includes("discovery") && !VALID_DISCOVERY_OPTIONS.includes(item.schemeOptionCode.toUpperCase())) {
+      issues.push({
+        lineNumber: ln, field: "schemeOptionCode", code: "INVALID_OPTION_CODE",
+        severity: "error", rule: "Invalid Scheme Option Code",
+        message: `"${item.schemeOptionCode}" is not a valid Discovery Health plan code. Valid codes: ${VALID_DISCOVERY_OPTIONS.join(", ")}.`,
+        suggestion: "Use a valid Discovery Health plan option code.",
+      });
+    }
+  }
+
   // ── Rule 46: LOWERCASE_ICD10 — ICD-10 submitted in lowercase ──
   if (item.rawICD10 && item.rawICD10 !== item.rawICD10.toUpperCase() && /^[a-z]\d/i.test(item.rawICD10)) {
     issues.push({
