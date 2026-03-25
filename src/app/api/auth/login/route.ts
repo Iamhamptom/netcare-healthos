@@ -102,6 +102,9 @@ export async function POST(request: Request) {
         { email: "sara.nayager@netcare.co.za", password: "Netcare2026!" },
         { email: "chris.mathew@netcare.co.za", password: "Netcare2026!" },
         { email: "demo@netcare.co.za", password: "Netcare2026!" },
+        { email: "drrahul.gathiram@medicross.co.za", password: "Netcare2026!" },
+        { email: "cathelijn.zeijlemaker@netcare.co.za", password: "Netcare2026!" },
+        { email: "muhammad_simjee@a2d24.com", password: "Netcare2026!" },
       ];
       const match = validDemoLogins.find(d => d.email === email.toLowerCase() && d.password === password);
       if (!match) {

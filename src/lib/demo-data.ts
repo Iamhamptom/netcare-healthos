@@ -90,6 +90,28 @@ export const demoUsers: Record<string, { id: string; name: string; email: string
     role: "admin",
     practice: demoPractice,
   },
+  // === Netcare Stakeholder Accounts (25 March 2026 meeting follow-up) ===
+  "drrahul.gathiram@medicross.co.za": {
+    id: "demo-user-rahul",
+    name: "Dr Rahul Gathiram",
+    email: "drrahul.gathiram@medicross.co.za",
+    role: "platform_admin",
+    practice: demoPractice,
+  },
+  "cathelijn.zeijlemaker@netcare.co.za": {
+    id: "demo-user-cathelijn",
+    name: "Dr Cathelijn Zeijlemaker",
+    email: "cathelijn.zeijlemaker@netcare.co.za",
+    role: "admin",
+    practice: demoPractice,
+  },
+  "muhammad_simjee@a2d24.com": {
+    id: "demo-user-simjee",
+    name: "Muhammad Simjee",
+    email: "muhammad_simjee@a2d24.com",
+    role: "admin",
+    practice: demoPractice,
+  },
 };
 
 export const demoPlatformAdmin = {
