@@ -512,22 +512,26 @@ export async function POST(req: NextRequest) {
     const { runReasoningPass } = await import("@/lib/claims/reasoning-pass");
     const reasoningResult = runReasoningPass(result.lineResults, result);
 
-    // ── Layer 9: Agentic AI Review (THINKS about each flagged claim) ──
-    // SCAN → REASON → VERIFY → RECONCILE → REPORT
-    // Takes 30-120s for 100 claims. That's the point — it reasons.
-    let agenticReview: Awaited<ReturnType<typeof import("@/lib/claims/agentic-review").runAgenticReview>> | null = null;
+    // ── Layer 9: AI SDK Agent Review (tools + multi-step reasoning) ──
+    // Each flagged claim gets reviewed by a ToolLoopAgent with 7 tools:
+    // ICD-10 lookup, NAPPI lookup, tariff lookup, clinical pattern check,
+    // scheme validation, injection detection, knowledge base search.
+    let agenticReview: Awaited<ReturnType<typeof import("@/lib/agents/batch-orchestrator").reviewBatchWithAgent>> | null = null;
     try {
-      const { runAgenticReview } = await import("@/lib/claims/agentic-review");
-      agenticReview = await runAgenticReview(result.lineResults);
+      const { reviewBatchWithAgent } = await import("@/lib/agents/batch-orchestrator");
+      agenticReview = await reviewBatchWithAgent(result.lineResults);
 
-      // Apply AI verdicts back to the result
-      for (const reviewed of agenticReview.claims) {
+      // Apply agent verdicts back to the result
+      for (const reviewed of agenticReview.reviews) {
         const lr = result.lineResults.find(r => r.lineNumber === reviewed.lineNumber);
-        if (!lr || !reviewed.changed) continue;
+        if (!lr) continue;
+
+        const ruleVerdict = lr.status === "error" ? "REJECTED" : lr.status === "warning" ? "WARNING" : "VALID";
+        if (reviewed.verdict === ruleVerdict) continue; // No change
 
         const oldStatus = lr.status;
-        const newStatus = reviewed.finalVerdict === "REJECTED" ? "error"
-          : reviewed.finalVerdict === "WARNING" ? "warning" : "valid";
+        const newStatus = reviewed.verdict === "REJECTED" ? "error"
+          : reviewed.verdict === "WARNING" ? "warning" : "valid";
 
         if (oldStatus !== newStatus) {
           if (oldStatus === "error") result.invalidClaims--;
@@ -570,14 +574,18 @@ export async function POST(req: NextRequest) {
       reasoningPass: reasoningResult.totalCorrected > 0 ? reasoningResult : undefined,
       agenticReview: agenticReview ? {
         summary: agenticReview.summary,
-        overrides: agenticReview.claims.filter(c => c.changed).map(c => ({
-          line: c.lineNumber,
-          from: c.ruleEngineVerdict,
-          to: c.finalVerdict,
-          reasoning: c.reasoning,
-          confidence: c.confidence,
+        overrides: agenticReview.reviews.filter(r => {
+          const lr = result.lineResults.find(l => l.lineNumber === r.lineNumber);
+          const ruleVerdict = lr?.status === "error" ? "REJECTED" : lr?.status === "warning" ? "WARNING" : "VALID";
+          return r.verdict !== ruleVerdict;
+        }).map(r => ({
+          line: r.lineNumber,
+          to: r.verdict,
+          reasoning: r.reasoning,
+          confidence: r.confidence,
+          toolsUsed: r.toolsUsed,
+          steps: r.stepsUsed,
         })),
-        reasoningLog: agenticReview.reasoningLog,
       } : undefined,
       statisticalAnomalies,
       geoFraudAlerts,
