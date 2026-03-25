@@ -554,7 +554,6 @@ export async function POST(req: NextRequest) {
       console.warn("[Agentic Review] Failed:", errMsg);
       // Surface the error in response for debugging
       (result as Record<string, unknown>).agentError = errMsg.slice(0, 500);
-      (result as Record<string, unknown>).flaggedBeforeAgent = flaggedBefore9;
     }
 
     // Auto-corrections for deterministic fixes
@@ -578,6 +577,7 @@ export async function POST(req: NextRequest) {
       detectedFormat,
       autoCorrections,
       selfDiagnosis,
+      flaggedBeforeAgent: flaggedBefore9,
       doctorReasoning: doctorResult.totalOverrides > 0 ? doctorResult : undefined,
       reasoningPass: reasoningResult.totalCorrected > 0 ? reasoningResult : undefined,
       agenticReview: agenticReview ? {
