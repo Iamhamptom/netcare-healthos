@@ -298,6 +298,39 @@ export function runDoctorReasoning(
         }
       }
 
+      // Above scheme rate — legal in SA, not a rejection reason
+      if (issue.code === "ABOVE_SCHEME_RATE" || issue.code === "AMOUNT_ABOVE_SCHEME_RATE" || issue.code === "SEP_EXCEEDED") {
+        issuesToDowngrade.push(i);
+        overrides.push({
+          lineNumber: lr.lineNumber,
+          code: issue.code,
+          reason: "Billing above scheme rate is legal in SA. Patient pays the gap (co-payment).",
+        });
+      }
+
+      // Missing referring provider — GP IS the provider
+      if (issue.code === "MISSING_REFERRING_PROVIDER") {
+        issuesToDowngrade.push(i);
+        overrides.push({
+          lineNumber: lr.lineNumber,
+          code: issue.code,
+          reason: "GP billing own pathology/radiology — no referral needed. GP IS the treating provider.",
+        });
+      }
+
+      // Pre-auth not needed for GP routine orders
+      if (issue.code === "PREAUTH_REQUIRED") {
+        const gpNoPreauth = ["5101", "5102", "3948", "4025", "4518", "4519", "4520", "4537", "0401", "0407"];
+        if (claim.tariffCode && gpNoPreauth.includes(claim.tariffCode)) {
+          issuesToDowngrade.push(i);
+          overrides.push({
+            lineNumber: lr.lineNumber,
+            code: issue.code,
+            reason: `GP routine order ${claim.tariffCode} — no pre-auth needed`,
+          });
+        }
+      }
+
       // CDL chronic management — always valid if diagnosis + medication match
       if (issue.code === "CDL_AUTH_REQUIRED" || issue.code === "CDL_WITHOUT_PMB") {
         const cdlDiagnoses = ["I10", "E11", "J45", "G40", "B20", "E03", "F32", "G35", "G20"];
