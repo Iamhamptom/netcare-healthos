@@ -546,7 +546,10 @@ export async function POST(req: NextRequest) {
         }
       }
     } catch (agentErr) {
-      console.warn("[Agentic Review] Failed — rule engine results stand:", agentErr instanceof Error ? agentErr.message : "unknown");
+      const errMsg = agentErr instanceof Error ? agentErr.message + "\n" + agentErr.stack?.slice(0, 300) : String(agentErr);
+      console.warn("[Agentic Review] Failed:", errMsg);
+      // Surface the error in response for debugging
+      (result as Record<string, unknown>).agentError = errMsg.slice(0, 500);
     }
 
     // Auto-corrections for deterministic fixes
