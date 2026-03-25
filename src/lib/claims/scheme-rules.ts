@@ -181,7 +181,7 @@ function makeChronicCDLRule(cdlPrefixes: string[]): SchemeRule {
             lineNumber: line.lineNumber,
             field: "primaryICD10",
             code: "CDL_AUTH_REQUIRED",
-            severity: "warning",
+            severity: "info",
             rule: "CDL Authorization Required",
             message: `Diagnosis "${code}" is a Chronic Disease List condition. This scheme requires CDL authorization for ongoing treatment.`,
             suggestion: "Ensure the patient has an approved chronic application on file. Attach the CDL authorization number to the claim.",

@@ -39,10 +39,13 @@ function validateTariffs(lines: ClaimLineItem[]): ValidationIssue[] {
       continue;
     }
 
+    // Tariff-diagnosis mismatch: downgraded to info for GP claims (GPs treat everything)
+    // Only keep as warning for specialist claims where discipline match matters
     if (line.primaryICD10 && !isTariffValidForDiagnosis(line.tariffCode, line.primaryICD10)) {
+      const isGPLine = line.practiceNumber && (line.practiceNumber.startsWith("014") || line.practiceNumber.startsWith("015"));
       issues.push({
         lineNumber: ln, field: "tariffCode", code: "TARIFF_DIAGNOSIS_MISMATCH",
-        severity: "warning", rule: "Diagnosis-Procedure Mismatch",
+        severity: isGPLine ? "info" : "warning", rule: "Diagnosis-Procedure Mismatch",
         message: `Tariff "${line.tariffCode}" (${tariff.description}) may not be appropriate for diagnosis "${line.primaryICD10}".`,
         suggestion: "Verify that the procedure is clinically appropriate for this diagnosis.",
       });
