@@ -1028,12 +1028,15 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     }
   }
 
-  // ── Rule 9: R-code (symptoms) usage warning ──
+  // ── Rule 9: R-code (symptoms) usage — INFO only ──
+  // R-codes are valid for acute undifferentiated presentations (GP first visit).
+  // Downgraded from WARNING to INFO: R05 (cough), R10 (abdominal pain), R50.9 (fever)
+  // are among the most common GP primary diagnoses in SA.
   if (/^R\d/i.test(code) && chapter) {
     issues.push({
       lineNumber: ln, field: "primaryICD10", code: "SYMPTOM_CODE",
-      severity: "warning", rule: "Symptom Code as Primary",
-      message: `"${code}" is a symptom/sign code (Chapter 18). Using symptom codes when a definitive diagnosis is available may result in reduced reimbursement.`,
+      severity: "info", rule: "Symptom Code as Primary",
+      message: `"${code}" is a symptom/sign code (Chapter 18). Consider using a definitive diagnosis code if one is established.`,
       suggestion: "If a definitive diagnosis has been established, use the specific diagnosis code instead of the symptom code.",
     });
   }
@@ -1873,7 +1876,7 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     if (multiOptionSchemes.some(s => schemeLower.includes(s))) {
       issues.push({
         lineNumber: ln, field: "schemeOptionCode", code: "SCHEME_OPTION_MISSING",
-        severity: "warning", rule: "Missing Scheme Option Code",
+        severity: "error", rule: "Missing Scheme Option Code",
         message: `Scheme "${item.scheme}" has multiple plan options but no option code was specified. Benefit limits vary significantly between plans.`,
         suggestion: "Add the scheme option/plan code to ensure correct benefit routing (e.g., Discovery KeyCare vs Comprehensive have different limits).",
       });
