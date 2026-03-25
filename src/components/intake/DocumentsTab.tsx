@@ -135,7 +135,7 @@ export default function DocumentsTab({ selectedPatient }: Props) {
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                 category === cat.value
                   ? "bg-teal-500/20 text-teal-400 border border-teal-500/30"
-                  : "bg-white/[0.04] text-white/50 border border-white/[0.06] hover:bg-white/[0.06]"
+                  : "bg-zinc-900/50 text-white/50 border border-zinc-800 hover:bg-zinc-800"
               }`}
             >
               <cat.icon className="w-3 h-3" />
@@ -154,7 +154,7 @@ export default function DocumentsTab({ selectedPatient }: Props) {
         className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all ${
           dragOver
             ? "border-teal-500/50 bg-teal-500/5"
-            : "border-white/[0.08] bg-white/[0.02] hover:border-white/[0.15] hover:bg-white/[0.03]"
+            : "border-zinc-700 bg-zinc-900 hover:border-white/[0.15] hover:bg-zinc-900"
         }`}
       >
         <input
@@ -191,9 +191,9 @@ export default function DocumentsTab({ selectedPatient }: Props) {
                 key={file.id}
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]"
+                className="flex items-center gap-3 p-3 rounded-xl bg-zinc-900 border border-zinc-800"
               >
-                <div className="w-9 h-9 rounded-lg bg-white/[0.04] flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-lg bg-zinc-900/50 flex items-center justify-center shrink-0">
                   <Icon className="w-4 h-4 text-white/50" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -208,7 +208,7 @@ export default function DocumentsTab({ selectedPatient }: Props) {
                   href={`/uploads/intake/${file.filename}`}
                   download={file.originalName}
                   onClick={(e) => e.stopPropagation()}
-                  className="p-1.5 rounded-lg hover:bg-white/[0.04] text-white/30 hover:text-white/60 transition-colors"
+                  className="p-1.5 rounded-lg hover:bg-zinc-900/50 text-white/30 hover:text-white/60 transition-colors"
                 >
                   <Download className="w-3.5 h-3.5" />
                 </a>

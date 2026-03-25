@@ -261,7 +261,7 @@ export default function VoiceIntakeTab({ selectedPatient, patients }: Props) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
-            className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-8"
+            className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8"
           >
             {stage === "idle" ? (
               <div className="text-center py-12">
@@ -290,7 +290,7 @@ export default function VoiceIntakeTab({ selectedPatient, patients }: Props) {
                   </span>
                 </div>
 
-                <div className="bg-white/[0.02] rounded-xl p-4 mb-6">
+                <div className="bg-zinc-900 rounded-xl p-4 mb-6">
                   <WaveformVisualizer
                     audioLevel={recorder.audioLevel}
                     isRecording={recorder.isRecording}
@@ -302,7 +302,7 @@ export default function VoiceIntakeTab({ selectedPatient, patients }: Props) {
                   {recorder.isPaused ? (
                     <button
                       onClick={recorder.resume}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-white/70 text-sm font-medium transition-colors"
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white/70 text-sm font-medium transition-colors"
                     >
                       <Play className="w-4 h-4" />
                       Resume
@@ -310,7 +310,7 @@ export default function VoiceIntakeTab({ selectedPatient, patients }: Props) {
                   ) : (
                     <button
                       onClick={recorder.pause}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-white/70 text-sm font-medium transition-colors"
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white/70 text-sm font-medium transition-colors"
                     >
                       <Pause className="w-4 h-4" />
                       Pause
@@ -327,7 +327,7 @@ export default function VoiceIntakeTab({ selectedPatient, patients }: Props) {
 
                   <button
                     onClick={() => { recorder.cancel(); setStage("idle"); }}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.04] hover:bg-red-500/10 text-white/40 hover:text-red-400 text-sm transition-colors"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-900/50 hover:bg-red-500/10 text-white/40 hover:text-red-400 text-sm transition-colors"
                   >
                     <MicOff className="w-4 h-4" />
                     Cancel
@@ -345,7 +345,7 @@ export default function VoiceIntakeTab({ selectedPatient, patients }: Props) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
-            className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-12 text-center"
+            className="bg-zinc-900 border border-zinc-800 rounded-2xl p-12 text-center"
           >
             <Loader2 className="w-10 h-10 text-teal-400 animate-spin mx-auto mb-4" />
             <p className="text-white/80 text-lg font-semibold mb-1">
@@ -384,7 +384,7 @@ export default function VoiceIntakeTab({ selectedPatient, patients }: Props) {
             exit={{ opacity: 0, y: -12 }}
           >
             {/* Transcript */}
-            <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6 mb-6">
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-6">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-semibold text-white/40 uppercase tracking-wider">Transcript</span>
                 <div className="flex items-center gap-2">
@@ -409,7 +409,7 @@ export default function VoiceIntakeTab({ selectedPatient, patients }: Props) {
                 <textarea
                   value={transcript}
                   onChange={(e) => setTranscript(e.target.value)}
-                  className="w-full bg-transparent border border-white/[0.08] rounded-xl p-4 text-sm text-white/70 leading-relaxed resize-y min-h-[120px] focus:outline-none focus:border-teal-500/40"
+                  className="w-full bg-transparent border border-zinc-700 rounded-xl p-4 text-sm text-white/70 leading-relaxed resize-y min-h-[120px] focus:outline-none focus:border-teal-500/40"
                 />
               ) : (
                 <div
@@ -472,15 +472,15 @@ export default function VoiceIntakeTab({ selectedPatient, patients }: Props) {
       )}
 
       {/* Past Recordings */}
-      <div className="border border-white/[0.06] rounded-xl overflow-hidden">
+      <div className="border border-zinc-800 rounded-xl overflow-hidden">
         <button
           onClick={() => setShowRecordings(!showRecordings)}
-          className="w-full flex items-center gap-3 px-5 py-3.5 text-left hover:bg-white/[0.02] transition-colors"
+          className="w-full flex items-center gap-3 px-5 py-3.5 text-left hover:bg-zinc-900 transition-colors"
         >
           <Clock className="w-4 h-4 text-white/50" />
           <span className="text-sm font-semibold text-white/70 flex-1">Past Recordings</span>
           {pastRecordings.length > 0 && (
-            <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-white/[0.06] text-white/40">
+            <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-zinc-800 text-white/40">
               {pastRecordings.length}
             </span>
           )}
@@ -494,7 +494,7 @@ export default function VoiceIntakeTab({ selectedPatient, patients }: Props) {
               pastRecordings.map((rec) => (
                 <div
                   key={rec.id}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-white/[0.02] border border-white/[0.04]"
+                  className="flex items-center gap-3 p-3 rounded-lg bg-zinc-900 border border-white/[0.04]"
                 >
                   <button
                     onClick={() => handlePlayRecording(rec)}

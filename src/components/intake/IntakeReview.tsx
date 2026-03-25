@@ -50,10 +50,10 @@ function Section({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border border-white/[0.06] rounded-xl overflow-hidden">
+    <div className="border border-zinc-800 rounded-xl overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-3 px-5 py-3.5 text-left hover:bg-white/[0.02] transition-colors"
+        className="w-full flex items-center gap-3 px-5 py-3.5 text-left hover:bg-zinc-900 transition-colors"
       >
         <Icon className="w-4 h-4 text-white/50" />
         <span className="text-sm font-semibold text-white/90 flex-1">{title}</span>
@@ -94,7 +94,7 @@ export default function IntakeReview({ analysis, transcript, patientName, onSave
       )}
 
       {/* Voice Summary Player */}
-      <div className="flex items-center justify-between bg-white/[0.02] border border-white/[0.06] rounded-xl px-5 py-3">
+      <div className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-xl px-5 py-3">
         <span className="text-xs text-white/40">AI Voice Summary</span>
         <div className="flex items-center gap-3">
           {a.redFlags.length > 0 && (
@@ -111,7 +111,7 @@ export default function IntakeReview({ analysis, transcript, patientName, onSave
       </div>
 
       {/* Chief Complaint + Summary */}
-      <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
         <div className="flex items-center gap-2 mb-3">
           <Brain className="w-4 h-4 text-teal-400" />
           <span className="text-xs font-semibold text-white/50 uppercase tracking-wider">AI Clinical Summary</span>
@@ -130,7 +130,7 @@ export default function IntakeReview({ analysis, transcript, patientName, onSave
         <Section title="ICD-10 Codes" icon={FileText} badge={`${a.icd10Suggestions.length} suggested`}>
           <div className="space-y-2">
             {a.icd10Suggestions.map((code, i) => (
-              <div key={i} className="flex items-center justify-between py-2 px-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+              <div key={i} className="flex items-center justify-between py-2 px-3 rounded-lg bg-zinc-900 border border-white/[0.04]">
                 <div className="flex items-center gap-3">
                   <span className="text-xs font-mono font-bold text-teal-400 bg-teal-500/10 px-2 py-1 rounded">{code.code}</span>
                   <span className="text-sm text-white/70">{code.description}</span>
@@ -147,7 +147,7 @@ export default function IntakeReview({ analysis, transcript, patientName, onSave
         <Section title="Symptoms" icon={Activity} badge={`${a.symptoms.length} identified`}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {a.symptoms.map((s, i) => (
-              <div key={i} className="p-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+              <div key={i} className="p-3 rounded-lg bg-zinc-900 border border-white/[0.04]">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-sm font-medium text-white/80">{s.name}</span>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${severityColors[s.severity]}`}>
@@ -168,7 +168,7 @@ export default function IntakeReview({ analysis, transcript, patientName, onSave
         <Section title="Medications" icon={Pill} badge={`${a.medications.length}`} defaultOpen={false}>
           <div className="space-y-2">
             {a.medications.map((m, i) => (
-              <div key={i} className="flex items-center gap-4 py-2 px-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+              <div key={i} className="flex items-center gap-4 py-2 px-3 rounded-lg bg-zinc-900 border border-white/[0.04]">
                 <span className="text-sm font-medium text-white/80 flex-1">{m.name}</span>
                 <span className="text-xs text-white/40">{m.dosage}</span>
                 <span className="text-xs text-white/40">{m.frequency}</span>
@@ -183,7 +183,7 @@ export default function IntakeReview({ analysis, transcript, patientName, onSave
         <Section title="Allergies" icon={ShieldAlert} badge={`${a.allergies.length}`} defaultOpen={false}>
           <div className="space-y-2">
             {a.allergies.map((al, i) => (
-              <div key={i} className="flex items-center justify-between py-2 px-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+              <div key={i} className="flex items-center justify-between py-2 px-3 rounded-lg bg-zinc-900 border border-white/[0.04]">
                 <div>
                   <span className="text-sm font-medium text-white/80">{al.name}</span>
                   {al.reaction && <span className="text-xs text-white/40 ml-2">→ {al.reaction}</span>}
@@ -202,31 +202,31 @@ export default function IntakeReview({ analysis, transcript, patientName, onSave
         <Section title="Vitals Mentioned" icon={Heart} defaultOpen={false}>
           <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
             {a.vitalsMentioned.bloodPressureSys && (
-              <div className="text-center p-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+              <div className="text-center p-3 rounded-lg bg-zinc-900 border border-white/[0.04]">
                 <div className="text-lg font-bold text-white">{a.vitalsMentioned.bloodPressureSys}/{a.vitalsMentioned.bloodPressureDia || "?"}</div>
                 <div className="text-[10px] text-white/40 mt-1">Blood Pressure</div>
               </div>
             )}
             {a.vitalsMentioned.heartRate && (
-              <div className="text-center p-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+              <div className="text-center p-3 rounded-lg bg-zinc-900 border border-white/[0.04]">
                 <div className="text-lg font-bold text-white">{a.vitalsMentioned.heartRate}</div>
                 <div className="text-[10px] text-white/40 mt-1">Heart Rate</div>
               </div>
             )}
             {a.vitalsMentioned.temperature && (
-              <div className="text-center p-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+              <div className="text-center p-3 rounded-lg bg-zinc-900 border border-white/[0.04]">
                 <div className="text-lg font-bold text-white">{a.vitalsMentioned.temperature}°C</div>
                 <div className="text-[10px] text-white/40 mt-1">Temperature</div>
               </div>
             )}
             {a.vitalsMentioned.painLevel != null && (
-              <div className="text-center p-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+              <div className="text-center p-3 rounded-lg bg-zinc-900 border border-white/[0.04]">
                 <div className="text-lg font-bold text-white">{a.vitalsMentioned.painLevel}/10</div>
                 <div className="text-[10px] text-white/40 mt-1">Pain Level</div>
               </div>
             )}
             {a.vitalsMentioned.oxygenSat && (
-              <div className="text-center p-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+              <div className="text-center p-3 rounded-lg bg-zinc-900 border border-white/[0.04]">
                 <div className="text-lg font-bold text-white">{a.vitalsMentioned.oxygenSat}%</div>
                 <div className="text-[10px] text-white/40 mt-1">SpO2</div>
               </div>
@@ -250,7 +250,7 @@ export default function IntakeReview({ analysis, transcript, patientName, onSave
       )}
 
       {/* Action Buttons */}
-      <div className="flex items-center gap-3 pt-4 border-t border-white/[0.06]">
+      <div className="flex items-center gap-3 pt-4 border-t border-zinc-800">
         <button
           onClick={() => onSave(analysis)}
           disabled={saving}
@@ -261,14 +261,14 @@ export default function IntakeReview({ analysis, transcript, patientName, onSave
         </button>
         <button
           onClick={() => onExport("pdf")}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-white/70 text-sm font-medium transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white/70 text-sm font-medium transition-colors"
         >
           <FileDown className="w-4 h-4" />
           Export PDF
         </button>
         <button
           onClick={() => onExport("fhir")}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-white/70 text-sm font-medium transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white/70 text-sm font-medium transition-colors"
         >
           <FileText className="w-4 h-4" />
           FHIR Bundle

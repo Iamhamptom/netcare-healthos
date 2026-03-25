@@ -101,7 +101,7 @@ export default function VoiceSummaryPlayer({ text, label = "Listen to Summary" }
         <>
           <button
             onClick={handleStop}
-            className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-white/40 hover:text-white/60 transition-colors"
+            className="p-1.5 rounded-lg bg-zinc-900/50 hover:bg-white/[0.08] text-white/40 hover:text-white/60 transition-colors"
           >
             <Square className="w-3 h-3" />
           </button>

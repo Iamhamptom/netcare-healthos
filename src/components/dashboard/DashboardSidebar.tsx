@@ -133,6 +133,7 @@ const navSections: NavSection[] = [
     label: "OPERATIONS",
     items: [
       { href: "/dashboard/intake", icon: Mic, label: "AI Voice Intake", roles: ["admin", "doctor"] },
+      { href: "/dashboard/scribe", icon: Brain, label: "AI Scribe", roles: ["admin", "doctor"] },
       { href: "/dashboard/daily", icon: ClipboardList, label: "Daily Tasks", roles: ["admin", "receptionist", "nurse"] },
       { href: "/dashboard/patients", icon: Users, label: "Patients", roles: ["admin", "doctor", "nurse"] },
       { href: "/dashboard/billing", icon: Receipt, label: "Billing", roles: ["admin", "receptionist"] },
@@ -152,6 +153,7 @@ const navSections: NavSection[] = [
     label: "BUSINESS",
     items: [
       { href: "/dashboard/partnership", icon: Heart, label: "Partnership", roles: ["admin", "platform_admin"] },
+      { href: "/dashboard/benchmarks", icon: Target, label: "Benchmarks", roles: ["admin", "platform_admin"] },
       { href: "/dashboard/suite", icon: Boxes, label: "Your Suite", roles: ["admin", "platform_admin"] },
       { href: "/dashboard/board-pack", icon: FileBarChart, label: "Board Pack", roles: ["admin", "platform_admin"] },
       { href: "/dashboard/pilot", icon: Rocket, label: "Start Pilot", roles: ["admin", "platform_admin"] },

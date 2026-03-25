@@ -40,7 +40,8 @@ export default function IntakePage() {
   }, []);
 
   return (
-    <div className="min-h-screen p-6 md:p-8 max-w-5xl mx-auto">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 -m-[1px] p-6 md:p-8">
+      <div className="max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -60,7 +61,7 @@ export default function IntakePage() {
           <select
             value={selectedPatient}
             onChange={(e) => setSelectedPatient(e.target.value)}
-            className="w-full md:w-80 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white appearance-none focus:outline-none focus:border-teal-500/50 transition-colors"
+            className="w-full md:w-80 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-white appearance-none focus:outline-none focus:border-teal-500/50 transition-colors"
           >
             <option value="">Select patient (optional)</option>
             {patients.map(p => (
@@ -72,7 +73,7 @@ export default function IntakePage() {
       </div>
 
       {/* Tab Bar */}
-      <div className="flex items-center gap-1 p-1 bg-white/[0.03] border border-white/[0.06] rounded-xl mb-6">
+      <div className="flex items-center gap-1 p-1 bg-zinc-900 border border-zinc-800 rounded-xl mb-6">
         {TABS.map(tab => (
           <button
             key={tab.id}
@@ -118,6 +119,7 @@ export default function IntakePage() {
           )}
         </motion.div>
       </AnimatePresence>
+      </div>
     </div>
   );
 }

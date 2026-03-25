@@ -137,12 +137,12 @@ export default function ChatIntakeTab({ selectedPatient, patients }: Props) {
   return (
     <div className="flex flex-col h-[calc(100vh-280px)] min-h-[500px]">
       {/* Progress bar */}
-      <div className="flex items-center gap-1 px-4 py-3 border-b border-white/[0.06]">
+      <div className="flex items-center gap-1 px-4 py-3 border-b border-zinc-800">
         {Array.from({ length: totalSteps }).map((_, i) => (
           <div
             key={i}
             className={`h-1 rounded-full flex-1 transition-colors ${
-              i < step ? "bg-teal-500/60" : "bg-white/[0.06]"
+              i < step ? "bg-teal-500/60" : "bg-zinc-800"
             }`}
           />
         ))}
@@ -163,7 +163,7 @@ export default function ChatIntakeTab({ selectedPatient, patients }: Props) {
             className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
           >
             <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
-              msg.role === "user" ? "bg-teal-500/20" : "bg-white/[0.06]"
+              msg.role === "user" ? "bg-teal-500/20" : "bg-zinc-800"
             }`}>
               {msg.role === "user" ? (
                 <User className="w-3.5 h-3.5 text-teal-400" />
@@ -176,7 +176,7 @@ export default function ChatIntakeTab({ selectedPatient, patients }: Props) {
               <div className={`inline-block px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
                 msg.role === "user"
                   ? "bg-teal-500/20 text-teal-100 rounded-br-md"
-                  : "bg-white/[0.04] text-white/70 border border-white/[0.06] rounded-bl-md"
+                  : "bg-zinc-900/50 text-white/70 border border-zinc-800 rounded-bl-md"
               }`}>
                 {msg.content}
               </div>
@@ -185,7 +185,7 @@ export default function ChatIntakeTab({ selectedPatient, patients }: Props) {
                 <div className="mt-1 flex items-center gap-2">
                   <button
                     onClick={() => handlePlayTTS(msg)}
-                    className="p-1 rounded hover:bg-white/[0.04] text-white/20 hover:text-teal-400 transition-colors"
+                    className="p-1 rounded hover:bg-zinc-900/50 text-white/20 hover:text-teal-400 transition-colors"
                     title="Listen"
                   >
                     <Volume2 className={`w-3 h-3 ${playingId === msg.id ? "text-teal-400" : ""}`} />
@@ -201,10 +201,10 @@ export default function ChatIntakeTab({ selectedPatient, patients }: Props) {
 
         {loading && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-full bg-white/[0.06] flex items-center justify-center">
+            <div className="w-7 h-7 rounded-full bg-zinc-800 flex items-center justify-center">
               <Bot className="w-3.5 h-3.5 text-white/50" />
             </div>
-            <div className="bg-white/[0.04] border border-white/[0.06] rounded-2xl rounded-bl-md px-4 py-3">
+            <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl rounded-bl-md px-4 py-3">
               <div className="flex items-center gap-1">
                 {[0, 1, 2].map(i => (
                   <motion.div
@@ -238,7 +238,7 @@ export default function ChatIntakeTab({ selectedPatient, patients }: Props) {
       </div>
 
       {/* Input */}
-      <div className="border-t border-white/[0.06] p-4">
+      <div className="border-t border-zinc-800 p-4">
         <div className="flex items-center gap-3">
           <input
             ref={inputRef}
@@ -247,7 +247,7 @@ export default function ChatIntakeTab({ selectedPatient, patients }: Props) {
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
             placeholder={complete ? "Intake complete" : "Type your response..."}
             disabled={loading || complete}
-            className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-teal-500/40 disabled:opacity-40 transition-colors"
+            className="flex-1 bg-zinc-900/50 border border-zinc-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-teal-500/40 disabled:opacity-40 transition-colors"
           />
           <button
             onClick={handleSend}
