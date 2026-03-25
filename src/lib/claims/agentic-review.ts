@@ -221,6 +221,7 @@ export async function runAgenticReview(
     "SCHEME_OPTION_MISSING", "MISSING_MEMBERSHIP", "NO_PATIENT_IDENTIFIER",
     "EXCESSIVE_QUANTITY", "DENTAL_TARIFF_MISMATCH", "CLAIM_WINDOW_EXPIRED",
     "INVALID_PRACTICE_NUMBER", "TARIFF_DISCIPLINE_MISMATCH",
+    "INVALID_OPTION_CODE",
   ]);
 
   const flaggedClaims = lineResults.filter(function(lr) { return lr.status !== "valid"; });
