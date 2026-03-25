@@ -61,6 +61,11 @@ interface ValidationResult {
   schemeList?: { code: string; name: string }[];
   batchInsights?: { rule: string; affectedCount: number; percentage: number; severity: string; explanation: string; fix: string }[];
   selfDiagnosis?: { detected: boolean; problem: string; action: string; remapped?: boolean } | null;
+  agenticReview?: {
+    summary: { totalReviewed: number; ruleEngineOverrides: number; falsePositivesCaught: number; processingTimeMs: number };
+    overrides: { line: number; from: string; to: string; reasoning: string; confidence: string }[];
+    reasoningLog: string[];
+  };
 }
 
 interface ICD10SearchResult {

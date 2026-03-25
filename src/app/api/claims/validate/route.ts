@@ -498,11 +498,42 @@ export async function POST(req: NextRequest) {
     const providerAnomalies = behaviorStore.detectProviderAnomalies();
     const rejectionSpikes = behaviorStore.detectRejectionSpikes();
 
-    // ── Reasoning Pass — AI self-check layer ──
-    // Reviews every flagged claim, verifies the flag is correct,
-    // removes false positives, and downgrades over-escalated severities.
+    // ── Layer 8: Deterministic Reasoning Pass (fast safety net) ──
     const { runReasoningPass } = await import("@/lib/claims/reasoning-pass");
     const reasoningResult = runReasoningPass(result.lineResults, result);
+
+    // ── Layer 9: Agentic AI Review (THINKS about each flagged claim) ──
+    // SCAN → REASON → VERIFY → RECONCILE → REPORT
+    // Takes 30-120s for 100 claims. That's the point — it reasons.
+    let agenticReview: Awaited<ReturnType<typeof import("@/lib/claims/agentic-review").runAgenticReview>> | null = null;
+    try {
+      const { runAgenticReview } = await import("@/lib/claims/agentic-review");
+      agenticReview = await runAgenticReview(result.lineResults);
+
+      // Apply AI verdicts back to the result
+      for (const reviewed of agenticReview.claims) {
+        const lr = result.lineResults.find(r => r.lineNumber === reviewed.lineNumber);
+        if (!lr || !reviewed.changed) continue;
+
+        const oldStatus = lr.status;
+        const newStatus = reviewed.finalVerdict === "REJECTED" ? "error"
+          : reviewed.finalVerdict === "WARNING" ? "warning" : "valid";
+
+        if (oldStatus !== newStatus) {
+          if (oldStatus === "error") result.invalidClaims--;
+          else if (oldStatus === "warning") result.warningClaims--;
+          else result.validClaims--;
+
+          if (newStatus === "error") result.invalidClaims++;
+          else if (newStatus === "warning") result.warningClaims++;
+          else result.validClaims++;
+
+          lr.status = newStatus;
+        }
+      }
+    } catch (agentErr) {
+      console.warn("[Agentic Review] Failed — rule engine results stand:", agentErr instanceof Error ? agentErr.message : "unknown");
+    }
 
     // Auto-corrections for deterministic fixes
     const autoCorrections = generateAutoCorrections(claimLines, result.issues);
@@ -526,6 +557,17 @@ export async function POST(req: NextRequest) {
       autoCorrections,
       selfDiagnosis,
       reasoningPass: reasoningResult.totalCorrected > 0 ? reasoningResult : undefined,
+      agenticReview: agenticReview ? {
+        summary: agenticReview.summary,
+        overrides: agenticReview.claims.filter(c => c.changed).map(c => ({
+          line: c.lineNumber,
+          from: c.ruleEngineVerdict,
+          to: c.finalVerdict,
+          reasoning: c.reasoning,
+          confidence: c.confidence,
+        })),
+        reasoningLog: agenticReview.reasoningLog,
+      } : undefined,
       statisticalAnomalies,
       geoFraudAlerts,
       providerAnomalies: providerAnomalies.length > 0 ? providerAnomalies : undefined,
