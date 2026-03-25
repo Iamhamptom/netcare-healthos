@@ -45,7 +45,7 @@ function validateTariffs(lines: ClaimLineItem[]): ValidationIssue[] {
       const isGPLine = line.practiceNumber && (line.practiceNumber.startsWith("014") || line.practiceNumber.startsWith("015"));
       issues.push({
         lineNumber: ln, field: "tariffCode", code: "TARIFF_DIAGNOSIS_MISMATCH",
-        severity: isGPLine ? "info" : "warning", rule: "Diagnosis-Procedure Mismatch",
+        severity: "warning", rule: "Diagnosis-Procedure Mismatch",
         message: `Tariff "${line.tariffCode}" (${tariff.description}) may not be appropriate for diagnosis "${line.primaryICD10}".`,
         suggestion: "Verify that the procedure is clinically appropriate for this diagnosis.",
       });

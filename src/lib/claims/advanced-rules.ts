@@ -222,7 +222,7 @@ export function validateClinicalAppropriateness(line: ClaimLineItem): Validation
         lineNumber: line.lineNumber,
         field: "tariffCode",
         code: "CLINICAL_APPROPRIATENESS",
-        severity: (line.practiceNumber?.startsWith("014") || line.practiceNumber?.startsWith("015")) ? "info" : combo.severity,
+        severity: combo.severity,
         rule: "Clinical Appropriateness",
         message: `${line.primaryICD10} + ${line.tariffCode}: ${combo.reason}`,
         suggestion: "Review whether this procedure is clinically justified for this diagnosis. Schemes may flag this for clinical review.",
