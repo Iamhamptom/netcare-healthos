@@ -501,7 +501,11 @@ export async function POST(req: NextRequest) {
     const providerAnomalies = behaviorStore.detectProviderAnomalies();
     const rejectionSpikes = behaviorStore.detectRejectionSpikes();
 
-    // ── Layer 8: Deterministic Reasoning Pass (fast safety net) ──
+    // ── Layer 8a: Doctor Reasoning (clinical domain knowledge) ──
+    const { runDoctorReasoning } = await import("@/lib/claims/doctor-reasoning");
+    const doctorResult = runDoctorReasoning(result.lineResults, result);
+
+    // ── Layer 8b: Deterministic Reasoning Pass (GP tariff scope safety net) ──
     const { runReasoningPass } = await import("@/lib/claims/reasoning-pass");
     const reasoningResult = runReasoningPass(result.lineResults, result);
 
@@ -559,6 +563,7 @@ export async function POST(req: NextRequest) {
       detectedFormat,
       autoCorrections,
       selfDiagnosis,
+      doctorReasoning: doctorResult.totalOverrides > 0 ? doctorResult : undefined,
       reasoningPass: reasoningResult.totalCorrected > 0 ? reasoningResult : undefined,
       agenticReview: agenticReview ? {
         summary: agenticReview.summary,
