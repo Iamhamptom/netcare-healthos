@@ -81,7 +81,7 @@ export default function IntakePage() {
             className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
               activeTab === tab.id
                 ? "bg-teal-500/15 text-teal-400 border border-teal-500/20"
-                : "text-white/40 hover:text-white/60 hover:bg-white/[0.03] border border-transparent"
+                : "text-white/40 hover:text-white/60 hover:bg-zinc-900 border border-transparent"
             }`}
           >
             <tab.icon className="w-4 h-4" />
