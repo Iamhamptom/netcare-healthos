@@ -106,8 +106,9 @@ async function reasonAboutClaim(
       confidence: parsed.confidence || 0.5,
       suggestions: parsed.suggestions || [],
     };
-  } catch {
-    return { verdict: ruleVerdict, reasoning: "AI parse error", confidence: 0.3, suggestions: [] };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { verdict: ruleVerdict, reasoning: "AI error: " + msg.slice(0, 100), confidence: 0.3, suggestions: [] };
   }
 }
 
