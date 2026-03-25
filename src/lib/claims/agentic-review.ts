@@ -177,6 +177,9 @@ export async function runAgenticReview(
 
       const changed = finalVerdict !== ruleVerdict;
 
+      // Debug: log every AI decision
+      reasoningLog.push("[AI] Line " + lr.lineNumber + ": rule=" + ruleVerdict + " ai=" + ai.verdict + " final=" + finalVerdict + " conf=" + ai.confidence.toFixed(2) + " changed=" + changed);
+
       claims.push({
         lineNumber: lr.lineNumber,
         finalVerdict: finalVerdict as "VALID" | "WARNING" | "REJECTED",
