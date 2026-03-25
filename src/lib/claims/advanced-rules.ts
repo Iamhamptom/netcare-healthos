@@ -343,7 +343,7 @@ function validateTariffCategoryDiagnosis(line: ClaimLineItem): ValidationIssue[]
       lineNumber: line.lineNumber,
       field: "tariffCode",
       code: "IMAGING_DIAGNOSIS_MISMATCH",
-      severity: "warning",
+      severity: "info",
       rule: "Imaging-Diagnosis Mismatch",
       message: `Chest X-ray (${line.tariffCode}) billed for diagnosis "${line.primaryICD10}" — chest imaging is typically for respiratory (J), cardiac (I), or trauma (S/T) conditions.`,
       suggestion: "Verify the imaging study matches the clinical indication. Schemes may query unrelated imaging.",

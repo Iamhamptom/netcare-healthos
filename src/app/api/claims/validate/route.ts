@@ -466,7 +466,7 @@ export async function POST(req: NextRequest) {
         if (comparison.status === "significantly_above" && comparison.schemeRate) {
           result.issues.push({
             lineNumber: line.lineNumber, field: "amount", code: "ABOVE_SCHEME_RATE",
-            severity: "warning", rule: "Amount Exceeds Scheme Rate",
+            severity: "info", rule: "Amount Exceeds Scheme Rate",
             message: `R${line.amount.toFixed(2)} is ${comparison.ratio?.toFixed(1)}x the ${line.scheme} rate (R${comparison.schemeRate.toFixed(2)}) for tariff ${line.tariffCode}. Patient may face a shortfall.`,
             suggestion: "Inform the patient of the potential out-of-pocket amount before submission.",
           });

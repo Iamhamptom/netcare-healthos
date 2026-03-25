@@ -1484,7 +1484,7 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
       const shouldWarn = strictCDL || hasMedication;
       issues.push({
         lineNumber: ln, field: "modifier", code: shouldWarn ? "PMB_MODIFIER_MISSING" : "PMB_MODIFIER_NOTE",
-        severity: shouldWarn ? "warning" : "info",
+        severity: "info", // PMB modifier is a routing optimization, not a rejection reason
         rule: shouldWarn ? "PMB Modifier Missing" : "CDL/PMB Condition Detected",
         message: shouldWarn
           ? `"${code}" is a CDL condition without a PMB modifier. SA schemes require the PMB modifier for Asthma, Diabetes, and Hypertension claims to route to the CDL benefit.`
@@ -3169,7 +3169,7 @@ function validateCrossLine(lines: ClaimLineItem[]): ValidationIssue[] {
     if (!hasSCode && hasMCode && line.tariffCode && injuryTariffs.includes(line.tariffCode)) {
       issues.push({
         lineNumber: line.lineNumber, field: "primaryICD10", code: "M_CODE_INJURY_TARIFF",
-        severity: "warning", rule: "Musculoskeletal Code With Injury Procedure",
+        severity: "info", rule: "Musculoskeletal Code With Injury Procedure",
         message: `Injury-type procedure "${line.tariffCode}" (wound care/fracture) billed with musculoskeletal M-code but no injury S/T-code. This suggests the injury code was replaced with an M-code to avoid ECC referral.`,
         suggestion: "If this is an injury, use the appropriate S/T ICD-10 code. M-codes for chronic musculoskeletal conditions do not justify wound care or fracture management tariffs.",
       });
