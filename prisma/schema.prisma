@@ -1001,3 +1001,23 @@ model NappiMedicine {
   @@index([category])
   @@index([schedule])
 }
+
+// ── AI Feedback & Learning Loop ──────────────────────────────────────
+// Stores thumbs up/down, corrections, and escalations from AI interactions
+// Used by the feedback loop to improve responses over time
+model AiFeedback {
+  id                String   @id @default(cuid())
+  persona           String   // which agent: command-assistant, claims-copilot, triage-agent, etc.
+  query             String   // the user's original question
+  response          String   // the AI's response
+  feedbackType      String   // thumbs_up, thumbs_down, correction, escalation
+  correctedResponse String?  // the correct answer (if feedbackType = correction)
+  ragDocIds         String?  // JSON array of RAG doc IDs used
+  practiceId        String?
+  createdAt         DateTime @default(now())
+
+  @@index([persona])
+  @@index([feedbackType])
+  @@index([practiceId])
+  @@index([createdAt])
+}

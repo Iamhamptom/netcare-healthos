@@ -92,7 +92,8 @@ export const ModelName = {
   Tenant: 'Tenant',
   TenantPractice: 'TenantPractice',
   SwitchingVendor: 'SwitchingVendor',
-  NappiMedicine: 'NappiMedicine'
+  NappiMedicine: 'NappiMedicine',
+  AiFeedback: 'AiFeedback'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -983,6 +984,21 @@ export const NappiMedicineScalarFieldEnum = {
 } as const
 
 export type NappiMedicineScalarFieldEnum = (typeof NappiMedicineScalarFieldEnum)[keyof typeof NappiMedicineScalarFieldEnum]
+
+
+export const AiFeedbackScalarFieldEnum = {
+  id: 'id',
+  persona: 'persona',
+  query: 'query',
+  response: 'response',
+  feedbackType: 'feedbackType',
+  correctedResponse: 'correctedResponse',
+  ragDocIds: 'ragDocIds',
+  practiceId: 'practiceId',
+  createdAt: 'createdAt'
+} as const
+
+export type AiFeedbackScalarFieldEnum = (typeof AiFeedbackScalarFieldEnum)[keyof typeof AiFeedbackScalarFieldEnum]
 
 
 export const SortOrder = {

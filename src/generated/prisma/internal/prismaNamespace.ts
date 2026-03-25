@@ -425,7 +425,8 @@ export const ModelName = {
   Tenant: 'Tenant',
   TenantPractice: 'TenantPractice',
   SwitchingVendor: 'SwitchingVendor',
-  NappiMedicine: 'NappiMedicine'
+  NappiMedicine: 'NappiMedicine',
+  AiFeedback: 'AiFeedback'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -441,7 +442,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "practice" | "patient" | "allergy" | "medication" | "medicalRecord" | "vitals" | "conversation" | "message" | "booking" | "review" | "recallItem" | "auditLog" | "invoice" | "payment" | "checkIn" | "notification" | "consentRecord" | "investorNote" | "creditLedger" | "apiKey" | "opsDocument" | "clientPipeline" | "clientActivity" | "referral" | "dailyTask" | "newsletterSubscriber" | "outreachCampaign" | "outreachTarget" | "outreachEmail" | "healthbridgeClaim" | "healthbridgeRemittance" | "healthbridgeEligibility" | "claimsAnalysis" | "claimsRule" | "switchingPreAuth" | "switchingBatchJob" | "switchingERA" | "tenant" | "tenantPractice" | "switchingVendor" | "nappiMedicine"
+    modelProps: "user" | "practice" | "patient" | "allergy" | "medication" | "medicalRecord" | "vitals" | "conversation" | "message" | "booking" | "review" | "recallItem" | "auditLog" | "invoice" | "payment" | "checkIn" | "notification" | "consentRecord" | "investorNote" | "creditLedger" | "apiKey" | "opsDocument" | "clientPipeline" | "clientActivity" | "referral" | "dailyTask" | "newsletterSubscriber" | "outreachCampaign" | "outreachTarget" | "outreachEmail" | "healthbridgeClaim" | "healthbridgeRemittance" | "healthbridgeEligibility" | "claimsAnalysis" | "claimsRule" | "switchingPreAuth" | "switchingBatchJob" | "switchingERA" | "tenant" | "tenantPractice" | "switchingVendor" | "nappiMedicine" | "aiFeedback"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3553,6 +3554,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AiFeedback: {
+      payload: Prisma.$AiFeedbackPayload<ExtArgs>
+      fields: Prisma.AiFeedbackFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AiFeedbackFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiFeedbackPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AiFeedbackFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiFeedbackPayload>
+        }
+        findFirst: {
+          args: Prisma.AiFeedbackFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiFeedbackPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AiFeedbackFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiFeedbackPayload>
+        }
+        findMany: {
+          args: Prisma.AiFeedbackFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiFeedbackPayload>[]
+        }
+        create: {
+          args: Prisma.AiFeedbackCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiFeedbackPayload>
+        }
+        createMany: {
+          args: Prisma.AiFeedbackCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AiFeedbackCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiFeedbackPayload>[]
+        }
+        delete: {
+          args: Prisma.AiFeedbackDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiFeedbackPayload>
+        }
+        update: {
+          args: Prisma.AiFeedbackUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiFeedbackPayload>
+        }
+        deleteMany: {
+          args: Prisma.AiFeedbackDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AiFeedbackUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AiFeedbackUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiFeedbackPayload>[]
+        }
+        upsert: {
+          args: Prisma.AiFeedbackUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiFeedbackPayload>
+        }
+        aggregate: {
+          args: Prisma.AiFeedbackAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAiFeedback>
+        }
+        groupBy: {
+          args: Prisma.AiFeedbackGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AiFeedbackGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AiFeedbackCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AiFeedbackCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -4466,6 +4541,21 @@ export const NappiMedicineScalarFieldEnum = {
 export type NappiMedicineScalarFieldEnum = (typeof NappiMedicineScalarFieldEnum)[keyof typeof NappiMedicineScalarFieldEnum]
 
 
+export const AiFeedbackScalarFieldEnum = {
+  id: 'id',
+  persona: 'persona',
+  query: 'query',
+  response: 'response',
+  feedbackType: 'feedbackType',
+  correctedResponse: 'correctedResponse',
+  ragDocIds: 'ragDocIds',
+  practiceId: 'practiceId',
+  createdAt: 'createdAt'
+} as const
+
+export type AiFeedbackScalarFieldEnum = (typeof AiFeedbackScalarFieldEnum)[keyof typeof AiFeedbackScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -4659,6 +4749,7 @@ export type GlobalOmitConfig = {
   tenantPractice?: Prisma.TenantPracticeOmit
   switchingVendor?: Prisma.SwitchingVendorOmit
   nappiMedicine?: Prisma.NappiMedicineOmit
+  aiFeedback?: Prisma.AiFeedbackOmit
 }
 
 /* Types for Logging */

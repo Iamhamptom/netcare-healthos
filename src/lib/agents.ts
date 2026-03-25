@@ -1,7 +1,17 @@
-// Healthcare AI Agents — Gemini primary, Anthropic fallback
-import Anthropic from "@anthropic-ai/sdk";
+/**
+ * Healthcare AI Agents — Powered by Unified Intelligence Engine
+ *
+ * 5 specialized agents, each with:
+ * - RAG-enriched knowledge base (300MB SA healthcare data)
+ * - Tool access (ICD-10 lookup, patient search, KB search, booking, etc.)
+ * - Dual-provider AI (Gemini primary, Claude fallback)
+ * - Feedback loop learning from corrections
+ * - Context-aware responses grounded in real data
+ */
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || "" });
+import { runIntelligence, getPersona } from "@/lib/ai";
+import { TRIAGE_AGENT, BILLING_AGENT, INTAKE_ANALYZER, FOLLOWUP_AGENT, SCHEDULER_AGENT } from "@/lib/ai/personas";
+import type { AgentPersona } from "@/lib/ai/types";
 
 export type AgentType = "triage" | "followup" | "intake" | "billing" | "scheduler";
 
@@ -11,6 +21,8 @@ interface AgentResult {
   actions: AgentAction[];
   confidence: number;
   escalate: boolean;
+  toolsUsed: string[];
+  provider: string;
 }
 
 interface AgentAction {
@@ -18,87 +30,12 @@ interface AgentAction {
   data: Record<string, unknown>;
 }
 
-const AGENT_PROMPTS: Record<AgentType, string> = {
-  triage: `You are an AI triage agent for a healthcare practice. Your job is to assess patient messages and determine urgency.
-
-URGENCY LEVELS:
-- EMERGENCY (immediate): chest pain, difficulty breathing, severe bleeding, loss of consciousness, allergic reaction
-- URGENT (same-day): severe pain, fever >39°C, swelling with infection signs, post-operative complications
-- SEMI-URGENT (24-48hr): moderate pain, persistent symptoms, medication concerns
-- ROUTINE (scheduled): check-ups, follow-ups, general questions, non-urgent requests
-
-RULES:
-- Always err on the side of caution — when in doubt, escalate
-- Never diagnose — only triage and recommend appropriate action
-- For emergencies: tell patient to call emergency services or go to ER immediately
-- Return a JSON object with: urgency (string), assessment (string), recommended_action (string), escalate_to_human (boolean)
-- Keep responses concise and empathetic`,
-
-  followup: `You are an AI follow-up agent for a healthcare practice. You generate personalized follow-up messages for patients.
-
-YOUR TASKS:
-- Post-procedure check-ins (24hr and 72hr after procedures)
-- Medication compliance reminders
-- Recall reminders for overdue check-ups
-- Satisfaction surveys after appointments
-- Birthday and wellness messages
-
-RULES:
-- Be warm, professional, and concise (WhatsApp-length messages)
-- Include the patient's first name
-- Reference their specific procedure/appointment
-- Include a clear call-to-action (reply, call, or book)
-- Return JSON: { message: string, type: string, suggested_send_time: string }`,
-
-  intake: `You are an AI intake agent for a healthcare practice. You help collect patient information before their appointment.
-
-YOUR TASKS:
-- Collect chief complaint and symptom details
-- Ask about medication changes
-- Confirm allergies
-- Ask about pain level (1-10)
-- Collect insurance/medical aid updates
-- Pre-screen for COVID/flu symptoms
-
-RULES:
-- Ask one question at a time, conversationally
-- Be empathetic and non-clinical in language
-- Store responses as structured data
-- Flag any concerning symptoms for the doctor
-- Return JSON: { question: string, data_collected: object, flags: string[], complete: boolean }`,
-
-  billing: `You are an AI billing assistant for a healthcare practice. You help patients understand their bills and payment options.
-
-YOUR TASKS:
-- Explain medical aid coverage and benefits
-- Break down billing codes in plain language
-- Offer payment plan options
-- Process payment confirmations
-- Handle billing disputes empathetically
-
-RULES:
-- Be transparent about costs
-- Never make promises about medical aid claims
-- Suggest contacting the practice for complex queries
-- Return JSON: { response: string, action: string | null }`,
-
-  scheduler: `You are an AI scheduling agent for a healthcare practice. You help patients book, reschedule, and manage appointments.
-
-YOUR TASKS:
-- Find available slots based on service type and provider
-- Handle rescheduling requests
-- Manage cancellations with appropriate notice period
-- Suggest optimal times based on practice hours
-- Handle double-booking prevention
-
-PRACTICE HOURS: Mon-Fri 8:00-17:00, Sat 8:00-13:00
-SLOT DURATION: 30min (standard), 60min (procedures), 15min (follow-ups)
-
-RULES:
-- Always confirm date, time, and service before booking
-- Suggest 2-3 alternative slots if preferred time is unavailable
-- Apply 24-hour cancellation policy
-- Return JSON: { response: string, booking_action: { type: "create"|"reschedule"|"cancel", details: object } | null }`,
+const AGENT_PERSONAS: Record<AgentType, AgentPersona> = {
+  triage: TRIAGE_AGENT,
+  followup: FOLLOWUP_AGENT,
+  intake: INTAKE_ANALYZER,
+  billing: BILLING_AGENT,
+  scheduler: SCHEDULER_AGENT,
 };
 
 export async function runAgent(
@@ -107,124 +44,124 @@ export async function runAgent(
   context?: {
     patientName?: string;
     practiceType?: string;
+    practiceId?: string;
     history?: { role: string; content: string }[];
     patientData?: Record<string, unknown>;
-  }
+    isDemoMode?: boolean;
+  },
 ): Promise<AgentResult> {
-  const systemPrompt = AGENT_PROMPTS[agentType];
-  const contextStr = context
-    ? `\n\nCONTEXT:\n- Patient: ${context.patientName || "Unknown"}\n- Practice type: ${context.practiceType || "dental"}\n- Patient data: ${JSON.stringify(context.patientData || {})}`
-    : "";
+  const persona = AGENT_PERSONAS[agentType];
 
-  const messages: { role: "user" | "assistant"; content: string }[] = [];
-
-  // Add conversation history
-  if (context?.history) {
-    for (const msg of context.history) {
-      if (msg.role === "patient" || msg.role === "user") {
-        messages.push({ role: "user", content: msg.content });
-      } else if (msg.role === "assistant" || msg.role === "practice") {
-        messages.push({ role: "assistant", content: msg.content });
-      }
-    }
+  // Build extra context from patient data
+  const contextParts: string[] = [];
+  if (context?.patientName) contextParts.push(`Patient: ${context.patientName}`);
+  if (context?.practiceType) contextParts.push(`Practice type: ${context.practiceType}`);
+  if (context?.patientData && Object.keys(context.patientData).length > 0) {
+    contextParts.push(`Patient data: ${JSON.stringify(context.patientData)}`);
   }
 
-  // Add current message
-  messages.push({ role: "user", content: message });
+  // Build history
+  const history = (context?.history || []).map((msg) => ({
+    role: msg.role === "patient" || msg.role === "user" ? ("user" as const) : ("model" as const),
+    content: msg.content,
+  }));
 
-  let text = "{}";
-  const geminiKey = process.env.GEMINI_API_KEY;
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  // Run through the intelligence engine
+  const result = await runIntelligence({
+    persona,
+    message,
+    history,
+    extraContext: contextParts.length > 0 ? `CONTEXT:\n${contextParts.join("\n")}` : undefined,
+    practiceId: context?.practiceId,
+    isDemoMode: context?.isDemoMode,
+  });
 
-  // Try Gemini first
-  if (geminiKey) {
-    try {
-      const { chat } = await import("@/lib/gemini");
-      const geminiMessages = messages.map(m => ({
-        role: (m.role === "user" ? "user" : "model") as "user" | "model",
-        content: m.content,
-      }));
-      text = await chat(systemPrompt + contextStr, geminiMessages, { maxTokens: 1024 });
-    } catch (err) {
-      console.error("Gemini agent error, falling back:", err);
-      text = "";
-    }
-  }
-
-  // Anthropic fallback
-  if (!text && anthropicKey && anthropicKey !== "your-anthropic-api-key-here") {
-    const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1024,
-      system: systemPrompt + contextStr,
-      messages,
-    });
-    text = response.content.find(b => b.type === "text")?.text || "{}";
-  }
-
-  // If neither AI is available, return a helpful fallback
-  if (!text) text = JSON.stringify({ response: "AI agent is temporarily unavailable. Please try again later." });
-
-  // Parse agent response
-  let parsed: Record<string, unknown> = {};
-  try {
-    // Extract JSON from response
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) parsed = JSON.parse(jsonMatch[0]);
-  } catch {
-    parsed = { response: text };
-  }
-
-  // Determine actions
+  // Determine actions from the response
   const actions: AgentAction[] = [];
-  const escalate = Boolean(parsed.escalate_to_human || parsed.escalate);
+  const lowerResponse = result.response.toLowerCase();
+  let escalate = false;
 
-  if (agentType === "triage" && parsed.urgency === "EMERGENCY") {
-    actions.push({ type: "flag_urgent", data: { urgency: "EMERGENCY", assessment: parsed.assessment } });
-    actions.push({ type: "notify_staff", data: { message: `EMERGENCY: ${parsed.assessment}` } });
+  // Triage: detect emergencies and urgency
+  if (agentType === "triage") {
+    if (lowerResponse.includes("emergency") || lowerResponse.includes("10177") || lowerResponse.includes("082 911")) {
+      actions.push({ type: "flag_urgent", data: { urgency: "EMERGENCY", assessment: result.response.slice(0, 200) } });
+      actions.push({ type: "notify_staff", data: { message: `EMERGENCY triage alert: ${result.response.slice(0, 200)}` } });
+      escalate = true;
+    } else if (lowerResponse.includes("urgent") || lowerResponse.includes("same-day") || lowerResponse.includes("same day")) {
+      actions.push({ type: "flag_urgent", data: { urgency: "URGENT", assessment: result.response.slice(0, 200) } });
+    }
+    if (lowerResponse.includes("escalat") || lowerResponse.includes("connect you with") || lowerResponse.includes("human")) {
+      escalate = true;
+    }
   }
 
-  if (agentType === "scheduler" && parsed.booking_action) {
-    const ba = parsed.booking_action as Record<string, unknown>;
-    if (ba.type === "create") actions.push({ type: "create_booking", data: ba.details as Record<string, unknown> || {} });
-    if (ba.type === "reschedule") actions.push({ type: "schedule_followup", data: ba.details as Record<string, unknown> || {} });
-  }
-
+  // Followup: detect reminder generation
   if (agentType === "followup") {
-    actions.push({ type: "send_reminder", data: { message: parsed.message, type: parsed.type } });
+    if (result.toolsUsed.includes("send_whatsapp") || result.toolsUsed.includes("send_email")) {
+      actions.push({ type: "send_reminder", data: { message: result.response.slice(0, 300) } });
+    }
   }
+
+  // Scheduler: detect booking actions
+  if (agentType === "scheduler") {
+    if (result.toolsUsed.includes("create_booking")) {
+      actions.push({ type: "create_booking", data: {} });
+    }
+    if (result.toolsUsed.includes("cancel_booking")) {
+      actions.push({ type: "schedule_followup", data: {} });
+    }
+  }
+
+  // Calculate confidence from tool usage and provider
+  const confidence = calculateConfidence(result.toolsUsed, result.provider, result.stepsUsed);
 
   return {
     agent: agentType,
-    response: String(parsed.response || parsed.message || parsed.assessment || parsed.question || text),
+    response: result.response,
     actions,
-    confidence: 0.85,
+    confidence,
     escalate,
+    toolsUsed: result.toolsUsed,
+    provider: result.provider,
   };
 }
 
+/** Calculate confidence based on how well the agent grounded its response */
+function calculateConfidence(toolsUsed: string[], provider: string, steps: number): number {
+  let confidence = 0.6; // Base confidence
+
+  // Using tools means grounded in real data
+  if (toolsUsed.length > 0) confidence += 0.15;
+
+  // Using knowledge base means grounded in verified knowledge
+  if (toolsUsed.includes("search_knowledge_base") || toolsUsed.includes("lookup_icd10")) confidence += 0.1;
+
+  // Having a real AI provider (not fallback)
+  if (provider !== "none") confidence += 0.1;
+
+  // Multiple steps = thorough analysis
+  if (steps >= 3) confidence += 0.05;
+
+  return Math.min(confidence, 0.98);
+}
+
+// ── Convenience Functions (backward compatible) ─────────────────────────
+
 /** Run the triage agent to assess urgency */
-export async function triageMessage(message: string, patientName?: string) {
-  return runAgent("triage", message, { patientName });
+export async function triageMessage(message: string, patientName?: string, practiceId?: string) {
+  return runAgent("triage", message, { patientName, practiceId });
 }
 
 /** Generate a follow-up message for a patient */
-export async function generateFollowup(
-  patientName: string,
-  appointmentType: string,
-  daysSince: number
-) {
+export async function generateFollowup(patientName: string, appointmentType: string, daysSince: number, practiceId?: string) {
   return runAgent("followup", `Generate a ${daysSince}-day post-${appointmentType} follow-up message for ${patientName}.`, {
     patientName,
+    practiceId,
     patientData: { appointmentType, daysSince },
   });
 }
 
 /** Run intake collection */
-export async function runIntake(
-  message: string,
-  patientName: string,
-  history?: { role: string; content: string }[]
-) {
-  return runAgent("intake", message, { patientName, history });
+export async function runIntake(message: string, patientName: string, history?: { role: string; content: string }[], practiceId?: string) {
+  return runAgent("intake", message, { patientName, history, practiceId });
 }

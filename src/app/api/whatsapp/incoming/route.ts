@@ -72,7 +72,7 @@ export async function POST(request: Request) {
         practiceHours: practice.hours,
         practicePhone: practice.phone,
         practiceAddress: practice.address,
-        aiPersonality: practice.aiPersonality,
+        aiPersonality: (practice.aiPersonality as "professional" | "friendly" | "concise" | "empathetic") || "friendly",
         patientName: patient?.name || profileName,
         patientPhone: from,
         conversationHistory: history,

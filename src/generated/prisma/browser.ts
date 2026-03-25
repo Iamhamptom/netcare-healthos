@@ -227,3 +227,8 @@ export type SwitchingVendor = Prisma.SwitchingVendorModel
  * 
  */
 export type NappiMedicine = Prisma.NappiMedicineModel
+/**
+ * Model AiFeedback
+ * 
+ */
+export type AiFeedback = Prisma.AiFeedbackModel

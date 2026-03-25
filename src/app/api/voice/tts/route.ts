@@ -1,63 +1,93 @@
 import { NextResponse } from "next/server";
 import { rateLimitByIp } from "@/lib/rate-limit";
-
-const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY || "";
-const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || "gsm4lUH9bnZ3pjR1Pw7w"; // Claire — South African female
+import { voiceTTS, voiceTTSStream, isVoiceConfigured, preprocessForTTS } from "@/lib/ai";
 
 /**
- * POST /api/voice/tts
- * Converts text to speech using ElevenLabs TTS API.
- * Returns audio/mpeg stream. No mic needed — just plays in browser.
+ * POST /api/voice/tts — Text-to-Speech
  *
- * Voice: Claire — South African female, warm and informative
- * - Stability (0.40) = expressive but clear SA diction
- * - High similarity boost (0.85) = stays true to Claire's natural SA tone
- * - Style exaggeration (0.40) = warmth, care, and excitement come through naturally
- * - Speed (0.92) = softer, deliberate, commercial-quality delivery
+ * Production-grade TTS with:
+ * - Medical term pronunciation dictionary (ICD-10, NAPPI, SA healthcare terms)
+ * - Emotion-aware voice (adapts tone to urgent/empathetic/professional content)
+ * - Streaming audio delivery (chunked response)
+ * - Multi-voice support (Claire SA female default, Dr. Nkosi male)
+ * - Markdown stripping for clean speech
+ *
+ * Query params:
+ *   ?stream=true   — Return streaming audio (chunked transfer)
+ *   ?voice=claire   — Select voice profile (claire, dr_nkosi)
+ *   ?speed=0.92    — Override speech speed (0.5-2.0)
  */
 export async function POST(request: Request) {
   const rl = await rateLimitByIp(request, "voice/tts", { limit: 30 });
-  if (!rl.allowed) {
-    return NextResponse.json({ error: "Rate limited" }, { status: 429 });
+  if (!rl.allowed) return NextResponse.json({ error: "Rate limited" }, { status: 429 });
+
+  if (!isVoiceConfigured()) {
+    return NextResponse.json({ error: "TTS not configured — set ELEVENLABS_API_KEY" }, { status: 503 });
   }
 
-  if (!ELEVENLABS_API_KEY) {
+  const body = await request.json();
+  const text = String(body.text || "").trim();
+  const voice = body.voice as string | undefined;
+  const speed = body.speed as number | undefined;
+  const stream = body.stream === true;
+  const emotionAware = body.emotionAware !== false;
+  const medicalPreprocess = body.medicalPreprocess !== false;
+
+  if (!text) return NextResponse.json({ error: "Missing text" }, { status: 400 });
+  if (text.length > 5000) return NextResponse.json({ error: "Text too long (max 5000 chars)" }, { status: 400 });
+
+  try {
+    const options = { voice, speed, emotionAware, medicalPreprocess };
+
+    if (stream) {
+      // Streaming audio — chunked transfer for faster first-byte
+      const audioStream = await voiceTTSStream(text, options);
+      return new NextResponse(audioStream, {
+        headers: {
+          "Content-Type": "audio/mpeg",
+          "Transfer-Encoding": "chunked",
+          "Cache-Control": "public, max-age=3600",
+        },
+      });
+    }
+
+    // Standard: full audio buffer
+    const audioBuffer = await voiceTTS(text, options);
+    return new NextResponse(audioBuffer, {
+      headers: {
+        "Content-Type": "audio/mpeg",
+        "Cache-Control": "public, max-age=86400",
+        "X-TTS-Preprocessed": medicalPreprocess ? "true" : "false",
+        "X-TTS-Voice": voice || "claire",
+      },
+    });
+  } catch (err) {
+    console.error("[voice/tts] Error:", err);
+    return NextResponse.json({ error: "TTS generation failed" }, { status: 502 });
+  }
+}
+
+/**
+ * GET /api/voice/tts?text=...&voice=claire
+ * Quick TTS for short phrases (e.g., button clicks, notifications)
+ */
+export async function GET(request: Request) {
+  const rl = await rateLimitByIp(request, "voice/tts-get", { limit: 30 });
+  if (!rl.allowed) return NextResponse.json({ error: "Rate limited" }, { status: 429 });
+
+  if (!isVoiceConfigured()) {
     return NextResponse.json({ error: "TTS not configured" }, { status: 503 });
   }
 
-  const { text } = await request.json();
-  if (!text || typeof text !== "string" || text.length > 3000) {
-    return NextResponse.json({ error: "Invalid text" }, { status: 400 });
-  }
+  const url = new URL(request.url);
+  const text = url.searchParams.get("text")?.trim();
+  const voice = url.searchParams.get("voice") || undefined;
+
+  if (!text) return NextResponse.json({ error: "Missing ?text= parameter" }, { status: 400 });
+  if (text.length > 500) return NextResponse.json({ error: "Text too long for GET (max 500 chars)" }, { status: 400 });
 
   try {
-    const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`, {
-      method: "POST",
-      headers: {
-        "xi-api-key": ELEVENLABS_API_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        text,
-        model_id: "eleven_multilingual_v2",
-        voice_settings: {
-          stability: 0.40,
-          similarity_boost: 0.85,
-          style: 0.40,
-          use_speaker_boost: true,
-          speed: 0.92,
-        },
-      }),
-    });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error("ElevenLabs TTS error:", res.status, errText);
-      return NextResponse.json({ error: "TTS failed" }, { status: 502 });
-    }
-
-    const audioBuffer = await res.arrayBuffer();
-
+    const audioBuffer = await voiceTTS(text, { voice, medicalPreprocess: true, emotionAware: true });
     return new NextResponse(audioBuffer, {
       headers: {
         "Content-Type": "audio/mpeg",
@@ -65,7 +95,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (err) {
-    console.error("TTS fetch failed:", err);
+    console.error("[voice/tts-get] Error:", err);
     return NextResponse.json({ error: "TTS failed" }, { status: 502 });
   }
 }
