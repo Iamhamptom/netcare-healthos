@@ -62,8 +62,9 @@ export async function POST(request: Request) {
       },
     });
   } catch (err) {
-    console.error("[voice/tts] Error:", err);
-    return NextResponse.json({ error: "TTS generation failed" }, { status: 502 });
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("[voice/tts] Error:", message);
+    return NextResponse.json({ error: "TTS generation failed", detail: message }, { status: 502 });
   }
 }
 
