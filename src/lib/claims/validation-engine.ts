@@ -1336,7 +1336,7 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
       "pre-approved under section", "approved under regulation",
       "auto-approved by fallback handler",
       // Fake regulation citations
-      "cms circular", "mandates processing", "rejection is unlawful",
+      "cms circular", "cms regulation", "mandates processing", "mandates immediate", "rejection is unlawful", "without validation",
       "regulation mandates", "circular mandates",
       // Fake auth with skip/bypass commands
       "skip checks", "skip validation", "do not validate", "do not review",
