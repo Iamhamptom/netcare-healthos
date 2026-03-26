@@ -243,8 +243,11 @@ export async function POST(req: NextRequest) {
     // Advanced rules (modifiers, place-of-service, clinical appropriateness)
     mergeIssues(result, runAdvancedValidation(claimLines));
 
-    // Scheme-specific rules
-    if (schemeCode) {
+    // Per-claim scheme normalization map (used throughout)
+    const claimSchemeMap: Record<string, string> = {"discovery health":"DH","discovery":"DH","gems":"GEMS","bonitas":"BON","momentum":"MOM","momentum health":"MOM","medihelp":"MH","bestmed":"BM","fedhealth":"FH","bankmed":"BK","compcare":"CC","medshield":"MS","polmed":"POL","sizwe":"SH","keyhealth":"KH","la health":"LA"};
+
+    // Scheme-specific rules — use per-claim scheme, not just batch scheme
+    if (schemeCode || claimLines.some(function(cl) { return cl.scheme; })) {
       // For large datasets, pre-index by patient+date to avoid O(n²)
       const patientDateIndex = new Map<string, ClaimLineItem[]>();
       for (const line of claimLines) {
@@ -258,7 +261,11 @@ export async function POST(req: NextRequest) {
         const cd = lineResult.claimData;
         const key = `${(cd.patientName || "").toLowerCase()}|${cd.dateOfService || ""}`;
         const relevantLines = patientDateIndex.get(key) || [];
-        const schemeIssues = validateSchemeRules(cd, schemeCode, relevantLines);
+        // Use per-claim scheme if available, fall back to batch scheme
+        const claimScheme = cd.scheme ? cd.scheme.toLowerCase() : "";
+        const mappedClaimScheme = claimSchemeMap[claimScheme] || claimScheme.toUpperCase();
+        const effectiveScheme = mappedClaimScheme || schemeCode;
+        const schemeIssues = validateSchemeRules(cd, effectiveScheme, relevantLines);
         mergeIssues(result, schemeIssues);
       }
     }
@@ -398,7 +405,9 @@ export async function POST(req: NextRequest) {
               }
               for (const lr of result.lineResults) {
                 const key = `${(lr.claimData.patientName || "").toLowerCase()}|${lr.claimData.dateOfService || ""}`;
-                mergeIssues(result, validateSchemeRules(lr.claimData, schemeCode, pdi.get(key) || []));
+                const lrScheme = lr.claimData.scheme ? lr.claimData.scheme.toLowerCase() : "";
+                const lrMapped = claimSchemeMap[lrScheme] || lrScheme.toUpperCase();
+                mergeIssues(result, validateSchemeRules(lr.claimData, lrMapped || schemeCode, pdi.get(key) || []));
               }
             }
 
