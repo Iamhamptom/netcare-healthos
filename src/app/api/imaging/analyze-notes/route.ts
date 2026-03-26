@@ -78,7 +78,19 @@ Return JSON:
 
     const data = await res.json();
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    const parsed = JSON.parse(text);
+
+    let parsed: Record<string, unknown> = {};
+    try { parsed = JSON.parse(text); } catch {
+      const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (fenceMatch) { try { parsed = JSON.parse(fenceMatch[1]); } catch { /* */ } }
+      if (!parsed.soap) {
+        const start = text.indexOf("{");
+        const end = text.lastIndexOf("}");
+        if (start >= 0 && end > start) {
+          try { parsed = JSON.parse(text.slice(start, end + 1)); } catch { /* */ }
+        }
+      }
+    }
 
     return NextResponse.json({ success: true, ...parsed, provider: "gemini" });
   } catch (err) {
