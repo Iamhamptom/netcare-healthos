@@ -16,8 +16,8 @@ export const lookupICD10 = tool({
     code: z.string().describe("ICD-10 code to look up, e.g. J06.9, I10, N40"),
   }),
   execute: async ({ code }) => {
-    const { lookupICD10Code } = await import("@/lib/claims/icd10-database");
-    const entry = lookupICD10Code(code.toUpperCase());
+    const { lookupICD10: lookupCode } = await import("@/lib/claims/icd10-database");
+    const entry = lookupCode(code.toUpperCase());
     if (!entry) return { found: false, code, message: `ICD-10 code "${code}" not found in SA MIT database` };
     return {
       found: true,
@@ -61,8 +61,8 @@ export const lookupTariff = tool({
   execute: async ({ code }) => {
     const { lookupTariff: lookup } = await import("@/lib/claims/tariff-database");
     const entry = lookup(code);
-    if (!entry) return { found: false, code, message: `Tariff "${code}" not in reference database` };
-    return { found: true, code: entry.tariffCode, description: entry.description, category: entry.category, discipline: entry.discipline, requiresPreAuth: entry.requiresPreAuth };
+    if (!entry) return { found: false, code, message: "Tariff not in reference database" };
+    return { found: true, code: entry.code, description: entry.description, category: entry.category, discipline: entry.discipline, requiresPreAuth: entry.requiresPreAuth };
   },
 });
 

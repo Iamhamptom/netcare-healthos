@@ -168,7 +168,7 @@ export async function reviewBatchWithAgent(
       const ruleVerdict = lr.status === "error" ? "REJECTED" : "WARNING";
       if (review.verdict !== ruleVerdict) {
         overrides++;
-        if (ruleVerdict !== "VALID" && (review.verdict === "VALID" || review.verdict === "WARNING")) {
+        if (review.verdict === "VALID" || (ruleVerdict === "REJECTED" && review.verdict === "WARNING")) {
           fpsCaught++;
         }
       }
