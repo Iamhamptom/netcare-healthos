@@ -553,8 +553,8 @@ export async function POST(req: NextRequest) {
       const errMsg = agentErr instanceof Error ? agentErr.message + "\n" + agentErr.stack?.slice(0, 300) : String(agentErr);
       console.warn("[Agentic Review] Failed:", errMsg);
       // Surface the error in response for debugging
-      // @ts-expect-error — debug field added dynamically
-      result.agentError = errMsg.slice(0, 500);
+      // Agent error logged but not surfaced in response (type-safe)
+      console.error("[Agent Error]", errMsg.slice(0, 500));
     }
 
     // Auto-corrections for deterministic fixes
