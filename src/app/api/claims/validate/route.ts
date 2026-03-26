@@ -554,16 +554,31 @@ export async function POST(req: NextRequest) {
       console.error("[Agent Error]", errMsg.slice(0, 500));
     }
 
-    // ── HARD GATE: Injury without ECC — BYPASS ALL AI LAYERS ──
-    // This runs AFTER all layers and FORCES REJECTED regardless of what AI said.
-    // No reasoning pass, no agent, no doctor layer can override this.
+    // ── UNIVERSAL HARD GATE — enforce ALL tier 1+2 rules after AI layers ──
+    // If ANY tier 1/2 error issue exists on a claim but the claim is not "error",
+    // force it back to error. No AI layer can override tier 1/2.
+    const { getProtectedRuleCodes: getProtected } = await import("@/lib/claims/registry-lookup");
+    const protectedCodes = getProtected();
+
     for (const lr of result.lineResults) {
+      // Check if any protected error-severity issue exists
+      const hasProtectedError = lr.issues.some(function(i) {
+        return protectedCodes.has(i.code) && i.severity === "error";
+      });
+
+      if (hasProtectedError && lr.status !== "error") {
+        if (lr.status === "valid") result.validClaims--;
+        else if (lr.status === "warning") result.warningClaims--;
+        lr.status = "error";
+        result.invalidClaims++;
+      }
+
+      // Also enforce ECC specifically (in case rule didn't fire but S/T code present)
       const cd = lr.claimData;
       const icd = cd.primaryICD10 || "";
       if (/^[ST]/i.test(icd)) {
         const hasECC = cd.secondaryICD10?.some(function(c) { return /^[VWXYvwxy]/.test(c); });
         if (!hasECC && lr.status !== "error") {
-          // Force to error — AI overrode this but it's REQUIRED
           if (lr.status === "valid") result.validClaims--;
           else if (lr.status === "warning") result.warningClaims--;
           lr.status = "error";
@@ -571,7 +586,7 @@ export async function POST(req: NextRequest) {
           lr.issues.push({
             lineNumber: lr.lineNumber, field: "secondaryICD10", code: "MISSING_ECC",
             severity: "error", rule: "Missing External Cause Code (HARD GATE)",
-            message: "Injury code " + icd + " requires V/W/X/Y external cause code. SA switches enforce this. No AI override possible.",
+            message: "Injury code " + icd + " requires V/W/X/Y external cause code.",
             suggestion: "Add external cause: W19 (fall), V89.2 (MVA), W26 (sharp object), X59 (unspecified).",
           });
         }

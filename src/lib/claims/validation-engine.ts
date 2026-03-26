@@ -1957,7 +1957,7 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
       });
     }
     // Patient not present for non-script tariff
-    if (/patient not present|daughter.*picked|collected by|repeat.*script.*collect|medication.*collect/.test(motLower) && item.tariffCode !== "0199") {
+    if (/patient not present|patient not seen|patient not examined|daughter.*picked up.*medication|wife.*picked up.*medication|collected.*chronic.*medication.*patient not/.test(motLower) && item.tariffCode !== "0199") {
       issues.push({
         lineNumber: ln, field: "tariffCode", code: "PATIENT_NOT_PRESENT",
         severity: "error", rule: "Patient Not Present",
