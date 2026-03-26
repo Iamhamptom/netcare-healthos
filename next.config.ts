@@ -4,7 +4,7 @@ const isDev = process.env.NODE_ENV === "development";
 
 const cspDirectives = [
   "default-src 'self'",
-  `script-src 'self' ${isDev ? "'unsafe-eval'" : ""} https://*.vercel.app`,
+  `script-src 'self' ${isDev ? "'unsafe-eval' 'unsafe-inline'" : ""} https://*.vercel.app`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://*.supabase.co",
   "font-src 'self'",

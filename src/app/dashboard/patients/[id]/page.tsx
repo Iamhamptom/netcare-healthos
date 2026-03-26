@@ -51,7 +51,7 @@ export default function PatientDetailPage() {
 
   async function fetchPatient() {
     const res = await fetch(`/api/patients/${id}`);
-    if (!res.ok) { router.push("/dashboard/patients"); return; }
+    if (!res.ok) { router.replace("/dashboard/patients"); return; }
     const data = await res.json();
     setPatient(data.patient);
   }

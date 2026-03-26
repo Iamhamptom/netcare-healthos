@@ -9,7 +9,7 @@ export default function GPDashboardLayout({ children }: { children: React.ReactN
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/gp");
+    router.replace("/gp");
   }
 
   return (

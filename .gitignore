@@ -19,3 +19,4 @@ ml/training-data/visiocorp/
 ml/models/
 ml/rag-index/*.faiss
 ml/learning-fallback/
+.env*.local

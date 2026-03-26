@@ -30,13 +30,13 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      // Route based on role
+      // Route based on role — replace so back button doesn't return to login
       if (data.user?.role === "investor") {
-        router.push("/investor");
+        router.replace("/investor");
       } else if (data.user?.role === "platform_admin") {
-        router.push("/admin");
+        router.replace("/admin");
       } else {
-        router.push("/dashboard?course=1");
+        router.replace("/dashboard?course=1");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");

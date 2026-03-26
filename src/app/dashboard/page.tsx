@@ -68,7 +68,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetch("/api/auth/me").then(r => {
-      if (!r.ok) { window.location.href = "/login"; return null; }
+      if (!r.ok) { window.location.replace("/login"); return null; }
       return r.json();
     }).then(data => {
       if (!data) return;

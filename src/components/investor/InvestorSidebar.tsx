@@ -33,7 +33,7 @@ export default function InvestorSidebar() {
 
   async function handleSignOut() {
     await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
+    router.replace("/login");
   }
 
   return (

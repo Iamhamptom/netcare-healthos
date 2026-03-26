@@ -329,7 +329,7 @@ export default function DashboardSidebar() {
 
   async function handleSignOut() {
     await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
+    router.replace("/login");
   }
 
   const isSectionOpen = (label: string): boolean => {

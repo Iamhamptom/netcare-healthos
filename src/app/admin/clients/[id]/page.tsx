@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Phone, Mail, MapPin, Globe, DollarSign, Clock,
@@ -114,7 +115,7 @@ export default function ClientDetailPage() {
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/admin/clients/${id}`);
-    if (!res.ok) { router.push("/admin/clients"); return; }
+    if (!res.ok) { router.replace("/admin/clients"); return; }
     const data = await res.json();
     setClient(data.client);
     setActivities(data.activities || []);
@@ -189,9 +190,9 @@ export default function ClientDetailPage() {
     <div className="p-6 space-y-5 max-w-5xl">
       {/* Back + Header */}
       <div className="flex items-center gap-3">
-        <button onClick={() => router.push("/admin/clients")} className="text-[var(--text-tertiary)] hover:text-[#10b981] transition-colors">
+        <Link href="/admin/clients" className="text-[var(--text-tertiary)] hover:text-[#10b981] transition-colors">
           <ArrowLeft className="w-5 h-5" />
-        </button>
+        </Link>
         <div className="flex-1">
           <h2 className="text-lg font-semibold text-[var(--ivory)]">{client.doctorName}</h2>
           <div className="text-[12px] text-[var(--text-tertiary)]">{client.practiceName} · {client.specialty}</div>
