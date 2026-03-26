@@ -3106,7 +3106,7 @@ function validateCrossLine(lines: ClaimLineItem[]): ValidationIssue[] {
       const isSunday = dayOfWeek === 0;
       issues.push({
         lineNumber: line.lineNumber, field: "modifier", code: "WEEKEND_NO_AFTER_HOURS",
-        severity: isSunday ? "warning" : "info", rule: "Weekend Billing Without After-Hours Modifier",
+        severity: "info", rule: "Weekend Billing Without After-Hours Modifier",
         message: `Consultation "${line.tariffCode}" on ${line.dateOfService} (${isSunday ? "Sunday" : "Saturday"}) without after-hours modifier.${isSunday ? " Sunday consultations should carry modifier 0010-0014." : " Saturday morning consultations are common GP practice in SA."}`,
         suggestion: isSunday
           ? "Add the appropriate after-hours modifier (0012 for Sundays/public holidays). Schemes may reject Sunday claims without modifiers."
