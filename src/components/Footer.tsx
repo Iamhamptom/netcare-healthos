@@ -73,7 +73,7 @@ export default function Footer() {
 
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-[11px] text-white/70 font-medium">
-            &copy; 2026 {brand.name}. Powered by Visio Research Labs.
+            &copy; 2026 {brand.name}. {brand.tagline}
           </p>
           <p className="text-[11px] text-white/70 font-medium">
             Sandton, Gauteng, South Africa

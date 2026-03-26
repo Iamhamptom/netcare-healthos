@@ -1,11 +1,15 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useBrand } from "@/lib/tenant-context";
 
 export default function WhatsAppFloat() {
+  const brand = useBrand();
+  const phone = brand.supportPhone?.replace(/[^0-9]/g, "") || "27636661793";
+  const msg = encodeURIComponent(`Hi, I'd like to learn more about ${brand.name} for my practice.`);
   return (
     <motion.a
-      href="https://wa.me/27117834500?text=Hi%2C%20I%27d%20like%20to%20learn%20more%20about%20Netcare Health OS%20for%20my%20practice."
+      href={`https://wa.me/${phone}?text=${msg}`}
       target="_blank"
       rel="noopener noreferrer"
       className="fixed bottom-6 right-6 z-50 flex items-center gap-2 pl-4 pr-5 py-3 rounded-full bg-[#25D366] text-white shadow-lg shadow-[#1D3443]/20 hover:shadow-xl hover:shadow-[#1D3443]/30 transition-shadow duration-300 group"

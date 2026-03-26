@@ -12,9 +12,9 @@ const DEFAULT_BRAND: TenantBrand = {
   secondaryColor: "#2DD4BF",
   accentColor: "#6C5CE7",
   tagline: "AI-Powered Healthcare Operations",
-  supportEmail: "support@visiocorp.co",
+  supportEmail: "support@healthos.co",
   supportPhone: "+27 11 000 0000",
-  websiteUrl: "https://healthos.visiocorp.co",
+  websiteUrl: "https://healthos.co",
 };
 
 const DEFAULT_LABELS: TenantLabels = {

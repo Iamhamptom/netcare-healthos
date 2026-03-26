@@ -212,7 +212,7 @@ function NetcareAssistantInner() {
     {
       id: "welcome",
       role: "assistant",
-      content: "Hello! I am your VisioHealth OS assistant — built specifically for Netcare Primary Healthcare. I can answer any question about the platform, how it solves your operational challenges, integrations with your existing systems, or the pilot process. What would you like to know?",
+      content: "Hello! I am your AI assistant. I can answer any question about the platform, how it solves your operational challenges, integrations with your existing systems, or the pilot process. What would you like to know?",
       timestamp: new Date(),
     },
   ]);
@@ -268,7 +268,7 @@ function NetcareAssistantInner() {
                   <Sparkles className="w-4 h-4 text-[#E3964C]" />
                 </div>
                 <div>
-                  <div className="text-[13px] text-white font-semibold">VisioHealth OS Assistant</div>
+                  <div className="text-[13px] text-white font-semibold">AI Assistant</div>
                   <div className="text-[10px] text-white/60">Ask me anything about the platform</div>
                 </div>
               </div>

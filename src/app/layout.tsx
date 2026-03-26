@@ -19,10 +19,10 @@ export async function generateMetadata(): Promise<Metadata> {
       default: `${b.name} — AI Healthcare Platform`,
       template: `%s | ${b.name}`,
     },
-    description: `AI-powered healthcare operations platform. Claims intelligence, FHIR interoperability, and POPIA compliance. Powered by Visio Research Labs.`,
+    description: `${b.name} — AI-powered healthcare operations platform. ${b.tagline}`,
     keywords: ["healthcare", "south africa", "AI healthcare", "ICD-10", "POPIA", "medical billing", "claims intelligence", "practice management"],
-    authors: [{ name: "Visio Research Labs" }],
-    creator: "Visio Research Labs",
+    authors: [{ name: b.name }],
+    creator: b.name,
     metadataBase: new URL(b.websiteUrl || "https://healthos.visiocorp.co"),
     openGraph: {
       type: "website",

@@ -180,7 +180,7 @@ const healthbridgeItems: NavItem[] = [
 const fhirHubItems: NavItem[] = [
   { href: "/dashboard/fhir-hub", icon: Cable, label: "Overview", roles: ["admin", "platform_admin"] },
   { href: "/dashboard/fhir-hub/architecture", icon: Workflow, label: "Architecture", roles: ["admin", "platform_admin"] },
-  { href: "/dashboard/fhir-hub/impact", icon: DollarSign, label: "Netcare Impact", roles: ["admin", "platform_admin"] },
+  { href: "/dashboard/fhir-hub/impact", icon: DollarSign, label: "Impact Analysis", roles: ["admin", "platform_admin"] },
   { href: "/dashboard/fhir-hub/research", icon: Microscope, label: "VRL Research", roles: ["admin", "platform_admin"] },
   { href: "/dashboard/fhir-hub/explorer", icon: TestTube, label: "API Explorer", roles: ["admin", "platform_admin"] },
 ];

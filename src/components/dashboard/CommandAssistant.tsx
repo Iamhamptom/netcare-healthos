@@ -13,7 +13,7 @@ export default function CommandAssistant() {
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: "Hi! I'm your Netcare Health OS assistant. I can search patients, book appointments, check your schedule, send messages, pull analytics — anything you need. Just ask." },
+    { role: "assistant", content: "Hi! I'm your AI assistant. I can search patients, book appointments, check your schedule, send messages, pull analytics — anything you need. Just ask." },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);

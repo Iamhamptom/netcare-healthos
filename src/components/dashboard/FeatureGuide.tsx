@@ -5,23 +5,26 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Shield, Sparkles, ArrowRight, ChevronRight, Volume2, VolumeX, Minimize2, Maximize2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import { useBrand } from "@/lib/tenant-context";
 import GuidedTour from "./GuidedTour";
 
-// ─── Jess's Welcome Sequence (plays once on first login) ──────
-const WELCOME_SEQUENCE = [
-  {
-    text: "Welcome to Netcare Health OS. I’m Jess, your AI operations guide — built specifically for the Netcare leadership team.",
-    delay: 0,
-  },
-  {
-    text: "VisioHealth OS was built to solve the operational gap in Netcare’s primary care division. CareOn powers the hospitals. Healthbridge and GoodX power individual clinics. Nothing connects the 88-clinic network — until now. What we’ve built takes that fragmented landscape and unifies it with AI.",
-    delay: 500,
-  },
-  {
-    text: "Let me show you what we found and what we’ve built for Netcare. And remember — at any time, press the AI Assistant button in the bottom-right corner to ask me anything directly.",
-    delay: 500,
-  },
-];
+// ─── Jess’s Welcome Sequence (plays once on first login) ──────
+function getWelcomeSequence(brandName: string) {
+  return [
+    {
+      text: `Welcome to ${brandName}. I’m Jess, your AI operations guide — built specifically for your team.`,
+      delay: 0,
+    },
+    {
+      text: `${brandName} was built to solve the operational gap in healthcare. We unify fragmented systems — claims, bookings, patient comms, compliance — into one AI-powered platform. What we’ve built takes that fragmented landscape and connects it.`,
+      delay: 500,
+    },
+    {
+      text: `Let me show you what we’ve built. And remember — at any time, press the AI Assistant button in the bottom-right corner to ask me anything directly.`,
+      delay: 500,
+    },
+  ];
+}
 
 const SAVINGS_BRIEFING = [
   { label: "Claims Intelligence", value: "R21.6M/year", detail: "Your current 15% first-pass rejection rate costs the division R3.85M/month. Our AI pre-validates ICD-10-ZA codes, NAPPI codes, and PMB benefits before claims hit Altron SwitchOn. We bring that to under 5%." },
@@ -39,39 +42,39 @@ const INTEGRATIONS = [
   { name: "MediSwitch EDI", status: "Auto-reconciles", detail: "eRA processing — we match payments to claims automatically, replacing manual reconciliation." },
   { name: "IBM Watson Micromedex", status: "Surfaces", detail: "1.8M+ scripts/year drug interaction checking. We surface these alerts in the booking and dispensing flow." },
   { name: "Corsano Wearables", status: "Integrates", detail: "6,000 beds with continuous vitals monitoring. We bring wearable alerts into primary care follow-up workflows." },
-  { name: "Netcare App", status: "Extends", detail: "iOS/Android/Huawei — booking, 911, pre-admission, health records. We add WhatsApp as a parallel channel where your patients already are." },
+  { name: "Mobile App", status: "Extends", detail: "iOS/Android/Huawei — booking, pre-admission, health records. We add WhatsApp as a parallel channel where your patients already are." },
 ];
 
 const MARKET_GAPS = [
   "No WhatsApp patient routing in SA private healthcare — we’re first",
   "No AI claims pre-validation for primary care networks — hospitals have it, clinics don’t",
   "No real-time financial command center across fragmented clinic PMS systems",
-  "Discovery launching Flexicare through Clicks — direct threat to Medicross walk-in model. We give you the tech moat.",
-  "4+ separate booking systems (Appointmed, Medicross Online, VirtualCare, phone) — we unify into one WhatsApp + web channel",
+  "Discovery launching Flexicare through Clicks — direct threat to practice walk-in model. We give you the tech moat.",
+  "4+ separate booking systems (Appointmed, practice Online, VirtualCare, phone) — we unify into one WhatsApp + web channel",
   "CareOn covers hospitals. Primary Care has no unified digital layer. We are that layer.",
 ];
 
 const FUTURE_ROADMAP = [
-  { name: "Placeo Health", timeline: "Q3 2026", detail: "Patient marketplace — 3.5M patients can discover and book across the Netcare network. Uber for healthcare appointments." },
+  { name: "Placeo Health", timeline: "Q3 2026", detail: "Patient marketplace — patients can discover and book across the practice network. Uber for healthcare appointments." },
   { name: "Visio Integrator", timeline: "Q4 2026", detail: "Enterprise middleware connecting CareOn, SAP, Healthbridge, GoodX into one data layer. The missing bridge." },
-  { name: "Visio Waiting Room", timeline: "Q3 2026", detail: "Digital check-in via WhatsApp. Real-time queue visibility. Solve the queue problem at busy Medicross clinics." },
+  { name: "Visio Waiting Room", timeline: "Q3 2026", detail: "Digital check-in via WhatsApp. Real-time queue visibility. Solve the queue problem at busy practice clinics." },
   { name: "VisioMed AI", timeline: "Q1 2027", detail: "Clinical co-pilot — drug interaction checking (augments Micromedex), ICD-10-ZA coding assistance, treatment protocol suggestions." },
   { name: "Payer Connect", timeline: "Q4 2026", detail: "Live coordination with medical schemes. Real-time benefit checking, pre-auth before the patient sits down. Turn 21-day GEMS cycles into 7-day." },
   { name: "Predictive Analytics Suite", timeline: "Q2 2027", detail: "Budget variance prediction 60 days out. Cash flow forecasting. Staff cost optimisation. The tools Mayo Clinic and Cleveland Clinic use." },
 ];
 
 const PAGE_CONTEXTS: Record<string, string> = {
-  "/dashboard": "This is your operational command center. The welcome banner shows your Netcare brand with network-wide impact metrics. Below are 10 stat cards pulling live data — patients, bookings, revenue, tasks. The quick actions give you one-click access to every critical function.",
+  "/dashboard": "This is your operational command center. The welcome banner shows your brand with network-wide impact metrics. Below are 10 stat cards pulling live data — patients, bookings, revenue, tasks. The quick actions give you one-click access to every critical function.",
   "/dashboard/network": "This is where you’ll spend most of your time. Five tabs: Overview gives you the divisional KPIs at a glance — R55.2M MTD revenue, 24.5% EBITDA margin, 5,234 first-pass rejections. Clinic Performance ranks all 88 sites. Claims Intelligence shows the top rejection codes with AI fixes. Cost Savings breaks down the R8.4M/month opportunity. Medical Schemes tracks Discovery, GEMS, Bonitas payment performance.",
-  "/dashboard/kpi": "These are YOUR KPIs — the ones Keith Gibson asks about in the quarterly divisional pack. 30+ metrics across revenue, profitability, working capital, managed care, and occupational health. Traffic lights show what needs attention. The bottom section shows exactly how VisioHealth OS moves each KPI.",
+  "/dashboard/kpi": "These are YOUR KPIs. 30+ metrics across revenue, profitability, working capital, managed care, and operations. Traffic lights show what needs attention. The bottom section shows exactly how the platform moves each KPI.",
   "/dashboard/savings": "This is the most powerful number in your career right now. R7.6M+ saved in 9 months. Every Rand is traceable to a specific AI module. The Before/After comparison is what you present to the board — from Excel hell to real-time intelligence.",
-  "/dashboard/suite": "Everything VisioHealth OS built for Netcare — 10 AI modules, the full value chain integration map showing how we connect to CareOn, SAP, SwitchOn, and the Netcare App. Plus the branch deployment model — every doctor uses this under the Netcare umbrella.",
-  "/dashboard/pilot": "Start here. Pick a region, select clinics, launch an 8-week pilot. Data is isolated to your region. At week 8, you get a board-ready ROI report. This is zero risk — the pilot report becomes your business case for Keith Gibson.",
-  "/dashboard/board-pack": "Your weapon for the next Finance and Investment Committee. CEO Quick View for Dr Friedland (one slide: R100M+, 8 weeks, <5%, 88 clinics). Full 6-section business case for Keith Gibson. 3-year scenario modelling: Conservative R105M, Base R220M, Aggressive R295M.",
+  "/dashboard/suite": "The full product suite — 10 AI modules, the full value chain integration map showing how we connect to your existing systems. Plus the branch deployment model — every practitioner uses this under your brand.",
+  "/dashboard/pilot": "Start here. Pick a region, select locations, launch an 8-week pilot. Data is isolated to your region. At week 8, you get a board-ready ROI report. Zero risk — the pilot report becomes your business case.",
+  "/dashboard/board-pack": "Your weapon for the next leadership review. Executive Quick View (one slide: key metrics, timeline, targets). Full 6-section business case. 3-year scenario modelling with conservative, base, and aggressive projections.",
   "/dashboard/intel": "Bloomberg-style health intelligence terminal. Market data, health news, research papers, SA competitive landscape, and global benchmarks — HCA Healthcare, Epic Systems, Mayo Clinic, Cleveland Clinic, NHS England. This positions you as the most informed FD in SA healthcare.",
   "/dashboard/daily": "Your structured Financial Director daily workflow. Morning: claims review, revenue dashboard, Prime Cure reports. Midday: tariff reconciliation, ICD-10 analytics, occ health billing. End of day: collection ratios, EBITDA variance, POPIA compliance.",
-  "/dashboard/patients": "Unified patient records across Medicross clinics. Discovery, GEMS, Bonitas, Momentum, Polmed, Anglo Medical — all with medical history, medications, allergies, and POPIA consent. A patient at Sandton can be referenced at Fourways.",
-  "/dashboard/conversations": "The WhatsApp Patient Router in action. Patients message one number, AI routes to the right Medicross branch. This is the feature Netcare doesn’t have today — and Discovery Flexicare doesn’t offer either.",
+  "/dashboard/patients": "Unified patient records across practice locations. Medical aid schemes — all with medical history, medications, allergies, and POPIA consent. A patient at one location can be referenced at another.",
+  "/dashboard/conversations": "The WhatsApp Patient Router in action. Patients message one number, AI routes to the right practice location. A feature that transforms patient communication.",
   "/dashboard/billing": "Claims and billing with ICD-10-ZA codes, NAPPI codes, medical aid status. See exactly which claims were rejected, why, and the AI recommendation to fix. R1.8M/month recoverable.",
   "/dashboard/analytics": "Practice-level analytics — patient counts, booking patterns, service popularity, review scores, recall management. Data-driven operational insights.",
 };
@@ -114,12 +117,12 @@ function NDAPopup({ onAccept }: { onAccept: () => void }) {
           </div>
           <div>
             <h2 className="text-lg font-bold text-gray-900">Confidentiality Agreement</h2>
-            <p className="text-[11px] text-gray-400">VisioHealth OS x Netcare Primary Healthcare</p>
+            <p className="text-[11px] text-gray-400">Confidential Evaluation</p>
           </div>
         </div>
         <div className="text-[12px] text-gray-600 leading-relaxed space-y-3 max-h-[40vh] overflow-y-auto pr-2">
-          <p>This platform contains <span className="font-semibold">proprietary technology and confidential intelligence</span> developed by VisioHealth OS (Visio Research Labs).</p>
-          <p>By accessing, you agree to: keep all features, data, and technology confidential; not share with third parties; use solely for evaluating a Netcare-VisioHealth OS partnership.</p>
+          <p>This platform contains <span className="font-semibold">proprietary technology and confidential intelligence</span>.</p>
+          <p>By accessing, you agree to: keep all features, data, and technology confidential; not share with third parties; use solely for evaluation purposes.</p>
           <p className="text-[11px] text-gray-400">Governed by SA law. High Court of Gauteng, Johannesburg.</p>
         </div>
         <button onClick={onAccept} className="w-full mt-5 py-3 bg-[#1D3443] text-white font-semibold text-[13px] rounded-xl hover:bg-[#152736] transition-colors">
@@ -132,16 +135,18 @@ function NDAPopup({ onAccept }: { onAccept: () => void }) {
 
 // ─── Jess Welcome Sequence ──────
 function JessWelcome({ onComplete }: { onComplete: () => void }) {
+  const brand = useBrand();
+  const welcomeSequence = getWelcomeSequence(brand.name);
   const [step, setStep] = useState(0);
   const [showSavings, setShowSavings] = useState(false);
   const [showIntegrations, setShowIntegrations] = useState(false);
   const [showGaps, setShowGaps] = useState(false);
   const [showFuture, setShowFuture] = useState(false);
-  const currentMsg = step < WELCOME_SEQUENCE.length ? WELCOME_SEQUENCE[step].text : "";
+  const currentMsg = step < welcomeSequence.length ? welcomeSequence[step].text : "";
   const { displayed, done } = useTypingEffect(currentMsg, 18);
 
   const nextStep = () => {
-    if (step < WELCOME_SEQUENCE.length - 1) {
+    if (step < welcomeSequence.length - 1) {
       setStep(s => s + 1);
     } else if (!showSavings) {
       setShowSavings(true);
@@ -168,12 +173,12 @@ function JessWelcome({ onComplete }: { onComplete: () => void }) {
           </div>
           <div>
             <div className="text-white font-semibold text-[15px]">Jess</div>
-            <div className="text-white/70 text-[11px]">Your AI Operations Guide • VisioHealth OS</div>
+            <div className="text-white/70 text-[11px]">Your AI Operations Guide</div>
           </div>
         </motion.div>
 
         {/* Welcome Messages */}
-        {step < WELCOME_SEQUENCE.length && !showSavings && (
+        {step < welcomeSequence.length && !showSavings && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             className="bg-white/5 backdrop-blur-sm rounded-xl p-5 border border-white/10 mb-4">
             <p className="text-white/80 text-[15px] leading-relaxed">{displayed}<span className={done ? "hidden" : "animate-pulse"}>|</span></p>
@@ -184,7 +189,7 @@ function JessWelcome({ onComplete }: { onComplete: () => void }) {
         {showSavings && !showIntegrations && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 mb-4">
             <div className="bg-white/5 backdrop-blur-sm rounded-xl p-5 border border-white/10">
-              <p className="text-white/80 text-[15px] leading-relaxed mb-2">Here is what we can save Netcare Primary Healthcare. Total: <span className="text-[#E3964C] font-bold">R95.2M per year</span>.</p>
+              <p className="text-white/80 text-[15px] leading-relaxed mb-2">Here is what we can save your practice. Total impact: <span className="text-[#E3964C] font-bold">significant annual savings</span>.</p>
             </div>
             <div className="grid grid-cols-2 gap-2">
               {SAVINGS_BRIEFING.map((s, i) => (
@@ -205,7 +210,7 @@ function JessWelcome({ onComplete }: { onComplete: () => void }) {
         {showIntegrations && !showGaps && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 mb-4">
             <div className="bg-white/5 backdrop-blur-sm rounded-xl p-5 border border-white/10">
-              <p className="text-white/80 text-[15px] leading-relaxed">We integrate with every system Netcare already uses. Nothing gets replaced — everything gets enhanced.</p>
+              <p className="text-white/80 text-[15px] leading-relaxed">We integrate with your existing systems. Nothing gets replaced — everything gets enhanced.</p>
             </div>
             <div className="space-y-2">
               {INTEGRATIONS.map((s, i) => (
@@ -242,7 +247,7 @@ function JessWelcome({ onComplete }: { onComplete: () => void }) {
         {showFuture && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 mb-4">
             <div className="bg-white/5 backdrop-blur-sm rounded-xl p-5 border border-white/10">
-              <p className="text-white/80 text-[15px] leading-relaxed">And this is what we are building next for Netcare. Each product makes the ecosystem stronger.</p>
+              <p className="text-white/80 text-[15px] leading-relaxed">And this is what we are building next. Each product makes the ecosystem stronger.</p>
             </div>
             <div className="grid grid-cols-2 gap-2">
               {FUTURE_ROADMAP.map((item, i) => (

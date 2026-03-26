@@ -4,127 +4,132 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Phone, PhoneOff, ChevronRight, Volume2, Sparkles, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useBrand } from "@/lib/tenant-context";
 
-const TOUR_SLIDES = [
-  {
-    id: "welcome",
-    label: "Welcome",
-    narration: "Welcome to Netcare Health OS. I am Jess, your AI operations guide. What you are about to see is a platform designed specifically for Netcare Primary Healthcare — built by Visio Research Labs, an AI research company based in Johannesburg. Let me walk you through what we have built and why it matters for your division.",
-    content: {
-      title: "Visio Research Labs",
-      subtitle: "AI Research \u2022 Healthcare Focus \u2022 African Native",
-      points: [
-        "An AI research lab in the tradition of Anthropic, OpenAI, and DeepMind",
-        "Focused on making advanced machine learning accessible for African healthcare",
-        "120+ peer-reviewed citations backing every module we build",
-        "We used this same AI to research Netcare, read your annual reports, and build this platform",
-      ],
+function getTourSlides(brandName: string) {
+  return [
+    {
+      id: "welcome",
+      label: "Welcome",
+      narration: `Welcome to ${brandName}. I am Jess, your AI operations guide. What you are about to see is a platform designed specifically for your practice — built by a specialist AI healthcare team based in Johannesburg. Let me walk you through what we have built and why it matters.`,
+      content: {
+        title: brandName,
+        subtitle: "AI Healthcare Operations Platform",
+        points: [
+          "Purpose-built AI for South African private healthcare",
+          "Focused on making advanced machine learning accessible for African healthcare",
+          "120+ peer-reviewed citations backing every module we build",
+          "We researched your practice, your market, and built this platform for you",
+        ],
+      },
     },
-  },
-  {
-    id: "problem",
-    label: "The Problem",
-    narration: "Your division generates R662 million in revenue across 88 clinics with 568 independent practitioners. But there are gaps. Doctors work in two systems that do not talk to each other. Claims rejection runs at 15 to 25 percent. Patient communication falls through cracks between facilities. And Discovery Flexicare grew 77 percent last year, deliberately excluding Medicross. These are the problems we solve.",
-    content: {
-      title: "The Gaps We Found",
-      subtitle: "Verified against your FY2025 annual report",
-      points: [
-        "R662M revenue, 24.5% EBITDA margin \u2014 but 7% revenue decline",
-        "Doctors work in CareOn AND their own PMS with zero integration",
-        "15-25% first-pass claims rejection rate across the network",
-        "Discovery Flexicare grew 77% and deliberately excludes Medicross",
-        "568 independent practitioners with no performance visibility",
-        "No WhatsApp integration \u2014 the channel 95% of your patients use daily",
-      ],
+    {
+      id: "problem",
+      label: "The Problem",
+      narration: "Private healthcare practices face operational gaps. Claims rejection runs at 15 to 25 percent. Patient communication falls through cracks between facilities. Manual processes drain time that could be spent with patients. These are the problems we solve.",
+      content: {
+        title: "The Gaps We Found",
+        subtitle: "Common across SA private practices",
+        points: [
+          "15-25% first-pass claims rejection rate is the industry norm",
+          "Practitioners work across systems with zero integration",
+          "No WhatsApp integration \u2014 the channel 95% of patients use daily",
+          "Manual eRA reconciliation wastes hours per week",
+          "POPIA compliance is complex and underserved",
+          "No unified view of practice performance across locations",
+        ],
+      },
     },
-  },
-  {
-    id: "solution",
-    label: "Our Solution",
-    narration: "We built 5 AI agents that run autonomously across your facilities. A triage agent that handles patient intake via WhatsApp. A scheduling agent that manages 568 practitioner calendars. A billing agent that pre-validates every claim before it hits Altron SwitchOn \u2014 catching 75 percent of rejectable claims. A follow-up agent that ensures no patient falls through the cracks. And a compliance agent that automates POPIA across all 88 clinics in 8 provinces.",
-    content: {
-      title: "5 AI Agents for Netcare",
-      subtitle: "Running autonomously across all facilities",
-      points: [
-        "Triage Agent \u2014 WhatsApp-based patient routing to nearest Medicross",
-        "Scheduling Agent \u2014 568 practitioner calendars, no-show prediction",
-        "Billing Agent \u2014 ICD-10-ZA + NAPPI pre-validation before SwitchOn",
-        "Follow-up Agent \u2014 post-visit check-ins, recall, medication reminders",
-        "Compliance Agent \u2014 POPIA consent tracking across 8 provinces",
-      ],
+    {
+      id: "solution",
+      label: "Our Solution",
+      narration: "We built 5 AI agents that run autonomously across your practice. A triage agent that handles patient intake via WhatsApp. A scheduling agent that manages your calendars. A billing agent that pre-validates every claim \u2014 catching 75 percent of rejectable claims. A follow-up agent that ensures no patient falls through the cracks. And a compliance agent that automates POPIA.",
+      content: {
+        title: "5 AI Agents for Your Practice",
+        subtitle: "Running autonomously across all locations",
+        points: [
+          "Triage Agent \u2014 WhatsApp-based patient routing",
+          "Scheduling Agent \u2014 calendar management, no-show prediction",
+          "Billing Agent \u2014 ICD-10-ZA + NAPPI pre-validation",
+          "Follow-up Agent \u2014 post-visit check-ins, recall, medication reminders",
+          "Compliance Agent \u2014 POPIA consent tracking across all locations",
+        ],
+      },
     },
-  },
-  {
-    id: "integration",
-    label: "Integration",
-    narration: "We do not replace anything in your stack. CareOn stays. SAP stays. SwitchOn stays. We sit as an aggregation layer on top, connecting what is already there. We bridge the gap between CareOn and the doctor's PMS. We add AI pre-validation before claims hit the switch. We add WhatsApp as a parallel channel to the Netcare App. Nothing breaks. Everything gets connected.",
-    content: {
-      title: "We Aggregate. We Do Not Replace.",
-      subtitle: "Connecting your existing 8 systems",
-      points: [
-        "CareOn EMR (49 hospitals) \u2014 we extend to primary care",
-        "HEAL / A2D24 (55 clinics) \u2014 we bridge to CareOn",
-        "SAP Healthcare (R100M ERP) \u2014 we add AI analytics on top",
-        "Altron SwitchOn (claims) \u2014 we pre-validate before submission",
-        "IBM Micromedex (drug safety) \u2014 we surface in booking flow",
-        "Netcare App \u2014 we add WhatsApp as parallel channel",
-      ],
+    {
+      id: "integration",
+      label: "Integration",
+      narration: "We do not replace anything in your stack. Your EMR stays. Your billing system stays. We sit as an aggregation layer on top, connecting what is already there. We add AI pre-validation before claims hit the switch. We add WhatsApp as a patient channel. Nothing breaks. Everything gets connected.",
+      content: {
+        title: "We Aggregate. We Do Not Replace.",
+        subtitle: "Connecting your existing systems",
+        points: [
+          "Your EMR \u2014 we extend with AI insights",
+          "Your billing system \u2014 we pre-validate before submission",
+          "Medical scheme switches \u2014 automated reconciliation",
+          "Drug interaction databases \u2014 surfaced in booking flow",
+          "WhatsApp \u2014 added as a parallel patient channel",
+          "All existing workflows preserved and enhanced",
+        ],
+      },
     },
-  },
-  {
-    id: "impact",
-    label: "Impact",
-    narration: "The total addressable savings across your division is R95 million per year. Claims recovery alone is R21.6 million. Debtor days drop from 42 to 28 \u2014 freeing R14 million in cash flow. The eRA reconciliation that 568 practitioners do manually in Excel? Automated. Saving R10 million a year in labour. And POPIA compliance across 88 clinics? Automated. Every number is modelled on your actual FY2025 data.",
-    content: {
-      title: "R95M+ Annual Savings",
-      subtitle: "Modelled on Netcare FY2025 audited results",
-      points: [
-        "Claims pre-validation: R21.6M/year recovered",
-        "Debtor intelligence: R33M/year improved collections",
-        "Pharmacy optimisation: R16.8M/year freed capital",
-        "eRA reconciliation: R10.1M/year in labour savings",
-        "Capitation analytics: R7.9M/year early overspend detection",
-        "Compliance automation: R5.8M/year across 88 clinics",
-      ],
+    {
+      id: "impact",
+      label: "Impact",
+      narration: "The impact is measurable from day one. Claims recovery improves immediately. Debtor days drop significantly. Manual reconciliation becomes automated. And POPIA compliance is handled across all locations. Every number is modelled on real SA private practice data.",
+      content: {
+        title: "Measurable Impact",
+        subtitle: "Modelled on real SA private practice data",
+        points: [
+          "Claims pre-validation: significant recovery improvement",
+          "Debtor intelligence: improved collections and cash flow",
+          "eRA reconciliation: automated, saving hours weekly",
+          "Compliance automation: POPIA across all locations",
+          "Patient retention: automated follow-up and recall",
+          "Operational visibility: real-time practice analytics",
+        ],
+      },
     },
-  },
-  {
-    id: "partnership",
-    label: "Partnership",
-    narration: "We are not here to sell you software. We are here to partner with you. We deploy the tools at no cost. You cover the data hosting and compute. We provide ongoing best practices, new features, and monthly cost infrastructure audits on a reasonable retainer. We have worked with doctors who professionally consulted on these products. And you can make requests too \u2014 we can safely implement anything your teams need. The goal? Netcare becomes our flagship partner in making AI accessible for African healthcare.",
-    content: {
-      title: "A Partnership, Not a Vendor",
-      subtitle: "Visio Research Labs x Netcare",
-      points: [
-        "Phase 1: We deploy tools free. You cover hosting and compute.",
-        "Phase 2: Ongoing retainer \u2014 your AI partner, monthly audits, new features",
-        "Phase 3: Scale together \u2014 co-publish research, joint ventures",
-        "Doctor-consulted development \u2014 you can make requests",
-        "Reasonable pricing for tools, research, and insights shared openly",
-        "We chose Netcare because your scale + our AI = national impact",
-      ],
+    {
+      id: "partnership",
+      label: "Partnership",
+      narration: "We are not here to sell you software. We are here to partner with you. We deploy the tools. You cover the data hosting and compute. We provide ongoing best practices, new features, and monthly audits on a reasonable retainer. The goal? Your practice becomes a flagship partner in making AI accessible for African healthcare.",
+      content: {
+        title: "A Partnership, Not a Vendor",
+        subtitle: `Your AI Healthcare Partner`,
+        points: [
+          "Phase 1: We deploy tools. You cover hosting and compute.",
+          "Phase 2: Ongoing retainer \u2014 your AI partner, monthly audits, new features",
+          "Phase 3: Scale together \u2014 co-publish research, joint ventures",
+          "Doctor-consulted development \u2014 you can make requests",
+          "Reasonable pricing for tools, research, and insights shared openly",
+          "We partner with practices that want to lead with technology",
+        ],
+      },
     },
-  },
-  {
-    id: "next",
-    label: "Next Steps",
-    narration: "Here is what I recommend. Start with an 8-week pilot in one region. Pick Gauteng North \u2014 5 clinics. We connect to your systems in 48 hours. AI claims validation, WhatsApp routing, and financial dashboards go live immediately. At week 8, you get a board-ready ROI report. Zero capital risk. That report becomes your business case for network-wide rollout. The platform you are about to explore has everything you need to evaluate this. I will be here to answer any questions.",
-    content: {
-      title: "Start in 8 Weeks",
-      subtitle: "Zero capital risk. Board-ready results.",
-      points: [
-        "Choose a region (Gauteng North recommended \u2014 5 clinics)",
-        "We connect to your systems in 48 hours",
-        "6 weeks of live AI operations with weekly reports",
-        "Board-ready ROI report at week 8",
-        "Network-wide rollout plan if pilot succeeds",
-        "Cancel anytime \u2014 no commitment beyond pilot",
-      ],
+    {
+      id: "next",
+      label: "Next Steps",
+      narration: "Here is what I recommend. Start with an 8-week pilot. We connect to your systems in 48 hours. AI claims validation, WhatsApp routing, and financial dashboards go live immediately. At week 8, you get a board-ready ROI report. Zero capital risk. The platform you are about to explore has everything you need to evaluate this. I will be here to answer any questions.",
+      content: {
+        title: "Start in 8 Weeks",
+        subtitle: "Zero capital risk. Board-ready results.",
+        points: [
+          "We connect to your systems in 48 hours",
+          "6 weeks of live AI operations with weekly reports",
+          "Board-ready ROI report at week 8",
+          "Full rollout plan if pilot succeeds",
+          "Cancel anytime \u2014 no commitment beyond pilot",
+          "Your patients benefit from day one",
+        ],
+      },
     },
-  },
-];
+  ];
+}
 
 export default function GuidedTour({ onComplete }: { onComplete: () => void }) {
+  const brand = useBrand();
+  const TOUR_SLIDES = getTourSlides(brand.name);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isCallActive, setIsCallActive] = useState(true);
   const [dismissed, setDismissed] = useState(false);

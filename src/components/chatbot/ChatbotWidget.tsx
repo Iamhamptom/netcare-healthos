@@ -12,7 +12,7 @@ interface Message {
 export default function ChatbotWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { id: 0, role: "assistant", content: "Hello! Welcome to Smile Dental Sandton. I can help you with bookings, pricing, practice info, or answer any questions. How can I help?" },
+    { id: 0, role: "assistant", content: "Hello! Welcome. I can help you with bookings, pricing, practice info, or answer any questions. How can I help?" },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -98,7 +98,7 @@ export default function ChatbotWidget() {
                   <div className="w-2.5 h-2.5 rounded-full bg-white" />
                 </div>
                 <div>
-                  <div className="text-[13px] font-semibold text-white">Netcare Health OS Assistant</div>
+                  <div className="text-[13px] font-semibold text-white">AI Assistant</div>
                   <div className="text-[11px] text-white/70 flex items-center gap-1 font-mono">
                     <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                     Online

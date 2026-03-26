@@ -9,12 +9,14 @@ import FeatureGuide from "@/components/dashboard/FeatureGuide";
 import NetcareAssistant from "@/components/dashboard/NetcareAssistant";
 import ProductCourse from "@/components/dashboard/ProductCourse";
 import { Menu, X } from "lucide-react";
+import { useBrand } from "@/lib/tenant-context";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showCourse, setShowCourse] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
+  const brand = useBrand();
 
   useEffect(() => {
     if (searchParams.get("course") === "1") {
@@ -82,10 +84,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="flex items-center gap-2">
               <div className="w-1 h-1 rounded-full bg-[#1D3443]/15" />
               <span className="text-[10px] text-[#1D3443]/60 font-medium">
-                Powered by <span className="font-semibold text-[#1D3443]/70">VisioHealth OS</span>
+                Powered by <span className="font-semibold text-[#1D3443]/70">{brand.name}</span>
               </span>
             </div>
-            <span className="text-[10px] text-[#1D3443]/60">Visio Research Labs</span>
+            <span className="text-[10px] text-[#1D3443]/60">{brand.tagline}</span>
           </div>
         </main>
       </div>

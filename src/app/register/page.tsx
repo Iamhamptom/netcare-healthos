@@ -46,7 +46,7 @@ export default function RegisterPage() {
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-1">
             <HeartPulse className="w-5 h-5 text-[#3DA9D1]" />
-            <span className="text-lg font-semibold text-white tracking-tight">Netcare Health OS</span>
+            <span className="text-lg font-semibold text-white tracking-tight">Health OS</span>
           </div>
           <span className="text-[#3DA9D1]/80 text-[11px] font-mono uppercase tracking-widest">Operations Platform</span>
         </div>
@@ -103,7 +103,7 @@ export default function RegisterPage() {
           <div className="text-center mb-10 lg:hidden">
             <div className="flex items-center justify-center gap-2 mb-2">
               <HeartPulse className="w-5 h-5 text-[#3DA9D1]" />
-              <span className="text-base font-semibold text-gray-900 tracking-tight">Netcare Health OS</span>
+              <span className="text-base font-semibold text-gray-900 tracking-tight">Health OS</span>
             </div>
           </div>
 
