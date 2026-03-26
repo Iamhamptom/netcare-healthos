@@ -10,8 +10,15 @@ import { verifyToken, SESSION_COOKIE } from "@/lib/auth";
 const isDemoMode = process.env.DEMO_MODE === "true";
 
 export async function proxy(request: NextRequest) {
+  // Forward full URL for white-label brand resolution (?brand=rheumcare)
+  const forwardUrl = () => {
+    const res = NextResponse.next();
+    res.headers.set("x-url", request.url);
+    return res;
+  };
+
   // In demo mode, allow all access to dashboard
-  if (isDemoMode) return NextResponse.next();
+  if (isDemoMode) return forwardUrl();
 
   const token = request.cookies.get(SESSION_COOKIE)?.value;
   const { pathname } = request.nextUrl;
@@ -49,13 +56,11 @@ export async function proxy(request: NextRequest) {
     if (session) return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  return NextResponse.next();
+  return forwardUrl();
 }
 
 export const config = {
   matcher: [
-    "/dashboard/:path*", "/admin/:path*", "/investor/:path*", "/gp/dashboard/:path*",
-    "/login", "/register",
-    "/api/claims/:path*", "/api/admin/:path*", "/api/invoices/:path*", "/api/payments/:path*",
+    "/((?!_next/static|_next/image|favicon|brands|images|.*\\.png$|.*\\.ico$).*)",
   ],
 };
