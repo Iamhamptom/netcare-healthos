@@ -3,9 +3,9 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import Link from "next/link";
-import { useBrand } from "@/lib/tenant-context";
+import { useBrand, useLabels } from "@/lib/tenant-context";
 
-const swapWords = ["claims intelligence", "financial analytics", "operational efficiency", "network oversight"];
+const swapWords = ["claims intelligence", "financial analytics", "operational efficiency", "practice insight"];
 
 const stagger = {
   hidden: {},
@@ -27,6 +27,7 @@ const fadeUp = {
 
 export default function Hero() {
   const brand = useBrand();
+  const labels = useLabels();
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -175,7 +176,7 @@ export default function Hero() {
           className="text-5xl md:text-7xl font-light tracking-[-0.04em] text-white mb-8"
          
         >
-          {"88 clinics.".split(" ").map((word, i) => (
+          {labels.heroHeadline.split(" ").map((word, i) => (
             <motion.span
               key={i}
               className="inline-block mr-[0.35em]"
@@ -211,9 +212,7 @@ export default function Hero() {
           variants={fadeUp}
           className="text-lg text-white/60 font-light max-w-2xl mx-auto mt-8 leading-relaxed"
         >
-          {brand.name} is an AI-powered operations platform that unifies
-          claims intelligence, financial analytics, and practice management
-          across your entire primary healthcare network.
+          {brand.name} is {labels.heroDescription}
         </motion.p>
 
         {/* CTA buttons */}
@@ -223,7 +222,8 @@ export default function Hero() {
         >
           <Link
             href="/login"
-            className="group inline-flex items-center gap-2 px-8 py-3 rounded-full bg-[#E3964C] text-white text-sm font-semibold hover:bg-[#D4843A] hover:shadow-[0_0_40px_rgba(227,150,76,0.15)] transition-all duration-300"
+            className="group inline-flex items-center gap-2 px-8 py-3 rounded-full text-white text-sm font-semibold hover:shadow-lg transition-all duration-300"
+            style={{ backgroundColor: brand.primaryColor }}
           >
             Access Dashboard
             <svg
@@ -283,9 +283,9 @@ export default function Hero() {
             POPIA Compliant
           </span>
           <span className="w-1 h-1 rounded-full bg-white/10" />
-          <span>88 Clinics Nationwide</span>
+          <span>{labels.trustBadge1}</span>
           <span className="w-1 h-1 rounded-full bg-white/10" />
-          <span>R33M+ Claims Addressable</span>
+          <span>{labels.trustBadge2}</span>
         </motion.div>
 
         {/* Network stats */}
@@ -296,9 +296,9 @@ export default function Hero() {
           className="flex items-center justify-center gap-8 md:gap-12 mt-16 pt-16 border-t border-white/[0.06]"
         >
           {[
-            { value: "88", label: "Clinics in Network" },
-            { value: "R33M+", label: "Claims Addressable" },
-            { value: "50%", label: "Faster Processing" },
+            labels.heroStat1,
+            labels.heroStat2,
+            labels.heroStat3,
           ].map((stat) => (
             <div key={stat.label} className="text-center">
               <div className="text-2xl md:text-3xl font-extralight text-white mb-1">{stat.value}</div>

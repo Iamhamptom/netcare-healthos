@@ -1,12 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-
-const stats = [
-  { number: "R662M", label: "Primary Care division revenue" },
-  { number: "3.5M", label: "patients served annually" },
-  { number: "24.5%", label: "EBITDA margin — and growing" },
-];
+import { useBrand, useLabels } from "@/lib/tenant-context";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -41,6 +36,13 @@ const statVariants = {
 };
 
 export default function Mission() {
+  const brand = useBrand();
+  const labels = useLabels();
+  const stats = [
+    labels.heroStat1,
+    labels.heroStat2,
+    labels.heroStat3,
+  ].map(s => ({ number: s.value, label: s.label }));
   return (
     <section
       className="relative w-full bg-white py-32 md:py-40 px-6 md:px-12 lg:px-24 overflow-hidden"
@@ -65,10 +67,10 @@ export default function Mission() {
           className="text-3xl md:text-5xl font-light tracking-[-0.03em] text-gray-900 mt-8 leading-[1.2]"
          
         >
-          South Africa&apos;s largest{" "}
-          <span className="text-[#3DA9D1]">primary care network</span>
+          Your specialist practice{" "}
+          <span style={{ color: brand.primaryColor }}>deserves</span>
           <br />
-          deserves the best technology.
+          the best technology.
         </motion.h2>
 
         {/* Body text */}
@@ -76,18 +78,18 @@ export default function Mission() {
           variants={fadeUp}
           className="text-gray-600 text-base md:text-lg font-light leading-relaxed mt-10 max-w-2xl mx-auto"
         >
-          Netcare Primary Healthcare operates 88 clinics, 41 pharmacies, and 12 day theatres with 568 practitioners
-          — but the primary care division runs on fragmented systems. CareOn powers the hospitals. Healthbridge and GoodX
-          power individual clinics. Nothing connects the network.
+          {brand.name} operates across multiple locations — but specialist practices run on
+          fragmented systems. Billing is manual. Pre-authorisations take days. GP referral tracking is non-existent.
+          Nothing connects the practice.
         </motion.p>
 
         <motion.p
           variants={fadeUp}
           className="text-gray-500 text-base md:text-lg font-light leading-relaxed mt-6 max-w-2xl mx-auto"
         >
-          <span className="text-[#1D3443] font-semibold">VisioHealth OS</span> was built to fill that gap —
+          <span className="text-[#1D3443] font-semibold">{brand.name}</span> was built to fill that gap —
           unifying claims intelligence, financial analytics, patient routing, and compliance
-          across the entire Netcare Primary Healthcare division. One platform. One command center.
+          across your entire practice. One platform. One command center.
         </motion.p>
 
         {/* Divider — subtle on white */}

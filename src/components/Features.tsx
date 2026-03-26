@@ -17,7 +17,7 @@ const features = [
   {
     title: "WhatsApp Patient Router",
     description:
-      "One WhatsApp number for all 88 clinics. AI routes patients to the nearest Medicross based on location, service needed, and real-time availability.",
+      "One WhatsApp number for your practice. AI routes patients to the nearest location based on service needed and real-time availability.",
     tag: "24/7 access, 60% fewer calls",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -28,7 +28,7 @@ const features = [
   {
     title: "Network Financial Dashboard",
     description:
-      "Real-time divisional P&L across 88 clinics, 41 pharmacies, 12 day theatres. EBITDA tracking, debtor aging, and eRA reconciliation — replacing fragmented Excel reporting.",
+      "Real-time P&L across all practice locations. Revenue tracking, debtor aging, and eRA reconciliation — replacing fragmented Excel reporting.",
     tag: "R840K/month saved",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -39,7 +39,7 @@ const features = [
   {
     title: "Smart Booking Engine",
     description:
-      "AI manages calendars across 568 practitioners. Patients book via WhatsApp or online, no-shows are predicted and prevented with automated reminders.",
+      "AI manages your calendars across all locations. Patients book via WhatsApp or online, no-shows are predicted and prevented with automated reminders.",
     tag: "40% fewer no-shows",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -50,7 +50,7 @@ const features = [
   {
     title: "POPIA Compliance Engine",
     description:
-      "Automated consent tracking (s18-s72 POPIA), HPCSA Booklet 10 alignment, audit logging, and breach detection across all clinics in 8 provinces.",
+      "Automated consent tracking (s18-s72 POPIA), HPCSA Booklet 10 alignment, audit logging, and breach detection across all locations.",
     tag: "100% audit-ready",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -100,14 +100,14 @@ export default function Features() {
           className="mb-16 md:mb-20 text-center"
         >
           <span className="inline-block uppercase tracking-[0.3em] text-xs text-[#3DA9D1] font-semibold mb-6">
-            Built for Netcare by VisioHealth OS
+            AI Operations Suite
           </span>
           <h2 className="text-4xl md:text-5xl font-light tracking-[-0.03em] text-gray-900">
             Your AI operations{" "}
             <span className="text-[#1D3443]">suite.</span>
           </h2>
           <p className="text-[15px] text-gray-400 mt-4 max-w-xl mx-auto">
-            6 AI-powered modules purpose-built for Netcare Primary Healthcare — integrating with CareOn, SwitchOn, MediSwitch, and your existing systems.
+            6 AI-powered modules purpose-built for your practice — integrating with your billing system, medical scheme switches, and existing workflows.
           </p>
         </motion.div>
 

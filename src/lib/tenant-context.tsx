@@ -30,6 +30,14 @@ const DEFAULT_LABELS: TenantLabels = {
   claimsSection: "Claims Recovery",
   analyticsSection: "Bureau Analytics",
   welcomeMessage: "Welcome back. Here's your claims intelligence.",
+  heroHeadline: "Your practice.",
+  heroSubheadline: "One",
+  heroDescription: "an AI-powered operations platform for healthcare.",
+  heroStat1: { value: "95%+", label: "Collection Rate" },
+  heroStat2: { value: "50%", label: "Fewer Rejections" },
+  heroStat3: { value: "100%", label: "POPIA Compliant" },
+  trustBadge1: "POPIA Compliant",
+  trustBadge2: "AI-Powered",
 };
 
 const TenantContext = createContext<TenantConfig>({

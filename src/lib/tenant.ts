@@ -74,6 +74,15 @@ export interface TenantLabels {
   claimsSection: string;
   analyticsSection: string;
   welcomeMessage: string;
+  // Hero / landing page content
+  heroHeadline: string;
+  heroSubheadline: string;
+  heroDescription: string;
+  heroStat1: { value: string; label: string };
+  heroStat2: { value: string; label: string };
+  heroStat3: { value: string; label: string };
+  trustBadge1: string;
+  trustBadge2: string;
 }
 
 const LABELS_BY_INDUSTRY: Record<IndustryType, TenantLabels> = {
@@ -90,6 +99,14 @@ const LABELS_BY_INDUSTRY: Record<IndustryType, TenantLabels> = {
     claimsSection: "Claims Recovery",
     analyticsSection: "Bureau Analytics",
     welcomeMessage: "Welcome back. Here's your claims intelligence.",
+    heroHeadline: "88 clinics.",
+    heroSubheadline: "One",
+    heroDescription: "an AI-powered operations platform that unifies claims intelligence, financial analytics, and practice management across your entire primary healthcare network.",
+    heroStat1: { value: "88", label: "Clinics in Network" },
+    heroStat2: { value: "R33M+", label: "Claims Addressable" },
+    heroStat3: { value: "50%", label: "Faster Processing" },
+    trustBadge1: "88 Clinics Nationwide",
+    trustBadge2: "R33M+ Claims Addressable",
   },
   hospital: {
     dashboardTitle: "Submission Intelligence",
@@ -104,6 +121,14 @@ const LABELS_BY_INDUSTRY: Record<IndustryType, TenantLabels> = {
     claimsSection: "Claims Submission",
     analyticsSection: "Hospital Analytics",
     welcomeMessage: "Welcome back. Here's your submission dashboard.",
+    heroHeadline: "Your hospital.",
+    heroSubheadline: "One",
+    heroDescription: "an AI-powered operations platform that unifies claims submission, financial analytics, and department management across your entire hospital network.",
+    heroStat1: { value: "95%+", label: "First-Pass Target" },
+    heroStat2: { value: "24hr", label: "Turnaround" },
+    heroStat3: { value: "50%", label: "Fewer Rejections" },
+    trustBadge1: "Hospital Grade",
+    trustBadge2: "AI Claims Submission",
   },
   enterprise_funder: {
     dashboardTitle: "Portfolio Analytics",
@@ -118,6 +143,14 @@ const LABELS_BY_INDUSTRY: Record<IndustryType, TenantLabels> = {
     claimsSection: "Claims Intelligence",
     analyticsSection: "Portfolio Insights",
     welcomeMessage: "Welcome back. Here's your portfolio overview.",
+    heroHeadline: "Your portfolio.",
+    heroSubheadline: "One",
+    heroDescription: "an AI-powered analytics platform for medical scheme administrators — claims intelligence, provider performance, and compliance monitoring.",
+    heroStat1: { value: "1M+", label: "Claims Analysed" },
+    heroStat2: { value: "R500M+", label: "Portfolio Value" },
+    heroStat3: { value: "60%", label: "Faster Adjudication" },
+    trustBadge1: "Enterprise Grade",
+    trustBadge2: "Multi-Scheme Analytics",
   },
   software_platform: {
     dashboardTitle: "AI Module Dashboard",
@@ -132,6 +165,14 @@ const LABELS_BY_INDUSTRY: Record<IndustryType, TenantLabels> = {
     claimsSection: "Claims API",
     analyticsSection: "Integration Analytics",
     welcomeMessage: "Welcome back. Here's your integration status.",
+    heroHeadline: "Your platform.",
+    heroSubheadline: "One",
+    heroDescription: "AI-powered claims validation and intelligence modules that integrate into your existing practice management software.",
+    heroStat1: { value: "99.5%", label: "Accuracy" },
+    heroStat2: { value: "<100ms", label: "API Latency" },
+    heroStat3: { value: "10+", label: "Integrations" },
+    trustBadge1: "API-First",
+    trustBadge2: "Real-Time Validation",
   },
   practice_group: {
     dashboardTitle: "Practice Operations",
@@ -146,6 +187,14 @@ const LABELS_BY_INDUSTRY: Record<IndustryType, TenantLabels> = {
     claimsSection: "Claims Management",
     analyticsSection: "Practice Analytics",
     welcomeMessage: "Welcome back. Here's your practice overview.",
+    heroHeadline: "Your practices.",
+    heroSubheadline: "One",
+    heroDescription: "an AI-powered operations platform that unifies claims, billing, and patient management across all your practice locations.",
+    heroStat1: { value: "95%+", label: "Collection Rate" },
+    heroStat2: { value: "30%", label: "Fewer Rejections" },
+    heroStat3: { value: "50%", label: "Faster Processing" },
+    trustBadge1: "Multi-Site",
+    trustBadge2: "AI Claims Intelligence",
   },
   specialist_practice: {
     dashboardTitle: "Specialist Command Centre",
@@ -160,6 +209,14 @@ const LABELS_BY_INDUSTRY: Record<IndustryType, TenantLabels> = {
     claimsSection: "Claims & Pre-Authorisation",
     analyticsSection: "Practice Intelligence",
     welcomeMessage: "Welcome back. Here's your practice at a glance.",
+    heroHeadline: "4 locations.",
+    heroSubheadline: "One",
+    heroDescription: "an AI-powered specialist practice platform — automate pre-authorisations, manage GP referrals, track disease activity, and streamline billing across all consultation rooms.",
+    heroStat1: { value: "4", label: "Practice Locations" },
+    heroStat2: { value: "75%", label: "Faster Pre-Auth" },
+    heroStat3: { value: "100%", label: "POPIA Compliant" },
+    trustBadge1: "Specialist Grade",
+    trustBadge2: "AI Pre-Authorisation",
   },
 };
 
