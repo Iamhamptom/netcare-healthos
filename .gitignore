@@ -20,3 +20,7 @@ ml/models/
 ml/rag-index/*.faiss
 ml/learning-fallback/
 .env*.local
+dev.db-shm
+dev.db-wal
+public/uploads/recordings/*.webm
+ml/rag-cloud/
