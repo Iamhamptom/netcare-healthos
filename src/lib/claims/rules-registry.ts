@@ -414,8 +414,8 @@ export const RULES_REGISTRY: RegistryRule[] = [
     legal: [
       { code: "PHISC_MEDCLM_S3.4", description: "PHISC MEDCLM — Scheme option code required for benefit routing", type: "phisc_spec", year: 2013 },
     ],
-    schemes: ["DH", "GEMS", "BON", "MOM", "MEDH", "BEST", "FED"], category: "administrative",
-    description: "Multi-option scheme without option code. Required for Healthbridge routing.",
+    schemes: ["DH", "GEMS"], category: "administrative",
+    description: "Discovery Health and GEMS strictly require option codes for Healthbridge benefit routing. Other schemes accept claims without option codes.",
     active: true,
   },
   {

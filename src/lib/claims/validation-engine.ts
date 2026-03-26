@@ -253,7 +253,7 @@ export function extractClaimLines(
       scheme: mapping.scheme ? row[mapping.scheme]?.trim() : undefined,
       schemeOptionCode: mapping.schemeOptionCode ? row[mapping.schemeOptionCode]?.trim() : undefined,
       motivationText: mapping.motivationText ? row[mapping.motivationText]?.trim() : undefined,
-      rawAmount: mapping.amount ? row[mapping.amount]?.trim() : undefined,
+      rawAmount: mapping.amount ? row[mapping.amount] : undefined,
       rawDateOfService: mapping.dateOfService ? row[mapping.dateOfService]?.trim() : undefined,
       placeOfService: mapping.placeOfService ? row[mapping.placeOfService]?.trim() : undefined,
       membershipNumber: mapping.membershipNumber ? row[mapping.membershipNumber]?.trim() : undefined,
@@ -1891,17 +1891,17 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     });
   }
 
-  // ── Rule 45: SCHEME_OPTION_MISSING — Scheme specified but no option ──
+  // ── Rule 45: SCHEME_OPTION_MISSING — Only Discovery & GEMS strictly require via Healthbridge ──
   if (item.scheme?.trim() && !item.schemeOptionCode?.trim()) {
-    // Multi-option schemes
-    const multiOptionSchemes = ["discovery", "gems", "bonitas", "momentum", "medihelp", "bestmed", "fedhealth"];
+    // Only schemes that STRICTLY require option codes for Healthbridge routing
+    const strictOptionSchemes = ["discovery", "gems"];
     const schemeLower = item.scheme.toLowerCase();
-    if (multiOptionSchemes.some(s => schemeLower.includes(s))) {
+    if (strictOptionSchemes.some(s => schemeLower.includes(s))) {
       issues.push({
         lineNumber: ln, field: "schemeOptionCode", code: "SCHEME_OPTION_MISSING",
         severity: "error", rule: "Missing Scheme Option Code",
-        message: `Scheme "${item.scheme}" has multiple plan options but no option code was specified. Benefit limits vary significantly between plans.`,
-        suggestion: "Add the scheme option/plan code to ensure correct benefit routing (e.g., Discovery KeyCare vs Comprehensive have different limits).",
+        message: `Scheme "${item.scheme}" requires a plan option code for Healthbridge benefit routing. Without it, the switch cannot determine benefit limits.`,
+        suggestion: "Add the scheme option/plan code (e.g., Discovery: CLSAV, EXEC, KCPLUS; GEMS: SAPPHIRE, EMERALD, ONYX).",
       });
     }
   }
