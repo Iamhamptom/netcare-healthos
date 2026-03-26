@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { resolveTenant, extractSlugFromHost, tenantCssVars } from "@/lib/tenant";
@@ -7,10 +7,34 @@ import { TenantProvider } from "@/lib/tenant-context";
 import CookieConsent from "@/components/CookieConsent";
 import "./globals.css";
 
-export async function generateMetadata(): Promise<Metadata> {
+/** Resolve brand slug from subdomain → x-brand header → cookie → query param */
+async function resolveBrandSlug(): Promise<string | null> {
   const hdrs = await headers();
   const host = hdrs.get("host") || "";
-  const slug = extractSlugFromHost(host);
+  // 1. Subdomain
+  const fromHost = extractSlugFromHost(host);
+  if (fromHost) return fromHost;
+  // 2. x-brand header (set by proxy from query param or cookie)
+  const fromHeader = hdrs.get("x-brand");
+  if (fromHeader) return fromHeader;
+  // 3. Cookie (persisted across navigation)
+  const ck = await cookies();
+  const fromCookie = ck.get("healthos-brand")?.value;
+  if (fromCookie) return fromCookie;
+  // 4. Query param fallback via x-url
+  const url = hdrs.get("x-url") || "";
+  if (url) {
+    try {
+      const u = new URL(url, "http://localhost");
+      const fromParam = u.searchParams.get("brand");
+      if (fromParam) return fromParam;
+    } catch { /* ignore */ }
+  }
+  return null;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const slug = await resolveBrandSlug();
   const tenant = await resolveTenant(slug || "demo");
   const b = tenant.brand;
 
@@ -40,19 +64,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const hdrs = await headers();
-  const host = hdrs.get("host") || "";
-  const url = hdrs.get("x-url") || hdrs.get("x-forwarded-url") || "";
-
-  // Resolve tenant from subdomain or ?brand= query param
-  let slug = extractSlugFromHost(host);
-  if (!slug && url) {
-    try {
-      const u = new URL(url, "http://localhost");
-      slug = u.searchParams.get("brand");
-    } catch { /* ignore */ }
-  }
-
+  const slug = await resolveBrandSlug();
   const tenant = await resolveTenant(slug || "demo");
   const cssVars = tenantCssVars(tenant.brand);
 

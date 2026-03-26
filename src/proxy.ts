@@ -10,10 +10,26 @@ import { verifyToken, SESSION_COOKIE } from "@/lib/auth";
 const isDemoMode = process.env.DEMO_MODE === "true";
 
 export async function proxy(request: NextRequest) {
-  // Forward full URL for white-label brand resolution (?brand=rheumcare)
+  // White-label brand persistence: ?brand= param sets a cookie so the brand
+  // sticks across all page navigations without needing ?brand= on every link.
+  const brandParam = request.nextUrl.searchParams.get("brand");
+  const brandCookie = request.cookies.get("healthos-brand")?.value;
+  const activeBrand = brandParam || brandCookie || null;
+
   const forwardUrl = () => {
     const res = NextResponse.next();
     res.headers.set("x-url", request.url);
+    // Persist brand in cookie if set via query param
+    if (activeBrand) {
+      res.headers.set("x-brand", activeBrand);
+      if (brandParam) {
+        res.cookies.set("healthos-brand", brandParam, {
+          path: "/",
+          maxAge: 60 * 60 * 24, // 24 hours
+          sameSite: "lax",
+        });
+      }
+    }
     return res;
   };
 
