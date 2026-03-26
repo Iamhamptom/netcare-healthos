@@ -516,26 +516,23 @@ export async function POST(req: NextRequest) {
     const flaggedBefore9 = result.lineResults.filter(function(lr) { return lr.status !== "valid"; }).length;
     console.log("[Layer 9] Flagged claims before agent review: " + flaggedBefore9);
 
-    // ── Layer 9: AI SDK Agent Review (tools + multi-step reasoning) ──
-    // Each flagged claim gets reviewed by a ToolLoopAgent with 7 tools:
-    // ICD-10 lookup, NAPPI lookup, tariff lookup, clinical pattern check,
-    // scheme validation, injection detection, knowledge base search.
-    let agenticReview: Awaited<ReturnType<typeof import("@/lib/agents/batch-orchestrator").reviewBatchWithAgent>> | null = null;
+    // ── Layer 9: AI SDK Agent Review ──
+    // Temporarily using legacy agentic review while SDK build issues are resolved.
+    // AI SDK agents (ToolLoopAgent) require Zod v4 which causes Vercel build failures.
+    // The agent code is ready at src/lib/agents/ — will be wired in once build is stable.
+    let agenticReview: Awaited<ReturnType<typeof import("@/lib/claims/agentic-review").runAgenticReview>> | null = null;
     try {
-      const { reviewBatchWithAgent } = await import("@/lib/agents/batch-orchestrator");
-      agenticReview = await reviewBatchWithAgent(result.lineResults);
+      const { runAgenticReview } = await import("@/lib/claims/agentic-review");
+      agenticReview = await runAgenticReview(result.lineResults);
 
       // Apply agent verdicts back to the result
-      for (const reviewed of agenticReview.reviews) {
+      for (const reviewed of agenticReview.claims) {
         const lr = result.lineResults.find(r => r.lineNumber === reviewed.lineNumber);
-        if (!lr) continue;
-
-        const ruleVerdict = lr.status === "error" ? "REJECTED" : lr.status === "warning" ? "WARNING" : "VALID";
-        if (reviewed.verdict === ruleVerdict) continue; // No change
+        if (!lr || !reviewed.changed) continue;
 
         const oldStatus = lr.status;
-        const newStatus = reviewed.verdict === "REJECTED" ? "error"
-          : reviewed.verdict === "WARNING" ? "warning" : "valid";
+        const newStatus = reviewed.finalVerdict === "REJECTED" ? "error"
+          : reviewed.finalVerdict === "WARNING" ? "warning" : "valid";
 
         if (oldStatus !== newStatus) {
           if (oldStatus === "error") result.invalidClaims--;
@@ -583,18 +580,16 @@ export async function POST(req: NextRequest) {
       reasoningPass: reasoningResult.totalCorrected > 0 ? reasoningResult : undefined,
       agenticReview: agenticReview ? {
         summary: agenticReview.summary,
-        overrides: agenticReview.reviews.filter(r => {
-          const lr = result.lineResults.find(l => l.lineNumber === r.lineNumber);
-          const ruleVerdict = lr?.status === "error" ? "REJECTED" : lr?.status === "warning" ? "WARNING" : "VALID";
-          return r.verdict !== ruleVerdict;
-        }).map(r => ({
-          line: r.lineNumber,
-          to: r.verdict,
-          reasoning: r.reasoning,
-          confidence: r.confidence,
-          toolsUsed: r.toolsUsed,
-          steps: r.stepsUsed,
-        })),
+        overrides: agenticReview.claims?.filter(function(c) { return c.changed; }).map(function(c) {
+          return {
+            line: c.lineNumber,
+            from: c.ruleEngineVerdict,
+            to: c.finalVerdict,
+            reasoning: c.reasoning,
+            confidence: c.confidence,
+          };
+        }) || [],
+        reasoningLog: agenticReview.reasoningLog,
       } : undefined,
       statisticalAnomalies,
       geoFraudAlerts,
