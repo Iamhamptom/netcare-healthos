@@ -630,12 +630,18 @@ export async function POST(req: NextRequest) {
       });
     } catch { /* Non-blocking */ }
 
+    // Flush override audit trail
+    const { flushAuditLog, getAuditStats } = await import("@/lib/claims/override-audit");
+    const overrideAudit = flushAuditLog();
+    const auditStats = getAuditStats();
+
     return NextResponse.json({
       ...result,
       detectedFormat,
       autoCorrections,
       selfDiagnosis,
       flaggedBeforeAgent: flaggedBefore9,
+      overrideAudit: overrideAudit.length > 0 ? { entries: overrideAudit, stats: auditStats } : undefined,
       doctorReasoning: doctorResult.totalOverrides > 0 ? doctorResult : undefined,
       reasoningPass: reasoningResult.totalCorrected > 0 ? reasoningResult : undefined,
       agenticReview: agenticReview ? {

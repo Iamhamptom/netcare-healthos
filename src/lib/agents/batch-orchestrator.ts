@@ -6,8 +6,9 @@
  * tools to look up real data.
  */
 
-import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
+import { getProtectedRuleCodes, canOverride as registryCanOverride } from "@/lib/claims/registry-lookup";
+import { logOverride } from "@/lib/claims/override-audit";
 import { claimsReviewerAgent } from "./claims-reviewer";
 import type { ClaimLineItem, ValidationIssue } from "@/lib/claims/types";
 
@@ -22,18 +23,9 @@ export interface AgentReviewResult {
 }
 
 // Codes that should NEVER be overridden by the agent
-const HARD_REJECT_CODES = new Set([
-  "MISSING_ICD10", "INVALID_FORMAT", "GENDER_MISMATCH", "AGE_MISMATCH",
-  "FABRICATED_NAPPI", "FUTURE_DATE", "FUTURE_DATE_SERVICE", "STALE_CLAIM",
-  "DUPLICATE_CLAIM", "ASTERISK_PRIMARY", "ECC_AS_PRIMARY", "MISSING_ECC",
-  "MISSING_PATIENT_NAME", "NEONATAL_ON_ADULT", "OBSTETRIC_ON_MALE",
-  "INVALID_AMOUNT", "INVALID_AMOUNT_FORMAT", "INVALID_DATE_FORMAT",
-  "SCHEME_OPTION_MISSING", "MISSING_MEMBERSHIP", "NO_PATIENT_IDENTIFIER",
-  "EXCESSIVE_QUANTITY", "DENTAL_TARIFF_MISMATCH", "CLAIM_WINDOW_EXPIRED",
-  "INVALID_PRACTICE_NUMBER", "INVALID_OPTION_CODE",
-  "SERVICE_NOT_RENDERED", "TELEPHONIC_ON_INPERSON", "PATIENT_NOT_PRESENT",
-  "ICD_10_CM_DETECTED", "TRAILING_WHITESPACE", "CROSS_SCHEME_REFERENCE",
-]);
+// HARD_REJECT_CODES — driven by the authoritative rules registry
+// All tier 1+2 rules and non-overridable rules
+const HARD_REJECT_CODES = getProtectedRuleCodes();
 
 /**
  * Review a single claim using the AI SDK agent.
@@ -104,6 +96,18 @@ async function reviewSingleClaim(
     let finalVerdict = verdict;
     if (ruleVerdict === "REJECTED" && verdict === "VALID" && (parsed.confidence || 0.5) < 0.8) {
       finalVerdict = "WARNING";
+    }
+
+    // Post-AI validation: check if AI overrode any protected rules
+    if (finalVerdict !== ruleVerdict) {
+      const protectedIssues = issues.filter(function(i) { return HARD_REJECT_CODES.has(i.code); });
+      if (protectedIssues.length > 0) {
+        // AI tried to override protected rules — block it
+        for (const pi of protectedIssues) {
+          logOverride({ ruleCode: pi.code, layer: "agentic_review", action: "blocked", fromSeverity: ruleVerdict, toSeverity: ruleVerdict, reason: "Registry protects this rule (tier 1-2)", lineNumber: claim.lineNumber });
+        }
+        finalVerdict = ruleVerdict as "VALID" | "WARNING" | "REJECTED";
+      }
     }
 
     return {
