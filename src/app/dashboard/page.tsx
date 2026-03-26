@@ -9,6 +9,7 @@ import {
   BarChart3, ArrowRight, Loader2,
 } from "lucide-react";
 import Link from "next/link";
+import { useBrand, useLabels } from "@/lib/tenant-context";
 
 interface DashboardStats {
   conversations: number;
@@ -61,6 +62,8 @@ function TiltCard({ children, className }: { children: React.ReactNode; classNam
 }
 
 export default function DashboardPage() {
+  const brand = useBrand();
+  const labels = useLabels();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [branding, setBranding] = useState<PracticeBranding | null>(null);
   const [activeTab, setActiveTab] = useState<"overview" | "operations">("overview");
@@ -75,7 +78,7 @@ export default function DashboardPage() {
       if (data.user?.practice) {
         const p = data.user.practice;
         setBranding({
-          name: p.name || p.practiceName || "Netcare",
+          name: p.name || p.practiceName || brand.name,
           primaryColor: p.primaryColor || p.primary_color || "#1D3443",
           secondaryColor: p.secondaryColor || p.secondary_color || "#3DA9D1",
           tagline: p.tagline || "",
@@ -138,7 +141,7 @@ export default function DashboardPage() {
   ];
 
   const quickLinks = [
-    { label: "Network Finance", icon: Building2, href: "/dashboard/network", desc: "Divisional P&L across 88 clinics" },
+    { label: "Practice Finance", icon: Building2, href: "/dashboard/network", desc: `P&L across all ${labels.entityName}` },
     { label: "FD KPIs", icon: BarChart3, href: "/dashboard/kpi", desc: "30+ financial metrics" },
     { label: "Savings Tracker", icon: Zap, href: "/dashboard/savings", desc: "R7.6M+ saved" },
     { label: "Board Pack", icon: FileText, href: "/dashboard/board-pack", desc: "Export-ready reports" },
@@ -197,15 +200,15 @@ export default function DashboardPage() {
           <div className="relative p-6">
             <div className="flex items-center gap-2 mb-5">
               <Shield className="w-3.5 h-3.5 text-white/70" />
-              <span className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-semibold">Network Overview</span>
+              <span className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-semibold">Practice Overview</span>
               <span className="ml-auto text-[10px] text-white/70 font-mono">FY2026</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
               {[
-                { label: "Annual Savings", value: "R95M+", sub: "addressable" },
-                { label: "Claims Processing", value: "50%", sub: "faster" },
-                { label: "Clinics Connected", value: "88", sub: "network-wide" },
-                { label: "POPIA Compliance", value: "100%", sub: "all provinces" },
+                { label: labels.heroStat1.label, value: labels.heroStat1.value, sub: "connected" },
+                { label: labels.heroStat2.label, value: labels.heroStat2.value, sub: "improvement" },
+                { label: labels.heroStat3.label, value: labels.heroStat3.value, sub: "verified" },
+                { label: "POPIA Compliance", value: "100%", sub: "all locations" },
               ].map((item, i) => (
                 <motion.div
                   key={item.label}
