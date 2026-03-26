@@ -746,12 +746,19 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
       suggestion: `Use a more specific code under the ${code} category. For example, ${code}.0 or ${code}.9.`,
     });
   } else if (!isCompleteAt3 && !entry && mitEntry && !mitEntry.isValidClinical) {
-    // MIT says code exists but isn't valid for clinical use
     issues.push({
       lineNumber: ln, field: "primaryICD10", code: "NON_SPECIFIC",
       severity: "warning", rule: "Insufficient Specificity",
       message: `"${code}" (${mitEntry.description}) is not valid for clinical use per the SA MIT. A more specific code is recommended.`,
       suggestion: `Use a more specific subcategory code under ${code}.`,
+    });
+  } else if (!isCompleteAt3 && !entry && !mitEntry && code.length === 3 && /^[A-Z]\d{2}$/i.test(code)) {
+    // 3-character code not in any database — likely needs a 4th character
+    issues.push({
+      lineNumber: ln, field: "primaryICD10", code: "NON_SPECIFIC",
+      severity: "warning", rule: "Insufficient Specificity",
+      message: `"${code}" is a 3-character code that likely needs a 4th character for specificity. Schemes may reject 3-character codes when more specific subcodes exist.`,
+      suggestion: `Use a more specific code: ${code}.0, ${code}.1, ${code}.9, etc.`,
     });
   }
 
@@ -1968,7 +1975,7 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
         { name: "momentum", pattern: /momentum/i },
       ];
       for (const other of otherSchemes) {
-        if (!schemeLower.includes(other.name) && other.pattern.test(motLower) && !/previously|transferred|moved from/.test(motLower)) {
+        if (!schemeLower.includes(other.name) && other.pattern.test(motLower)) {
           issues.push({
             lineNumber: ln, field: "motivationText", code: "CROSS_SCHEME_REFERENCE",
             severity: "warning", rule: "Cross-Scheme Reference in Motivation",

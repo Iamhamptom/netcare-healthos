@@ -271,6 +271,11 @@ const NAPPI_DIAGNOSIS_MAP: Record<string, { validPrefixes: string[]; label: stri
   gastrointestinal: { validPrefixes: ["K", "R"], label: "digestive conditions (K-codes)" },
   dermatology: { validPrefixes: ["L", "B"], label: "skin conditions (L-codes)" },
   thyroid: { validPrefixes: ["E"], label: "endocrine conditions (E-codes)" },
+  neurological: { validPrefixes: ["G", "F", "R"], label: "neurological/epilepsy conditions (G-codes)" },
+  antidepressant: { validPrefixes: ["F", "G", "R"], label: "mental health/neurological conditions (F-codes)" },
+  antihistamine: { validPrefixes: ["J", "L", "T", "R"], label: "allergic/respiratory conditions" },
+  corticosteroid: { validPrefixes: ["J", "L", "M", "D", "E", "K"], label: "inflammatory/autoimmune conditions" },
+  endocrine: { validPrefixes: ["E", "C"], label: "endocrine conditions (E-codes)" },
   arv: { validPrefixes: ["B", "Z"], label: "HIV/immunodeficiency (B20-B24)" },
 };
 
