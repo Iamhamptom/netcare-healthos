@@ -22,13 +22,30 @@ export async function POST(request: Request) {
     return NextResponse.json({ status: "feedback_logged" });
   }
 
-  const result = retrieveWithMetrics(query);
+  // Try RAG v3 (Supabase pgvector, 189K chunks) first, fallback to v2
+  let context = "";
+  let sources: Record<string, string[]> = {};
+  let metrics: Record<string, unknown> = {};
+  let version = "v2";
+  try {
+    const ragV3 = await import("@/lib/rag-v3");
+    const v3Result = await ragV3.retrieveWithMetrics(query);
+    context = v3Result.context;
+    sources = v3Result.sources;
+    version = "v3";
+  } catch {
+    const v2Result = retrieveWithMetrics(query);
+    context = v2Result.context;
+    sources = v2Result.sources;
+    metrics = v2Result.metrics;
+  }
   return NextResponse.json({
     query,
-    context: result.context,
-    sources: result.sources,
-    metrics: result.metrics,
-    docIds: result.docIds,
+    context,
+    sources,
+    metrics,
+    version,
+    chunks: Object.keys(sources).length,
   });
 }
 

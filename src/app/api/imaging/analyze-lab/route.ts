@@ -96,7 +96,11 @@ Return JSON:
 
     const data = await res.json();
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    const parsed = JSON.parse(text);
+    let jsonStr = text;
+    const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (fenceMatch) jsonStr = fenceMatch[1];
+    jsonStr = jsonStr.replace(/\n/g, " ").replace(/\t/g, " ");
+    const parsed = JSON.parse(jsonStr);
 
     return NextResponse.json({ success: true, ...parsed, provider: "gemini" });
   } catch (err) {
