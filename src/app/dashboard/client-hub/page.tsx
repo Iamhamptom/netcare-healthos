@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import {
   Users, TrendingUp, CreditCard, MessageSquare, Calendar,
-  FileText, Search, MapPin, BarChart3, Bot, ArrowUpRight,
+  FileText, Search, BarChart3, Bot,
   Phone, Mail, CheckCircle2, Clock, AlertCircle, Zap,
-  ChevronRight, DollarSign, Target, Megaphone, RefreshCw
+  DollarSign, Target, Megaphone, RefreshCw
 } from "lucide-react";
 
 interface Lead {
@@ -241,21 +240,29 @@ export default function ClientHubPage() {
           {/* Quick actions */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { label: "Generate Google Ads", icon: Search, action: () => { setActiveTab("outreach"); generateCampaign("google_ads"); } },
-              { label: "View All Leads", icon: Users, action: () => setActiveTab("leads") },
-              { label: "Claims Copilot", icon: FileText, href: "/dashboard/claims-copilot" },
-              { label: "Documents", icon: FileText, href: "/dashboard/documents" },
+              { label: "Generate Google Ads", icon: Search, action: () => { setActiveTab("outreach"); generateCampaign("google_ads"); }, href: "" },
+              { label: "View All Leads", icon: Users, action: () => setActiveTab("leads"), href: "" },
+              { label: "Claims Copilot", icon: FileText, action: undefined, href: "/dashboard/claims-copilot" },
+              { label: "Documents", icon: FileText, action: undefined, href: "/dashboard/documents" },
             ].map((btn, i) => {
               const Icon = btn.icon;
-              const Wrapper = btn.href ? "a" : "button";
+              if (btn.href) {
+                return (
+                  <a key={i} href={btn.href} className="p-3 rounded-xl bg-[#0f1a22] border border-[#1D3443]/50 hover:border-[#3DA9D1]/30 transition-all flex items-center gap-3 text-left">
+                    <div className="w-8 h-8 rounded-lg bg-[#1D3443] flex items-center justify-center shrink-0">
+                      <Icon className="w-4 h-4 text-[#3DA9D1]" />
+                    </div>
+                    <span className="text-xs font-medium text-zinc-300">{btn.label}</span>
+                  </a>
+                );
+              }
               return (
-                <Wrapper key={i} href={btn.href} onClick={btn.action}
-                  className="p-3 rounded-xl bg-[#0f1a22] border border-[#1D3443]/50 hover:border-[#3DA9D1]/30 transition-all flex items-center gap-3 text-left">
+                <button key={i} onClick={btn.action} className="p-3 rounded-xl bg-[#0f1a22] border border-[#1D3443]/50 hover:border-[#3DA9D1]/30 transition-all flex items-center gap-3 text-left">
                   <div className="w-8 h-8 rounded-lg bg-[#1D3443] flex items-center justify-center shrink-0">
                     <Icon className="w-4 h-4 text-[#3DA9D1]" />
                   </div>
                   <span className="text-xs font-medium text-zinc-300">{btn.label}</span>
-                </Wrapper>
+                </button>
               );
             })}
           </div>
