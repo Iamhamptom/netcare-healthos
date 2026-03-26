@@ -77,8 +77,9 @@ function motivationExplainsFlag(motivation: string, issueCode: string): boolean 
       return /clinically|indicated|rule.?out|exclude|suspect|confirm|chronic|deteriorat|escalat|protocol/i.test(m);
 
     case "MISSING_ECC":
-      // Motivation mentions mechanism of injury
-      return /fall|assault|accident|collision|bite|struck|crush|cut|burn|MVA|IOD|work.?related/i.test(m);
+      // NEVER override MISSING_ECC — the switch REQUIRES a formal V/W/X/Y code.
+      // Describing the mechanism in motivation text does NOT replace the code.
+      return false;
 
     default:
       return false;

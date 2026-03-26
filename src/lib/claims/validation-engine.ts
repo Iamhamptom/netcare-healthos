@@ -1928,6 +1928,83 @@ function validateLine(item: ClaimLineItem): ValidationIssue[] {
     }
   }
 
+  // ── Rule 45d: SERVICE_NOT_RENDERED — No-show / telephonic on in-person tariff ──
+  if (item.motivationText) {
+    const motLower = item.motivationText.toLowerCase();
+    // No-show billing — patient didn't attend but practice charged
+    if (/did not attend|dna|no.?show|patient absent|failed to attend/.test(motLower) && item.tariffCode !== "0199") {
+      issues.push({
+        lineNumber: ln, field: "motivationText", code: "SERVICE_NOT_RENDERED",
+        severity: "error", rule: "Service Not Rendered — No-Show",
+        message: `Motivation indicates patient did not attend ("${item.motivationText.slice(0, 50)}...") but a consultation tariff "${item.tariffCode}" was billed. No-show fees are not claimable from medical schemes.`,
+        suggestion: "No-show fees must be billed directly to the patient, not the medical scheme.",
+      });
+    }
+    // Telephonic consultation on in-person tariff
+    if (/telephonic|phone.*call|called requesting|phone.*consult/.test(motLower) && ["0190", "0191", "0192"].includes(item.tariffCode || "")) {
+      issues.push({
+        lineNumber: ln, field: "tariffCode", code: "TELEPHONIC_ON_INPERSON",
+        severity: "error", rule: "Telephonic on In-Person Tariff",
+        message: `Motivation indicates telephonic consultation but in-person tariff "${item.tariffCode}" was billed. Telephonic consultations require the appropriate telephonic modifier or tariff.`,
+        suggestion: "Use the telephonic consultation tariff or add the telephonic modifier.",
+      });
+    }
+    // Patient not present for non-script tariff
+    if (/patient not present|daughter.*picked|collected by|repeat.*script.*collect|medication.*collect/.test(motLower) && item.tariffCode !== "0199") {
+      issues.push({
+        lineNumber: ln, field: "tariffCode", code: "PATIENT_NOT_PRESENT",
+        severity: "error", rule: "Patient Not Present",
+        message: `Motivation indicates patient was not present but tariff "${item.tariffCode}" (not a repeat script) was billed. Only tariff 0199 may be billed without the patient.`,
+        suggestion: "Use tariff 0199 (chronic repeat script) if the patient is not present.",
+      });
+    }
+    // Cross-scheme reference (motivation mentions different scheme)
+    if (item.scheme) {
+      const schemeLower = item.scheme.toLowerCase();
+      const otherSchemes = [
+        { name: "discovery", pattern: /discovery/i },
+        { name: "gems", pattern: /\bgems\b/i },
+        { name: "bonitas", pattern: /bonitas/i },
+        { name: "momentum", pattern: /momentum/i },
+      ];
+      for (const other of otherSchemes) {
+        if (!schemeLower.includes(other.name) && other.pattern.test(motLower) && !/previously|transferred|moved from/.test(motLower)) {
+          issues.push({
+            lineNumber: ln, field: "motivationText", code: "CROSS_SCHEME_REFERENCE",
+            severity: "warning", rule: "Cross-Scheme Reference in Motivation",
+            message: `Claim scheme is "${item.scheme}" but motivation references "${other.name}". This may indicate a copy-paste error or social engineering attempt.`,
+            suggestion: "Verify the motivation text matches the billing scheme.",
+          });
+          break;
+        }
+      }
+    }
+  }
+
+  // ── Rule 45e: TRAILING_WHITESPACE — Amount with trailing/leading spaces ──
+  if (item.rawAmount && item.rawAmount !== item.rawAmount.trim()) {
+    issues.push({
+      lineNumber: ln, field: "amount", code: "TRAILING_WHITESPACE",
+      severity: "error", rule: "Amount Contains Whitespace",
+      message: `Amount "${item.rawAmount}" contains leading/trailing whitespace. This may cause parsing failures at the switch.`,
+      suggestion: "Remove whitespace from the amount field.",
+    });
+  }
+
+  // ── Rule 45f: ICD_10_CM_DETECTED — US ICD-10-CM code (not SA ICD-10-ZA) ──
+  if (item.primaryICD10 && /^[A-Z]\d{2}\.\d{2,}$/.test(item.primaryICD10)) {
+    // SA ICD-10 uses max 1 decimal digit (e.g., M54.5). US ICD-10-CM uses 2+ (e.g., M54.50)
+    const decimalPart = item.primaryICD10.split(".")[1] || "";
+    if (decimalPart.length >= 2) {
+      issues.push({
+        lineNumber: ln, field: "primaryICD10", code: "ICD_10_CM_DETECTED",
+        severity: "error", rule: "ICD-10-CM Code Detected (US, Not SA)",
+        message: `"${item.primaryICD10}" appears to be a US ICD-10-CM code (2+ decimal digits). SA uses ICD-10-ZA which has max 1 decimal digit.`,
+        suggestion: `Use the SA ICD-10 equivalent: ${item.primaryICD10.split(".")[0]}.${decimalPart[0]}`,
+      });
+    }
+  }
+
   // ── Rule 46: LOWERCASE_ICD10 — ICD-10 submitted in lowercase ──
   if (item.rawICD10 && item.rawICD10 !== item.rawICD10.toUpperCase() && /^[a-z]\d/i.test(item.rawICD10)) {
     issues.push({

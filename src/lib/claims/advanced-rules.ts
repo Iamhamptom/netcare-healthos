@@ -290,7 +290,7 @@ function validateMedicationDiagnosis(line: ClaimLineItem): ValidationIssue[] {
       lineNumber: line.lineNumber,
       field: "nappiCode",
       code: "MED_DIAGNOSIS_MISMATCH",
-      severity: "info",
+      severity: "warning",
       rule: "Medication-Diagnosis Mismatch",
       message: `${nappi.description} (${nappi.category}) dispensed for diagnosis "${line.primaryICD10}" — this medication is typically used for ${mapping.label}.`,
       suggestion: "Verify the medication is appropriate for this diagnosis. Schemes may query this combination.",
