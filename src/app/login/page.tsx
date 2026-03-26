@@ -60,22 +60,22 @@ export default function LoginPage() {
               {brand.name.charAt(0)}
             </div>
           )}
-          <span className="text-[#3DA9D1]/80 text-[11px] font-semibold uppercase tracking-widest">{brand.tagline || "AI Healthcare Operations"}</span>
+          <span style={{ color: brand.primaryColor, opacity: 0.8 }} className="text-[11px] font-semibold uppercase tracking-widest">{brand.tagline || "AI Healthcare Operations"}</span>
         </div>
 
         <div className="relative z-10 space-y-6">
           <h2 className="text-2xl font-semibold text-white leading-snug">
             {labels.welcomeMessage.split(".")[0]}.<br />One command center.
           </h2>
-          <p className="text-[#3DA9D1]/80 text-sm leading-relaxed max-w-xs">
+          <p style={{ color: brand.primaryColor, opacity: 0.8 }} className="text-sm leading-relaxed max-w-xs">
             AI-powered claims intelligence, financial dashboards, and operational analytics for your practice.
           </p>
 
           <div className="space-y-3 pt-2">
             {[
-              { icon: Bot, text: "Network-wide claims intelligence" },
-              { icon: CalendarCheck, text: "Multi-site financial dashboards" },
-              { icon: Shield, text: "POPIA compliant across 88 clinics" },
+              { icon: Bot, text: "AI claims pre-validation" },
+              { icon: CalendarCheck, text: "Booking & scheduling automation" },
+              { icon: Shield, text: "POPIA compliant across all locations" },
             ].map((item, i) => (
               <motion.div
                 key={item.text}
@@ -84,18 +84,18 @@ export default function LoginPage() {
                 transition={{ delay: 0.3 + i * 0.1 }}
                 className="flex items-center gap-3"
               >
-                <div className="w-8 h-8 rounded-lg bg-[#3DA9D1]/10 flex items-center justify-center">
-                  <item.icon className="w-4 h-4 text-[#3DA9D1]" />
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${brand.primaryColor}15` }}>
+                  <item.icon className="w-4 h-4" style={{ color: brand.primaryColor }} />
                 </div>
-                <span className="text-[#3DA9D1]/80 text-sm">{item.text}</span>
+                <span className="text-sm" style={{ color: brand.primaryColor, opacity: 0.8 }}>{item.text}</span>
               </motion.div>
             ))}
           </div>
         </div>
 
         <div className="relative z-10 flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-[#3DA9D1] animate-pulse" />
-          <span className="text-[#3DA9D1]/70 text-xs font-semibold uppercase tracking-widest">System Online</span>
+          <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: brand.primaryColor }} />
+          <span style={{ color: brand.primaryColor, opacity: 0.7 }} className="text-xs font-semibold uppercase tracking-widest">System Online</span>
         </div>
       </div>
 
@@ -142,7 +142,7 @@ export default function LoginPage() {
                 required
                 aria-invalid={!!error}
                 aria-describedby={error ? "login-error" : undefined}
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 focus:bg-white focus:border-[#3DA9D1] focus:outline-none focus:ring-2 focus:ring-[#3DA9D1]/20 transition-all"
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 focus:bg-white focus:border-[var(--brand-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/20 transition-all"
                 placeholder={`you@${brand.websiteUrl ? new URL(brand.websiteUrl).hostname.replace("www.", "") : "company.co.za"}`}
               />
             </div>
@@ -159,13 +159,13 @@ export default function LoginPage() {
                 required
                 aria-invalid={!!error}
                 aria-describedby={error ? "login-error" : undefined}
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 focus:bg-white focus:border-[#3DA9D1] focus:outline-none focus:ring-2 focus:ring-[#3DA9D1]/20 transition-all"
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 focus:bg-white focus:border-[var(--brand-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/20 transition-all"
                 placeholder="Enter password"
               />
             </div>
 
             <div className="flex justify-end">
-              <a href="/forgot-password" className="text-[12px] text-[#3DA9D1] hover:underline font-medium">
+              <a href="/forgot-password" className="text-[12px] text-[var(--brand-primary)] hover:underline font-medium">
                 Forgot password?
               </a>
             </div>
@@ -174,7 +174,8 @@ export default function LoginPage() {
               type="submit"
               disabled={loading}
               whileTap={{ scale: 0.98 }}
-              className="w-full py-3.5 mt-2 bg-[#E3964C] text-white font-medium text-sm rounded-xl hover:bg-[#D4843A] transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-[#E3964C]/20"
+              className="w-full py-3.5 mt-2 text-white font-medium text-sm rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg"
+              style={{ backgroundColor: brand.primaryColor }}
             >
               {loading && (
                 <svg className="w-4 h-4 animate-spin" role="status" aria-label="Loading" fill="none" viewBox="0 0 24 24">
@@ -187,7 +188,7 @@ export default function LoginPage() {
 
             <p className="text-center text-xs text-gray-400 pt-2">
               Don&apos;t have an account?{" "}
-              <Link href="/register" className="text-[#3DA9D1] hover:text-[#1D8AB5] transition-colors">
+              <Link href="/register" className="text-[var(--brand-primary)] hover:text-[#1D8AB5] transition-colors">
                 Get started free
               </Link>
             </p>
@@ -211,17 +212,16 @@ export default function LoginPage() {
           </div>
 
           <div className="flex justify-center gap-3 mt-6">
-            <Link href="/terms" className="text-[10px] text-gray-500 hover:text-[#3DA9D1] transition-colors">Terms</Link>
+            <Link href="/terms" className="text-[10px] text-gray-500 hover:text-[var(--brand-primary)] transition-colors">Terms</Link>
             <span className="text-[10px] text-gray-400">&middot;</span>
-            <Link href="/privacy" className="text-[10px] text-gray-500 hover:text-[#3DA9D1] transition-colors">Privacy</Link>
+            <Link href="/privacy" className="text-[10px] text-gray-500 hover:text-[var(--brand-primary)] transition-colors">Privacy</Link>
             <span className="text-[10px] text-gray-400">&middot;</span>
-            <Link href="/cookies" className="text-[10px] text-gray-500 hover:text-[#3DA9D1] transition-colors">Cookies</Link>
+            <Link href="/cookies" className="text-[10px] text-gray-500 hover:text-[var(--brand-primary)] transition-colors">Cookies</Link>
           </div>
 
           <div className="mt-4 space-y-1 text-center">
             <p className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">Demo Accounts</p>
-            <p className="text-[11px] text-gray-500">sara.nayager@netcare.co.za</p>
-            <p className="text-[11px] text-gray-500">chris.mathew@netcare.co.za</p>
+            <p className="text-[11px] text-gray-500">demo@{brand.websiteUrl ? new URL(brand.websiteUrl).hostname.replace("www.", "") : "practice.co.za"}</p>
             <p className="text-[11px] text-gray-500">Password: Demo2026!</p>
           </div>
         </motion.div>
