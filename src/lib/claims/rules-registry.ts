@@ -521,7 +521,7 @@ export const RULES_REGISTRY: RegistryRule[] = [
     name: "Insufficient ICD-10 Specificity",
     severity: "warning",
     precedence: 3,
-    override: { canBeOverridden: true, allowedLayers: ["agentic_review"], maxAction: "downgrade_to_info" },
+    override: { canBeOverridden: false, allowedLayers: [], maxAction: "none" },
     legal: [
       { code: "WHO_ICD10_V2_S4.1", description: "WHO ICD-10 — Use most specific code available", type: "who_standard", year: 2019 },
     ],

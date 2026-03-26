@@ -262,7 +262,7 @@ import { lookupNAPPI } from "./nappi-database";
  * If the dispensed medication's category doesn't match the diagnosis chapter, flag it.
  */
 const NAPPI_DIAGNOSIS_MAP: Record<string, { validPrefixes: string[]; label: string }> = {
-  cardiovascular: { validPrefixes: ["I", "R"], label: "circulatory/cardiac conditions (I-codes)" },
+  cardiovascular: { validPrefixes: ["I", "E", "R"], label: "circulatory/metabolic conditions (I/E-codes, includes hyperlipidaemia E78)" },
   diabetes: { validPrefixes: ["E"], label: "endocrine/metabolic conditions (E-codes)" },
   respiratory: { validPrefixes: ["J", "R"], label: "respiratory conditions (J-codes)" },
   antibiotic: { validPrefixes: ["A", "B", "J", "K", "L", "M", "N", "S", "T", "H", "G"], label: "infectious/bacterial conditions" },
