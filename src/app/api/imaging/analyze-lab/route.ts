@@ -96,13 +96,24 @@ Return JSON:
 
     const data = await res.json();
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    let jsonStr = text;
-    const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (fenceMatch) jsonStr = fenceMatch[1];
-    jsonStr = jsonStr.replace(/\n/g, " ").replace(/\t/g, " ");
-    const parsed = JSON.parse(jsonStr);
 
-    return NextResponse.json({ success: true, ...parsed, provider: "gemini" });
+    // Robust JSON extraction — try multiple strategies
+    let parsed: Record<string, unknown> = {};
+    try { parsed = JSON.parse(text); } catch {
+      // Try extracting from markdown fences
+      const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (fenceMatch) { try { parsed = JSON.parse(fenceMatch[1]); } catch { /* */ } }
+      // Try finding first { to last }
+      if (!parsed.results) {
+        const start = text.indexOf("{");
+        const end = text.lastIndexOf("}");
+        if (start >= 0 && end > start) {
+          try { parsed = JSON.parse(text.slice(start, end + 1)); } catch { /* */ }
+        }
+      }
+    }
+
+    return NextResponse.json({ success: true, ...parsed, provider: "gemini", rawLength: text.length });
   } catch (err) {
     return NextResponse.json({ error: err instanceof Error ? err.message : "Failed to analyze lab report" }, { status: 500 });
   }
