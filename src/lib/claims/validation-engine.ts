@@ -244,7 +244,7 @@ export function extractClaimLines(
       tariffCode: mapping.tariffCode ? row[mapping.tariffCode]?.trim() : undefined,
       nappiCode: mapping.nappiCode ? row[mapping.nappiCode]?.trim().replace(/-/g, "") : undefined,
       quantity: mapping.quantity ? parseInt(row[mapping.quantity], 10) || undefined : undefined,
-      amount: mapping.amount ? parseFloat((row[mapping.amount] || "").replace(/[^0-9.\-]/g, "")) || undefined : undefined,
+      amount: mapping.amount ? (() => { const v = parseFloat((row[mapping.amount] || "").replace(/[^0-9.\-]/g, "")); return isNaN(v) ? undefined : v; })() : undefined,
       modifier: mapping.modifier ? row[mapping.modifier]?.trim() : undefined,
       practitionerType: mapping.practitionerType ? normalizeDiscipline(row[mapping.practitionerType]?.trim()) : undefined,
       dateOfService: mapping.dateOfService ? (row[mapping.dateOfService]?.trim() || "").replace(/[./]/g, "-") : undefined,
@@ -2715,7 +2715,7 @@ function validateCrossLine(lines: ClaimLineItem[]): ValidationIssue[] {
       for (const ln of lineNums) {
         issues.push({
           lineNumber: ln, field: "motivationText", code: "COPY_PASTE_MOTIVATION",
-          severity: "warning", rule: "Duplicate Motivation Text",
+          severity: "info", rule: "Duplicate Motivation Text",
           message: `Identical motivation text used across ${lineNums.length} claims. This pattern is flagged as potential copy-paste fraud.`,
           suggestion: "Each claim should have unique, patient-specific clinical justification.",
         });

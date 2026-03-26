@@ -579,20 +579,37 @@ export async function POST(req: NextRequest) {
     }
 
     // ── HARD GATE: Protected warnings — restore if AI suppressed them ──
-    // R-codes, non-specific ICD, PMB missing — must stay as WARNING minimum
+    // These warnings MUST survive all AI layers. If AI set to VALID, restore WARNING.
+    const PROTECTED_WARNING_CODES = new Set([
+      "PROMPT_INJECTION_DETECTED", "MED_DIAGNOSIS_MISMATCH",
+      "CROSS_SCHEME_REFERENCE", "IMAGING_DIAGNOSIS_MISMATCH",
+      "PROCEDURE_DIAGNOSIS_CONTRADICTION", "KEYCARE_CDL_NO_MOTIVATION",
+    ]);
+
     for (const lr of result.lineResults) {
-      if (lr.status !== "valid") continue; // Only check claims AI set to VALID
-      const cd = lr.claimData;
-      const icd = cd.primaryICD10 || "";
+      if (lr.status !== "valid") continue;
+
+      // Check if any protected warning was in the original issues
+      const hasProtectedWarning = lr.issues.some(function(i) {
+        return PROTECTED_WARNING_CODES.has(i.code) && (i.severity === "warning" || i.severity === "error");
+      });
+
+      if (hasProtectedWarning) {
+        lr.status = "warning";
+        result.validClaims--;
+        result.warningClaims++;
+      }
 
       // R-code as primary with procedure tariff = WARNING
-      if (/^R\d/i.test(icd) && cd.tariffCode && !["0190","0191","0192","0199"].includes(cd.tariffCode)) {
+      const cd = lr.claimData;
+      const icd = cd.primaryICD10 || "";
+      if (lr.status === "valid" && /^R\d/i.test(icd) && cd.tariffCode && !["0190","0191","0192","0199"].includes(cd.tariffCode)) {
         lr.status = "warning";
         result.validClaims--;
         result.warningClaims++;
         lr.issues.push({ lineNumber: lr.lineNumber, field: "primaryICD10", code: "SYMPTOM_WITH_PROCEDURE",
           severity: "warning", rule: "Symptom Code with Procedure (HARD GATE)",
-          message: "R-code " + icd + " as primary with procedure tariff " + cd.tariffCode + ". Review if definitive diagnosis available.",
+          message: "R-code " + icd + " as primary with procedure tariff " + cd.tariffCode,
         });
       }
     }
