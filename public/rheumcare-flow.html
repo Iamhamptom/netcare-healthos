@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RheumCare x VRL — Complete Practice Growth System</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #0a0a0f; color: #e0e0e8; min-height: 100vh; }
+
+  .header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    padding: 48px 60px 40px; text-align: center;
+    border-bottom: 1px solid #222;
+  }
+  .header h1 { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+  .header p { font-size: 14px; color: #888; margin-top: 8px; }
+  .header .badge {
+    display: inline-block; padding: 4px 14px; border-radius: 20px;
+    background: #6366f1/15; border: 1px solid #6366f130; color: #a5b4fc;
+    font-size: 11px; font-weight: 600; margin-top: 12px; text-transform: uppercase; letter-spacing: 1px;
+  }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 40px 40px; }
+
+  /* Flow grid */
+  .flow-grid {
+    display: grid; grid-template-columns: 220px 1fr 360px 1fr 220px;
+    gap: 0; align-items: start; position: relative;
+  }
+
+  .column { padding: 0 12px; }
+  .column-header {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+    color: #666; margin-bottom: 20px; text-align: center; padding-bottom: 8px;
+    border-bottom: 1px solid #222;
+  }
+
+  /* Cards */
+  .card {
+    background: #111118; border: 1px solid #1e1e2e; border-radius: 12px;
+    padding: 14px 16px; margin-bottom: 10px; transition: all 0.2s;
+  }
+  .card:hover { border-color: #333; }
+  .card-title { font-size: 13px; font-weight: 600; color: #e0e0e8; display: flex; align-items: center; gap: 8px; }
+  .card-desc { font-size: 11px; color: #666; margin-top: 4px; line-height: 1.4; }
+  .card-metric { font-size: 11px; color: #6366f1; font-weight: 600; margin-top: 6px; }
+
+  .card.highlight { border-color: #6366f1; background: #6366f108; }
+  .card.green { border-color: #22c55e40; }
+  .card.amber { border-color: #f59e0b40; }
+  .card.purple { border-color: #a855f740; }
+
+  /* Center column (main system) */
+  .main-system {
+    background: linear-gradient(180deg, #0f0f1a 0%, #111118 100%);
+    border: 1px solid #6366f130; border-radius: 16px; padding: 24px;
+    position: relative;
+  }
+  .main-system .system-title {
+    font-size: 16px; font-weight: 700; color: #fff; text-align: center;
+    margin-bottom: 4px;
+  }
+  .main-system .system-sub {
+    font-size: 11px; color: #6366f1; text-align: center; margin-bottom: 20px;
+    font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+  }
+
+  /* Arrows */
+  .arrow-col {
+    display: flex; flex-direction: column; justify-content: center;
+    align-items: center; padding-top: 60px;
+  }
+  .arrow {
+    display: flex; align-items: center; gap: 4px; margin: 8px 0;
+    color: #444; font-size: 11px;
+  }
+  .arrow-line { width: 40px; height: 1px; background: #333; }
+  .arrow-head { color: #6366f1; font-size: 14px; }
+
+  /* Sections within main system */
+  .section { margin-bottom: 16px; }
+  .section-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;
+    color: #6366f1; margin-bottom: 8px; padding-left: 4px;
+  }
+  .feature-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .feature {
+    padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 500;
+    background: #1a1a2e; color: #c0c0d0; border: 1px solid #252540;
+  }
+  .feature.new {
+    background: #6366f115; border-color: #6366f140; color: #a5b4fc;
+  }
+  .feature.core {
+    background: #22c55e10; border-color: #22c55e30; color: #86efac;
+  }
+
+  /* Outcomes */
+  .outcomes {
+    margin-top: 40px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+  }
+  .outcome-card {
+    background: #111118; border: 1px solid #1e1e2e; border-radius: 12px;
+    padding: 20px; text-align: center;
+  }
+  .outcome-card .metric { font-size: 24px; font-weight: 800; color: #6366f1; }
+  .outcome-card .label { font-size: 11px; color: #888; margin-top: 4px; }
+
+  /* Key message */
+  .key-message {
+    margin-top: 32px; padding: 24px; border-radius: 12px;
+    background: linear-gradient(135deg, #6366f110, #6366f105);
+    border: 1px solid #6366f130; text-align: center;
+  }
+  .key-message .quote {
+    font-size: 16px; font-weight: 600; color: #e0e0e8;
+    font-style: italic; line-height: 1.5;
+  }
+  .key-message .attr { font-size: 12px; color: #6366f1; margin-top: 8px; }
+
+  /* Divider */
+  .divider { width: 100%; height: 1px; background: #1e1e2e; margin: 24px 0; }
+
+  /* Legend */
+  .legend {
+    display: flex; gap: 24px; justify-content: center; margin-top: 24px;
+    flex-wrap: wrap;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #666; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+  .legend-dot.new { background: #6366f130; border: 1px solid #6366f1; }
+  .legend-dot.core { background: #22c55e20; border: 1px solid #22c55e; }
+  .legend-dot.existing { background: #33333350; border: 1px solid #555; }
+
+  /* Revenue model section */
+  .revenue-section {
+    margin-top: 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  .revenue-card {
+    background: #111118; border: 1px solid #1e1e2e; border-radius: 12px; padding: 20px;
+  }
+  .revenue-card h3 { font-size: 13px; font-weight: 700; color: #e0e0e8; margin-bottom: 12px; }
+  .revenue-item {
+    display: flex; justify-content: space-between; padding: 6px 0;
+    border-bottom: 1px solid #1a1a2a; font-size: 12px;
+  }
+  .revenue-item:last-child { border: none; }
+  .revenue-item .name { color: #999; }
+  .revenue-item .value { color: #6366f1; font-weight: 600; }
+
+  @media (max-width: 1200px) {
+    .flow-grid { grid-template-columns: 1fr; }
+    .arrow-col { display: none; }
+    .outcomes { grid-template-columns: repeat(2, 1fr); }
+    .revenue-section { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>RheumCare x Visio Research Labs</h1>
+  <p>Complete Practice Growth System — Built for Cash-First Rheumatology</p>
+  <div class="badge">Tailored for Dr. Joyce Ziki &amp; Team</div>
+</div>
+
+<div class="container">
+
+  <!-- MAIN FLOW -->
+  <div class="flow-grid">
+
+    <!-- LEFT: Patient Sources -->
+    <div class="column">
+      <div class="column-header">Patient Sources</div>
+
+      <div class="card green">
+        <div class="card-title">🔍 Online Search</div>
+        <div class="card-desc">Patients searching "rheumatologist near me", "lupus doctor Johannesburg", "joint pain specialist"</div>
+        <div class="card-metric">SDK Agent captures → WhatsApp</div>
+      </div>
+
+      <div class="card green">
+        <div class="card-title">🩺 GP Referrals</div>
+        <div class="card-desc">Digital referral tracking — GP sends referral, patient auto-contacted, booking auto-created</div>
+        <div class="card-metric">Referral → Intake in minutes</div>
+      </div>
+
+      <div class="card green">
+        <div class="card-title">📱 Website Visitors</div>
+        <div class="card-desc">rheumcare.co.za visitors engaged by AI chat widget before they leave</div>
+        <div class="card-metric">~10/week → 40-60/week</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📞 Walk-in / Call</div>
+        <div class="card-desc">Phone calls and walk-ins captured by admin team into the system</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔄 Patient Recall</div>
+        <div class="card-desc">AI re-engages patients who haven't visited in 6+ months</div>
+        <div class="card-metric">Automated recall campaigns</div>
+      </div>
+
+      <div class="card purple">
+        <div class="card-title">📣 Outreach Engine</div>
+        <div class="card-desc">AI identifies potential patients from search trends, social signals, and GP network data</div>
+        <div class="card-metric">NEW — Paid lead generation</div>
+      </div>
+    </div>
+
+    <!-- ARROW LEFT -->
+    <div class="arrow-col">
+      <div class="arrow"><span class="arrow-line"></span><span class="arrow-head">→</span></div>
+      <div class="arrow"><span class="arrow-line"></span><span class="arrow-head">→</span></div>
+      <div class="arrow"><span class="arrow-line"></span><span class="arrow-head">→</span></div>
+      <div class="arrow"><span class="arrow-line"></span><span class="arrow-head">→</span></div>
+      <div class="arrow"><span class="arrow-line"></span><span class="arrow-head">→</span></div>
+      <div class="arrow"><span class="arrow-line"></span><span class="arrow-head">→</span></div>
+    </div>
+
+    <!-- CENTER: RheumCare OS -->
+    <div class="column">
+      <div class="main-system">
+        <div class="system-title">RheumCare OS</div>
+        <div class="system-sub">AI Intelligence Layer — by Visio Research Labs</div>
+
+        <div class="section">
+          <div class="section-label">🎯 Lead Capture &amp; Qualification</div>
+          <div class="feature-list">
+            <span class="feature new">Website SDK Agent (24/7)</span>
+            <span class="feature new">WhatsApp AI Router</span>
+            <span class="feature new">Patient Pre-Qualification</span>
+            <span class="feature new">Cash/Funded Detection</span>
+            <span class="feature new">Lead Scoring</span>
+            <span class="feature new">Outreach Campaigns</span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">📅 Smart Booking &amp; Routing</div>
+          <div class="feature-list">
+            <span class="feature core">5-Location Routing Engine</span>
+            <span class="feature core">Availability Checker</span>
+            <span class="feature core">Auto-Booking via WhatsApp</span>
+            <span class="feature core">Pre-Payment Collection</span>
+            <span class="feature core">No-Show Prevention (4-stage)</span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">📋 Digital Intake</div>
+          <div class="feature-list">
+            <span class="feature core">Demographics + ID</span>
+            <span class="feature core">Referral Letter Upload</span>
+            <span class="feature core">Medical History Form</span>
+            <span class="feature core">Medication List</span>
+            <span class="feature core">POPIA Consent</span>
+            <span class="feature core">Payment Confirmation</span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">🤖 AI Clinical Assistant</div>
+          <div class="feature-list">
+            <span class="feature new">Consultation AI Scribe</span>
+            <span class="feature new">DAS28 Calculator</span>
+            <span class="feature new">ICD-10 Auto-Coding (M05-M45)</span>
+            <span class="feature new">Referral Letter Generator</span>
+            <span class="feature new">Prescription Generator</span>
+            <span class="feature new">Sick Note Generator</span>
+            <span class="feature new">SARAA Biologics Motivation</span>
+            <span class="feature new">Clinical Notes (SOAP)</span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">📊 Practice Intelligence</div>
+          <div class="feature-list">
+            <span class="feature core">Multi-Site Dashboard</span>
+            <span class="feature core">Revenue Analytics</span>
+            <span class="feature core">Patient Flow Tracking</span>
+            <span class="feature core">Lead Conversion Rates</span>
+            <span class="feature core">Claims Analyzer (background)</span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">🔁 Retention &amp; Follow-up</div>
+          <div class="feature-list">
+            <span class="feature core">Automated Reminders</span>
+            <span class="feature core">Post-Visit Follow-up</span>
+            <span class="feature core">Recall Campaigns</span>
+            <span class="feature core">Patient Satisfaction</span>
+            <span class="feature core">Newsletter / Email</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ARROW RIGHT -->
+    <div class="arrow-col">
+      <div class="arrow"><span class="arrow-head">→</span><span class="arrow-line"></span></div>
+      <div class="arrow"><span class="arrow-head">→</span><span class="arrow-line"></span></div>
+      <div class="arrow"><span class="arrow-head">→</span><span class="arrow-line"></span></div>
+      <div class="arrow"><span class="arrow-head">→</span><span class="arrow-line"></span></div>
+    </div>
+
+    <!-- RIGHT: Existing Systems -->
+    <div class="column">
+      <div class="column-header">Existing Systems</div>
+
+      <div class="card">
+        <div class="card-title">💼 VeriClaim</div>
+        <div class="card-desc">Diary, billing, clinical notes, pathology requests (by MediCharge)</div>
+        <div class="card-metric">We sit alongside — not replace</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔬 Pathology Labs</div>
+        <div class="card-desc">Ampath, Lancet, PathCare — electronic requests via VeriClaim</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🏥 4 Hospital Sites</div>
+        <div class="card-desc">Wits DGMC, Netcare Sunward Park, Life Groenkloof, Mediclinic Trichardt</div>
+      </div>
+
+      <div class="card amber">
+        <div class="card-title">📱 MediSwitch</div>
+        <div class="card-desc">Claims switching (for funded patients who still need scheme submission)</div>
+        <div class="card-metric">Optional — cash patients skip this</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🧬 SARAA Registry</div>
+        <div class="card-desc">Biologics peer review panel — our system pre-populates motivation forms</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot new"></div> New — built by VRL</div>
+    <div class="legend-item"><div class="legend-dot core"></div> Core — ready to deploy</div>
+    <div class="legend-item"><div class="legend-dot existing"></div> Existing — your current systems</div>
+  </div>
+
+  <!-- OUTCOMES -->
+  <div class="divider"></div>
+
+  <div class="outcomes">
+    <div class="outcome-card">
+      <div class="metric">10 → 60</div>
+      <div class="label">Leads per week (6x growth)</div>
+    </div>
+    <div class="outcome-card">
+      <div class="metric">40%</div>
+      <div class="label">No-show reduction</div>
+    </div>
+    <div class="outcome-card">
+      <div class="metric">2 min</div>
+      <div class="label">Referral-to-booking time</div>
+    </div>
+    <div class="outcome-card">
+      <div class="metric">5 sites</div>
+      <div class="label">Smart routing — one number</div>
+    </div>
+  </div>
+
+  <!-- REVENUE MODEL -->
+  <div class="revenue-section">
+    <div class="revenue-card">
+      <h3>💰 What RheumCare Gets</h3>
+      <div class="revenue-item"><span class="name">WhatsApp AI Agent (24/7)</span><span class="value">Included</span></div>
+      <div class="revenue-item"><span class="name">Website SDK (lead capture)</span><span class="value">Included</span></div>
+      <div class="revenue-item"><span class="name">5-Location Smart Routing</span><span class="value">Included</span></div>
+      <div class="revenue-item"><span class="name">Digital Intake + Consent</span><span class="value">Included</span></div>
+      <div class="revenue-item"><span class="name">AI Scribe + Document Gen</span><span class="value">Included</span></div>
+      <div class="revenue-item"><span class="name">No-Show Prevention</span><span class="value">Included</span></div>
+      <div class="revenue-item"><span class="name">Claims Analyzer (for doctors)</span><span class="value">Included</span></div>
+      <div class="revenue-item"><span class="name">Practice Dashboard</span><span class="value">Included</span></div>
+      <div class="revenue-item"><span class="name">Outreach Lead Generation</span><span class="value">Per lead</span></div>
+    </div>
+    <div class="revenue-card">
+      <h3>📊 Revenue for VRL</h3>
+      <div class="revenue-item"><span class="name">SaaS subscription</span><span class="value">R2,000 — R4,500/mo</span></div>
+      <div class="revenue-item"><span class="name">AI interaction credits</span><span class="value">R0.15 per interaction</span></div>
+      <div class="revenue-item"><span class="name">Qualified lead delivery</span><span class="value">R150 — R500 per lead</span></div>
+      <div class="revenue-item"><span class="name">WhatsApp messaging</span><span class="value">Pass-through cost</span></div>
+      <div class="revenue-item"><span class="name">Custom integrations</span><span class="value">Project-based</span></div>
+      <div class="revenue-item"><span class="name" style="font-weight:600;color:#e0e0e8">Projected monthly revenue</span><span class="value" style="font-size:14px">R8,000 — R25,000</span></div>
+    </div>
+  </div>
+
+  <!-- KEY MESSAGE -->
+  <div class="key-message">
+    <div class="quote">"VeriClaim handles your billing. We handle everything else — the AI layer that makes your practice smarter, fills your chairs, and gives Dr. Ziki her time back."</div>
+    <div class="attr">Key message for RheumCare team</div>
+  </div>
+
+  <div style="text-align:center; margin-top:32px; font-size:11px; color:#444">
+    Prepared by Visio Research Labs — 26 March 2026 — davidhampton@visiocorp.co
+  </div>
+
+</div>
+</body>
+</html>
