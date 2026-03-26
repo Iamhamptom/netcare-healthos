@@ -30,13 +30,9 @@ const nextConfig: NextConfig = {
       "./legal/**",
     ],
   },
-  outputFileTracingIncludes: {
-    "/api/**": [
-      "./docs/knowledge/databases/*.csv",
-      "./docs/knowledge/*.md",
-      "./ml/rag-index/documents.jsonl",
-    ],
-  },
+  // RAG now uses Supabase pgvector (189K chunks), not local files.
+  // Removed outputFileTracingIncludes to keep function bundles under 250MB.
+  // Knowledge base files are accessed via RAG v3 at runtime, not bundled.
   async headers() {
     return [
       {
