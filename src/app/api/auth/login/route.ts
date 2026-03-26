@@ -95,24 +95,29 @@ export async function POST(request: Request) {
       );
     }
 
-    // Demo mode — accept Netcare demo credentials (multiple users)
+    // Demo mode — accept demo credentials (multiple users + generic demo login)
     if (isDemoMode) {
+      const DEMO_PASSWORDS = ["Netcare2026!", "Demo2026!"];
       const validDemoLogins = [
-        { email: "thirushen.pillay@netcare.co.za", password: "Netcare2026!" },
-        { email: "sara.nayager@netcare.co.za", password: "Netcare2026!" },
-        { email: "chris.mathew@netcare.co.za", password: "Netcare2026!" },
-        { email: "demo@netcare.co.za", password: "Netcare2026!" },
-        { email: "drrahul.gathiram@medicross.co.za", password: "Netcare2026!" },
-        { email: "cathelijn.zeijlemaker@netcare.co.za", password: "Netcare2026!" },
-        { email: "muhammad_simjee@a2d24.com", password: "Netcare2026!" },
+        { email: "thirushen.pillay@netcare.co.za" },
+        { email: "sara.nayager@netcare.co.za" },
+        { email: "chris.mathew@netcare.co.za" },
+        { email: "demo@netcare.co.za" },
+        { email: "drrahul.gathiram@medicross.co.za" },
+        { email: "cathelijn.zeijlemaker@netcare.co.za" },
+        { email: "muhammad_simjee@a2d24.com" },
       ];
-      const match = validDemoLogins.find(d => d.email === email.toLowerCase() && d.password === password);
+      // Accept any "demo@*" email with a valid demo password (for white-label brands)
+      const isDemoEmail = email.toLowerCase().startsWith("demo@");
+      const isKnownEmail = validDemoLogins.some(d => d.email === email.toLowerCase());
+      const isValidPassword = DEMO_PASSWORDS.includes(password);
+      const match = (isDemoEmail || isKnownEmail) && isValidPassword;
       if (!match) {
         recordFailedAttempt(email);
         return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
       }
 
-      // Look up the specific demo user or fall back to default
+      // Look up the specific demo user or fall back to default (works for any demo@*.co.za)
       const matchedUser = demoUsers[email.toLowerCase()] || demoUser;
 
       resetAttempts(email);
