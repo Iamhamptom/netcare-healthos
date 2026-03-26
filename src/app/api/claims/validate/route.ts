@@ -632,6 +632,17 @@ export async function POST(req: NextRequest) {
     // Auto-corrections for deterministic fixes
     const autoCorrections = generateAutoCorrections(claimLines, result.issues);
 
+    // ── Auto-generate EDIFACT for valid claims ──
+    let edifactOutput = null;
+    const validClaims = result.lineResults.filter(function(lr) { return lr.status === "valid"; });
+    if (validClaims.length > 0) {
+      try {
+        const { generateBatchEDIFACT } = await import("@/lib/claims/post-validation-edifact");
+        const validClaimData = validClaims.map(function(lr) { return lr.claimData; });
+        edifactOutput = generateBatchEDIFACT(validClaimData);
+      } catch { /* Non-blocking */ }
+    }
+
     // Reinforcement learning — record validation event
     try {
       const { recordHealthEvent } = await import("@/lib/ml/system-hooks");
@@ -657,6 +668,7 @@ export async function POST(req: NextRequest) {
       selfDiagnosis,
       flaggedBeforeAgent: flaggedBefore9,
       overrideAudit: overrideAudit.length > 0 ? { entries: overrideAudit, stats: auditStats } : undefined,
+      edifact: edifactOutput ? { ready: edifactOutput.batchSummary.total, bySwitch: edifactOutput.batchSummary.bySwitch, messages: edifactOutput.messages.slice(0, 3).map(function(m) { return { ref: m.messageRef, switch: m.switchProvider, segments: m.segments, scheme: m.schemeRouting.scheme }; }) } : undefined,
       doctorReasoning: doctorResult.totalOverrides > 0 ? doctorResult : undefined,
       reasoningPass: reasoningResult.totalCorrected > 0 ? reasoningResult : undefined,
       agenticReview: agenticReview ? {
