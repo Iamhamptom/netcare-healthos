@@ -517,22 +517,22 @@ export async function POST(req: NextRequest) {
     console.log("[Layer 9] Flagged claims before agent review: " + flaggedBefore9);
 
     // ── Layer 9: AI SDK Agent Review ──
-    // Temporarily using legacy agentic review while SDK build issues are resolved.
-    // AI SDK agents (ToolLoopAgent) require Zod v4 which causes Vercel build failures.
-    // The agent code is ready at src/lib/agents/ — will be wired in once build is stable.
-    let agenticReview: Awaited<ReturnType<typeof import("@/lib/claims/agentic-review").runAgenticReview>> | null = null;
+    // Layer 9: AI SDK Agent Review — ToolLoopAgent with 7 tools
+    let agenticReview: Awaited<ReturnType<typeof import("@/lib/agents/batch-orchestrator").reviewBatchWithAgent>> | null = null;
     try {
-      const { runAgenticReview } = await import("@/lib/claims/agentic-review");
-      agenticReview = await runAgenticReview(result.lineResults);
+      const { reviewBatchWithAgent } = await import("@/lib/agents/batch-orchestrator");
+      agenticReview = await reviewBatchWithAgent(result.lineResults);
 
       // Apply agent verdicts back to the result
-      for (const reviewed of agenticReview.claims) {
+      for (const reviewed of agenticReview.reviews) {
         const lr = result.lineResults.find(r => r.lineNumber === reviewed.lineNumber);
-        if (!lr || !reviewed.changed) continue;
+        if (!lr) continue;
+        const ruleVerdict = lr.status === "error" ? "REJECTED" : lr.status === "warning" ? "WARNING" : "VALID";
+        if (reviewed.verdict === ruleVerdict) continue;
 
         const oldStatus = lr.status;
-        const newStatus = reviewed.finalVerdict === "REJECTED" ? "error"
-          : reviewed.finalVerdict === "WARNING" ? "warning" : "valid";
+        const newStatus = reviewed.verdict === "REJECTED" ? "error"
+          : reviewed.verdict === "WARNING" ? "warning" : "valid";
 
         if (oldStatus !== newStatus) {
           if (oldStatus === "error") result.invalidClaims--;
@@ -580,16 +580,13 @@ export async function POST(req: NextRequest) {
       reasoningPass: reasoningResult.totalCorrected > 0 ? reasoningResult : undefined,
       agenticReview: agenticReview ? {
         summary: agenticReview.summary,
-        overrides: agenticReview.claims?.filter(function(c) { return c.changed; }).map(function(c) {
-          return {
-            line: c.lineNumber,
-            from: c.ruleEngineVerdict,
-            to: c.finalVerdict,
-            reasoning: c.reasoning,
-            confidence: c.confidence,
-          };
-        }) || [],
-        reasoningLog: agenticReview.reasoningLog,
+        overrides: agenticReview.reviews.filter(function(r) {
+          const rlr = result.lineResults.find(function(l) { return l.lineNumber === r.lineNumber; });
+          const rv = rlr?.status === "error" ? "REJECTED" : rlr?.status === "warning" ? "WARNING" : "VALID";
+          return r.verdict !== rv;
+        }).map(function(r) {
+          return { line: r.lineNumber, to: r.verdict, reasoning: r.reasoning, confidence: r.confidence, toolsUsed: r.toolsUsed, steps: r.stepsUsed };
+        }),
       } : undefined,
       statisticalAnomalies,
       geoFraudAlerts,
