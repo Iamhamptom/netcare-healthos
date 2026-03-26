@@ -104,6 +104,27 @@ export function runReasoningPass(
   const removed: ReasoningResult["removedIssues"] = [];
   const downgraded: ReasoningResult["downgradedIssues"] = [];
 
+  // PROTECTED RULES — NEVER suppress, remove, or downgrade these.
+  // From Training Report V2, Section 4.2.
+  const PROTECTED_RULES = new Set([
+    // Hard errors — switch will reject
+    "MISSING_ICD10", "INVALID_FORMAT", "GENDER_MISMATCH", "AGE_MISMATCH",
+    "MISSING_ECC", "ECC_AS_PRIMARY", "ASTERISK_PRIMARY",
+    "FABRICATED_NAPPI", "INVALID_AMOUNT", "INVALID_AMOUNT_FORMAT",
+    "FUTURE_DATE", "FUTURE_DATE_SERVICE", "STALE_CLAIM", "CLAIM_WINDOW_EXPIRED",
+    "MISSING_PATIENT_NAME", "MISSING_MEMBERSHIP", "NO_PATIENT_IDENTIFIER",
+    "NEONATAL_ON_ADULT", "OBSTETRIC_ON_MALE", "DUPLICATE_CLAIM",
+    "EXCESSIVE_QUANTITY", "INVALID_OPTION_CODE", "INVALID_PRACTICE_NUMBER",
+    "DENTAL_TARIFF_MISMATCH", "TARIFF_DISCIPLINE_MISMATCH",
+    // New rules from Gauntlet V9
+    "SERVICE_NOT_RENDERED", "TELEPHONIC_ON_INPERSON", "PATIENT_NOT_PRESENT",
+    "ICD_10_CM_DETECTED", "TRAILING_WHITESPACE", "CROSS_SCHEME_REFERENCE",
+    // Warnings that must NOT be suppressed (Training Report V2 Section 4.2)
+    "SYMPTOM_CODE", "NON_SPECIFIC", "PMB_MODIFIER_MISSING",
+    "PROMPT_INJECTION_DETECTED", "MED_DIAGNOSIS_MISMATCH",
+    "IMAGING_DIAGNOSIS_MISMATCH", "PROCEDURE_DIAGNOSIS_CONTRADICTION",
+  ]);
+
   for (const lr of lineResults) {
     const claim = lr.claimData;
     const isGP = isGPPractice(claim.practiceNumber);
@@ -113,6 +134,9 @@ export function runReasoningPass(
 
     for (let i = 0; i < lr.issues.length; i++) {
       const issue = lr.issues[i];
+
+      // PROTECTED RULES — skip all checks, never touch these
+      if (PROTECTED_RULES.has(issue.code)) continue;
 
       // ── CHECK 1: GP tariff scope — if tariff is in GP scope, remove the flag entirely
       if (issue.code === "DISCIPLINE_TARIFF_SCOPE" && isGP && claim.tariffCode && GP_SCOPE_TARIFFS.has(claim.tariffCode)) {
