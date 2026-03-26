@@ -190,6 +190,22 @@ export async function POST(req: NextRequest) {
       }
     } else {
       const mapping = customMapping || autoMapColumns(parsed.headers, parsed.rows);
+
+    // Normalize scheme name to short code for switchboard routing
+    const SCHEME_NAME_TO_CODE: Record<string, string> = {
+      "discovery health": "DH", "discovery": "DH",
+      "gems": "GEMS", "government employees": "GEMS",
+      "bonitas": "BON", "momentum": "MOM", "momentum health": "MOM",
+      "medihelp": "MH", "bestmed": "BM", "fedhealth": "FH",
+      "bankmed": "BK", "compcare": "CC", "medshield": "MS",
+      "polmed": "POL", "sizwe": "SH", "keyhealth": "KH",
+      "la health": "LA", "anglo medical": "AM",
+    };
+    if (schemeCode) {
+      const normalizedLower = schemeCode.toLowerCase();
+      const mappedCode = SCHEME_NAME_TO_CODE[normalizedLower];
+      if (mappedCode) schemeCode = mappedCode;
+    }
       if (!mapping.primaryICD10) {
         // Smart detection: scan actual cell values to find the ICD-10 column
         const suggestion = suggestICD10Column(parsed.headers, parsed.rows);
