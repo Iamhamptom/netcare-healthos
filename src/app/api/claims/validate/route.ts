@@ -554,6 +554,49 @@ export async function POST(req: NextRequest) {
       console.error("[Agent Error]", errMsg.slice(0, 500));
     }
 
+    // ── HARD GATE: Injury without ECC — BYPASS ALL AI LAYERS ──
+    // This runs AFTER all layers and FORCES REJECTED regardless of what AI said.
+    // No reasoning pass, no agent, no doctor layer can override this.
+    for (const lr of result.lineResults) {
+      const cd = lr.claimData;
+      const icd = cd.primaryICD10 || "";
+      if (/^[ST]/i.test(icd)) {
+        const hasECC = cd.secondaryICD10?.some(function(c) { return /^[VWXYvwxy]/.test(c); });
+        if (!hasECC && lr.status !== "error") {
+          // Force to error — AI overrode this but it's REQUIRED
+          if (lr.status === "valid") result.validClaims--;
+          else if (lr.status === "warning") result.warningClaims--;
+          lr.status = "error";
+          result.invalidClaims++;
+          lr.issues.push({
+            lineNumber: lr.lineNumber, field: "secondaryICD10", code: "MISSING_ECC",
+            severity: "error", rule: "Missing External Cause Code (HARD GATE)",
+            message: "Injury code " + icd + " requires V/W/X/Y external cause code. SA switches enforce this. No AI override possible.",
+            suggestion: "Add external cause: W19 (fall), V89.2 (MVA), W26 (sharp object), X59 (unspecified).",
+          });
+        }
+      }
+    }
+
+    // ── HARD GATE: Protected warnings — restore if AI suppressed them ──
+    // R-codes, non-specific ICD, PMB missing — must stay as WARNING minimum
+    for (const lr of result.lineResults) {
+      if (lr.status !== "valid") continue; // Only check claims AI set to VALID
+      const cd = lr.claimData;
+      const icd = cd.primaryICD10 || "";
+
+      // R-code as primary with procedure tariff = WARNING
+      if (/^R\d/i.test(icd) && cd.tariffCode && !["0190","0191","0192","0199"].includes(cd.tariffCode)) {
+        lr.status = "warning";
+        result.validClaims--;
+        result.warningClaims++;
+        lr.issues.push({ lineNumber: lr.lineNumber, field: "primaryICD10", code: "SYMPTOM_WITH_PROCEDURE",
+          severity: "warning", rule: "Symptom Code with Procedure (HARD GATE)",
+          message: "R-code " + icd + " as primary with procedure tariff " + cd.tariffCode + ". Review if definitive diagnosis available.",
+        });
+      }
+    }
+
     // Auto-corrections for deterministic fixes
     const autoCorrections = generateAutoCorrections(claimLines, result.issues);
 
