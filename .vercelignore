@@ -1,0 +1,13 @@
+ml/models/
+ml/rag-index/*.faiss
+ml/training-data/*.jsonl
+ml/training-data/combined/
+ml/training-data/deep-health/
+ml/training-data/mega/
+ml/training-data/v2/
+ml/training-data/visiocorp/
+ml/learning-fallback/
+ml/rag-cloud/
+dev.db-shm
+dev.db-wal
+.firecrawl/
