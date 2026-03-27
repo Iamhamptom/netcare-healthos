@@ -1072,6 +1072,7 @@ export type ClientActivityCreateManyArgs<ExtArgs extends runtime.Types.Extension
    * The data used to create many ClientActivities.
    */
   data: Prisma.ClientActivityCreateManyInput | Prisma.ClientActivityCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1090,6 +1091,7 @@ export type ClientActivityCreateManyAndReturnArgs<ExtArgs extends runtime.Types.
    * The data used to create many ClientActivities.
    */
   data: Prisma.ClientActivityCreateManyInput | Prisma.ClientActivityCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

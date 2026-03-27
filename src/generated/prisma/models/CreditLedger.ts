@@ -1122,6 +1122,7 @@ export type CreditLedgerCreateManyArgs<ExtArgs extends runtime.Types.Extensions.
    * The data used to create many CreditLedgers.
    */
   data: Prisma.CreditLedgerCreateManyInput | Prisma.CreditLedgerCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1140,6 +1141,7 @@ export type CreditLedgerCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Ex
    * The data used to create many CreditLedgers.
    */
   data: Prisma.CreditLedgerCreateManyInput | Prisma.CreditLedgerCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

@@ -1212,6 +1212,7 @@ export type HealthbridgeEligibilityCreateManyArgs<ExtArgs extends runtime.Types.
    * The data used to create many HealthbridgeEligibilities.
    */
   data: Prisma.HealthbridgeEligibilityCreateManyInput | Prisma.HealthbridgeEligibilityCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1230,6 +1231,7 @@ export type HealthbridgeEligibilityCreateManyAndReturnArgs<ExtArgs extends runti
    * The data used to create many HealthbridgeEligibilities.
    */
   data: Prisma.HealthbridgeEligibilityCreateManyInput | Prisma.HealthbridgeEligibilityCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

@@ -1480,6 +1480,7 @@ export type FeatureRequestCreateManyArgs<ExtArgs extends runtime.Types.Extension
    * The data used to create many FeatureRequests.
    */
   data: Prisma.FeatureRequestCreateManyInput | Prisma.FeatureRequestCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1498,6 +1499,7 @@ export type FeatureRequestCreateManyAndReturnArgs<ExtArgs extends runtime.Types.
    * The data used to create many FeatureRequests.
    */
   data: Prisma.FeatureRequestCreateManyInput | Prisma.FeatureRequestCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

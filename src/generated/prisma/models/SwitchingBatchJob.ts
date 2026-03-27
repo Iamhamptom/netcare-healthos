@@ -1426,6 +1426,7 @@ export type SwitchingBatchJobCreateManyArgs<ExtArgs extends runtime.Types.Extens
    * The data used to create many SwitchingBatchJobs.
    */
   data: Prisma.SwitchingBatchJobCreateManyInput | Prisma.SwitchingBatchJobCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1444,6 +1445,7 @@ export type SwitchingBatchJobCreateManyAndReturnArgs<ExtArgs extends runtime.Typ
    * The data used to create many SwitchingBatchJobs.
    */
   data: Prisma.SwitchingBatchJobCreateManyInput | Prisma.SwitchingBatchJobCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

@@ -500,6 +500,7 @@ export type MedicationCreateOrConnectWithoutPatientInput = {
 
 export type MedicationCreateManyPatientInputEnvelope = {
   data: Prisma.MedicationCreateManyPatientInput | Prisma.MedicationCreateManyPatientInput[]
+  skipDuplicates?: boolean
 }
 
 export type MedicationUpsertWithWhereUniqueWithoutPatientInput = {
@@ -1334,6 +1335,7 @@ export type MedicationCreateManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * The data used to create many Medications.
    */
   data: Prisma.MedicationCreateManyInput | Prisma.MedicationCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1352,6 +1354,7 @@ export type MedicationCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Exte
    * The data used to create many Medications.
    */
   data: Prisma.MedicationCreateManyInput | Prisma.MedicationCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

@@ -544,6 +544,7 @@ export type OutreachEmailCreateOrConnectWithoutCampaignInput = {
 
 export type OutreachEmailCreateManyCampaignInputEnvelope = {
   data: Prisma.OutreachEmailCreateManyCampaignInput | Prisma.OutreachEmailCreateManyCampaignInput[]
+  skipDuplicates?: boolean
 }
 
 export type OutreachEmailUpsertWithWhereUniqueWithoutCampaignInput = {
@@ -609,6 +610,7 @@ export type OutreachEmailCreateOrConnectWithoutTargetInput = {
 
 export type OutreachEmailCreateManyTargetInputEnvelope = {
   data: Prisma.OutreachEmailCreateManyTargetInput | Prisma.OutreachEmailCreateManyTargetInput[]
+  skipDuplicates?: boolean
 }
 
 export type OutreachEmailUpsertWithWhereUniqueWithoutTargetInput = {
@@ -1483,6 +1485,7 @@ export type OutreachEmailCreateManyArgs<ExtArgs extends runtime.Types.Extensions
    * The data used to create many OutreachEmails.
    */
   data: Prisma.OutreachEmailCreateManyInput | Prisma.OutreachEmailCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1501,6 +1504,7 @@ export type OutreachEmailCreateManyAndReturnArgs<ExtArgs extends runtime.Types.E
    * The data used to create many OutreachEmails.
    */
   data: Prisma.OutreachEmailCreateManyInput | Prisma.OutreachEmailCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

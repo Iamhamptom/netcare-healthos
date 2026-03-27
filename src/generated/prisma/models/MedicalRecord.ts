@@ -548,6 +548,7 @@ export type MedicalRecordCreateOrConnectWithoutPatientInput = {
 
 export type MedicalRecordCreateManyPatientInputEnvelope = {
   data: Prisma.MedicalRecordCreateManyPatientInput | Prisma.MedicalRecordCreateManyPatientInput[]
+  skipDuplicates?: boolean
 }
 
 export type MedicalRecordUpsertWithWhereUniqueWithoutPatientInput = {
@@ -1404,6 +1405,7 @@ export type MedicalRecordCreateManyArgs<ExtArgs extends runtime.Types.Extensions
    * The data used to create many MedicalRecords.
    */
   data: Prisma.MedicalRecordCreateManyInput | Prisma.MedicalRecordCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1422,6 +1424,7 @@ export type MedicalRecordCreateManyAndReturnArgs<ExtArgs extends runtime.Types.E
    * The data used to create many MedicalRecords.
    */
   data: Prisma.MedicalRecordCreateManyInput | Prisma.MedicalRecordCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

@@ -1732,6 +1732,7 @@ export type ClientPipelineCreateManyArgs<ExtArgs extends runtime.Types.Extension
    * The data used to create many ClientPipelines.
    */
   data: Prisma.ClientPipelineCreateManyInput | Prisma.ClientPipelineCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1750,6 +1751,7 @@ export type ClientPipelineCreateManyAndReturnArgs<ExtArgs extends runtime.Types.
    * The data used to create many ClientPipelines.
    */
   data: Prisma.ClientPipelineCreateManyInput | Prisma.ClientPipelineCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

@@ -1302,6 +1302,7 @@ export type HealthbridgeRemittanceCreateManyArgs<ExtArgs extends runtime.Types.E
    * The data used to create many HealthbridgeRemittances.
    */
   data: Prisma.HealthbridgeRemittanceCreateManyInput | Prisma.HealthbridgeRemittanceCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1320,6 +1321,7 @@ export type HealthbridgeRemittanceCreateManyAndReturnArgs<ExtArgs extends runtim
    * The data used to create many HealthbridgeRemittances.
    */
   data: Prisma.HealthbridgeRemittanceCreateManyInput | Prisma.HealthbridgeRemittanceCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

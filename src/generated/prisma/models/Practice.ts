@@ -4835,6 +4835,7 @@ export type PracticeCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Inte
    * The data used to create many Practices.
    */
   data: Prisma.PracticeCreateManyInput | Prisma.PracticeCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -4853,6 +4854,7 @@ export type PracticeCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extens
    * The data used to create many Practices.
    */
   data: Prisma.PracticeCreateManyInput | Prisma.PracticeCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

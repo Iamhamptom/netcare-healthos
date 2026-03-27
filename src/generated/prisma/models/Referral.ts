@@ -788,6 +788,7 @@ export type ReferralCreateOrConnectWithoutPracticeInput = {
 
 export type ReferralCreateManyPracticeInputEnvelope = {
   data: Prisma.ReferralCreateManyPracticeInput | Prisma.ReferralCreateManyPracticeInput[]
+  skipDuplicates?: boolean
 }
 
 export type ReferralUpsertWithWhereUniqueWithoutPracticeInput = {
@@ -1754,6 +1755,7 @@ export type ReferralCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Inte
    * The data used to create many Referrals.
    */
   data: Prisma.ReferralCreateManyInput | Prisma.ReferralCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1772,6 +1774,7 @@ export type ReferralCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extens
    * The data used to create many Referrals.
    */
   data: Prisma.ReferralCreateManyInput | Prisma.ReferralCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

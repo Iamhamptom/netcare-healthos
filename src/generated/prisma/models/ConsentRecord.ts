@@ -548,6 +548,7 @@ export type ConsentRecordCreateOrConnectWithoutPracticeInput = {
 
 export type ConsentRecordCreateManyPracticeInputEnvelope = {
   data: Prisma.ConsentRecordCreateManyPracticeInput | Prisma.ConsentRecordCreateManyPracticeInput[]
+  skipDuplicates?: boolean
 }
 
 export type ConsentRecordUpsertWithWhereUniqueWithoutPracticeInput = {
@@ -1404,6 +1405,7 @@ export type ConsentRecordCreateManyArgs<ExtArgs extends runtime.Types.Extensions
    * The data used to create many ConsentRecords.
    */
   data: Prisma.ConsentRecordCreateManyInput | Prisma.ConsentRecordCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1422,6 +1424,7 @@ export type ConsentRecordCreateManyAndReturnArgs<ExtArgs extends runtime.Types.E
    * The data used to create many ConsentRecords.
    */
   data: Prisma.ConsentRecordCreateManyInput | Prisma.ConsentRecordCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

@@ -1044,6 +1044,7 @@ export type InvestorNoteCreateManyArgs<ExtArgs extends runtime.Types.Extensions.
    * The data used to create many InvestorNotes.
    */
   data: Prisma.InvestorNoteCreateManyInput | Prisma.InvestorNoteCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1062,6 +1063,7 @@ export type InvestorNoteCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Ex
    * The data used to create many InvestorNotes.
    */
   data: Prisma.InvestorNoteCreateManyInput | Prisma.InvestorNoteCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

@@ -1674,6 +1674,7 @@ export type SwitchingERACreateManyArgs<ExtArgs extends runtime.Types.Extensions.
    * The data used to create many SwitchingERAS.
    */
   data: Prisma.SwitchingERACreateManyInput | Prisma.SwitchingERACreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1692,6 +1693,7 @@ export type SwitchingERACreateManyAndReturnArgs<ExtArgs extends runtime.Types.Ex
    * The data used to create many SwitchingERAS.
    */
   data: Prisma.SwitchingERACreateManyInput | Prisma.SwitchingERACreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

@@ -770,6 +770,7 @@ export type OutreachTargetCreateOrConnectWithoutCampaignInput = {
 
 export type OutreachTargetCreateManyCampaignInputEnvelope = {
   data: Prisma.OutreachTargetCreateManyCampaignInput | Prisma.OutreachTargetCreateManyCampaignInput[]
+  skipDuplicates?: boolean
 }
 
 export type OutreachTargetUpsertWithWhereUniqueWithoutCampaignInput = {
@@ -1829,6 +1830,7 @@ export type OutreachTargetCreateManyArgs<ExtArgs extends runtime.Types.Extension
    * The data used to create many OutreachTargets.
    */
   data: Prisma.OutreachTargetCreateManyInput | Prisma.OutreachTargetCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1847,6 +1849,7 @@ export type OutreachTargetCreateManyAndReturnArgs<ExtArgs extends runtime.Types.
    * The data used to create many OutreachTargets.
    */
   data: Prisma.OutreachTargetCreateManyInput | Prisma.OutreachTargetCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

@@ -1296,6 +1296,7 @@ export type SwitchingVendorCreateManyArgs<ExtArgs extends runtime.Types.Extensio
    * The data used to create many SwitchingVendors.
    */
   data: Prisma.SwitchingVendorCreateManyInput | Prisma.SwitchingVendorCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1314,6 +1315,7 @@ export type SwitchingVendorCreateManyAndReturnArgs<ExtArgs extends runtime.Types
    * The data used to create many SwitchingVendors.
    */
   data: Prisma.SwitchingVendorCreateManyInput | Prisma.SwitchingVendorCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

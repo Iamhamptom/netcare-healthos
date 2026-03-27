@@ -1162,6 +1162,7 @@ export type ClaimsRuleCreateManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * The data used to create many ClaimsRules.
    */
   data: Prisma.ClaimsRuleCreateManyInput | Prisma.ClaimsRuleCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1180,6 +1181,7 @@ export type ClaimsRuleCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Exte
    * The data used to create many ClaimsRules.
    */
   data: Prisma.ClaimsRuleCreateManyInput | Prisma.ClaimsRuleCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

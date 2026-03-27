@@ -1370,6 +1370,7 @@ export type ClaimsAnalysisCreateManyArgs<ExtArgs extends runtime.Types.Extension
    * The data used to create many ClaimsAnalyses.
    */
   data: Prisma.ClaimsAnalysisCreateManyInput | Prisma.ClaimsAnalysisCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1388,6 +1389,7 @@ export type ClaimsAnalysisCreateManyAndReturnArgs<ExtArgs extends runtime.Types.
    * The data used to create many ClaimsAnalyses.
    */
   data: Prisma.ClaimsAnalysisCreateManyInput | Prisma.ClaimsAnalysisCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

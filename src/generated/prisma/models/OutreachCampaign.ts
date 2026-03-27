@@ -1758,6 +1758,7 @@ export type OutreachCampaignCreateManyArgs<ExtArgs extends runtime.Types.Extensi
    * The data used to create many OutreachCampaigns.
    */
   data: Prisma.OutreachCampaignCreateManyInput | Prisma.OutreachCampaignCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1776,6 +1777,7 @@ export type OutreachCampaignCreateManyAndReturnArgs<ExtArgs extends runtime.Type
    * The data used to create many OutreachCampaigns.
    */
   data: Prisma.OutreachCampaignCreateManyInput | Prisma.OutreachCampaignCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

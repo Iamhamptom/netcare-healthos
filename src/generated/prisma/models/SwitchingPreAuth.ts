@@ -1822,6 +1822,7 @@ export type SwitchingPreAuthCreateManyArgs<ExtArgs extends runtime.Types.Extensi
    * The data used to create many SwitchingPreAuths.
    */
   data: Prisma.SwitchingPreAuthCreateManyInput | Prisma.SwitchingPreAuthCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1840,6 +1841,7 @@ export type SwitchingPreAuthCreateManyAndReturnArgs<ExtArgs extends runtime.Type
    * The data used to create many SwitchingPreAuths.
    */
   data: Prisma.SwitchingPreAuthCreateManyInput | Prisma.SwitchingPreAuthCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

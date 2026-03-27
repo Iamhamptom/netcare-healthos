@@ -500,6 +500,7 @@ export type CheckInCreateOrConnectWithoutPracticeInput = {
 
 export type CheckInCreateManyPracticeInputEnvelope = {
   data: Prisma.CheckInCreateManyPracticeInput | Prisma.CheckInCreateManyPracticeInput[]
+  skipDuplicates?: boolean
 }
 
 export type CheckInUpsertWithWhereUniqueWithoutPracticeInput = {
@@ -1334,6 +1335,7 @@ export type CheckInCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
    * The data used to create many CheckIns.
    */
   data: Prisma.CheckInCreateManyInput | Prisma.CheckInCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1352,6 +1354,7 @@ export type CheckInCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensi
    * The data used to create many CheckIns.
    */
   data: Prisma.CheckInCreateManyInput | Prisma.CheckInCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

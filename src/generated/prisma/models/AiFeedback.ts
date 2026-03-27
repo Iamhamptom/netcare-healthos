@@ -1100,6 +1100,7 @@ export type AiFeedbackCreateManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * The data used to create many AiFeedbacks.
    */
   data: Prisma.AiFeedbackCreateManyInput | Prisma.AiFeedbackCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1118,6 +1119,7 @@ export type AiFeedbackCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Exte
    * The data used to create many AiFeedbacks.
    */
   data: Prisma.AiFeedbackCreateManyInput | Prisma.AiFeedbackCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

@@ -1100,6 +1100,7 @@ export type OpsDocumentCreateManyArgs<ExtArgs extends runtime.Types.Extensions.I
    * The data used to create many OpsDocuments.
    */
   data: Prisma.OpsDocumentCreateManyInput | Prisma.OpsDocumentCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1118,6 +1119,7 @@ export type OpsDocumentCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Ext
    * The data used to create many OpsDocuments.
    */
   data: Prisma.OpsDocumentCreateManyInput | Prisma.OpsDocumentCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

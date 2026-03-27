@@ -386,6 +386,7 @@ export type TenantPracticeCreateOrConnectWithoutTenantInput = {
 
 export type TenantPracticeCreateManyTenantInputEnvelope = {
   data: Prisma.TenantPracticeCreateManyTenantInput | Prisma.TenantPracticeCreateManyTenantInput[]
+  skipDuplicates?: boolean
 }
 
 export type TenantPracticeUpsertWithWhereUniqueWithoutTenantInput = {
@@ -1165,6 +1166,7 @@ export type TenantPracticeCreateManyArgs<ExtArgs extends runtime.Types.Extension
    * The data used to create many TenantPractices.
    */
   data: Prisma.TenantPracticeCreateManyInput | Prisma.TenantPracticeCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1183,6 +1185,7 @@ export type TenantPracticeCreateManyAndReturnArgs<ExtArgs extends runtime.Types.
    * The data used to create many TenantPractices.
    */
   data: Prisma.TenantPracticeCreateManyInput | Prisma.TenantPracticeCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

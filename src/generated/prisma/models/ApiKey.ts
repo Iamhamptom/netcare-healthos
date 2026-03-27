@@ -1072,6 +1072,7 @@ export type ApiKeyCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * The data used to create many ApiKeys.
    */
   data: Prisma.ApiKeyCreateManyInput | Prisma.ApiKeyCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1090,6 +1091,7 @@ export type ApiKeyCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensio
    * The data used to create many ApiKeys.
    */
   data: Prisma.ApiKeyCreateManyInput | Prisma.ApiKeyCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

@@ -1458,6 +1458,7 @@ export type NappiMedicineCreateManyArgs<ExtArgs extends runtime.Types.Extensions
    * The data used to create many NappiMedicines.
    */
   data: Prisma.NappiMedicineCreateManyInput | Prisma.NappiMedicineCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1476,6 +1477,7 @@ export type NappiMedicineCreateManyAndReturnArgs<ExtArgs extends runtime.Types.E
    * The data used to create many NappiMedicines.
    */
   data: Prisma.NappiMedicineCreateManyInput | Prisma.NappiMedicineCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

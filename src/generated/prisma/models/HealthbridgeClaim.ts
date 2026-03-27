@@ -1828,6 +1828,7 @@ export type HealthbridgeClaimCreateManyArgs<ExtArgs extends runtime.Types.Extens
    * The data used to create many HealthbridgeClaims.
    */
   data: Prisma.HealthbridgeClaimCreateManyInput | Prisma.HealthbridgeClaimCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1846,6 +1847,7 @@ export type HealthbridgeClaimCreateManyAndReturnArgs<ExtArgs extends runtime.Typ
    * The data used to create many HealthbridgeClaims.
    */
   data: Prisma.HealthbridgeClaimCreateManyInput | Prisma.HealthbridgeClaimCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

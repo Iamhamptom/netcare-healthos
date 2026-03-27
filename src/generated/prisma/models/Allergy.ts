@@ -404,6 +404,7 @@ export type AllergyCreateOrConnectWithoutPatientInput = {
 
 export type AllergyCreateManyPatientInputEnvelope = {
   data: Prisma.AllergyCreateManyPatientInput | Prisma.AllergyCreateManyPatientInput[]
+  skipDuplicates?: boolean
 }
 
 export type AllergyUpsertWithWhereUniqueWithoutPatientInput = {
@@ -1194,6 +1195,7 @@ export type AllergyCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
    * The data used to create many Allergies.
    */
   data: Prisma.AllergyCreateManyInput | Prisma.AllergyCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1212,6 +1214,7 @@ export type AllergyCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensi
    * The data used to create many Allergies.
    */
   data: Prisma.AllergyCreateManyInput | Prisma.AllergyCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */
