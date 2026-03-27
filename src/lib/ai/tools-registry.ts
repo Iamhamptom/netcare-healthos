@@ -773,98 +773,120 @@ registerTool({
 
 registerTool({
   name: "save_document",
-  description: "Save a document to the workspace. Creates a file in the docs/ directory with the given content. Use this to save reports, schematics, manuals, architecture docs, or any text document the user wants persisted.",
+  description: "Save a document to the workspace. Persists in the database — survives deploys. Use to save reports, schematics, manuals, architecture docs, or any text document.",
   parameters: {
     type: "object",
     properties: {
-      filename: { type: "string", description: "File name including extension (e.g. 'claims-report-march.md', 'architecture.md', 'manual.md')" },
+      filename: { type: "string", description: "File name (e.g. 'claims-report-march.md', 'architecture.md')" },
       content: { type: "string", description: "Full document content in markdown format" },
-      folder: { type: "string", description: "Subfolder inside docs/ (e.g. 'reports', 'schematics', 'manuals'). Created if it doesn't exist." },
+      folder: { type: "string", description: "Folder category (e.g. 'reports', 'schematics', 'manuals')" },
     },
     required: ["filename", "content"],
   },
   tags: ["all", "claims", "practice"],
-  execute: async (args) => {
+  execute: async (args, ctx) => {
     const filename = String(args.filename).replace(/[^a-zA-Z0-9._-]/g, "_");
     const folder = String(args.folder || "reports").replace(/[^a-zA-Z0-9._-]/g, "_");
     const content = String(args.content);
 
+    if (ctx.isDemoMode) {
+      return JSON.stringify({ success: true, id: "DOC-DEMO-" + Date.now(), folder, filename, size: content.length, message: "Document saved (demo mode)" });
+    }
+
     try {
-      const fs = await import("fs/promises");
-      const path = await import("path");
-      const docsDir = path.join(process.cwd(), "docs", folder);
-      await fs.mkdir(docsDir, { recursive: true });
-      const filePath = path.join(docsDir, filename);
-      await fs.writeFile(filePath, content, "utf-8");
+      const { prisma } = await import("@/lib/prisma");
+      const doc = await prisma.aiDocument.create({
+        data: {
+          practiceId: ctx.practiceId || "default",
+          folder,
+          filename,
+          content,
+          sizeBytes: content.length,
+          metadata: JSON.stringify({ title: filename.replace(/\.[^.]+$/, "").replace(/[-_]/g, " ") }),
+          createdBy: "agent",
+        },
+      });
       return JSON.stringify({
         success: true,
-        path: "docs/" + folder + "/" + filename,
+        id: doc.id,
+        folder,
+        filename,
         size: content.length,
-        message: "Document saved to workspace at docs/" + folder + "/" + filename,
+        message: "Document saved permanently. ID: " + doc.id + " — accessible anytime via read_document.",
       });
     } catch (err) {
-      return JSON.stringify({
-        success: false,
-        error: "Failed to save document: " + (err instanceof Error ? err.message : "unknown"),
-      });
+      return JSON.stringify({ success: false, error: "Failed to save: " + (err instanceof Error ? err.message : "unknown") });
     }
   },
 });
 
 registerTool({
   name: "list_documents",
-  description: "List all saved documents in the workspace docs/ directory. Shows available reports, schematics, manuals, and other saved files.",
+  description: "List all saved documents in the workspace. Shows reports, schematics, manuals, and other saved files with their IDs.",
   parameters: {
     type: "object",
     properties: {
-      folder: { type: "string", description: "Subfolder to list (e.g. 'reports', 'schematics'). Omit for root docs/ directory." },
+      folder: { type: "string", description: "Filter by folder (e.g. 'reports', 'schematics'). Omit to list all." },
     },
   },
   tags: ["all", "practice"],
-  execute: async (args) => {
+  execute: async (args, ctx) => {
+    if (ctx.isDemoMode) {
+      return JSON.stringify({ success: true, documents: [
+        { id: "doc-1", filename: "claims-analysis-march.md", folder: "reports", size: 4200, createdAt: "2026-03-25" },
+        { id: "doc-2", filename: "agent-architecture.md", folder: "schematics", size: 8100, createdAt: "2026-03-26" },
+      ], count: 2 });
+    }
+
     try {
-      const fs = await import("fs/promises");
-      const path = await import("path");
-      const folder = String(args.folder || "").replace(/[^a-zA-Z0-9._-]/g, "_");
-      const docsDir = path.join(process.cwd(), "docs", folder);
-      const entries = await fs.readdir(docsDir, { withFileTypes: true });
-      const files = entries.map((e) => ({
-        name: e.name,
-        type: e.isDirectory() ? "folder" : "file",
-        path: "docs/" + (folder ? folder + "/" : "") + e.name,
-      }));
-      return JSON.stringify({ success: true, files, count: files.length });
-    } catch {
-      return JSON.stringify({ success: true, files: [], count: 0, note: "Directory does not exist yet." });
+      const { prisma } = await import("@/lib/prisma");
+      const where: Record<string, unknown> = { practiceId: ctx.practiceId || "default" };
+      if (args.folder) where.folder = String(args.folder);
+
+      const docs = await prisma.aiDocument.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        take: 50,
+        select: { id: true, filename: true, folder: true, sizeBytes: true, createdBy: true, createdAt: true },
+      });
+      return JSON.stringify({ success: true, documents: docs, count: docs.length });
+    } catch (err) {
+      return JSON.stringify({ success: false, error: String(err) });
     }
   },
 });
 
 registerTool({
   name: "read_document",
-  description: "Read a saved document from the workspace. Returns the full content of a previously saved file.",
+  description: "Read a saved document by ID or filename. Returns the full content.",
   parameters: {
     type: "object",
     properties: {
-      path: { type: "string", description: "File path relative to project root (e.g. 'docs/reports/claims-report.md')" },
+      id: { type: "string", description: "Document ID (from save_document or list_documents)" },
+      filename: { type: "string", description: "Or search by filename" },
     },
-    required: ["path"],
   },
   tags: ["all", "practice", "claims"],
-  execute: async (args) => {
+  execute: async (args, ctx) => {
+    if (ctx.isDemoMode) {
+      return JSON.stringify({ success: true, filename: "demo-doc.md", content: "# Demo Document\n\nThis is a demo document.", size: 50 });
+    }
+
     try {
-      const fs = await import("fs/promises");
-      const pathMod = await import("path");
-      // Sanitise: only allow reading from docs/ or public/
-      const reqPath = String(args.path);
-      if (!reqPath.startsWith("docs/") && !reqPath.startsWith("public/")) {
-        return JSON.stringify({ error: "Can only read files from docs/ or public/ directories" });
+      const { prisma } = await import("@/lib/prisma");
+      let doc;
+      if (args.id) {
+        doc = await prisma.aiDocument.findUnique({ where: { id: String(args.id) } });
+      } else if (args.filename) {
+        doc = await prisma.aiDocument.findFirst({
+          where: { filename: { contains: String(args.filename) }, practiceId: ctx.practiceId || "default" },
+          orderBy: { createdAt: "desc" },
+        });
       }
-      const filePath = pathMod.join(process.cwd(), reqPath);
-      const content = await fs.readFile(filePath, "utf-8");
-      return JSON.stringify({ success: true, path: reqPath, content, size: content.length });
-    } catch {
-      return JSON.stringify({ error: "File not found: " + args.path });
+      if (!doc) return JSON.stringify({ error: "Document not found" });
+      return JSON.stringify({ success: true, id: doc.id, filename: doc.filename, folder: doc.folder, content: doc.content, size: doc.sizeBytes });
+    } catch (err) {
+      return JSON.stringify({ error: "Read failed: " + String(err) });
     }
   },
 });
@@ -1006,27 +1028,113 @@ registerTool({
       components.map((c: string, i: number) => (i + 1) + ". **" + c + "**").join("\n") + "\n\n" +
       (connections.length > 0 ? "## Connections\n\n" + connections.map((c: string) => "- " + c).join("\n") + "\n" : "");
 
-    // Save if filename provided
+    // Save to database if filename provided
     if (args.saveAs) {
       try {
-        const fs = await import("fs/promises");
-        const path = await import("path");
-        const dir = path.join(process.cwd(), "docs", "schematics");
-        await fs.mkdir(dir, { recursive: true });
-        const filePath = path.join(dir, String(args.saveAs));
-        await fs.writeFile(filePath, doc, "utf-8");
-        return JSON.stringify({
-          success: true,
-          savedTo: "docs/schematics/" + args.saveAs,
-          mermaid,
-          document: doc,
+        const { prisma } = await import("@/lib/prisma");
+        const saved = await prisma.aiDocument.create({
+          data: {
+            practiceId: "default",
+            folder: "schematics",
+            filename: String(args.saveAs),
+            content: doc,
+            sizeBytes: doc.length,
+            metadata: JSON.stringify({ title, diagramType: type, components: components.length }),
+            createdBy: "agent",
+          },
         });
+        return JSON.stringify({ success: true, id: saved.id, savedTo: "schematics/" + args.saveAs, mermaid, document: doc });
       } catch (err) {
         return JSON.stringify({ success: false, error: String(err), mermaid, document: doc });
       }
     }
 
     return JSON.stringify({ success: true, mermaid, document: doc });
+  },
+});
+
+// ── Memory Tools — Remember & Recall ────────────────────────────────────
+// Gives Jess persistent memory across conversations.
+
+registerTool({
+  name: "remember",
+  description: "Save a fact, preference, or learned context to persistent memory. Use when the user tells you something important to remember, when you learn a pattern about how they work, or when a correction should be applied in future conversations. Memory persists across all sessions.",
+  parameters: {
+    type: "object",
+    properties: {
+      key: { type: "string", description: "Short unique identifier (e.g. 'preferred_scheme', 'billing_contact', 'claims_pattern_discovery')" },
+      value: { type: "string", description: "The fact or context to remember" },
+      category: { type: "string", enum: ["preference", "fact", "pattern", "correction", "context"], description: "Type of memory" },
+    },
+    required: ["key", "value"],
+  },
+  tags: ["all", "claims", "billing", "practice", "medical", "whatsapp", "triage"],
+  execute: async (args, ctx) => {
+    if (ctx.isDemoMode) return JSON.stringify({ success: true, message: "Remembered: " + args.key });
+    try {
+      const { prisma } = await import("@/lib/prisma");
+      const result = await prisma.aiMemory.upsert({
+        where: { practiceId_persona_key: { practiceId: ctx.practiceId || "default", persona: "all", key: String(args.key) } },
+        update: { value: String(args.value), category: String(args.category || "fact"), updatedAt: new Date() },
+        create: { practiceId: ctx.practiceId || "default", persona: "all", key: String(args.key), value: String(args.value), category: String(args.category || "fact"), source: "agent" },
+      });
+      return JSON.stringify({ success: true, id: result.id, message: "Remembered: " + args.key + " — I'll use this in future conversations." });
+    } catch (err) {
+      return JSON.stringify({ success: false, error: String(err) });
+    }
+  },
+});
+
+registerTool({
+  name: "recall",
+  description: "Search persistent memory for previously saved facts, preferences, patterns, or corrections. Use when you need context from previous conversations, or when the user asks 'do you remember...' or references something discussed before.",
+  parameters: {
+    type: "object",
+    properties: {
+      query: { type: "string", description: "Search term or key to look up" },
+      category: { type: "string", enum: ["preference", "fact", "pattern", "correction", "context", "all"], description: "Filter by category (default: all)" },
+    },
+    required: ["query"],
+  },
+  tags: ["all", "claims", "billing", "practice", "medical", "whatsapp", "triage"],
+  execute: async (args, ctx) => {
+    if (ctx.isDemoMode) return JSON.stringify({ success: true, memories: [{ key: "demo_memory", value: "This is a demo memory entry", category: "fact" }] });
+    try {
+      const { prisma } = await import("@/lib/prisma");
+      const where: Record<string, unknown> = { practiceId: ctx.practiceId || "default" };
+      if (args.category && args.category !== "all") where.category = String(args.category);
+
+      const memories = await prisma.aiMemory.findMany({
+        where: {
+          ...where,
+          OR: [
+            { key: { contains: String(args.query) } },
+            { value: { contains: String(args.query) } },
+          ],
+        },
+        orderBy: { accessCount: "desc" },
+        take: 10,
+      });
+
+      // Update access counts
+      if (memories.length > 0) {
+        await prisma.aiMemory.updateMany({
+          where: { id: { in: memories.map((m: { id: string }) => m.id) } },
+          data: { accessCount: { increment: 1 }, lastUsedAt: new Date() },
+        });
+      }
+
+      return JSON.stringify({
+        success: true,
+        memories: memories.map((m: { key: string; value: string; category: string; createdAt: Date }) => ({
+          key: m.key, value: m.value, category: m.category, savedAt: m.createdAt,
+        })),
+        count: memories.length,
+        message: memories.length > 0 ? "Found " + memories.length + " memories matching '" + args.query + "'" : "No memories found for '" + args.query + "'",
+      });
+    } catch (err) {
+      return JSON.stringify({ success: false, error: String(err) });
+    }
   },
 });
 

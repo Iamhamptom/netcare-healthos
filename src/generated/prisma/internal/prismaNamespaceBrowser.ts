@@ -94,7 +94,11 @@ export const ModelName = {
   SwitchingVendor: 'SwitchingVendor',
   NappiMedicine: 'NappiMedicine',
   FeatureRequest: 'FeatureRequest',
-  AiFeedback: 'AiFeedback'
+  AiFeedback: 'AiFeedback',
+  AiMemory: 'AiMemory',
+  AiDocument: 'AiDocument',
+  AiThread: 'AiThread',
+  AiMessage: 'AiMessage'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1030,6 +1034,75 @@ export const AiFeedbackScalarFieldEnum = {
 } as const
 
 export type AiFeedbackScalarFieldEnum = (typeof AiFeedbackScalarFieldEnum)[keyof typeof AiFeedbackScalarFieldEnum]
+
+
+export const AiMemoryScalarFieldEnum = {
+  id: 'id',
+  practiceId: 'practiceId',
+  persona: 'persona',
+  key: 'key',
+  value: 'value',
+  category: 'category',
+  source: 'source',
+  confidence: 'confidence',
+  accessCount: 'accessCount',
+  lastUsedAt: 'lastUsedAt',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AiMemoryScalarFieldEnum = (typeof AiMemoryScalarFieldEnum)[keyof typeof AiMemoryScalarFieldEnum]
+
+
+export const AiDocumentScalarFieldEnum = {
+  id: 'id',
+  practiceId: 'practiceId',
+  userId: 'userId',
+  folder: 'folder',
+  filename: 'filename',
+  content: 'content',
+  mimeType: 'mimeType',
+  sizeBytes: 'sizeBytes',
+  metadata: 'metadata',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AiDocumentScalarFieldEnum = (typeof AiDocumentScalarFieldEnum)[keyof typeof AiDocumentScalarFieldEnum]
+
+
+export const AiThreadScalarFieldEnum = {
+  id: 'id',
+  practiceId: 'practiceId',
+  userId: 'userId',
+  persona: 'persona',
+  title: 'title',
+  status: 'status',
+  messageCount: 'messageCount',
+  lastMessageAt: 'lastMessageAt',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AiThreadScalarFieldEnum = (typeof AiThreadScalarFieldEnum)[keyof typeof AiThreadScalarFieldEnum]
+
+
+export const AiMessageScalarFieldEnum = {
+  id: 'id',
+  threadId: 'threadId',
+  role: 'role',
+  content: 'content',
+  toolsUsed: 'toolsUsed',
+  provider: 'provider',
+  stepsUsed: 'stepsUsed',
+  confidence: 'confidence',
+  createdAt: 'createdAt'
+} as const
+
+export type AiMessageScalarFieldEnum = (typeof AiMessageScalarFieldEnum)[keyof typeof AiMessageScalarFieldEnum]
 
 
 export const SortOrder = {

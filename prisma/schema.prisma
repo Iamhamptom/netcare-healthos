@@ -1054,3 +1054,88 @@ model AiFeedback {
   @@index([practiceId])
   @@index([createdAt])
 }
+
+// ── AI Memory — Practice-Level Learning ──────────────────────────────
+// Stores learned facts, preferences, and context that persist across conversations.
+// Injected into system prompt for personalized responses.
+model AiMemory {
+  id          String   @id @default(cuid())
+  practiceId  String
+  persona     String   @default("all")  // "all" or specific persona name
+  key         String                     // unique identifier (e.g. "preferred_scheme", "billing_pattern")
+  value       String                     // the remembered fact/preference
+  category    String   @default("preference") // preference, fact, pattern, correction, context
+  source      String   @default("agent")      // agent, user, system, feedback
+  confidence  Float    @default(0.8)          // how reliable is this memory (0-1)
+  accessCount Int      @default(0)            // how many times retrieved
+  lastUsedAt  DateTime @default(now())
+  expiresAt   DateTime?                       // null = never expires
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([practiceId, persona, key])
+  @@index([practiceId])
+  @@index([persona])
+  @@index([category])
+  @@index([lastUsedAt])
+}
+
+// ── AI Documents — Persistent File Storage ──────────────────────────
+// Replaces ephemeral filesystem. Stores generated reports, schematics, manuals.
+model AiDocument {
+  id          String   @id @default(cuid())
+  practiceId  String?
+  userId      String?
+  folder      String   @default("reports")  // reports, schematics, manuals, exports
+  filename    String
+  content     String                         // full document content (markdown)
+  mimeType    String   @default("text/markdown")
+  sizeBytes   Int      @default(0)
+  metadata    String   @default("{}")        // JSON: title, format, generatedBy, etc.
+  createdBy   String   @default("agent")     // agent, user, system
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([practiceId])
+  @@index([folder])
+  @@index([createdAt])
+}
+
+// ── AI Chat Threads — Persistent Assistant Conversations ─────────────
+// Stores full conversation history between users and Jess.
+// Loaded on each request for context continuity. POPIA audit trail.
+model AiThread {
+  id          String   @id @default(cuid())
+  practiceId  String
+  userId      String?
+  persona     String   @default("command-assistant")
+  title       String   @default("New conversation")
+  status      String   @default("active")   // active, archived, deleted
+  messageCount Int     @default(0)
+  lastMessageAt DateTime @default(now())
+  metadata    String   @default("{}")        // JSON: channel, patientId, context
+  messages    AiMessage[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([practiceId])
+  @@index([userId])
+  @@index([status])
+  @@index([lastMessageAt])
+}
+
+model AiMessage {
+  id          String   @id @default(cuid())
+  threadId    String
+  thread      AiThread @relation(fields: [threadId], references: [id])
+  role        String                         // user, assistant, system, tool
+  content     String
+  toolsUsed   String?                        // JSON array of tool names
+  provider    String?                        // gemini, claude, none
+  stepsUsed   Int?
+  confidence  Float?
+  createdAt   DateTime @default(now())
+
+  @@index([threadId])
+  @@index([createdAt])
+}

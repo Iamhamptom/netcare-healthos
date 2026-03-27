@@ -237,3 +237,23 @@ export type FeatureRequest = Prisma.FeatureRequestModel
  * 
  */
 export type AiFeedback = Prisma.AiFeedbackModel
+/**
+ * Model AiMemory
+ * 
+ */
+export type AiMemory = Prisma.AiMemoryModel
+/**
+ * Model AiDocument
+ * 
+ */
+export type AiDocument = Prisma.AiDocumentModel
+/**
+ * Model AiThread
+ * 
+ */
+export type AiThread = Prisma.AiThreadModel
+/**
+ * Model AiMessage
+ * 
+ */
+export type AiMessage = Prisma.AiMessageModel
