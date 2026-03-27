@@ -87,8 +87,9 @@ registerTool({
   execute: async (args, ctx) => {
     if (ctx.isDemoMode) return JSON.stringify({ id: args.patientId, name: "Demo Patient", phone: "+27821234567" });
     const { prisma } = await import("@/lib/prisma");
-    const patient = await prisma.patient.findUnique({
-      where: { id: String(args.patientId) },
+    // SECURITY: Scope to practiceId — prevents cross-practice data leaks
+    const patient = await prisma.patient.findFirst({
+      where: { id: String(args.patientId), practiceId: ctx.practiceId || "" },
       include: {
         allergies: true,
         medications: true,
@@ -96,7 +97,8 @@ registerTool({
         medicalRecords: { orderBy: { createdAt: "desc" }, take: 10 },
       },
     });
-    return JSON.stringify(patient || { error: "Patient not found" });
+    if (!patient) return JSON.stringify({ error: "Patient not found in your practice" });
+    return JSON.stringify(patient);
   },
 });
 
@@ -174,9 +176,14 @@ registerTool({
   execute: async (args, ctx) => {
     if (ctx.isDemoMode) return JSON.stringify({ success: true, message: "Booking cancelled" });
     const { prisma } = await import("@/lib/prisma");
+    // SECURITY: Verify booking belongs to this practice before cancelling
+    const booking = await prisma.booking.findFirst({
+      where: { id: String(args.bookingId), practiceId: ctx.practiceId || "" },
+    });
+    if (!booking) return JSON.stringify({ error: "Booking not found in your practice" });
     await prisma.booking.update({
-      where: { id: String(args.bookingId) },
-      data: { status: "cancelled", notes: args.reason ? `Cancelled: ${args.reason}` : "Cancelled" },
+      where: { id: booking.id },
+      data: { status: "cancelled", notes: args.reason ? "Cancelled: " + String(args.reason) : "Cancelled" },
     });
     return JSON.stringify({ success: true, message: "Booking cancelled" });
   },
