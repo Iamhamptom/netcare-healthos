@@ -90,21 +90,6 @@ export const demoUsers: Record<string, { id: string; name: string; email: string
     role: "admin",
     practice: demoPractice,
   },
-  // === RheumCare Clinic Inc. (26 March 2026 — new client) ===
-  "admin@rheumcare.co.za": {
-    id: "demo-user-rheumcare-buhle",
-    name: "Buhle Dube",
-    email: "admin@rheumcare.co.za",
-    role: "admin",
-    practice: demoPractice,
-  },
-  "demo@rheumcare.co.za": {
-    id: "demo-user-rheumcare",
-    name: "RheumCare Team",
-    email: "demo@rheumcare.co.za",
-    role: "admin",
-    practice: demoPractice,
-  },
   // === Netcare Stakeholder Accounts (25 March 2026 meeting follow-up) ===
   "drrahul.gathiram@medicross.co.za": {
     id: "demo-user-rahul",
