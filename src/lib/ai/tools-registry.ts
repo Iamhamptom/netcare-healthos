@@ -720,6 +720,316 @@ registerTool({
   },
 });
 
+// ── Report & Document Tools ─────────────────────────────────────────────
+// These give agents the power to generate, save, and email deliverables.
+
+registerTool({
+  name: "generate_report",
+  description: "Generate a structured report on one or more topics. Returns formatted markdown with sections, data, and analysis. Use this when the user asks for a report, summary, briefing, or analysis document.",
+  parameters: {
+    type: "object",
+    properties: {
+      title: { type: "string", description: "Report title" },
+      sections: {
+        type: "array",
+        items: { type: "string" },
+        description: "List of section topics to cover (e.g. ['claims performance', 'top rejection codes', 'savings opportunity'])",
+      },
+      format: { type: "string", enum: ["brief", "detailed", "executive"], description: "Report depth — brief (1 page), detailed (3-5 pages), executive (half page)" },
+      includeData: { type: "boolean", description: "Include tables and statistics from the knowledge base" },
+    },
+    required: ["title", "sections"],
+  },
+  tags: ["all", "claims", "billing", "practice"],
+  execute: async (args) => {
+    const title = String(args.title);
+    const sections = (args.sections as string[]) || [];
+    const format = String(args.format || "detailed");
+    const now = new Date().toISOString().split("T")[0];
+
+    // Build report skeleton with metadata
+    const report = {
+      title,
+      generatedAt: now,
+      format,
+      sections: sections.map((s: string) => ({
+        heading: s,
+        placeholder: "AI will populate this section based on available data and knowledge base.",
+      })),
+      metadata: {
+        generator: "Netcare Health OS — AI Report Engine",
+        knowledgeBase: "300MB SA Healthcare Intelligence (ICD-10-ZA, NAPPI, schemes, legislation)",
+        disclaimer: "This report is AI-generated. Verify critical data before distribution.",
+      },
+    };
+
+    return JSON.stringify({
+      success: true,
+      report,
+      instruction: "Use this structure to write a comprehensive report. Fill each section with real data from the knowledge base. For claims data, cite ICD-10 codes, rejection rates, and scheme rules. Format as markdown.",
+    });
+  },
+});
+
+registerTool({
+  name: "save_document",
+  description: "Save a document to the workspace. Creates a file in the docs/ directory with the given content. Use this to save reports, schematics, manuals, architecture docs, or any text document the user wants persisted.",
+  parameters: {
+    type: "object",
+    properties: {
+      filename: { type: "string", description: "File name including extension (e.g. 'claims-report-march.md', 'architecture.md', 'manual.md')" },
+      content: { type: "string", description: "Full document content in markdown format" },
+      folder: { type: "string", description: "Subfolder inside docs/ (e.g. 'reports', 'schematics', 'manuals'). Created if it doesn't exist." },
+    },
+    required: ["filename", "content"],
+  },
+  tags: ["all", "claims", "practice"],
+  execute: async (args) => {
+    const filename = String(args.filename).replace(/[^a-zA-Z0-9._-]/g, "_");
+    const folder = String(args.folder || "reports").replace(/[^a-zA-Z0-9._-]/g, "_");
+    const content = String(args.content);
+
+    try {
+      const fs = await import("fs/promises");
+      const path = await import("path");
+      const docsDir = path.join(process.cwd(), "docs", folder);
+      await fs.mkdir(docsDir, { recursive: true });
+      const filePath = path.join(docsDir, filename);
+      await fs.writeFile(filePath, content, "utf-8");
+      return JSON.stringify({
+        success: true,
+        path: "docs/" + folder + "/" + filename,
+        size: content.length,
+        message: "Document saved to workspace at docs/" + folder + "/" + filename,
+      });
+    } catch (err) {
+      return JSON.stringify({
+        success: false,
+        error: "Failed to save document: " + (err instanceof Error ? err.message : "unknown"),
+      });
+    }
+  },
+});
+
+registerTool({
+  name: "list_documents",
+  description: "List all saved documents in the workspace docs/ directory. Shows available reports, schematics, manuals, and other saved files.",
+  parameters: {
+    type: "object",
+    properties: {
+      folder: { type: "string", description: "Subfolder to list (e.g. 'reports', 'schematics'). Omit for root docs/ directory." },
+    },
+  },
+  tags: ["all", "practice"],
+  execute: async (args) => {
+    try {
+      const fs = await import("fs/promises");
+      const path = await import("path");
+      const folder = String(args.folder || "").replace(/[^a-zA-Z0-9._-]/g, "_");
+      const docsDir = path.join(process.cwd(), "docs", folder);
+      const entries = await fs.readdir(docsDir, { withFileTypes: true });
+      const files = entries.map((e) => ({
+        name: e.name,
+        type: e.isDirectory() ? "folder" : "file",
+        path: "docs/" + (folder ? folder + "/" : "") + e.name,
+      }));
+      return JSON.stringify({ success: true, files, count: files.length });
+    } catch {
+      return JSON.stringify({ success: true, files: [], count: 0, note: "Directory does not exist yet." });
+    }
+  },
+});
+
+registerTool({
+  name: "read_document",
+  description: "Read a saved document from the workspace. Returns the full content of a previously saved file.",
+  parameters: {
+    type: "object",
+    properties: {
+      path: { type: "string", description: "File path relative to project root (e.g. 'docs/reports/claims-report.md')" },
+    },
+    required: ["path"],
+  },
+  tags: ["all", "practice", "claims"],
+  execute: async (args) => {
+    try {
+      const fs = await import("fs/promises");
+      const pathMod = await import("path");
+      // Sanitise: only allow reading from docs/ or public/
+      const reqPath = String(args.path);
+      if (!reqPath.startsWith("docs/") && !reqPath.startsWith("public/")) {
+        return JSON.stringify({ error: "Can only read files from docs/ or public/ directories" });
+      }
+      const filePath = pathMod.join(process.cwd(), reqPath);
+      const content = await fs.readFile(filePath, "utf-8");
+      return JSON.stringify({ success: true, path: reqPath, content, size: content.length });
+    } catch {
+      return JSON.stringify({ error: "File not found: " + args.path });
+    }
+  },
+});
+
+registerTool({
+  name: "email_report",
+  description: "Email a report or document to a recipient. Sends a professionally formatted HTML email with the report content. Use this when the user says 'email it to me', 'send me the report', etc.",
+  parameters: {
+    type: "object",
+    properties: {
+      to: { type: "string", description: "Recipient email address" },
+      subject: { type: "string", description: "Email subject line" },
+      reportTitle: { type: "string", description: "Title displayed in the email header" },
+      content: { type: "string", description: "Report content in markdown (will be converted to HTML)" },
+      attachDocPath: { type: "string", description: "Optional: path to a saved document to reference in the email" },
+    },
+    required: ["to", "subject", "content"],
+  },
+  tags: ["all", "practice"],
+  execute: async (args) => {
+    try {
+      const { sendEmail } = await import("@/lib/resend");
+      const title = String(args.reportTitle || args.subject);
+      const content = String(args.content);
+      const now = new Date().toLocaleDateString("en-ZA", { year: "numeric", month: "long", day: "numeric" });
+
+      // Convert markdown-ish content to basic HTML
+      const htmlContent = content
+        .split("\n")
+        .map((line: string) => {
+          if (line.startsWith("### ")) return "<h3 style=\"color:#1D3443;margin:16px 0 8px\">" + line.slice(4) + "</h3>";
+          if (line.startsWith("## ")) return "<h2 style=\"color:#1D3443;margin:20px 0 8px\">" + line.slice(3) + "</h2>";
+          if (line.startsWith("# ")) return "<h1 style=\"color:#1D3443;margin:24px 0 12px\">" + line.slice(2) + "</h1>";
+          if (line.startsWith("- ")) return "<li style=\"margin:4px 0;color:#333\">" + line.slice(2) + "</li>";
+          if (line.startsWith("**") && line.endsWith("**")) return "<p style=\"font-weight:600;color:#1D3443\">" + line.slice(2, -2) + "</p>";
+          if (line.trim() === "") return "<br/>";
+          return "<p style=\"margin:4px 0;color:#333;line-height:1.6\">" + line + "</p>";
+        })
+        .join("\n");
+
+      const html = "<!DOCTYPE html><html><head><meta charset=\"utf-8\"></head><body style=\"margin:0;padding:0;background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,sans-serif\">" +
+        "<div style=\"max-width:640px;margin:0 auto;background:white;border-radius:8px;overflow:hidden;margin-top:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1)\">" +
+        "<div style=\"background:linear-gradient(135deg,#1D3443,#3DA9D1);padding:32px 24px;text-align:center\">" +
+        "<img src=\"https://healthos.visiocorp.co/images/netcare-logo.png\" alt=\"Netcare\" style=\"height:28px;filter:brightness(10);margin-bottom:12px\"/>" +
+        "<h1 style=\"color:white;margin:0;font-size:20px;font-weight:500\">" + title + "</h1>" +
+        "<p style=\"color:rgba(255,255,255,0.6);margin:8px 0 0;font-size:12px\">" + now + " | Generated by Health OS AI</p>" +
+        "</div>" +
+        "<div style=\"padding:24px\">" + htmlContent + "</div>" +
+        "<div style=\"padding:16px 24px;background:#f9fafb;border-top:1px solid #e5e7eb;text-align:center\">" +
+        "<p style=\"color:#9ca3af;font-size:11px;margin:0\">Netcare Health OS | Visio Research Labs | AI-Powered Healthcare Operations</p>" +
+        "</div></div></body></html>";
+
+      await sendEmail({
+        to: String(args.to),
+        subject: String(args.subject),
+        html,
+      });
+
+      return JSON.stringify({
+        success: true,
+        sentTo: args.to,
+        subject: args.subject,
+        message: "Report emailed successfully to " + args.to,
+      });
+    } catch (err) {
+      return JSON.stringify({
+        success: false,
+        error: "Email failed: " + (err instanceof Error ? err.message : "Check RESEND_API_KEY"),
+      });
+    }
+  },
+});
+
+registerTool({
+  name: "generate_schematic",
+  description: "Generate an architecture diagram or schematic as a text-based diagram (ASCII/Mermaid). Saves to workspace. Use when the user asks for architecture docs, system diagrams, flow charts, or schematics.",
+  parameters: {
+    type: "object",
+    properties: {
+      title: { type: "string", description: "Schematic title" },
+      diagramType: { type: "string", enum: ["flowchart", "sequence", "architecture", "pipeline", "entity-relationship"], description: "Type of diagram to generate" },
+      components: {
+        type: "array",
+        items: { type: "string" },
+        description: "Key components to include (e.g. ['intake agent', 'triage agent', 'billing agent', 'approval gate'])",
+      },
+      connections: {
+        type: "array",
+        items: { type: "string" },
+        description: "Connections between components (e.g. ['intake -> triage', 'triage -> billing'])",
+      },
+      saveAs: { type: "string", description: "Filename to save (e.g. 'agent-orchestration.md')" },
+    },
+    required: ["title", "diagramType", "components"],
+  },
+  tags: ["all"],
+  execute: async (args) => {
+    const title = String(args.title);
+    const type = String(args.diagramType || "flowchart");
+    const components = (args.components as string[]) || [];
+    const connections = (args.connections as string[]) || [];
+
+    // Generate Mermaid diagram
+    let mermaid = "";
+    if (type === "flowchart" || type === "pipeline") {
+      mermaid = "flowchart TD\n";
+      components.forEach((c: string, i: number) => {
+        const id = "n" + i;
+        mermaid += "  " + id + "[\"" + c + "\"]\n";
+      });
+      connections.forEach((conn: string) => {
+        const parts = conn.split("->");
+        if (parts.length === 2) {
+          const fromIdx = components.findIndex((c: string) => c.toLowerCase().includes(parts[0].trim().toLowerCase()));
+          const toIdx = components.findIndex((c: string) => c.toLowerCase().includes(parts[1].trim().toLowerCase()));
+          if (fromIdx >= 0 && toIdx >= 0) {
+            mermaid += "  n" + fromIdx + " --> n" + toIdx + "\n";
+          }
+        }
+      });
+    } else if (type === "sequence") {
+      mermaid = "sequenceDiagram\n";
+      for (let i = 0; i < components.length - 1; i++) {
+        mermaid += "  " + components[i] + "->>" + components[i + 1] + ": handoff\n";
+      }
+    } else {
+      mermaid = "flowchart LR\n";
+      components.forEach((c: string, i: number) => {
+        mermaid += "  n" + i + "((\"" + c + "\"))\n";
+      });
+    }
+
+    const doc = "# " + title + "\n\n" +
+      "Generated: " + new Date().toISOString().split("T")[0] + "\n" +
+      "Type: " + type + "\n\n" +
+      "## Diagram\n\n" +
+      "```mermaid\n" + mermaid + "```\n\n" +
+      "## Components\n\n" +
+      components.map((c: string, i: number) => (i + 1) + ". **" + c + "**").join("\n") + "\n\n" +
+      (connections.length > 0 ? "## Connections\n\n" + connections.map((c: string) => "- " + c).join("\n") + "\n" : "");
+
+    // Save if filename provided
+    if (args.saveAs) {
+      try {
+        const fs = await import("fs/promises");
+        const path = await import("path");
+        const dir = path.join(process.cwd(), "docs", "schematics");
+        await fs.mkdir(dir, { recursive: true });
+        const filePath = path.join(dir, String(args.saveAs));
+        await fs.writeFile(filePath, doc, "utf-8");
+        return JSON.stringify({
+          success: true,
+          savedTo: "docs/schematics/" + args.saveAs,
+          mermaid,
+          document: doc,
+        });
+      } catch (err) {
+        return JSON.stringify({ success: false, error: String(err), mermaid, document: doc });
+      }
+    }
+
+    return JSON.stringify({ success: true, mermaid, document: doc });
+  },
+});
+
 // ── Helper: Demo Data ───────────────────────────────────────────────────
 
 function getDemoPatients(query: string) {
