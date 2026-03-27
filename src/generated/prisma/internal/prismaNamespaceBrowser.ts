@@ -93,6 +93,7 @@ export const ModelName = {
   TenantPractice: 'TenantPractice',
   SwitchingVendor: 'SwitchingVendor',
   NappiMedicine: 'NappiMedicine',
+  FeatureRequest: 'FeatureRequest',
   AiFeedback: 'AiFeedback'
 } as const
 
@@ -984,6 +985,33 @@ export const NappiMedicineScalarFieldEnum = {
 } as const
 
 export type NappiMedicineScalarFieldEnum = (typeof NappiMedicineScalarFieldEnum)[keyof typeof NappiMedicineScalarFieldEnum]
+
+
+export const FeatureRequestScalarFieldEnum = {
+  id: 'id',
+  practiceId: 'practiceId',
+  userId: 'userId',
+  userEmail: 'userEmail',
+  originalRequest: 'originalRequest',
+  agentType: 'agentType',
+  agentResponse: 'agentResponse',
+  category: 'category',
+  priority: 'priority',
+  title: 'title',
+  description: 'description',
+  businessCase: 'businessCase',
+  status: 'status',
+  reviewedBy: 'reviewedBy',
+  reviewNote: 'reviewNote',
+  shippedInVersion: 'shippedInVersion',
+  voteCount: 'voteCount',
+  practiceIds: 'practiceIds',
+  requestedAt: 'requestedAt',
+  reviewedAt: 'reviewedAt',
+  shippedAt: 'shippedAt'
+} as const
+
+export type FeatureRequestScalarFieldEnum = (typeof FeatureRequestScalarFieldEnum)[keyof typeof FeatureRequestScalarFieldEnum]
 
 
 export const AiFeedbackScalarFieldEnum = {

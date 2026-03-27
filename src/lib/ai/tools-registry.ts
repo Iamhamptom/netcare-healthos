@@ -1030,6 +1030,181 @@ registerTool({
   },
 });
 
+// ── Feature Request Pipeline Tools ───────────────────────────────────────
+// When agents can't do something, they log it. VisioCorp builds it. Users vote.
+
+registerTool({
+  name: "log_feature_request",
+  description: "IMPORTANT: Call this WHENEVER you cannot fulfil a user's request — whether it's a missing tool, unsupported action, data you don't have access to, or a capability that doesn't exist yet. This logs the request so VisioCorp can review and build it. Never just say 'I can't do that' — always log it as a feature request first, then explain to the user that their request has been captured and will be reviewed.",
+  parameters: {
+    type: "object",
+    properties: {
+      originalRequest: { type: "string", description: "The exact user message/request you couldn't handle" },
+      title: { type: "string", description: "Short summary of the capability needed (e.g. 'Automated pre-auth submission to Discovery')" },
+      description: { type: "string", description: "Detailed description of what the user needs and why you couldn't do it" },
+      category: { type: "string", enum: ["claims", "billing", "scheduling", "reporting", "integration", "clinical", "communication", "analytics", "compliance", "other"], description: "Best-fit category" },
+      priority: { type: "string", enum: ["low", "medium", "high", "critical"], description: "Based on business impact and urgency" },
+      businessCase: { type: "string", description: "Why this matters — estimated impact, time saved, revenue potential, or compliance need" },
+    },
+    required: ["originalRequest", "title", "description", "category"],
+  },
+  tags: ["all", "claims", "billing", "practice", "medical", "whatsapp", "triage"],
+  execute: async (args, ctx) => {
+    const request = {
+      originalRequest: String(args.originalRequest),
+      title: String(args.title),
+      description: String(args.description),
+      category: String(args.category || "general"),
+      priority: String(args.priority || "medium"),
+      businessCase: args.businessCase ? String(args.businessCase) : undefined,
+      practiceId: ctx.practiceId,
+    };
+
+    if (ctx.isDemoMode) {
+      return JSON.stringify({
+        success: true,
+        featureRequestId: "FR-DEMO-" + Date.now(),
+        status: "requested",
+        message: "Feature request logged. VisioCorp will review this and notify you when it ships.",
+        request,
+      });
+    }
+
+    try {
+      const { prisma } = await import("@/lib/prisma");
+
+      // Check for duplicate/similar requests — merge votes if found
+      const existing = await prisma.featureRequest.findFirst({
+        where: {
+          category: request.category,
+          status: { in: ["requested", "under_review", "approved", "in_progress"] },
+          title: { contains: request.title.split(" ").slice(0, 3).join(" ") },
+        },
+      });
+
+      if (existing) {
+        // Upvote existing request
+        const existingPractices: string[] = existing.practiceIds ? JSON.parse(existing.practiceIds) : [];
+        if (ctx.practiceId && !existingPractices.includes(ctx.practiceId)) {
+          existingPractices.push(ctx.practiceId);
+        }
+        await prisma.featureRequest.update({
+          where: { id: existing.id },
+          data: {
+            voteCount: existing.voteCount + 1,
+            practiceIds: JSON.stringify(existingPractices),
+          },
+        });
+        return JSON.stringify({
+          success: true,
+          featureRequestId: existing.id,
+          status: existing.status,
+          voteCount: existing.voteCount + 1,
+          message: "Similar request already exists — your vote has been added. " + existing.voteCount + " practices have now requested this. VisioCorp is tracking it.",
+          existingTitle: existing.title,
+        });
+      }
+
+      // Create new request
+      const fr = await prisma.featureRequest.create({
+        data: {
+          originalRequest: request.originalRequest,
+          title: request.title,
+          description: request.description,
+          category: request.category,
+          priority: request.priority,
+          businessCase: request.businessCase || "",
+          practiceId: ctx.practiceId || "",
+          practiceIds: ctx.practiceId ? JSON.stringify([ctx.practiceId]) : "[]",
+        },
+      });
+
+      return JSON.stringify({
+        success: true,
+        featureRequestId: fr.id,
+        status: "requested",
+        voteCount: 1,
+        message: "Feature request logged and sent to VisioCorp for review. You'll be notified when this ships. Request ID: " + fr.id,
+      });
+    } catch (err) {
+      return JSON.stringify({
+        success: false,
+        error: "Failed to save feature request: " + (err instanceof Error ? err.message : "unknown"),
+        request,
+        message: "Your request has been noted but we couldn't save it to the database. VisioCorp will follow up.",
+      });
+    }
+  },
+});
+
+registerTool({
+  name: "get_feature_requests",
+  description: "View the feature request pipeline — shows what users have requested, their status, vote counts, and what VisioCorp is building. Use this to show users the roadmap or when they ask 'what features are coming'.",
+  parameters: {
+    type: "object",
+    properties: {
+      status: { type: "string", enum: ["all", "requested", "under_review", "approved", "in_progress", "shipped", "declined"], description: "Filter by status" },
+      category: { type: "string", description: "Filter by category" },
+      limit: { type: "number", description: "Max results (default 20)" },
+    },
+  },
+  tags: ["all", "practice"],
+  execute: async (args, ctx) => {
+    if (ctx.isDemoMode) {
+      return JSON.stringify({
+        success: true,
+        requests: [
+          { id: "FR-001", title: "Automated pre-auth submission to Discovery", category: "claims", priority: "high", status: "in_progress", voteCount: 12, requestedAt: "2026-03-15" },
+          { id: "FR-002", title: "WhatsApp appointment reminders in Zulu", category: "communication", priority: "medium", status: "approved", voteCount: 8, requestedAt: "2026-03-18" },
+          { id: "FR-003", title: "Integration with Sage Pastel accounting", category: "integration", priority: "medium", status: "under_review", voteCount: 5, requestedAt: "2026-03-20" },
+          { id: "FR-004", title: "Bulk SMS for recall campaigns", category: "communication", priority: "high", status: "shipped", voteCount: 15, shippedInVersion: "v178", requestedAt: "2026-03-01" },
+          { id: "FR-005", title: "POPIA consent form PDF generator", category: "compliance", priority: "critical", status: "requested", voteCount: 3, requestedAt: "2026-03-25" },
+        ],
+        totalRequested: 23,
+        totalShipped: 7,
+        totalInProgress: 4,
+      });
+    }
+
+    try {
+      const { prisma } = await import("@/lib/prisma");
+      const where: Record<string, unknown> = {};
+      if (args.status && args.status !== "all") where.status = String(args.status);
+      if (args.category) where.category = String(args.category);
+
+      const requests = await prisma.featureRequest.findMany({
+        where,
+        orderBy: [{ voteCount: "desc" }, { requestedAt: "desc" }],
+        take: Number(args.limit) || 20,
+      });
+
+      const stats = await prisma.featureRequest.groupBy({
+        by: ["status"],
+        _count: true,
+      });
+
+      return JSON.stringify({
+        success: true,
+        requests: requests.map((r: Record<string, unknown>) => ({
+          id: r.id,
+          title: r.title,
+          category: r.category,
+          priority: r.priority,
+          status: r.status,
+          voteCount: r.voteCount,
+          businessCase: r.businessCase,
+          requestedAt: r.requestedAt,
+          shippedInVersion: r.shippedInVersion,
+        })),
+        stats: Object.fromEntries(stats.map((s: { status: string; _count: number }) => [s.status, s._count])),
+        total: requests.length,
+      });
+    } catch (err) {
+      return JSON.stringify({ success: false, error: String(err) });
+    }
+  },
+});
+
 // ── Helper: Demo Data ───────────────────────────────────────────────────
 
 function getDemoPatients(query: string) {

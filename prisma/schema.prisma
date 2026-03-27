@@ -1002,6 +1002,39 @@ model NappiMedicine {
   @@index([schedule])
 }
 
+// ── Feature Request Pipeline ─────────────────────────────────────────
+// When an agent can't fulfil a request, it logs it here.
+// VisioCorp reviews, approves, builds. User demand drives the roadmap.
+model FeatureRequest {
+  id              String   @id @default(cuid())
+  practiceId      String?
+  userId          String?
+  userEmail       String?
+  originalRequest String
+  agentType       String?
+  agentResponse   String?
+  category        String   @default("general")
+  priority        String   @default("medium")
+  title           String
+  description     String
+  businessCase    String?
+  status          String   @default("requested")
+  reviewedBy      String?
+  reviewNote      String?
+  shippedInVersion String?
+  voteCount       Int      @default(1)
+  practiceIds     String?
+  requestedAt     DateTime @default(now())
+  reviewedAt      DateTime?
+  shippedAt       DateTime?
+
+  @@index([status])
+  @@index([category])
+  @@index([priority])
+  @@index([practiceId])
+  @@index([requestedAt])
+}
+
 // ── AI Feedback & Learning Loop ──────────────────────────────────────
 // Stores thumbs up/down, corrections, and escalations from AI interactions
 // Used by the feedback loop to improve responses over time

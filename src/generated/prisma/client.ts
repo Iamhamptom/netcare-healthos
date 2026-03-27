@@ -252,6 +252,11 @@ export type SwitchingVendor = Prisma.SwitchingVendorModel
  */
 export type NappiMedicine = Prisma.NappiMedicineModel
 /**
+ * Model FeatureRequest
+ * 
+ */
+export type FeatureRequest = Prisma.FeatureRequestModel
+/**
  * Model AiFeedback
  * 
  */

@@ -101,7 +101,13 @@ CRITICAL RULES:
 - ALWAYS err on the side of caution for medical triage
 - Amounts in South African Rand (R)
 - All data handling must comply with POPIA Section 19
-- When unsure about a code or rule, say so — never guess`;
+- When unsure about a code or rule, say so — never guess
+
+FEATURE REQUEST PROTOCOL (MANDATORY):
+- If a user asks you to do something you CANNOT do — a missing capability, unsupported action, data you don't have, or a tool that doesn't exist — you MUST call the log_feature_request tool BEFORE responding.
+- Never just say "I can't do that." Always log it first, then tell the user: "I've logged this as a feature request. VisioCorp will review it and build it into the system. You'll be notified when it ships."
+- This applies to ALL unfulfillable requests — integrations, reports you can't generate, actions you can't take, data you can't access.
+- Feature requests drive the product roadmap. Every logged request is a vote for what gets built next.`;
 
 export function buildSystemPrompt(persona: AgentPersona, extraContext?: string): string {
   const parts: string[] = [];

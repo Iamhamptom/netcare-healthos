@@ -426,6 +426,7 @@ export const ModelName = {
   TenantPractice: 'TenantPractice',
   SwitchingVendor: 'SwitchingVendor',
   NappiMedicine: 'NappiMedicine',
+  FeatureRequest: 'FeatureRequest',
   AiFeedback: 'AiFeedback'
 } as const
 
@@ -442,7 +443,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "practice" | "patient" | "allergy" | "medication" | "medicalRecord" | "vitals" | "conversation" | "message" | "booking" | "review" | "recallItem" | "auditLog" | "invoice" | "payment" | "checkIn" | "notification" | "consentRecord" | "investorNote" | "creditLedger" | "apiKey" | "opsDocument" | "clientPipeline" | "clientActivity" | "referral" | "dailyTask" | "newsletterSubscriber" | "outreachCampaign" | "outreachTarget" | "outreachEmail" | "healthbridgeClaim" | "healthbridgeRemittance" | "healthbridgeEligibility" | "claimsAnalysis" | "claimsRule" | "switchingPreAuth" | "switchingBatchJob" | "switchingERA" | "tenant" | "tenantPractice" | "switchingVendor" | "nappiMedicine" | "aiFeedback"
+    modelProps: "user" | "practice" | "patient" | "allergy" | "medication" | "medicalRecord" | "vitals" | "conversation" | "message" | "booking" | "review" | "recallItem" | "auditLog" | "invoice" | "payment" | "checkIn" | "notification" | "consentRecord" | "investorNote" | "creditLedger" | "apiKey" | "opsDocument" | "clientPipeline" | "clientActivity" | "referral" | "dailyTask" | "newsletterSubscriber" | "outreachCampaign" | "outreachTarget" | "outreachEmail" | "healthbridgeClaim" | "healthbridgeRemittance" | "healthbridgeEligibility" | "claimsAnalysis" | "claimsRule" | "switchingPreAuth" | "switchingBatchJob" | "switchingERA" | "tenant" | "tenantPractice" | "switchingVendor" | "nappiMedicine" | "featureRequest" | "aiFeedback"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3554,6 +3555,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    FeatureRequest: {
+      payload: Prisma.$FeatureRequestPayload<ExtArgs>
+      fields: Prisma.FeatureRequestFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FeatureRequestFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FeatureRequestPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FeatureRequestFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FeatureRequestPayload>
+        }
+        findFirst: {
+          args: Prisma.FeatureRequestFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FeatureRequestPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FeatureRequestFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FeatureRequestPayload>
+        }
+        findMany: {
+          args: Prisma.FeatureRequestFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FeatureRequestPayload>[]
+        }
+        create: {
+          args: Prisma.FeatureRequestCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FeatureRequestPayload>
+        }
+        createMany: {
+          args: Prisma.FeatureRequestCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FeatureRequestCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FeatureRequestPayload>[]
+        }
+        delete: {
+          args: Prisma.FeatureRequestDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FeatureRequestPayload>
+        }
+        update: {
+          args: Prisma.FeatureRequestUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FeatureRequestPayload>
+        }
+        deleteMany: {
+          args: Prisma.FeatureRequestDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FeatureRequestUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FeatureRequestUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FeatureRequestPayload>[]
+        }
+        upsert: {
+          args: Prisma.FeatureRequestUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FeatureRequestPayload>
+        }
+        aggregate: {
+          args: Prisma.FeatureRequestAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFeatureRequest>
+        }
+        groupBy: {
+          args: Prisma.FeatureRequestGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FeatureRequestGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FeatureRequestCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FeatureRequestCountAggregateOutputType> | number
+        }
+      }
+    }
     AiFeedback: {
       payload: Prisma.$AiFeedbackPayload<ExtArgs>
       fields: Prisma.AiFeedbackFieldRefs
@@ -4541,6 +4616,33 @@ export const NappiMedicineScalarFieldEnum = {
 export type NappiMedicineScalarFieldEnum = (typeof NappiMedicineScalarFieldEnum)[keyof typeof NappiMedicineScalarFieldEnum]
 
 
+export const FeatureRequestScalarFieldEnum = {
+  id: 'id',
+  practiceId: 'practiceId',
+  userId: 'userId',
+  userEmail: 'userEmail',
+  originalRequest: 'originalRequest',
+  agentType: 'agentType',
+  agentResponse: 'agentResponse',
+  category: 'category',
+  priority: 'priority',
+  title: 'title',
+  description: 'description',
+  businessCase: 'businessCase',
+  status: 'status',
+  reviewedBy: 'reviewedBy',
+  reviewNote: 'reviewNote',
+  shippedInVersion: 'shippedInVersion',
+  voteCount: 'voteCount',
+  practiceIds: 'practiceIds',
+  requestedAt: 'requestedAt',
+  reviewedAt: 'reviewedAt',
+  shippedAt: 'shippedAt'
+} as const
+
+export type FeatureRequestScalarFieldEnum = (typeof FeatureRequestScalarFieldEnum)[keyof typeof FeatureRequestScalarFieldEnum]
+
+
 export const AiFeedbackScalarFieldEnum = {
   id: 'id',
   persona: 'persona',
@@ -4749,6 +4851,7 @@ export type GlobalOmitConfig = {
   tenantPractice?: Prisma.TenantPracticeOmit
   switchingVendor?: Prisma.SwitchingVendorOmit
   nappiMedicine?: Prisma.NappiMedicineOmit
+  featureRequest?: Prisma.FeatureRequestOmit
   aiFeedback?: Prisma.AiFeedbackOmit
 }
 
