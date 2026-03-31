@@ -90,7 +90,7 @@ const AUDIT_METRICS = [
   { metric: "AI Override Attempts Blocked", value: "37 codes", period: "Protected permanently" },
   { metric: "Avg Processing Time", value: "<2 sec", period: "Per claim batch" },
   { metric: "Audit Log Entries", value: "Full trail", period: "Every AI decision logged" },
-  { metric: "Model Providers", value: "2 (Gemini + Claude)", period: "Dual-provider redundancy" },
+  { metric: "Model Providers", value: "2 (dual-provider redundancy)", period: "Dual-provider redundancy" },
   { metric: "Data Retention", value: "12 months", period: "Configurable to match policy" },
 ];
 

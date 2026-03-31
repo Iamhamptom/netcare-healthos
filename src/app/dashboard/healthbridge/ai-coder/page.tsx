@@ -76,7 +76,7 @@ export default function AiCoderPage() {
         <div className="flex items-center gap-3 mb-5">
           <Brain className="w-5 h-5 text-[#8b5cf6]" />
           <h2 className="text-lg font-semibold text-[var(--ivory)]">AI ICD-10 + CPT Coder</h2>
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#8b5cf6]/10 text-[#8b5cf6] font-medium">Gemini AI</span>
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#8b5cf6]/10 text-[#8b5cf6] font-medium">VRL AI</span>
         </div>
 
         {/* Input */}

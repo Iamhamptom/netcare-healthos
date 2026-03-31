@@ -20,7 +20,7 @@ const TECH_STACK = [
   { name: "FHIR R4", role: "Interoperability", detail: "12 resource types, SMART on FHIR auth, CareConnect HIE compatible", icon: FileJson, color: "#FF6B35" },
   { name: "HL7v2", role: "CareOn Bridge", detail: "ADT, ORU, ORM, DFT, SIU, MDM message parsing — passive listener", icon: Router, color: "#E11D48" },
   { name: "EDIFACT", role: "Claims Switching", detail: "MEDCLM v0:912:ZA — Healthbridge, SwitchOn, MediKredit", icon: Network, color: "#7C3AED" },
-  { name: "Gemini + Claude", role: "AI Layer", detail: "20% of validation. 80% is deterministic rules. AI never overrides hard gates", icon: Cpu, color: "#F59E0B" },
+  { name: "VRL AI Engine", role: "AI Layer", detail: "20% of validation. 80% is deterministic rules. AI never overrides hard gates", icon: Cpu, color: "#F59E0B" },
 ];
 
 const SECURITY_HEADERS = [
@@ -47,7 +47,7 @@ const DATA_FLOW_STEPS = [
   { step: 1, title: "Input Layer", detail: "Claims CSV / CareOn HL7v2 / Manual Entry", color: "#3DA9D1", icon: Boxes },
   { step: 2, title: "PII Stripping", detail: "Names, IDs, clinical notes removed. Only codes proceed.", color: "#10B981", icon: Shield },
   { step: 3, title: "Deterministic Rules (80%)", detail: "ICD-10 lookup, NAPPI, scheme rules, tariff, gender/age, unbundling — pure database, no AI", color: "#6366F1", icon: Database },
-  { step: 4, title: "AI Reasoning (20%)", detail: "De-identified codes only. Gemini 2.5 Flash + Claude. Hard gates enforced AFTER AI.", color: "#F59E0B", icon: Cpu },
+  { step: 4, title: "AI Reasoning (20%)", detail: "De-identified codes only. VRL fine-tuned models. Hard gates enforced AFTER AI.", color: "#F59E0B", icon: Cpu },
   { step: 5, title: "Human Review", detail: "Every flag reviewed by billing staff. No auto-submission. Full audit trail.", color: "#EF4444", icon: Eye },
   { step: 6, title: "Output", detail: "Validated claim → EDIFACT → switch. Corrections logged with provenance.", color: "#8B5CF6", icon: CheckCircle2 },
 ];

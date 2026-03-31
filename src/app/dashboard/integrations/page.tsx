@@ -22,7 +22,7 @@ const INTEGRATIONS: Integration[] = [
   { id: "careconnect", name: "CareConnect HIE", type: "Health Information Exchange", status: "pending", description: "National Health Information Exchange — awaiting accreditation" },
   { id: "whatsapp", name: "WhatsApp Business", type: "Communication", status: "connected", description: "Patient messaging, appointment reminders, follow-ups", lastSync: "Just now" },
   { id: "elevenlabs", name: "ElevenLabs", type: "Voice AI", status: "connected", description: "Text-to-speech for AI voice intake and clinical scribe", lastSync: "Active" },
-  { id: "gemini", name: "Google Gemini 2.5", type: "AI Engine", status: "connected", description: "Clinical transcription, SOAP generation, claims analysis", lastSync: "Active" },
+  { id: "gemini", name: "VRL AI Engine", type: "AI Engine", status: "connected", description: "Clinical transcription, SOAP generation, claims analysis", lastSync: "Active" },
   { id: "mediswitch", name: "MediSwitch", type: "Claims Certification", status: "pending", description: "Claims switch certification — in progress" },
   { id: "sms", name: "SMS Gateway", type: "Communication", status: "disconnected", description: "Bulk SMS for recall campaigns and notifications" },
   { id: "email", name: "Email (SMTP)", type: "Communication", status: "disconnected", description: "Transactional email for reports and statements" },

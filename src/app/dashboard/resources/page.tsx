@@ -323,7 +323,7 @@ const COMPETITIVE_STICKERS = [
   { label: "Not SaMD", detail: "SAHPRA MD08-2025/2026 — 0/6 criteria met", icon: "✅" },
   { label: "POPIA Certified", detail: "Health-specific regulations (6 March 2026) — full compliance", icon: "🔒" },
   { label: "CareConnect Ready", detail: "FHIR R4 + HL7v2 — Netcare co-founded CareConnect", icon: "🔗" },
-  { label: "Dual AI Provider", detail: "Claude Sonnet 4 (primary) + Gemini 2.5 Flash (fallback)", icon: "🧠" },
+  { label: "Dual AI Provider", detail: "VRL AI Engine (dual-provider, auto-failover)", icon: "🧠" },
   { label: "300MB Knowledge Base", detail: "41K ICD-10 + 487K NAPPI + 6 scheme profiles + 189K RAG chunks", icon: "📚" },
   { label: "Human-in-the-Loop", detail: "37 immutable hard gates — AI can NEVER override SA law", icon: "🛡️" },
 ];

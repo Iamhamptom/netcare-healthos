@@ -251,7 +251,7 @@ function CapabilitiesSection() {
     { icon: ShieldCheck, title: "Pre-submission Validation", desc: "20+ rules catch errors before they become rejections", color: "#10B981" },
     { icon: HeartPulse, title: "PMB Auto-detection", desc: "271 Prescribed Minimum Benefit conditions flagged automatically", color: "#EF4444" },
     { icon: Activity, title: "CDL Chronic Detection", desc: "26 Chronic Disease List conditions identified from ICD-10 codes", color: "#8B5CF6" },
-    { icon: BrainCircuit, title: "AI ICD-10 + CPT Coding", desc: "Gemini-powered clinical note analysis for accurate coding", color: "#3DA9D1" },
+    { icon: BrainCircuit, title: "AI ICD-10 + CPT Coding", desc: "AI-powered clinical note analysis for accurate coding", color: "#3DA9D1" },
     { icon: Sparkles, title: "Clinical Notes Autofill", desc: "Natural language to structured claim — one-click from consultation", color: "#3DA9D1" },
     { icon: Brain, title: "AI Rejection Predictor", desc: "Pre-submission probability scoring — fix issues before they reject", color: "#8B5CF6" },
     { icon: MailCheck, title: "Smart Follow-up Generator", desc: "AI-drafted appeal letters with scheme-specific regulatory citations", color: "#8B5CF6" },
@@ -454,7 +454,7 @@ function VisiocorpSection() {
     { label: "Next.js 16", icon: Globe, desc: "App Router + RSC" },
     { label: "Prisma ORM", icon: Database, desc: "Type-safe data layer" },
     { label: "TypeScript", icon: Code2, desc: "Strict mode, end-to-end" },
-    { label: "Gemini AI", icon: BrainCircuit, desc: "ICD-10 / CPT coding" },
+    { label: "VRL AI Engine", icon: BrainCircuit, desc: "ICD-10 / CPT coding" },
     { label: "PHISC XML", icon: FileText, desc: "SA standard protocol" },
     { label: "AES-256-GCM", icon: Lock, desc: "Encryption at rest" },
   ];

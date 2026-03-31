@@ -157,7 +157,7 @@ export default function AssistantPage() {
           <div>
             <h1 className="text-[14px] font-semibold text-slate-900">HealthOS Assistant</h1>
             <p className="text-[11px] text-slate-500 font-medium tracking-wide">
-              Claude + Gemini AI • Dual-Provider
+              VRL AI Engine • Multi-Model
             </p>
           </div>
         </div>

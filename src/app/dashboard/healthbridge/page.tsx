@@ -730,7 +730,7 @@ export default function HealthbridgePage() {
             <div className="flex items-center gap-2">
               <Brain className="w-4 h-4 text-[#8b5cf6]" />
               <h3 className="text-sm font-medium text-[var(--ivory)]">AI ICD-10 + CPT Coder</h3>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#8b5cf6]/10 text-[#8b5cf6] font-medium">Gemini AI</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#8b5cf6]/10 text-[#8b5cf6] font-medium">VRL AI</span>
             </div>
             <p className="text-[11px] text-[var(--text-tertiary)]">
               Paste clinical notes from a consultation. AI will suggest ICD-10-ZA and CPT/CCSA codes with PMB/CDL flags, confidence levels, and reasoning.
