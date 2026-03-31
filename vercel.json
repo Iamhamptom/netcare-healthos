@@ -19,6 +19,14 @@
     {
       "path": "/api/ml/registry-update",
       "schedule": "0 6 * * 1"
+    },
+    {
+      "path": "/api/engagement/cron",
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/engagement/email/poll",
+      "schedule": "0 */2 * * *"
     }
   ]
 }

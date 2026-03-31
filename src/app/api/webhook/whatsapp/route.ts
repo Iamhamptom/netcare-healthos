@@ -44,6 +44,11 @@ type Intent =
   | "book_appointment"
   | "repeat_prescription"
   | "emergency"
+  | "confirm_booking"
+  | "cancel_booking"
+  | "reschedule"
+  | "opt_out"
+  | "survey_response"
   | "general";
 
 interface DetectedIntent {
@@ -98,6 +103,32 @@ function detectIntent(text: string): DetectedIntent {
   // Repeat prescription
   if (lower.includes("prescription") || lower.includes("refill") || lower.includes("repeat") || lower.includes("medication")) {
     return { intent: "repeat_prescription" };
+  }
+
+  // ── Engagement Reply Intents ──────────────────────────
+  // Confirm booking: "yes", "confirm", "confirmed", "Y"
+  if (/^(yes|y|confirm|confirmed|ja|1)$/i.test(lower)) {
+    return { intent: "confirm_booking" };
+  }
+
+  // Cancel: "cancel", "no", "N"
+  if (/^(cancel|no|n|cancelled|stop appointment)$/i.test(lower) || lower.includes("cancel my appointment")) {
+    return { intent: "cancel_booking" };
+  }
+
+  // Reschedule
+  if (lower.includes("reschedule") || lower.includes("change time") || lower.includes("different date") || lower.includes("move my appointment")) {
+    return { intent: "reschedule" };
+  }
+
+  // Opt out of marketing messages
+  if (/^(stop|unsubscribe|opt.?out)$/i.test(lower)) {
+    return { intent: "opt_out" };
+  }
+
+  // Survey/numeric response (pain scale 1-10, satisfaction rating)
+  if (/^\d{1,2}$/.test(lower) && parseInt(lower) >= 1 && parseInt(lower) <= 10) {
+    return { intent: "survey_response" };
   }
 
   return { intent: "general" };
@@ -369,6 +400,89 @@ export async function POST(request: Request) {
         conversationId: conversation.id,
         intent: "repeat_prescription",
       });
+    }
+
+    // ─── Engagement Reply Handlers ──────────────────
+
+    // CONFIRM BOOKING — patient replied "yes" / "confirm" to a reminder
+    if (detected.intent === "confirm_booking") {
+      const lastBooking = await prisma.booking.findFirst({
+        where: { practiceId: practice.id, patientPhone: phone, status: "pending" },
+        orderBy: { scheduledAt: "asc" },
+      });
+      if (lastBooking) {
+        await prisma.booking.update({ where: { id: lastBooking.id }, data: { status: "confirmed", confirmedAt: new Date() } });
+        const reply = `✅ Great ${patient.name}! Your appointment for ${lastBooking.service} has been confirmed.\n\nWe'll send you a reminder the day before. See you soon!`;
+        await sendAndLog(prisma, conversation.id, phone, patient.name, reply, practice.id, "confirm_booking");
+      } else {
+        const reply = `Thanks ${patient.name}! I don't see a pending booking to confirm. Would you like to book a new appointment?`;
+        await sendAndLog(prisma, conversation.id, phone, patient.name, reply, practice.id, "confirm_booking");
+      }
+      return NextResponse.json({ status: "processed", patientId: patient.id, conversationId: conversation.id, intent: "confirm_booking" });
+    }
+
+    // CANCEL BOOKING
+    if (detected.intent === "cancel_booking") {
+      const nextBooking = await prisma.booking.findFirst({
+        where: { practiceId: practice.id, patientPhone: phone, status: { in: ["pending", "confirmed"] }, scheduledAt: { gte: new Date() } },
+        orderBy: { scheduledAt: "asc" },
+      });
+      if (nextBooking) {
+        await prisma.booking.update({ where: { id: nextBooking.id }, data: { status: "cancelled" } });
+        const reply = `Your appointment for ${nextBooking.service} has been cancelled.\n\nWould you like to reschedule? Just say "reschedule" and I'll help you find a new time.`;
+        await sendAndLog(prisma, conversation.id, phone, patient.name, reply, practice.id, "cancel_booking");
+      } else {
+        const reply = `I don't see any upcoming appointments to cancel. Is there anything else I can help with?`;
+        await sendAndLog(prisma, conversation.id, phone, patient.name, reply, practice.id, "cancel_booking");
+      }
+      return NextResponse.json({ status: "processed", patientId: patient.id, conversationId: conversation.id, intent: "cancel_booking" });
+    }
+
+    // RESCHEDULE
+    if (detected.intent === "reschedule") {
+      const reply = `Sure ${patient.name}, I can help you reschedule.\n\nPlease let me know:\n1. Which day works for you?\n2. Morning or afternoon?\n\nOr call us at ${practice.phone} and we'll sort it out.`;
+      await sendAndLog(prisma, conversation.id, phone, patient.name, reply, practice.id, "reschedule");
+      return NextResponse.json({ status: "processed", patientId: patient.id, conversationId: conversation.id, intent: "reschedule" });
+    }
+
+    // OPT OUT — revoke marketing consent (POPIA)
+    if (detected.intent === "opt_out") {
+      await prisma.consentRecord.updateMany({
+        where: { patientId: patient.id, consentType: "marketing", granted: true, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+      // Cancel active campaign enrollments
+      await prisma.campaignRecipient.updateMany({
+        where: { patientId: patient.id, status: { in: ["pending", "sent"] } },
+        data: { status: "opted_out" },
+      });
+      const reply = `You've been unsubscribed from marketing messages. You'll still receive appointment reminders and important health notifications.\n\nIf you'd like to re-subscribe, just let us know.`;
+      await sendAndLog(prisma, conversation.id, phone, patient.name, reply, practice.id, "opt_out");
+      return NextResponse.json({ status: "processed", patientId: patient.id, conversationId: conversation.id, intent: "opt_out" });
+    }
+
+    // SURVEY RESPONSE — feed into active engagement sequence
+    if (detected.intent === "survey_response") {
+      const { handlePatientResponse } = await import("@/lib/engagement/sequence-engine");
+      const seqResult = await handlePatientResponse(patient.id, practice.id, incomingMessage.text);
+      if (seqResult.handled) {
+        const reply = `Thank you for your response, ${patient.name}. We've recorded it and your care team will follow up if needed.`;
+        await sendAndLog(prisma, conversation.id, phone, patient.name, reply, practice.id, "survey_response");
+        return NextResponse.json({ status: "processed", patientId: patient.id, conversationId: conversation.id, intent: "survey_response", enrollmentId: seqResult.enrollmentId });
+      }
+      // If no active sequence, fall through to general handler
+    }
+
+    // Check if patient has an active engagement sequence (for any text reply)
+    {
+      const { handlePatientResponse } = await import("@/lib/engagement/sequence-engine");
+      const seqResult = await handlePatientResponse(patient.id, practice.id, incomingMessage.text);
+      if (seqResult.handled) {
+        // Sequence captured the response — don't send to AI triage
+        const reply = `Thanks ${patient.name}, we've received your response. Our team will be in touch.`;
+        await sendAndLog(prisma, conversation.id, phone, patient.name, reply, practice.id, "sequence_response");
+        return NextResponse.json({ status: "processed", patientId: patient.id, conversationId: conversation.id, intent: "sequence_response" });
+      }
     }
 
     // ─── General / AI Triage ────────────────────────

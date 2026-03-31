@@ -12,6 +12,7 @@ export type ToolFilter =
   | "whatsapp"        // WhatsApp-specific (booking, patient lookup, escalation)
   | "triage"          // Triage-specific (patient lookup, escalation, KB search)
   | "billing"         // Billing-specific (invoices, claims, payments)
+  | "engagement"      // Patient engagement (sequences, campaigns, chronic care, email triage)
   | string[];         // Custom list of tool names
 
 /** Agent persona — defines an AI agent's identity and capabilities */

@@ -150,6 +150,19 @@ const navSections: NavSection[] = [
     ],
   },
   {
+    label: "ENGAGEMENT",
+    badge: "NEW",
+    badgeColor: "bg-emerald-500",
+    items: [
+      { href: "/dashboard/engagement", icon: Activity, label: "Engagement Hub", roles: ["admin", "platform_admin"] },
+      { href: "/dashboard/engagement/sequences", icon: Workflow, label: "Sequences", roles: ["admin", "platform_admin"] },
+      { href: "/dashboard/engagement/campaigns", icon: Target, label: "Campaigns", roles: ["admin", "platform_admin"] },
+      { href: "/dashboard/engagement/chronic", icon: Heart, label: "Chronic Care Gaps", roles: ["admin", "doctor", "platform_admin"] },
+      { href: "/dashboard/engagement/population", icon: TrendingUp, label: "Population Health", roles: ["admin", "platform_admin"] },
+      { href: "/dashboard/engagement/inbox", icon: Inbox, label: "AI Email Inbox", roles: ["admin", "receptionist", "platform_admin"] },
+    ],
+  },
+  {
     label: "BUSINESS",
     items: [
       { href: "/dashboard/partnership", icon: Heart, label: "Partnership", roles: ["admin", "platform_admin"] },
