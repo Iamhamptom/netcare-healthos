@@ -10,13 +10,15 @@ import NetcareAssistant from "@/components/dashboard/NetcareAssistant";
 import ProductCourse from "@/components/dashboard/ProductCourse";
 import { Menu, X } from "lucide-react";
 import { useBrand } from "@/lib/tenant-context";
+import { WallpaperProvider, useWallpaper } from "@/lib/wallpaper-context";
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showCourse, setShowCourse] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
   const brand = useBrand();
+  const { wallpaper } = useWallpaper();
 
   useEffect(() => {
     if (searchParams.get("course") === "1") {
@@ -28,7 +30,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [searchParams, router]);
 
   return (
-    <div className="flex h-screen bg-[#1D3443]">
+    <div className="flex h-screen bg-[#f0f2f5]">
       <AnimatePresence>
         {showCourse && <ProductCourse onComplete={() => setShowCourse(false)} />}
       </AnimatePresence>
@@ -62,7 +64,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col overflow-hidden rounded-tl-2xl">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <div className="relative">
           <button
             onClick={() => setMobileOpen(true)}
@@ -73,26 +75,59 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </button>
           <DashboardHeader />
         </div>
-        <main id="main-content" className="flex-1 overflow-y-auto bg-gradient-to-br from-[#f0f2f5] via-[#f5f6f8] to-[#eef0f4] text-[#1D3443] light-content font-body relative">
-          <div className="sticky top-0 z-40 flex justify-center py-1.5 bg-amber-50/90 backdrop-blur-sm border-b border-amber-200/50">
-            <span className="text-[10px] font-medium text-amber-700 tracking-wide">
-              DEMO ENVIRONMENT — Sample data for evaluation purposes only
-            </span>
-          </div>
-          {children}
-          <div className="px-6 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-1 h-1 rounded-full bg-[#1D3443]/15" />
-              <span className="text-[10px] text-[#1D3443]/60 font-medium">
-                Powered by <span className="font-semibold text-[#1D3443]/70">{brand.name}</span>
+        <main 
+          id="main-content" 
+          className={`flex-1 overflow-y-auto text-[#1D3443] light-content font-body relative ${wallpaper.className}`}
+        >
+          {/* Animated wallpaper layers */}
+          {wallpaper.key === "aurora" && (
+            <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
+              <div className="aurora-blob aurora-blob-1" />
+              <div className="aurora-blob aurora-blob-2" />
+              <div className="aurora-blob aurora-blob-3" />
+            </div>
+          )}
+          {wallpaper.key === "mesh" && (
+            <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
+              <div className="mesh-blob mesh-blob-1" />
+              <div className="mesh-blob mesh-blob-2" />
+            </div>
+          )}
+          {wallpaper.key === "topo" && (
+            <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
+              <div className="topo-pattern" />
+            </div>
+          )}
+
+          <div className="relative" style={{ zIndex: 1 }}>
+            <div className="sticky top-0 z-40 flex justify-center py-1.5 bg-amber-50/90 backdrop-blur-sm border-b border-amber-200/50">
+              <span className="text-[10px] font-medium text-amber-700 tracking-wide">
+                DEMO ENVIRONMENT — Sample data for evaluation purposes only
               </span>
             </div>
-            <span className="text-[10px] text-[#1D3443]/60">{brand.tagline}</span>
+            {children}
+            <div className="px-6 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-1 h-1 rounded-full bg-[#1D3443]/15" />
+                <span className="text-[10px] text-[#1D3443]/60 font-medium">
+                  Powered by <span className="font-semibold text-[#1D3443]/70">{brand.name}</span>
+                </span>
+              </div>
+              <span className="text-[10px] text-[#1D3443]/60">{brand.tagline}</span>
+            </div>
           </div>
         </main>
       </div>
       <FeatureGuide />
       <NetcareAssistant />
     </div>
+  );
+}
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <WallpaperProvider>
+      <DashboardLayoutInner>{children}</DashboardLayoutInner>
+    </WallpaperProvider>
   );
 }

@@ -66,5 +66,31 @@ export async function POST(request: Request) {
       practiceId: guard.practiceId,
     },
   });
-  return NextResponse.json({ notification }, { status: 201 });
+
+  // Actually send the notification via the appropriate channel
+  let sendResult: { sent: boolean; channel: string; error?: string } = { sent: false, channel: type };
+
+  if (type === "email" && body.recipient?.includes("@")) {
+    try {
+      const { sendEmail } = await import("@/lib/resend");
+      await sendEmail({
+        to: body.recipient,
+        subject: body.subject || "Notification from your healthcare practice",
+        html: `<div style="font-family: system-ui, sans-serif; max-width: 520px;">
+          <p>${sanitize(body.message).replace(/\n/g, "<br/>")}</p>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
+          <p style="color: #999; font-size: 12px;">This is an automated message. Please do not reply directly.</p>
+        </div>`,
+      });
+      sendResult = { sent: true, channel: "email" };
+      await prisma.notification.update({ where: { id: notification.id }, data: { status: "sent" } });
+    } catch (err) {
+      sendResult = { sent: false, channel: "email", error: err instanceof Error ? err.message : "Send failed" };
+    }
+  } else if (type === "whatsapp" || type === "sms") {
+    // WhatsApp/SMS: log for manual follow-up (Twilio integration pending clinic configuration)
+    sendResult = { sent: false, channel: type, error: "Channel requires clinic-specific configuration. Logged for manual follow-up." };
+  }
+
+  return NextResponse.json({ notification, sendResult }, { status: 201 });
 }

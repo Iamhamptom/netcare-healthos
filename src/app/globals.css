@@ -669,3 +669,131 @@ select:focus-visible {
   outline: 2px solid #3DA9D1;
   outline-offset: 0px;
 }
+
+/* ─── Wallpaper: Aurora (alive background) ─── */
+.wallpaper-aurora {
+  background: #f0f2f5;
+}
+
+@keyframes aurora-drift-1 {
+  0%   { transform: translate(0%, 0%) scale(1); }
+  25%  { transform: translate(10%, -15%) scale(1.1); }
+  50%  { transform: translate(-5%, -10%) scale(0.95); }
+  75%  { transform: translate(15%, 5%) scale(1.05); }
+  100% { transform: translate(0%, 0%) scale(1); }
+}
+
+@keyframes aurora-drift-2 {
+  0%   { transform: translate(0%, 0%) scale(1); }
+  25%  { transform: translate(-12%, 8%) scale(1.05); }
+  50%  { transform: translate(8%, 12%) scale(1.1); }
+  75%  { transform: translate(-8%, -6%) scale(0.95); }
+  100% { transform: translate(0%, 0%) scale(1); }
+}
+
+@keyframes aurora-drift-3 {
+  0%   { transform: translate(0%, 0%) scale(1); }
+  33%  { transform: translate(8%, -10%) scale(1.08); }
+  66%  { transform: translate(-10%, 6%) scale(0.98); }
+  100% { transform: translate(0%, 0%) scale(1); }
+}
+
+.aurora-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.4;
+  will-change: transform;
+}
+
+.aurora-blob-1 {
+  width: 50vw;
+  height: 50vw;
+  max-width: 700px;
+  max-height: 700px;
+  top: -10%;
+  left: -5%;
+  background: radial-gradient(circle, #bfdbfe 0%, #a5b4fc 40%, transparent 70%);
+  animation: aurora-drift-1 25s ease-in-out infinite;
+}
+
+.aurora-blob-2 {
+  width: 45vw;
+  height: 45vw;
+  max-width: 600px;
+  max-height: 600px;
+  bottom: -15%;
+  right: -8%;
+  background: radial-gradient(circle, #c4b5fd 0%, #fbcfe8 40%, transparent 70%);
+  animation: aurora-drift-2 30s ease-in-out infinite;
+}
+
+.aurora-blob-3 {
+  width: 35vw;
+  height: 35vw;
+  max-width: 500px;
+  max-height: 500px;
+  top: 30%;
+  right: 20%;
+  background: radial-gradient(circle, #a7f3d0 0%, #bae6fd 40%, transparent 70%);
+  animation: aurora-drift-3 22s ease-in-out infinite;
+}
+
+/* ─── Wallpaper: Soft Mesh ─── */
+.wallpaper-mesh {
+  background: #f0f4f8;
+}
+
+.mesh-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(140px);
+  opacity: 0.35;
+  will-change: transform;
+}
+
+.mesh-blob-1 {
+  width: 55vw;
+  height: 55vw;
+  max-width: 800px;
+  max-height: 800px;
+  top: -20%;
+  right: -10%;
+  background: radial-gradient(circle, #dbeafe 0%, #ede9fe 50%, transparent 70%);
+  animation: aurora-drift-2 28s ease-in-out infinite;
+}
+
+.mesh-blob-2 {
+  width: 40vw;
+  height: 40vw;
+  max-width: 600px;
+  max-height: 600px;
+  bottom: -15%;
+  left: -5%;
+  background: radial-gradient(circle, #fce7f3 0%, #dbeafe 50%, transparent 70%);
+  animation: aurora-drift-1 32s ease-in-out infinite;
+}
+
+/* ─── Wallpaper: Blueprint / Topo ─── */
+.wallpaper-topo {
+  background: #f0f4f8;
+}
+
+.topo-pattern {
+  position: absolute;
+  inset: 0;
+  opacity: 0.08;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cpath d='M0 200 Q100 150 200 200 Q300 250 400 200' fill='none' stroke='%231D3443' stroke-width='0.8'/%3E%3Cpath d='M0 150 Q100 100 200 150 Q300 200 400 150' fill='none' stroke='%231D3443' stroke-width='0.5'/%3E%3Cpath d='M0 250 Q100 200 200 250 Q300 300 400 250' fill='none' stroke='%231D3443' stroke-width='0.5'/%3E%3Cpath d='M0 100 Q100 60 200 100 Q300 140 400 100' fill='none' stroke='%231D3443' stroke-width='0.3'/%3E%3Cpath d='M0 300 Q100 260 200 300 Q300 340 400 300' fill='none' stroke='%231D3443' stroke-width='0.3'/%3E%3Cpath d='M0 50 Q100 30 200 50 Q300 70 400 50' fill='none' stroke='%231D3443' stroke-width='0.2'/%3E%3Cpath d='M0 350 Q100 330 200 350 Q300 370 400 350' fill='none' stroke='%231D3443' stroke-width='0.2'/%3E%3C/svg%3E");
+  background-size: 400px 400px;
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Reduce motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .aurora-blob, .mesh-blob {
+    animation: none !important;
+  }
+}

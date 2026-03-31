@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Bell, Search, Command, Check, ChevronRight, Shield, AlertTriangle, Info, FileText, MessageSquare } from "lucide-react";
 import Link from "next/link";
+import WallpaperPicker from "@/components/dashboard/WallpaperPicker";
 
 interface UserData {
   name: string;
@@ -138,6 +139,8 @@ export default function DashboardHeader() {
             <span className="text-[9px] font-mono">K</span>
           </div>
         </div>
+
+        <WallpaperPicker />
 
         {/* Notification Bell with Dropdown */}
         <div className="relative" ref={dropdownRef}>
