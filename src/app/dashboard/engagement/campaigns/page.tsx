@@ -44,7 +44,7 @@ export default function CampaignsPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 min-h-screen bg-[#0f1721] space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -60,14 +60,14 @@ export default function CampaignsPage() {
       {showCreate && <CreateCampaignForm onCreated={(c) => { setCampaigns([c, ...campaigns]); setShowCreate(false); }} />}
 
       {loading ? (
-        <div className="space-y-4">{[1, 2, 3].map((i) => <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 animate-pulse h-32" />)}</div>
+        <div className="min-h-screen bg-[#0f1721] space-y-4">{[1, 2, 3].map((i) => <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 animate-pulse h-32" />)}</div>
       ) : campaigns.length === 0 ? (
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-12 text-center">
           <Target className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
           <p className="text-zinc-400">No campaigns yet. Create one to start engaging patients.</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="min-h-screen bg-[#0f1721] space-y-4">
           {campaigns.map((c) => (
             <div key={c.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
               <div className="flex items-start justify-between mb-4">

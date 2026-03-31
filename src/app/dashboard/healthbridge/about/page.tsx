@@ -587,7 +587,7 @@ function RoadmapSection() {
         {/* Timeline line */}
         <div className="absolute left-[19px] top-6 bottom-6 w-px bg-gradient-to-b from-[#3DA9D1]/30 via-purple-300/30 to-gray-200/30" />
 
-        <div className="space-y-4">
+        <div className="min-h-screen bg-[#0f1721] space-y-4">
           {milestones.map((m, i) => {
             const sc = statusColors[m.status];
             return (
@@ -619,7 +619,7 @@ function RoadmapSection() {
 
 export default function HealthbridgeAboutPage() {
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-6 min-h-screen bg-[#0f1721] max-w-6xl mx-auto">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-[12px] text-[var(--text-secondary)] mb-6">
         <Link href="/dashboard" className="hover:text-[var(--ivory)] transition-colors">Dashboard</Link>

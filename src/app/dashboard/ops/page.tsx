@@ -79,7 +79,7 @@ export default function OpsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-[#0f1721] space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -168,7 +168,7 @@ export default function OpsPage() {
       </div>
 
       {/* Documents List */}
-      <div className="space-y-3">
+      <div className="min-h-screen bg-[#0f1721] space-y-3">
         {documents.length === 0 ? (
           <div className="text-center py-12">
             <FileText className="w-8 h-8 text-white/70 mx-auto mb-2" />

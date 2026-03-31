@@ -13,7 +13,7 @@ import {
 
 export default function FhirHubOverview() {
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8">
+    <div className="p-6 min-h-screen bg-[#0f1721] max-w-7xl mx-auto space-y-8">
       {/* Hero Banner */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
@@ -157,7 +157,7 @@ export default function FhirHubOverview() {
               (HNSF, POPIA, NHI) with native connectors for the systems hospitals actually use.
             </p>
           </div>
-          <div className="p-6 grid md:grid-cols-3 gap-6">
+          <div className="p-6 min-h-screen bg-[#0f1721] grid md:grid-cols-3 gap-6">
             <div>
               <h4 className="font-semibold text-[14px] text-[#1D3443] mb-2">What We Reverse-Engineered</h4>
               <ul className="space-y-2 text-[12px] text-[#1D3443]/60">
@@ -218,7 +218,7 @@ export default function FhirHubOverview() {
                   {sys.status}
                 </span>
               </div>
-              <div className="space-y-1.5 text-[11px] text-[#1D3443]/50">
+              <div className="min-h-screen bg-[#0f1721] space-y-1.5 text-[11px] text-[#1D3443]/50">
                 <div><span className="text-[#1D3443]/30">Org:</span> {sys.org}</div>
                 <div><span className="text-[#1D3443]/30">Scale:</span> {sys.patients}</div>
                 <div><span className="text-[#1D3443]/30">Protocol:</span> {sys.protocol}</div>

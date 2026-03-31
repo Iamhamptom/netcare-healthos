@@ -56,7 +56,7 @@ export default function PopulationHealthPage() {
 
   if (loading || !data) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-6 min-h-screen bg-[#0f1721] space-y-6">
         <h1 className="text-2xl font-bold text-white">Population Health</h1>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[...Array(6)].map((_, i) => <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 animate-pulse h-40" />)}
@@ -66,7 +66,7 @@ export default function PopulationHealthPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 min-h-screen bg-[#0f1721] space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
           <TrendingUp className="w-6 h-6 text-blue-400" /> Population Health
@@ -104,7 +104,7 @@ export default function PopulationHealthPage() {
           <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-red-400" /> Disease Burden (Top ICD-10)
           </h2>
-          <div className="space-y-3">
+          <div className="min-h-screen bg-[#0f1721] space-y-3">
             {data.diseaseBurden.map((d, i) => {
               const maxCount = data.diseaseBurden[0]?.count || 1;
               return (
@@ -127,7 +127,7 @@ export default function PopulationHealthPage() {
           <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
             <Heart className="w-5 h-5 text-blue-400" /> Medical Aid Distribution
           </h2>
-          <div className="space-y-3">
+          <div className="min-h-screen bg-[#0f1721] space-y-3">
             {data.medicalAidDistribution.map((m, i) => {
               const maxCount = data.medicalAidDistribution[0]?.count || 1;
               return (

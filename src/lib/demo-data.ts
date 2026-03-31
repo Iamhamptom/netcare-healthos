@@ -55,8 +55,8 @@ export const demoPractice = {
 
 export const demoUser = {
   id: "demo-user",
-  name: "Thirushen Pillay",
-  email: "thirushen.pillay@netcare.co.za",
+  name: "Demo User",
+  email: "demo@netcare.co.za",
   role: "admin",
   practice: demoPractice,
 };

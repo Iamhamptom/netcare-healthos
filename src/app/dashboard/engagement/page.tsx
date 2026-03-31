@@ -25,7 +25,7 @@ export default function EngagementDashboardPage() {
 
   if (loading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-6 min-h-screen bg-[#0f1721] space-y-6">
         <h1 className="text-2xl font-bold text-white">Patient Engagement</h1>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[...Array(8)].map((_, i) => (
@@ -39,7 +39,7 @@ export default function EngagementDashboardPage() {
   const d = data!;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 min-h-screen bg-[#0f1721] space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Patient Engagement</h1>

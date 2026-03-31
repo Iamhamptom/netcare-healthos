@@ -35,7 +35,7 @@ export default function SequencesPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 min-h-screen bg-[#0f1721] space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -51,7 +51,7 @@ export default function SequencesPage() {
       {showCreate && <CreateSequenceForm onCreated={(s) => { setSequences([s, ...sequences]); setShowCreate(false); }} />}
 
       {loading ? (
-        <div className="space-y-4">{[1, 2, 3].map((i) => <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 animate-pulse h-28" />)}</div>
+        <div className="min-h-screen bg-[#0f1721] space-y-4">{[1, 2, 3].map((i) => <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 animate-pulse h-28" />)}</div>
       ) : sequences.length === 0 ? (
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-12 text-center">
           <Activity className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
@@ -128,7 +128,7 @@ function CreateSequenceForm({ onCreated }: { onCreated: (s: Sequence) => void })
         </select>
       </div>
 
-      <div className="space-y-3">
+      <div className="min-h-screen bg-[#0f1721] space-y-3">
         <h3 className="text-sm font-medium text-zinc-300">Steps</h3>
         {steps.map((step, i) => (
           <div key={i} className="flex items-center gap-3 bg-zinc-800/50 rounded-lg p-3">

@@ -173,7 +173,7 @@ function MicrosoftSettingsContent() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 p-6">
+    <div className="max-w-4xl mx-auto space-y-6 p-6 min-h-screen bg-[#0f1721] text-white">
       {/* Toast */}
       {toast && (
         <motion.div

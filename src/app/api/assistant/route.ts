@@ -38,7 +38,10 @@ export async function POST(request: Request) {
   let practiceId = guard.practiceId;
 
   if (isDemoMode) {
-    userName = "Dr. Sarah Mitchell";
+    // In demo mode, use the actual logged-in user's name from the session
+    const { demoUsers, demoUser: defaultDemoUser } = await import("@/lib/demo-data");
+    const sessionUser = Object.values(demoUsers).find(u => u.id === guard.user?.id) || defaultDemoUser;
+    userName = sessionUser.name;
     userRole = "admin";
   } else {
     try {
