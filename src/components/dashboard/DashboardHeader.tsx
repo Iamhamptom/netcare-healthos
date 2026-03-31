@@ -103,7 +103,7 @@ export default function DashboardHeader() {
   const plan = practice?.plan || "";
 
   return (
-    <header className="h-[52px] flex items-center justify-between px-5 bg-white/80 backdrop-blur-xl border-b border-black/[0.04] shrink-0 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+    <header className="h-[52px] flex items-center justify-between px-5 bg-white/85 backdrop-blur-2xl border-b border-black/[0.04] shrink-0 shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_20px_rgba(0,0,0,0.01)]">
       <div className="flex items-center gap-3">
         <h1 className="text-[14px] font-semibold text-[#1D3443]">{practiceName || "Dashboard"}</h1>
         {practice?.tagline && (
@@ -151,7 +151,7 @@ export default function DashboardHeader() {
           >
             <Bell className="w-[15px] h-[15px]" />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-[#E3964C] text-white text-[8px] font-bold px-0.5">
+              <span className="absolute top-1 right-1 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-[#E3964C] text-white text-[8px] font-bold px-0.5 animate-notif-pulse">
                 {unreadCount}
               </span>
             )}

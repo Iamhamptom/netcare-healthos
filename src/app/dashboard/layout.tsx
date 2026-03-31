@@ -8,6 +8,8 @@ import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import FeatureGuide from "@/components/dashboard/FeatureGuide";
 import NetcareAssistant from "@/components/dashboard/NetcareAssistant";
 import ProductCourse from "@/components/dashboard/ProductCourse";
+import ParticleField from "@/components/dashboard/ParticleField";
+import CursorGlow from "@/components/dashboard/CursorGlow";
 import { Menu, X } from "lucide-react";
 import { useBrand } from "@/lib/tenant-context";
 import { WallpaperProvider, useWallpaper } from "@/lib/wallpaper-context";
@@ -79,6 +81,14 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
           id="main-content" 
           className={`flex-1 overflow-y-auto text-[#1D3443] light-content font-body relative ${wallpaper.className}`}
         >
+          {/* Ambient particle field — always on for living background */}
+          <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
+            <ParticleField />
+          </div>
+
+          {/* Cursor glow — premium ambient light */}
+          <CursorGlow />
+
           {/* Animated wallpaper layers */}
           {wallpaper.key === "aurora" && (
             <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>

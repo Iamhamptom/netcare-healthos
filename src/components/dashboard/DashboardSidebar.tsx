@@ -150,19 +150,6 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    label: "ENGAGEMENT",
-    badge: "NEW",
-    badgeColor: "bg-emerald-500",
-    items: [
-      { href: "/dashboard/engagement", icon: Activity, label: "Engagement Hub", roles: ["admin", "platform_admin"] },
-      { href: "/dashboard/engagement/sequences", icon: Workflow, label: "Sequences", roles: ["admin", "platform_admin"] },
-      { href: "/dashboard/engagement/campaigns", icon: Target, label: "Campaigns", roles: ["admin", "platform_admin"] },
-      { href: "/dashboard/engagement/chronic", icon: Heart, label: "Chronic Care Gaps", roles: ["admin", "doctor", "platform_admin"] },
-      { href: "/dashboard/engagement/population", icon: TrendingUp, label: "Population Health", roles: ["admin", "platform_admin"] },
-      { href: "/dashboard/engagement/inbox", icon: Inbox, label: "AI Email Inbox", roles: ["admin", "receptionist", "platform_admin"] },
-    ],
-  },
-  {
     label: "BUSINESS",
     items: [
       { href: "/dashboard/partnership", icon: Heart, label: "Partnership", roles: ["admin", "platform_admin"] },
@@ -424,8 +411,10 @@ export default function DashboardSidebar() {
     <motion.aside
       animate={{ width: collapsed ? 64 : 240 }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
-      className="shrink-0 border-r border-white/[0.06] flex flex-col bg-[#1D3443] overflow-hidden"
+      className="shrink-0 border-r border-white/[0.06] flex flex-col bg-gradient-to-b from-[#1D3443] via-[#1D3443] to-[#152736] overflow-hidden relative"
     >
+      {/* Subtle ambient glow at top */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-[#3DA9D1]/[0.06] rounded-full blur-3xl pointer-events-none" />
       {/* Logo — tenant-branded */}
       <div className="h-14 flex items-center gap-2.5 px-4 border-b border-white/[0.06]">
         {brand.logoUrl ? (
@@ -532,9 +521,9 @@ export default function DashboardSidebar() {
                             ) : (
                               <Link
                                 href={item.href}
-                                className={`w-full flex items-center gap-3 px-3 py-[7px] rounded-lg text-[13px] font-medium transition-all duration-200 ${
+                                className={`w-full flex items-center gap-3 px-3 py-[7px] rounded-lg text-[13px] font-medium transition-all duration-200 relative ${
                                   isActive
-                                    ? "bg-white/[0.08] text-white"
+                                    ? "bg-white/[0.08] text-white sidebar-active-glow"
                                     : "text-white/60 hover:text-white/60 hover:bg-white/[0.04]"
                                 }`}
                               >
