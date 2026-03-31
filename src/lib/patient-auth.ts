@@ -88,6 +88,16 @@ export async function guardPatientRoute(
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 
+  // Demo mode — accept demo cookie
+  const { isDemoMode } = await import("@/lib/is-demo");
+  if (isDemoMode) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get(PORTAL_COOKIE_NAME)?.value;
+    if (token === "demo-patient-token") {
+      return { patientId: "demo-patient-1", practiceId: "demo-practice", phone: "+27821234567" };
+    }
+  }
+
   const session = await getPatientSession();
   if (!session) {
     return NextResponse.json({ error: "Please log in to your patient portal" }, { status: 401 });
