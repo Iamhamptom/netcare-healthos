@@ -78,8 +78,8 @@ export default function ClinicalQualityPage() {
         <div className="flex items-center gap-2 text-[11px] text-[#3DA9D1] font-semibold uppercase tracking-widest mb-1">
           <Activity className="w-4 h-4" /> Medical Director Dashboard
         </div>
-        <h1 className="text-2xl font-bold text-gray-900">Clinical Quality Intelligence</h1>
-        <p className="text-sm text-gray-500 mt-1">Practitioner coding quality, drug safety alerts, CDL compliance — across all 88 sites</p>
+        <h1 className="text-2xl font-bold text-white">Clinical Quality Intelligence</h1>
+        <p className="text-sm text-slate-400 mt-1">Practitioner coding quality, drug safety alerts, CDL compliance — across all 88 sites</p>
       </div>
 
       {/* Network stats */}
@@ -123,14 +123,14 @@ export default function ClinicalQualityPage() {
 
       {/* OVERVIEW */}
       {tab === "overview" && (
-        <div className="min-h-screen bg-[#0f1721] space-y-4">
+        <div className="space-y-4">
           {/* At-risk practitioners */}
           <div className="bg-white rounded-xl border border-gray-200 p-4">
             <div className="flex items-center gap-2 mb-3">
               <AlertTriangle className="w-4 h-4 text-amber-500" />
               <h3 className="text-sm font-semibold text-gray-900">Practitioners Needing Attention</h3>
             </div>
-            <div className="min-h-screen bg-[#0f1721] space-y-2">
+            <div className="space-y-2">
               {sorted.filter(p => p.score < 75).map((p, i) => (
                 <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-red-50 border border-red-100">
                   <div>
@@ -161,7 +161,7 @@ export default function ClinicalQualityPage() {
               <Pill className="w-4 h-4 text-red-500" />
               <h3 className="text-sm font-semibold text-gray-900">Recent Drug Interaction Alerts</h3>
             </div>
-            <div className="min-h-screen bg-[#0f1721] space-y-2">
+            <div className="space-y-2">
               {DRUG_ALERTS.slice(0, 3).map((alert, i) => (
                 <div key={i} className={`p-3 rounded-lg border ${severityColor(alert.severity)}`}>
                   <div className="flex items-center justify-between mb-1">
@@ -271,7 +271,7 @@ export default function ClinicalQualityPage() {
 
       {/* DRUG SAFETY TAB */}
       {tab === "drugs" && (
-        <div className="min-h-screen bg-[#0f1721] space-y-3">
+        <div className="space-y-3">
           <div className="p-4 rounded-xl bg-red-50 border border-red-200">
             <h3 className="text-sm font-semibold text-red-800 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4" /> Drug Interaction Monitoring — Real-Time
@@ -307,7 +307,7 @@ export default function ClinicalQualityPage() {
 
       {/* CDL COMPLIANCE TAB */}
       {tab === "cdl" && (
-        <div className="min-h-screen bg-[#0f1721] space-y-4">
+        <div className="space-y-4">
           <div className="p-4 rounded-xl bg-blue-50 border border-blue-200">
             <h3 className="text-sm font-semibold text-blue-800 flex items-center gap-2">
               <Heart className="w-4 h-4" /> Chronic Disease List — Network Compliance

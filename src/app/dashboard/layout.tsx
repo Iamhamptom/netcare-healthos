@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { AnimatePresence } from "framer-motion";
-import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+import ModuleSidebar from "@/components/dashboard/ModuleSidebar";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import FeatureGuide from "@/components/dashboard/FeatureGuide";
 import NetcareAssistant from "@/components/dashboard/NetcareAssistant";
@@ -62,7 +62,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
           >
             <X className="w-4 h-4" />
           </button>
-          <DashboardSidebar />
+          <ModuleSidebar />
         </div>
       </div>
 

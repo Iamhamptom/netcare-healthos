@@ -155,6 +155,7 @@ const navSections: NavSection[] = [
     badgeColor: "emerald",
     items: [
       { href: "/dashboard/engagement", icon: Heart, label: "Engagement Hub", roles: ["admin", "platform_admin"] },
+      { href: "/dashboard/engagement/agent", icon: Bot, label: "Engagement Agent", roles: ["admin", "platform_admin"] },
       { href: "/dashboard/engagement/campaigns", icon: Send, label: "Campaigns", roles: ["admin", "platform_admin"] },
       { href: "/dashboard/engagement/sequences", icon: Workflow, label: "Sequences", roles: ["admin", "platform_admin"] },
       { href: "/dashboard/engagement/chronic", icon: Stethoscope, label: "Chronic Care Gaps", roles: ["admin", "doctor", "platform_admin"] },

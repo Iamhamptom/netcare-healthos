@@ -619,7 +619,7 @@ function RoadmapSection() {
 
 export default function HealthbridgeAboutPage() {
   return (
-    <div className="p-6 min-h-screen bg-[#0f1721] max-w-6xl mx-auto">
+    <div className="p-6 max-w-6xl mx-auto">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-[12px] text-[var(--text-secondary)] mb-6">
         <Link href="/dashboard" className="hover:text-[var(--ivory)] transition-colors">Dashboard</Link>

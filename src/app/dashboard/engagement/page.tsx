@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Activity, Users, MessageSquare, Mail, Target, Heart, TrendingUp, AlertTriangle, Send, Calendar, Inbox, Workflow } from "lucide-react";
+import { Activity, Users, MessageSquare, Mail, Target, Heart, TrendingUp, AlertTriangle, Send, Calendar, Inbox, Workflow, Bot, Zap, ArrowRight } from "lucide-react";
 
 interface AnalyticsData {
   sequences: { active: number; completed: number; escalated: number; paused: number };
@@ -44,14 +44,38 @@ export default function EngagementDashboardPage() {
           <p className="text-[13px] text-gray-500 mt-0.5">Sequences, campaigns, chronic care, population health</p>
         </div>
         <div className="flex gap-2">
-          <Link href="/dashboard/engagement/campaigns" className="px-3.5 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-[13px] font-medium flex items-center gap-1.5 transition-colors">
-            <Target className="w-3.5 h-3.5" /> New Campaign
+          <Link href="/dashboard/engagement/agent" className="px-3.5 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-[13px] font-medium flex items-center gap-1.5 transition-colors">
+            <Bot className="w-3.5 h-3.5" /> Talk to Agent
           </Link>
-          <Link href="/dashboard/engagement/sequences" className="px-3.5 py-2 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 rounded-lg text-[13px] font-medium flex items-center gap-1.5 transition-colors">
-            <Workflow className="w-3.5 h-3.5" /> Sequences
+          <Link href="/dashboard/engagement/campaigns" className="px-3.5 py-2 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 rounded-lg text-[13px] font-medium flex items-center gap-1.5 transition-colors">
+            <Target className="w-3.5 h-3.5" /> Campaigns
           </Link>
         </div>
       </div>
+
+      {/* Agent CTA — Product Explainer */}
+      <motion.div {...fade(0)}>
+        <Link href="/dashboard/engagement/agent" className="block bg-gradient-to-br from-[#1D3443] via-[#1a3040] to-[#162a37] rounded-2xl p-5 relative overflow-hidden group hover:shadow-lg transition-shadow">
+          <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(rgba(61,169,209,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(61,169,209,0.3) 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
+          <div className="relative z-10 flex items-start gap-4">
+            <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center shrink-0">
+              <Bot className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-[14px] font-semibold text-white mb-1">Engagement Agent</h2>
+              <p className="text-[12px] text-white/60 leading-relaxed max-w-xl">
+                AI-powered agent with 18 tools that can find chronic care gaps, create campaigns, enroll patients in sequences, triage emails, send WhatsApp messages, and export data — all through natural language.
+              </p>
+              <div className="flex flex-wrap gap-1.5 mt-3">
+                {["Chronic Gaps", "Campaigns", "Sequences", "Email Triage", "WhatsApp", "Excel Export"].map((t) => (
+                  <span key={t} className="text-[10px] px-2 py-0.5 bg-white/10 text-white/70 rounded-full">{t}</span>
+                ))}
+              </div>
+            </div>
+            <ArrowRight className="w-4 h-4 text-white/40 group-hover:text-white/80 group-hover:translate-x-1 transition-all shrink-0 mt-1" />
+          </div>
+        </Link>
+      </motion.div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
