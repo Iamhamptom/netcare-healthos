@@ -14,6 +14,13 @@ export async function GET(request: Request) {
   const { prisma } = await import("@/lib/prisma");
   const pid = guard.practiceId;
 
+  // CSV escape: wrap values containing commas, quotes, or newlines
+  const esc = (v: string | number | null | undefined) => {
+    if (v == null) return "";
+    const s = String(v);
+    return (s.includes(",") || s.includes('"') || s.includes("\n")) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+
   let headers = "";
   let rows: string[] = [];
   let fileName = "export";
@@ -32,7 +39,7 @@ export async function GET(request: Request) {
         select: { name: true, phone: true, email: true, dateOfBirth: true, gender: true, medicalAid: true, medicalAidNo: true, lastVisit: true, nextRecallDue: true, status: true },
         take: 5000,
       });
-      rows = patients.map((p) => [p.name, p.phone, p.email, p.dateOfBirth?.toISOString().slice(0, 10) ?? "", p.gender, p.medicalAid, p.medicalAidNo, p.lastVisit?.toISOString().slice(0, 10) ?? "", p.nextRecallDue?.toISOString().slice(0, 10) ?? "", p.status].join(","));
+      rows = patients.map((p) => [esc(p.name), esc(p.phone), esc(p.email), p.dateOfBirth?.toISOString().slice(0, 10) ?? "", p.gender, esc(p.medicalAid), esc(p.medicalAidNo), p.lastVisit?.toISOString().slice(0, 10) ?? "", p.nextRecallDue?.toISOString().slice(0, 10) ?? "", p.status].join(","));
     }
   } else if (reportType === "sequences") {
     fileName = "engagement-sequences";
@@ -43,14 +50,14 @@ export async function GET(request: Request) {
         include: { sequence: { select: { name: true } } },
         take: 5000,
       });
-      rows = enrollments.map((e) => [e.sequence.name, e.patientName, e.patientPhone, e.status, e.currentStep, e.startedAt.toISOString().slice(0, 10), e.completedAt?.toISOString().slice(0, 10) ?? "", e.lastResponse.slice(0, 50)].join(","));
+      rows = enrollments.map((e) => [esc(e.sequence.name), esc(e.patientName), esc(e.patientPhone), e.status, e.currentStep, e.startedAt.toISOString().slice(0, 10), e.completedAt?.toISOString().slice(0, 10) ?? "", esc(e.lastResponse.slice(0, 50))].join(","));
     }
   } else if (reportType === "campaigns") {
     fileName = "campaign-results";
     headers = "Campaign,Type,Channel,Status,Sent,Delivered,Responded,Booked,Response Rate";
     if (!isDemoMode) {
       const campaigns = await prisma.patientCampaign.findMany({ where: { practiceId: pid } });
-      rows = campaigns.map((c) => [c.name, c.type, c.channel, c.status, c.sentCount, c.deliveredCount, c.respondedCount, c.bookedCount, c.sentCount > 0 ? ((c.respondedCount / c.sentCount) * 100).toFixed(1) + "%" : "0%"].join(","));
+      rows = campaigns.map((c) => [esc(c.name), c.type, c.channel, c.status, c.sentCount, c.deliveredCount, c.respondedCount, c.bookedCount, c.sentCount > 0 ? ((c.respondedCount / c.sentCount) * 100).toFixed(1) + "%" : "0%"].join(","));
     }
   } else if (reportType === "notifications") {
     fileName = "notification-history";
@@ -61,7 +68,7 @@ export async function GET(request: Request) {
         orderBy: { sentAt: "desc" },
         take: 5000,
       });
-      rows = notifs.map((n) => [n.type, n.recipient, n.patientName, n.subject, n.template, n.status, n.sentAt.toISOString()].join(","));
+      rows = notifs.map((n) => [n.type, esc(n.recipient), esc(n.patientName), esc(n.subject), n.template, n.status, n.sentAt.toISOString()].join(","));
     }
   }
 

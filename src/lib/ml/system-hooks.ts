@@ -37,7 +37,8 @@ type HealthProduct =
   | "ai_agents"
   | "patient_records"
   | "billing"
-  | "knowledge_base";
+  | "knowledge_base"
+  | "engagement";
 
 const eventLog: HealthEvent[] = [];
 const EVENT_LOG_MAX = 5000;

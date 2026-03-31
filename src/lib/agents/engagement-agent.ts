@@ -21,12 +21,15 @@ const getPatientEngagementSummary = tool({
   }),
   execute: async ({ patientId }) => {
     const { prisma } = await import("@/lib/prisma");
+    // Get patient's phone to match bookings
+    const patient = await prisma.patient.findUnique({ where: { id: patientId }, select: { phone: true, name: true, practiceId: true } });
+    if (!patient) return { error: "Patient not found" };
     const [enrollments, recipients, bookings, notifications, recalls] = await Promise.all([
       prisma.sequenceEnrollment.findMany({ where: { patientId, status: "active" }, include: { sequence: { select: { name: true } } } }),
       prisma.campaignRecipient.findMany({ where: { patientId }, include: { campaign: { select: { name: true, type: true } } }, take: 5, orderBy: { createdAt: "desc" } }),
-      prisma.booking.findMany({ where: { patientPhone: { not: "" } }, take: 5, orderBy: { scheduledAt: "desc" } }),
-      prisma.notification.findMany({ where: { patientName: { not: "" } }, take: 10, orderBy: { sentAt: "desc" } }),
-      prisma.recallItem.findMany({ where: { contacted: false }, take: 5, orderBy: { dueDate: "asc" } }),
+      prisma.booking.findMany({ where: { practiceId: patient.practiceId, patientPhone: patient.phone }, take: 5, orderBy: { scheduledAt: "desc" } }),
+      prisma.notification.findMany({ where: { practiceId: patient.practiceId, patientName: patient.name }, take: 10, orderBy: { sentAt: "desc" } }),
+      prisma.recallItem.findMany({ where: { practiceId: patient.practiceId, contacted: false }, take: 5, orderBy: { dueDate: "asc" } }),
     ]);
     return { enrollments, campaigns: recipients, recentBookings: bookings, recentNotifications: notifications.length, pendingRecalls: recalls };
   },
@@ -77,9 +80,9 @@ const getChronicCareGaps = tool({
   }),
   execute: async ({ practiceId, condition }) => {
     const { prisma } = await import("@/lib/prisma");
-    const threeMonthsAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
-    const sixMonthsAgo = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000);
-    const oneYearAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
+    const threeMonthsAgo = new Date(); threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+    const sixMonthsAgo = new Date(); sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    const oneYearAgo = new Date(); oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
 
     const gaps: { category: string; patients: { id: string; name: string; phone: string; lastVisit: Date | null; daysOverdue: number }[] }[] = [];
 
@@ -375,15 +378,13 @@ const sendWhatsAppMessage = tool({
   }),
   execute: async ({ phone, message, patientName, practiceId }) => {
     const { prisma } = await import("@/lib/prisma");
-    // Check marketing consent
-    if (patientName) {
-      const patient = await prisma.patient.findFirst({ where: { phone, practiceId } });
-      if (patient) {
-        const consent = await prisma.consentRecord.findFirst({
-          where: { patientId: patient.id, consentType: "marketing", granted: true, revokedAt: null },
-        });
-        if (!consent) return { sent: false, reason: "Patient has not consented to marketing messages (POPIA)" };
-      }
+    // POPIA: Always check marketing consent before sending
+    const patient = await prisma.patient.findFirst({ where: { phone, practiceId } });
+    if (patient) {
+      const consent = await prisma.consentRecord.findFirst({
+        where: { patientId: patient.id, consentType: "marketing", granted: true, revokedAt: null },
+      });
+      if (!consent) return { sent: false, reason: "Patient has not consented to marketing messages (POPIA)" };
     }
 
     try {

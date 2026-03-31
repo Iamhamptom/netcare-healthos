@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isDemoMode } from "@/lib/is-demo";
+import { recordHealthEvent } from "@/lib/ml/system-hooks";
 
 /** GET /api/engagement/cron — Vercel Cron: process sequences, triggers, campaigns
  *  Schedule: every 15 minutes (vercel.json)
@@ -54,14 +55,24 @@ export async function GET(request: Request) {
     console.error("[engagement-cron] Auto-trigger error:", err);
   }
 
+  // Record learning events
+  const seqProcessed = sequences.status === "fulfilled" ? sequences.value.length : 0;
+  const campProcessed = campaigns.status === "fulfilled" ? campaigns.value.reduce((s, c) => s + c.sent, 0) : 0;
+
+  recordHealthEvent("engagement", "cron_completed", {
+    sequencesProcessed: seqProcessed,
+    triggersEnrolled: triggersEnrolled,
+    campaignsSent: campProcessed,
+  });
+
   return NextResponse.json({
     sequences: sequences.status === "fulfilled"
       ? { processed: sequences.value.length, results: sequences.value }
-      : { error: String(sequences.reason) },
+      : { error: String(sequences.reason || "Unknown error") },
     triggers: { enrolled: triggersEnrolled },
     campaigns: campaigns.status === "fulfilled"
       ? { processed: campaigns.value.length, results: campaigns.value }
-      : { error: String(campaigns.reason) },
+      : { error: String(campaigns.reason || "Unknown error") },
     message: "Engagement cron completed",
   });
 }

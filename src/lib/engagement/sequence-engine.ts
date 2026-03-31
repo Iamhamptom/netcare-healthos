@@ -231,8 +231,11 @@ export async function processNextStep(enrollmentId: string): Promise<SequenceSte
     if (step.channel === "whatsapp" && enrollment.patientPhone) {
       try {
         await sendWhatsApp(enrollment.patientPhone, message);
-      } catch {
-        // Log but don't fail — WhatsApp may not be configured
+      } catch (err) {
+        console.error(`[sequence-engine] WhatsApp send failed: ${enrollment.patientPhone}`, err);
+        await prisma.notification.create({
+          data: { type: "whatsapp", recipient: enrollment.patientPhone, patientName: enrollment.patientName, message: `FAILED: ${message.slice(0, 200)}`, status: "failed", template: `sequence_step_${nextStepOrder}_failed`, practiceId: enrollment.practiceId },
+        }).catch(() => {});
       }
     }
 
@@ -297,12 +300,19 @@ export async function processDueSteps(): Promise<SequenceStepResult[]> {
       status: "active",
       nextStepAt: { lte: now },
     },
-    take: 100, // Process max 100 per cron run
+    take: 100,
     orderBy: { nextStepAt: "asc" },
   });
 
   const results: SequenceStepResult[] = [];
   for (const enrollment of dueEnrollments) {
+    // Race condition guard: atomically claim this enrollment by setting nextStepAt to future
+    const claimed = await prisma.sequenceEnrollment.updateMany({
+      where: { id: enrollment.id, status: "active", nextStepAt: { lte: now } },
+      data: { nextStepAt: new Date(Date.now() + 5 * 60 * 1000) }, // Claim for 5 min
+    });
+    if (claimed.count === 0) continue; // Another cron already claimed it
+
     const result = await processNextStep(enrollment.id);
     results.push(result);
   }
@@ -488,6 +498,15 @@ export async function processScheduledCampaigns(practiceId?: string): Promise<{ 
     });
 
     for (const recipient of recipients) {
+      // POPIA: Check marketing consent before sending campaign messages
+      const consent = await prisma.consentRecord.findFirst({
+        where: { patientId: recipient.patientId, consentType: "marketing", granted: true, revokedAt: null },
+      });
+      if (!consent) {
+        await prisma.campaignRecipient.update({ where: { id: recipient.id }, data: { status: "opted_out" } });
+        continue;
+      }
+
       const message = resolveTemplate(campaign.messageTemplate, {
         patientName: recipient.patientName,
         practiceName: practice?.name ?? "",

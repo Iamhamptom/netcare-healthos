@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isDemoMode } from "@/lib/is-demo";
 import { guardRoute, isErrorResponse } from "@/lib/api-helpers";
+import { recordHealthEvent } from "@/lib/ml/system-hooks";
 
 /** POST /api/engagement/run — Invoke the Engagement Agent with a natural language task */
 export async function POST(request: Request) {
@@ -30,11 +31,22 @@ export async function POST(request: Request) {
       prompt: `Practice ID: ${practiceId}\n\nTask: ${message}`,
     });
 
+    const toolsUsed = Array.isArray(result.toolCalls) ? result.toolCalls.map((tc: { toolName?: string }) => tc.toolName ?? "unknown") : [];
+    const stepsUsed = Array.isArray(result.steps) ? result.steps.length : 0;
+
+    // Record learning event
+    recordHealthEvent("engagement", "agent_run", {
+      task: message.slice(0, 200),
+      toolsUsed,
+      stepsUsed,
+      practiceId,
+    });
+
     return NextResponse.json({
-      response: result.text,
-      toolsUsed: result.toolCalls?.map((tc: { toolName: string }) => tc.toolName) ?? [],
+      response: result.text || String(result),
+      toolsUsed,
       provider: "gemini",
-      stepsUsed: result.steps?.length ?? 0,
+      stepsUsed,
     });
   } catch (err) {
     console.error("[engagement-agent] Error:", err);
