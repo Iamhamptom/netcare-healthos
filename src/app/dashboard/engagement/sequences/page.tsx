@@ -1,17 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Activity, Plus, Play, Pause, Users, Zap } from "lucide-react";
+import { motion } from "framer-motion";
+import { Activity, Plus, Users, Zap, Workflow } from "lucide-react";
 
-interface Sequence {
-  id: string;
-  name: string;
-  description: string;
-  triggerType: string;
-  active: boolean;
-  stepsCount: number;
-  enrollmentsCount: number;
-}
+interface Sequence { id: string; name: string; description: string; triggerType: string; active: boolean; stepsCount: number; enrollmentsCount: number; }
+
+const fade = (i: number) => ({ initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { delay: i * 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1] as const } });
 
 export default function SequencesPage() {
   const [sequences, setSequences] = useState<Sequence[]>([]);
@@ -19,74 +14,61 @@ export default function SequencesPage() {
   const [showCreate, setShowCreate] = useState(false);
 
   useEffect(() => {
-    fetch("/api/engagement/sequences")
-      .then((r) => r.json())
-      .then((d) => setSequences(d.sequences || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    fetch("/api/engagement/sequences").then((r) => r.json()).then((d) => setSequences(d.sequences || [])).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
-  const triggerLabels: Record<string, { label: string; color: string }> = {
-    booking_completed: { label: "Post-Visit", color: "text-emerald-400" },
-    recall_due: { label: "Recall Due", color: "text-amber-400" },
-    condition_match: { label: "Condition Match", color: "text-blue-400" },
-    manual: { label: "Manual", color: "text-zinc-400" },
-    campaign: { label: "Campaign", color: "text-purple-400" },
+  const triggerStyle: Record<string, { label: string; color: string }> = {
+    booking_completed: { label: "Post-Visit", color: "#10B981" },
+    recall_due: { label: "Recall Due", color: "#F59E0B" },
+    condition_match: { label: "Condition", color: "#3DA9D1" },
+    manual: { label: "Manual", color: "#6B7280" },
+    campaign: { label: "Campaign", color: "#8B5CF6" },
   };
 
   return (
-    <div className="p-6 min-h-screen bg-[#0f1721] space-y-6">
+    <div className="p-6 lg:p-8 space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Activity className="w-6 h-6 text-blue-400" /> Engagement Sequences
-          </h1>
-          <p className="text-zinc-400 text-sm mt-1">Automated patient journeys — follow-ups, chronic care, medication adherence</p>
+          <h1 className="text-[22px] font-semibold text-gray-900">Engagement Sequences</h1>
+          <p className="text-[13px] text-gray-500 mt-0.5">Automated patient journeys — follow-ups, chronic care, medication adherence</p>
         </div>
-        <button onClick={() => setShowCreate(!showCreate)} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium flex items-center gap-2">
-          <Plus className="w-4 h-4" /> New Sequence
+        <button onClick={() => setShowCreate(!showCreate)} className="px-3.5 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-[13px] font-medium flex items-center gap-1.5 transition-colors">
+          <Plus className="w-3.5 h-3.5" /> New Sequence
         </button>
       </div>
 
       {showCreate && <CreateSequenceForm onCreated={(s) => { setSequences([s, ...sequences]); setShowCreate(false); }} />}
 
       {loading ? (
-        <div className="min-h-screen bg-[#0f1721] space-y-4">{[1, 2, 3].map((i) => <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 animate-pulse h-28" />)}</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">{[1, 2, 3, 4].map((i) => <div key={i} className="bg-white/60 border border-gray-100 rounded-xl p-5 animate-pulse h-24" />)}</div>
       ) : sequences.length === 0 ? (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-12 text-center">
-          <Activity className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-          <p className="text-zinc-400">No sequences yet. Create one to automate patient engagement.</p>
-          <div className="mt-4 text-xs text-zinc-500 space-y-1">
-            <p>Examples: Post-Surgery Recovery, Diabetes Care Pathway, Medication Adherence, New Patient Welcome</p>
-          </div>
+        <div className="bg-white/90 border border-gray-200/80 rounded-xl p-12 text-center">
+          <Workflow className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+          <p className="text-[13px] text-gray-500">No sequences yet. Create one to automate patient engagement.</p>
+          <p className="text-[11px] text-gray-400 mt-2">Examples: Post-Surgery Recovery, Diabetes Care, Medication Adherence</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {sequences.map((s) => {
-            const trigger = triggerLabels[s.triggerType] || { label: s.triggerType, color: "text-zinc-400" };
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {sequences.map((s, i) => {
+            const trigger = triggerStyle[s.triggerType] || { label: s.triggerType, color: "#6B7280" };
             return (
-              <div key={s.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="text-white font-semibold text-sm">{s.name}</h3>
-                    {s.description && <p className="text-xs text-zinc-500 mt-1">{s.description}</p>}
-                  </div>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${s.active ? "bg-emerald-500/10 text-emerald-400" : "bg-zinc-500/10 text-zinc-500"}`}>
+              <motion.div key={s.id} {...fade(i)} className="bg-white/90 backdrop-blur-sm border border-gray-200/80 rounded-xl p-4 hover:border-gray-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="text-[13px] font-semibold text-gray-900">{s.name}</h3>
+                  <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${s.active ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-500"}`}>
                     {s.active ? "Active" : "Inactive"}
                   </span>
                 </div>
-                <div className="flex items-center gap-4 text-xs text-zinc-400">
-                  <span className={`flex items-center gap-1 ${trigger.color}`}>
-                    <Zap className="w-3 h-3" /> {trigger.label}
-                  </span>
+                {s.description && <p className="text-[11px] text-gray-500 mb-2.5">{s.description}</p>}
+                <div className="flex items-center gap-3 text-[11px] text-gray-500">
                   <span className="flex items-center gap-1">
-                    <Activity className="w-3 h-3" /> {s.stepsCount} steps
+                    <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: trigger.color }} />
+                    {trigger.label}
                   </span>
-                  <span className="flex items-center gap-1">
-                    <Users className="w-3 h-3" /> {s.enrollmentsCount} enrolled
-                  </span>
+                  <span className="flex items-center gap-1"><Activity className="w-3 h-3" /> {s.stepsCount} steps</span>
+                  <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {s.enrollmentsCount} enrolled</span>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>
@@ -99,55 +81,45 @@ function CreateSequenceForm({ onCreated }: { onCreated: (s: Sequence) => void })
   const [form, setForm] = useState({ name: "", description: "", triggerType: "manual" });
   const [steps, setSteps] = useState([{ channel: "whatsapp", delayMinutes: 0, messageTemplate: "", actionType: "message" }]);
   const [creating, setCreating] = useState(false);
-
-  const addStep = () => setSteps([...steps, { channel: "whatsapp", delayMinutes: 1440, messageTemplate: "", actionType: "message" }]);
+  const inputClass = "bg-white border border-gray-200 rounded-lg px-3 py-2 text-[13px] text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:outline-none transition-colors";
 
   const submit = async () => {
     setCreating(true);
-    const res = await fetch("/api/engagement/sequences", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, steps }),
-    });
+    const res = await fetch("/api/engagement/sequences", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, steps }) });
     const data = await res.json();
     setCreating(false);
     if (data.sequence) onCreated({ ...data.sequence, stepsCount: steps.length, enrollmentsCount: 0 });
   };
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-4">
-      <h2 className="text-lg font-semibold text-white">Create Sequence</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <input placeholder="Sequence name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500" />
-        <input placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500" />
-        <select value={form.triggerType} onChange={(e) => setForm({ ...form, triggerType: e.target.value })} className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white">
-          <option value="manual">Manual Enrollment</option>
-          <option value="booking_completed">After Booking Completed</option>
-          <option value="recall_due">When Recall Due</option>
-          <option value="condition_match">Condition Match (ICD-10)</option>
+    <motion.div {...fade(0)} className="bg-white/90 backdrop-blur-sm border border-gray-200/80 rounded-xl p-5 space-y-4">
+      <h2 className="text-[14px] font-semibold text-gray-900">Create Sequence</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <input placeholder="Sequence name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputClass} />
+        <input placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={inputClass} />
+        <select value={form.triggerType} onChange={(e) => setForm({ ...form, triggerType: e.target.value })} className={inputClass}>
+          <option value="manual">Manual</option><option value="booking_completed">Post-Visit</option><option value="recall_due">Recall Due</option><option value="condition_match">Condition Match</option>
         </select>
       </div>
-
-      <div className="min-h-screen bg-[#0f1721] space-y-3">
-        <h3 className="text-sm font-medium text-zinc-300">Steps</h3>
+      <div className="space-y-2">
+        <h3 className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">Steps</h3>
         {steps.map((step, i) => (
-          <div key={i} className="flex items-center gap-3 bg-zinc-800/50 rounded-lg p-3">
-            <span className="text-xs text-zinc-500 w-6">#{i + 1}</span>
-            <input type="number" placeholder="Delay (min)" value={step.delayMinutes} onChange={(e) => { const s = [...steps]; s[i].delayMinutes = parseInt(e.target.value) || 0; setSteps(s); }} className="w-24 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-white" />
-            <select value={step.channel} onChange={(e) => { const s = [...steps]; s[i].channel = e.target.value; setSteps(s); }} className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-white">
+          <div key={i} className="flex items-center gap-2 bg-gray-50 rounded-lg p-2.5">
+            <span className="text-[11px] text-gray-400 w-5 font-mono">#{i + 1}</span>
+            <input type="number" placeholder="Delay (min)" value={step.delayMinutes} onChange={(e) => { const s = [...steps]; s[i].delayMinutes = parseInt(e.target.value) || 0; setSteps(s); }} className="w-20 bg-white border border-gray-200 rounded px-2 py-1 text-[12px] text-gray-900" />
+            <select value={step.channel} onChange={(e) => { const s = [...steps]; s[i].channel = e.target.value; setSteps(s); }} className="bg-white border border-gray-200 rounded px-2 py-1 text-[12px] text-gray-900">
               <option value="whatsapp">WhatsApp</option><option value="email">Email</option><option value="sms">SMS</option>
             </select>
-            <input placeholder="Message template..." value={step.messageTemplate} onChange={(e) => { const s = [...steps]; s[i].messageTemplate = e.target.value; setSteps(s); }} className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-white placeholder-zinc-500" />
+            <input placeholder="Message template..." value={step.messageTemplate} onChange={(e) => { const s = [...steps]; s[i].messageTemplate = e.target.value; setSteps(s); }} className="flex-1 bg-white border border-gray-200 rounded px-2 py-1 text-[12px] text-gray-900 placeholder-gray-400" />
           </div>
         ))}
-        <button onClick={addStep} className="text-xs text-blue-400 hover:text-blue-300">+ Add Step</button>
+        <button onClick={() => setSteps([...steps, { channel: "whatsapp", delayMinutes: 1440, messageTemplate: "", actionType: "message" }])} className="text-[11px] text-gray-500 hover:text-gray-700">+ Add Step</button>
       </div>
-
       <div className="flex justify-end">
-        <button disabled={creating || !form.name || steps.every((s) => !s.messageTemplate)} onClick={submit} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg text-sm font-medium">
+        <button disabled={creating || !form.name} onClick={submit} className="px-4 py-2 bg-gray-900 hover:bg-gray-800 disabled:opacity-40 text-white rounded-lg text-[13px] font-medium transition-colors">
           {creating ? "Creating..." : "Create Sequence"}
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }
