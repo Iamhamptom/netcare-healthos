@@ -257,3 +257,43 @@ export type AiThread = Prisma.AiThreadModel
  * 
  */
 export type AiMessage = Prisma.AiMessageModel
+/**
+ * Model EngagementSequence
+ * 
+ */
+export type EngagementSequence = Prisma.EngagementSequenceModel
+/**
+ * Model SequenceStep
+ * 
+ */
+export type SequenceStep = Prisma.SequenceStepModel
+/**
+ * Model SequenceEnrollment
+ * 
+ */
+export type SequenceEnrollment = Prisma.SequenceEnrollmentModel
+/**
+ * Model PatientCampaign
+ * 
+ */
+export type PatientCampaign = Prisma.PatientCampaignModel
+/**
+ * Model CampaignRecipient
+ * 
+ */
+export type CampaignRecipient = Prisma.CampaignRecipientModel
+/**
+ * Model EmailInbox
+ * 
+ */
+export type EmailInbox = Prisma.EmailInboxModel
+/**
+ * Model DocumentSync
+ * 
+ */
+export type DocumentSync = Prisma.DocumentSyncModel
+/**
+ * Model PatientAuth
+ * 
+ */
+export type PatientAuth = Prisma.PatientAuthModel

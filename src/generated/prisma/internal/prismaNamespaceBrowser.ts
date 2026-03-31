@@ -98,7 +98,15 @@ export const ModelName = {
   AiMemory: 'AiMemory',
   AiDocument: 'AiDocument',
   AiThread: 'AiThread',
-  AiMessage: 'AiMessage'
+  AiMessage: 'AiMessage',
+  EngagementSequence: 'EngagementSequence',
+  SequenceStep: 'SequenceStep',
+  SequenceEnrollment: 'SequenceEnrollment',
+  PatientCampaign: 'PatientCampaign',
+  CampaignRecipient: 'CampaignRecipient',
+  EmailInbox: 'EmailInbox',
+  DocumentSync: 'DocumentSync',
+  PatientAuth: 'PatientAuth'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1103,6 +1111,156 @@ export const AiMessageScalarFieldEnum = {
 } as const
 
 export type AiMessageScalarFieldEnum = (typeof AiMessageScalarFieldEnum)[keyof typeof AiMessageScalarFieldEnum]
+
+
+export const EngagementSequenceScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  triggerType: 'triggerType',
+  triggerConfig: 'triggerConfig',
+  active: 'active',
+  practiceId: 'practiceId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EngagementSequenceScalarFieldEnum = (typeof EngagementSequenceScalarFieldEnum)[keyof typeof EngagementSequenceScalarFieldEnum]
+
+
+export const SequenceStepScalarFieldEnum = {
+  id: 'id',
+  sequenceId: 'sequenceId',
+  stepOrder: 'stepOrder',
+  delayMinutes: 'delayMinutes',
+  channel: 'channel',
+  messageTemplate: 'messageTemplate',
+  actionType: 'actionType',
+  actionConfig: 'actionConfig',
+  conditionLogic: 'conditionLogic',
+  createdAt: 'createdAt'
+} as const
+
+export type SequenceStepScalarFieldEnum = (typeof SequenceStepScalarFieldEnum)[keyof typeof SequenceStepScalarFieldEnum]
+
+
+export const SequenceEnrollmentScalarFieldEnum = {
+  id: 'id',
+  sequenceId: 'sequenceId',
+  patientId: 'patientId',
+  patientName: 'patientName',
+  patientPhone: 'patientPhone',
+  currentStep: 'currentStep',
+  status: 'status',
+  nextStepAt: 'nextStepAt',
+  lastResponse: 'lastResponse',
+  metadata: 'metadata',
+  practiceId: 'practiceId',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SequenceEnrollmentScalarFieldEnum = (typeof SequenceEnrollmentScalarFieldEnum)[keyof typeof SequenceEnrollmentScalarFieldEnum]
+
+
+export const PatientCampaignScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  type: 'type',
+  targetCriteria: 'targetCriteria',
+  channel: 'channel',
+  messageTemplate: 'messageTemplate',
+  status: 'status',
+  scheduledAt: 'scheduledAt',
+  sentCount: 'sentCount',
+  deliveredCount: 'deliveredCount',
+  respondedCount: 'respondedCount',
+  bookedCount: 'bookedCount',
+  practiceId: 'practiceId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PatientCampaignScalarFieldEnum = (typeof PatientCampaignScalarFieldEnum)[keyof typeof PatientCampaignScalarFieldEnum]
+
+
+export const CampaignRecipientScalarFieldEnum = {
+  id: 'id',
+  campaignId: 'campaignId',
+  patientId: 'patientId',
+  patientName: 'patientName',
+  phone: 'phone',
+  email: 'email',
+  status: 'status',
+  sentAt: 'sentAt',
+  respondedAt: 'respondedAt',
+  response: 'response',
+  createdAt: 'createdAt'
+} as const
+
+export type CampaignRecipientScalarFieldEnum = (typeof CampaignRecipientScalarFieldEnum)[keyof typeof CampaignRecipientScalarFieldEnum]
+
+
+export const EmailInboxScalarFieldEnum = {
+  id: 'id',
+  source: 'source',
+  externalId: 'externalId',
+  fromEmail: 'fromEmail',
+  fromName: 'fromName',
+  subject: 'subject',
+  bodyText: 'bodyText',
+  bodyHtml: 'bodyHtml',
+  patientId: 'patientId',
+  patientName: 'patientName',
+  triageCategory: 'triageCategory',
+  triagePriority: 'triagePriority',
+  triageSummary: 'triageSummary',
+  assignedTo: 'assignedTo',
+  status: 'status',
+  practiceId: 'practiceId',
+  receivedAt: 'receivedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type EmailInboxScalarFieldEnum = (typeof EmailInboxScalarFieldEnum)[keyof typeof EmailInboxScalarFieldEnum]
+
+
+export const DocumentSyncScalarFieldEnum = {
+  id: 'id',
+  source: 'source',
+  externalId: 'externalId',
+  fileName: 'fileName',
+  fileType: 'fileType',
+  filePath: 'filePath',
+  downloadUrl: 'downloadUrl',
+  category: 'category',
+  syncStatus: 'syncStatus',
+  lastSyncedAt: 'lastSyncedAt',
+  metadata: 'metadata',
+  practiceId: 'practiceId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocumentSyncScalarFieldEnum = (typeof DocumentSyncScalarFieldEnum)[keyof typeof DocumentSyncScalarFieldEnum]
+
+
+export const PatientAuthScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  phone: 'phone',
+  otpHash: 'otpHash',
+  otpExpiresAt: 'otpExpiresAt',
+  otpAttempts: 'otpAttempts',
+  lastLoginAt: 'lastLoginAt',
+  practiceId: 'practiceId',
+  createdAt: 'createdAt'
+} as const
+
+export type PatientAuthScalarFieldEnum = (typeof PatientAuthScalarFieldEnum)[keyof typeof PatientAuthScalarFieldEnum]
 
 
 export const SortOrder = {

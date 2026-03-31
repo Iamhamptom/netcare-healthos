@@ -1139,3 +1139,182 @@ model AiMessage {
   @@index([threadId])
   @@index([createdAt])
 }
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Digital Patient Engagement Platform
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// === Engagement Sequences (Automated Patient Journeys) ===
+
+model EngagementSequence {
+  id            String   @id @default(cuid())
+  name          String                          // "Post-Surgery Follow-Up"
+  description   String   @default("")
+  triggerType   String                          // booking_completed | recall_due | condition_match | manual | campaign
+  triggerConfig String   @default("{}")         // JSON: {conditions[], icd10Codes[], ageRange, medicalAid}
+  active        Boolean  @default(true)
+  practiceId    String
+  steps         SequenceStep[]
+  enrollments   SequenceEnrollment[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([practiceId])
+  @@index([triggerType])
+  @@index([active])
+}
+
+model SequenceStep {
+  id              String   @id @default(cuid())
+  sequenceId      String
+  sequence        EngagementSequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+  stepOrder       Int                              // 1, 2, 3...
+  delayMinutes    Int      @default(0)             // Wait from previous step (0 = immediate)
+  channel         String   @default("whatsapp")    // whatsapp | sms | email | portal_notification
+  messageTemplate String                           // Template: "Hi {{patientName}}, your {{service}} was on {{appointmentDate}}..."
+  actionType      String   @default("message")     // message | survey | booking_prompt | escalate | ai_check
+  actionConfig    String   @default("{}")           // JSON: {surveyQuestions[], escalateThreshold, aiPrompt, bookingService}
+  conditionLogic  String   @default("")             // Optional: "response == 'YES'" | "painLevel > 7" | "" (always run)
+  createdAt       DateTime @default(now())
+
+  @@index([sequenceId])
+}
+
+model SequenceEnrollment {
+  id            String   @id @default(cuid())
+  sequenceId    String
+  sequence      EngagementSequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+  patientId     String
+  patientName   String   @default("")
+  patientPhone  String   @default("")
+  currentStep   Int      @default(0)             // Which step they're on (0 = not started)
+  status        String   @default("active")      // active | completed | paused | cancelled | escalated
+  nextStepAt    DateTime?                        // When to execute next step
+  lastResponse  String   @default("")            // Patient's last reply
+  metadata      String   @default("{}")          // JSON: {stepResults[], surveyAnswers, bookingId, triggerSource}
+  practiceId    String
+  startedAt     DateTime @default(now())
+  completedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([practiceId])
+  @@index([status])
+  @@index([nextStepAt])
+  @@index([patientId])
+  @@index([sequenceId])
+}
+
+// === Patient Health Campaigns ===
+
+model PatientCampaign {
+  id              String   @id @default(cuid())
+  name            String                           // "Flu Vaccine 2026 — Over 65s Gauteng"
+  description     String   @default("")
+  type            String   @default("health")      // health | recall | preventive | chronic | screening | custom
+  targetCriteria  String   @default("{}")           // JSON: {ageMin?, ageMax?, gender?, conditions[], medicalAid?, lastVisitBefore?, icd10Codes[]}
+  channel         String   @default("whatsapp")    // whatsapp | email | sms | multi
+  messageTemplate String   @default("")
+  status          String   @default("draft")       // draft | scheduled | sending | completed | paused
+  scheduledAt     DateTime?
+  sentCount       Int      @default(0)
+  deliveredCount  Int      @default(0)
+  respondedCount  Int      @default(0)
+  bookedCount     Int      @default(0)             // Resulted in bookings
+  practiceId      String
+  recipients      CampaignRecipient[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([practiceId])
+  @@index([status])
+  @@index([type])
+}
+
+model CampaignRecipient {
+  id            String   @id @default(cuid())
+  campaignId    String
+  campaign      PatientCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  patientId     String
+  patientName   String   @default("")
+  phone         String   @default("")
+  email         String   @default("")
+  status        String   @default("pending")     // pending | sent | delivered | responded | booked | opted_out | failed
+  sentAt        DateTime?
+  respondedAt   DateTime?
+  response      String   @default("")
+  createdAt     DateTime @default(now())
+
+  @@index([campaignId])
+  @@index([patientId])
+  @@index([status])
+}
+
+// === Inbound Email Processing ===
+
+model EmailInbox {
+  id              String   @id @default(cuid())
+  source          String   @default("gmail")       // gmail | outlook | resend_webhook
+  externalId      String   @default("")            // Gmail/Outlook message ID
+  fromEmail       String
+  fromName        String   @default("")
+  subject         String   @default("")
+  bodyText        String   @default("")
+  bodyHtml        String   @default("")
+  patientId       String?                          // Auto-matched patient
+  patientName     String   @default("")
+  // AI Triage
+  triageCategory  String   @default("unprocessed") // appointment | prescription | results | billing | complaint | referral | spam | unprocessed
+  triagePriority  String   @default("normal")      // urgent | high | normal | low
+  triageSummary   String   @default("")            // AI-generated one-line summary
+  assignedTo      String   @default("")            // Staff user ID
+  status          String   @default("new")         // new | triaged | in_progress | resolved | archived
+  practiceId      String
+  receivedAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([practiceId])
+  @@index([status])
+  @@index([triageCategory])
+  @@index([patientId])
+}
+
+// === Document Sync (OneDrive / Google Drive / Upload) ===
+
+model DocumentSync {
+  id            String   @id @default(cuid())
+  source        String   @default("onedrive")    // onedrive | google_drive | upload
+  externalId    String   @default("")            // Cloud file ID
+  fileName      String
+  fileType      String   @default("")            // xlsx | docx | pdf | csv
+  filePath      String   @default("")            // Cloud path
+  downloadUrl   String   @default("")
+  category      String   @default("general")     // patient_list | lab_results | reports | templates | general
+  syncStatus    String   @default("synced")      // synced | pending | error
+  lastSyncedAt  DateTime @default(now())
+  metadata      String   @default("{}")          // JSON: {sheetNames[], rowCount, columns[]}
+  practiceId    String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([practiceId])
+  @@index([category])
+  @@index([syncStatus])
+}
+
+// === Patient Portal Auth (OTP-based, separate from staff auth) ===
+
+model PatientAuth {
+  id            String    @id @default(cuid())
+  patientId     String    @unique
+  phone         String                           // Phone for OTP delivery
+  otpHash       String    @default("")           // bcrypt hash of current OTP
+  otpExpiresAt  DateTime?
+  otpAttempts   Int       @default(0)            // Failed attempts (lockout after 5)
+  lastLoginAt   DateTime?
+  practiceId    String
+  createdAt     DateTime  @default(now())
+
+  @@index([phone])
+  @@index([practiceId])
+}
