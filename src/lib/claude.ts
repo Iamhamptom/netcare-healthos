@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { scrubPII, maskName, checkInjection } from "./ai/security";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -24,9 +25,16 @@ export async function generateAIReply(
   aiPersonality: string,
   conversationHistory: { role: string; content: string }[]
 ): Promise<string> {
+  // SECURITY: Check for prompt injection in patient message
+  const injectionCheck = checkInjection(patientMessage);
+  if (injectionCheck.isInjection && injectionCheck.confidence >= 0.7) {
+    return "I'll have a team member get back to you shortly.";
+  }
+
+  // SECURITY: Scrub PII from conversation history before sending to Claude
   const messages = conversationHistory.map((msg) => ({
     role: (msg.role === "patient" ? "user" : "assistant") as "user" | "assistant",
-    content: msg.content,
+    content: scrubPII(msg.content).scrubbed,
   }));
 
   // Ensure messages alternate and start with user
@@ -45,7 +53,7 @@ export async function generateAIReply(
   const response = await anthropic.messages.create({
     model: "claude-sonnet-4-20250514",
     max_tokens: 256,
-    system: `${SYSTEM_PROMPT}\n\nPractice type: ${practiceType}\nTone: ${aiPersonality}\nPatient name: ${patientName}`,
+    system: `${SYSTEM_PROMPT}\n\nPractice type: ${practiceType}\nTone: ${aiPersonality}\nPatient: ${maskName(patientName)}`,
     messages: cleanMessages,
   });
 

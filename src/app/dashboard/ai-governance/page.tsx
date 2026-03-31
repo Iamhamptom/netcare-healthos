@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 
 // Gurshen — AI Committee / IT Governance
-// JSE-listed, King IV compliance, SAHPRA classification, POPIA s71, bias prevention
+// JSE-listed, King V compliance, SAHPRA classification, POPIA s71, bias prevention
 // He needs: governance documentation, audit trails, risk framework, board-reportable metrics
 
 const GOVERNANCE_FRAMEWORK = [
@@ -75,11 +75,12 @@ const POPIA_COMPLIANCE = [
   { section: "Health Regs 2026", title: "Health Data Provisions", status: "compliant", detail: "No grace period. Full compliance with POPIA health-specific regulations in force." },
 ];
 
-const KING_IV_ALIGNMENT = [
-  { principle: "Principle 12 — Technology & Information", alignment: "AI governance framework with 5-tier precedence. Board-reportable metrics. Override audit trail." },
-  { principle: "Principle 15 — Assurance", alignment: "92.5% composite compliance score across POPIA, OWASP, SAHPRA, King IV, ISO 27001, HPCSA." },
-  { principle: "Principle 16 — Stakeholder Relationships", alignment: "Transparent AI decision explanations. Every flag includes rule, reason, and suggested fix." },
-  { principle: "Principle 4 — Strategy & Performance", alignment: "AI augments human capability — does not replace. Performance measured via rejection rate reduction." },
+const KING_V_ALIGNMENT = [
+  { principle: "Principle 10 — Data, Information, Technology & AI", alignment: "King V (Oct 2025) explicitly requires boards to govern AI. Our 5-tier framework, audit logging, and override gates give the board documented AI governance." },
+  { principle: "Principle 3 — Responsible Corporate Citizenship", alignment: "POPIA health regulations (enforced 6 March 2026) compliance. Data sovereignty options. Patient rights protected." },
+  { principle: "Principle 12 — Assurance", alignment: "92.5% composite compliance score. Continuous monitoring. Board-reportable metrics dashboard." },
+  { principle: "Principle 15 — Stakeholder Relationships", alignment: "Transparent AI decisions. Every flag includes rule, reason, and fix. Human-in-the-loop on all claims." },
+  { principle: "SA National AI Policy (5 Pillars)", alignment: "Aligned with DCDT policy: responsible governance, ethical AI, human-centred design, skills development, cultural context." },
 ];
 
 const AUDIT_METRICS = [
@@ -122,7 +123,7 @@ export default function AIGovernancePage() {
             </div>
           </div>
           <p className="text-sm text-slate-400 max-w-2xl leading-relaxed">
-            King IV-aligned AI governance for JSE-listed healthcare. SAHPRA classification, POPIA Section 71 compliance,
+            King V-aligned AI governance for JSE-listed healthcare. SAHPRA classification, POPIA Section 71 compliance,
             5-tier rule precedence, full audit trail. Prepared for Netcare AI Committee review.
           </p>
         </div>
@@ -288,9 +289,9 @@ export default function AIGovernancePage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10">
-                <h4 className="font-bold text-white text-sm mb-3 flex items-center gap-2"><BookOpen className="w-4 h-4 text-[#3DA9D1]" /> King IV Alignment</h4>
+                <h4 className="font-bold text-white text-sm mb-3 flex items-center gap-2"><BookOpen className="w-4 h-4 text-[#3DA9D1]" /> King V Alignment (Oct 2025)</h4>
                 <div className="space-y-3">
-                  {KING_IV_ALIGNMENT.map((k, i) => (
+                  {KING_V_ALIGNMENT.map((k, i) => (
                     <div key={i}>
                       <div className="text-xs font-bold text-[#3DA9D1]">{k.principle}</div>
                       <p className="text-[11px] text-slate-400 mt-0.5">{k.alignment}</p>
@@ -304,14 +305,20 @@ export default function AIGovernancePage() {
                   {[
                     "AI Committee Briefing Pack",
                     "Governance & Compliance Pack",
+                    "POPIA Health Data Compliance Statement (6 March 2026 regulations)",
+                    "HPCSA Booklet 20 AI Alignment Document",
+                    "King V Principle 10 Governance Brief",
+                    "CareConnect HIE Integration Readiness Report",
                     "POPIA Data Processing Agreement (draft)",
                     "Information Security Policy",
                     "Business Continuity Plan",
                     "Key Rotation Policy",
                     "Secure SDLC Documentation",
+                    "ISO 27001 Alignment Assessment (certification roadmap)",
                     "CareOn Integration Technical Spec",
                     "Claims Intelligence Whitepaper (VRL-001)",
                     "SA Competitor Feature Matrix",
+                    "SAHPRA MD08-2025/2026 Classification Analysis",
                   ].map((d, i) => (
                     <div key={i} className="flex items-center gap-2 text-xs text-slate-400 py-1">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />

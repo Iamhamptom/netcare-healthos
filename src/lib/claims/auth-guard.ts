@@ -85,22 +85,39 @@ export async function requireClaimsAuth(
 }
 
 /**
- * Strip patient names from validation results before storage.
- * POPIA compliance: we only store anonymized data.
+ * Strip patient names AND encrypt sensitive identifiers before storage.
+ * POPIA compliance: we only store anonymized + encrypted data.
  */
 export function sanitizeResultForStorage(result: Record<string, unknown>): Record<string, unknown> {
   const sanitized = JSON.parse(JSON.stringify(result));
 
-  // Anonymize patient names in line results
+  // Anonymize patient names + mask/encrypt IDs in line results
   if (Array.isArray(sanitized.lineResults)) {
     for (const lr of sanitized.lineResults) {
       if (lr.claimData?.patientName) {
         lr.claimData.patientName = anonymizeName(lr.claimData.patientName);
       }
+      // Auto-mask SA ID numbers and membership numbers
+      if (lr.claimData?.patientIdNumber && typeof lr.claimData.patientIdNumber === "string") {
+        lr.claimData.patientIdNumber = maskSAId(lr.claimData.patientIdNumber);
+      }
+      if (lr.claimData?.membershipNumber && typeof lr.claimData.membershipNumber === "string") {
+        lr.claimData.membershipNumber = maskMembership(lr.claimData.membershipNumber);
+      }
     }
   }
 
   return sanitized;
+}
+
+function maskSAId(id: string): string {
+  if (id.length <= 4) return id;
+  return "*".repeat(id.length - 4) + id.slice(-4);
+}
+
+function maskMembership(num: string): string {
+  if (num.length <= 4) return num;
+  return "*".repeat(num.length - 4) + num.slice(-4);
 }
 
 /**

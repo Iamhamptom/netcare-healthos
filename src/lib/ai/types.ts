@@ -47,7 +47,7 @@ export interface IntelligenceResult {
   /** Tools that were called */
   toolsUsed: string[];
   /** Which AI provider generated the response */
-  provider: "gemini" | "claude" | "none";
+  provider: "gemini" | "claude" | "none" | "blocked";
   /** Number of agent loop steps used */
   stepsUsed: number;
   /** RAG sources that were used (if any) */

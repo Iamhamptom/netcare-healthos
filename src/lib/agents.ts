@@ -12,6 +12,7 @@
 import { runIntelligence, getPersona } from "@/lib/ai";
 import { TRIAGE_AGENT, BILLING_AGENT, INTAKE_ANALYZER, FOLLOWUP_AGENT, SCHEDULER_AGENT } from "@/lib/ai/personas";
 import type { AgentPersona } from "@/lib/ai/types";
+import { scrubContextForLLM, escapeForPrompt } from "@/lib/ai/security";
 
 export type AgentType = "triage" | "followup" | "intake" | "billing" | "scheduler";
 
@@ -52,12 +53,19 @@ export async function runAgent(
 ): Promise<AgentResult> {
   const persona = AGENT_PERSONAS[agentType];
 
-  // Build extra context from patient data
+  // SECURITY: Scrub PII from patient context before passing to LLM
+  const safeCtx = scrubContextForLLM({
+    patientName: context?.patientName,
+    patientData: context?.patientData,
+    message,
+  });
+
+  // Build extra context from SCRUBBED patient data
   const contextParts: string[] = [];
-  if (context?.patientName) contextParts.push(`Patient: ${context.patientName}`);
+  if (safeCtx.patientName) contextParts.push(`Patient: ${safeCtx.patientName}`);
   if (context?.practiceType) contextParts.push(`Practice type: ${context.practiceType}`);
   if (context?.patientData && Object.keys(context.patientData).length > 0) {
-    contextParts.push(`Patient data: ${JSON.stringify(context.patientData)}`);
+    contextParts.push(`Patient data: ${escapeForPrompt(JSON.stringify(safeCtx.patientData), "PATIENT_DATA")}`);
   }
 
   // Build history

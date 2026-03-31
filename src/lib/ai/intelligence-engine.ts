@@ -12,7 +12,12 @@
  * - Feedback loop (learns from corrections)
  * - Context-aware system prompts per agent persona
  * - Medical knowledge grounding (ICD-10, tariffs, NAPPI, schemes)
+ * - PII stripping (automatic, pre-LLM)
+ * - Prompt injection detection (automatic, pre-LLM)
+ * - AI decision audit logging (persisted to Supabase)
  */
+
+import { scrubPII, checkInjection, escapeForPrompt, logAIDecision, type AIAuditEntry } from "./security";
 
 import { GoogleGenAI, Type } from "@google/genai";
 import type { Content, Part, FunctionDeclaration } from "@google/genai";
@@ -322,6 +327,41 @@ export async function runIntelligence(options: RunOptions): Promise<Intelligence
   } = options;
 
   const maxSteps = options.maxSteps ?? persona.maxSteps ?? 8;
+  const startTime = Date.now();
+
+  // 0. SECURITY: PII stripping + prompt injection detection (AUTOMATIC)
+  const piiResult = scrubPII(message);
+  const safeMessage = piiResult.scrubbed;
+  const injectionResult = checkInjection(message);
+
+  if (injectionResult.isInjection && injectionResult.confidence >= 0.7) {
+    console.warn(`[intelligence] PROMPT INJECTION DETECTED (confidence=${injectionResult.confidence}): ${injectionResult.matchedPatterns.join(", ")}`);
+    logAIDecision({
+      agent: persona.name,
+      provider: "none",
+      model: "none",
+      confidence: 0,
+      toolsUsed: [],
+      verdict: "BLOCKED_INJECTION",
+      piiStripped: piiResult.piiFound,
+      injectionChecked: true,
+      injectionDetected: true,
+      overrideAttempts: 0,
+      overridesBlocked: 0,
+      practiceId,
+      durationMs: Date.now() - startTime,
+      timestamp: new Date().toISOString(),
+    });
+    return {
+      response: "I cannot process this request. The input contains patterns that conflict with our safety guidelines. Please rephrase your question.",
+      toolsUsed: [],
+      provider: "blocked",
+      stepsUsed: 0,
+    };
+  }
+
+  // Also scrub extraContext for PII
+  const safeExtraContext = extraContext ? scrubPII(extraContext).scrubbed : undefined;
 
   // 1. RAG enrichment — ground the AI in real knowledge
   let ragContext: string | null = null;
@@ -329,9 +369,9 @@ export async function runIntelligence(options: RunOptions): Promise<Intelligence
     ragContext = await enrichWithRAG(message, ragCategory || persona.ragCategory);
   }
 
-  // 2. Build system prompt with knowledge context
+  // 2. Build system prompt with knowledge context (using PII-scrubbed context)
   const knowledgeBlock = buildKnowledgeContext(ragContext);
-  const systemPrompt = buildSystemPrompt(persona, (extraContext || "") + knowledgeBlock);
+  const systemPrompt = buildSystemPrompt(persona, (safeExtraContext || "") + knowledgeBlock);
 
   // 3. Build conversation messages
   const messages: Array<{ role: "user" | "model"; content: string }> = history.map((m) => ({
