@@ -20,8 +20,7 @@ const cspDirectives = [
 const nextConfig: NextConfig = {
   outputFileTracingExcludes: {
     "*": [
-      "./docs/knowledge/extracted/**",
-      "./docs/knowledge/raw_data/**",
+      "./docs/**",
       "./ml/models/**",
       "./ml/training-data/**",
       "./ml/scripts/**",
