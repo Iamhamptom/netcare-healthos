@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { guardRoute, isErrorResponse } from "@/lib/api-helpers";
 import { suggestCodes } from "@/lib/healthbridge/ai-coder";
 
+// Allow up to 60 seconds for AI coding (Claude + Gemini need time for complex notes)
+export const maxDuration = 60;
+
 /** POST /api/healthbridge/ai-code — AI-powered ICD-10 + CPT code suggestion
  * The feature NO SA PMS has. Accepts clinical notes, returns suggested codes
  * with PMB/CDL flags, confidence levels, and reasoning.

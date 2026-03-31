@@ -1,3 +1,4 @@
+export const maxDuration = 60;
 import { NextResponse } from "next/server";
 import { rateLimitByIp } from "@/lib/rate-limit";
 import { isDemoMode } from "@/lib/is-demo";

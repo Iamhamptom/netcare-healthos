@@ -1,3 +1,4 @@
+export const maxDuration = 60;
 import { NextResponse } from "next/server";
 import { guardRoute, isErrorResponse } from "@/lib/api-helpers";
 import { isDemoMode } from "@/lib/is-demo";

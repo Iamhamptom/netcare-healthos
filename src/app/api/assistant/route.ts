@@ -1,3 +1,4 @@
+export const maxDuration = 60;
 import { NextResponse } from "next/server";
 import { isDemoMode } from "@/lib/is-demo";
 import { demoPractice } from "@/lib/demo-data";
