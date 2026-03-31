@@ -171,12 +171,16 @@ export async function POST(request: Request) {
       }
     }
 
+    // Detect UI actions from the message (navigation, tool activation)
+    const actions = detectUIActions(message, result.response, result.toolsUsed);
+
     return NextResponse.json({
       reply: result.response,
       threadId,
       toolsUsed: result.toolsUsed,
       provider: result.provider,
       stepsUsed: result.stepsUsed,
+      actions,
     });
   } catch (err) {
     console.error("[assistant] Error:", err);
@@ -334,4 +338,70 @@ async function autoSaveMemory(
   } catch {
     // Memory save is best-effort — never block the response
   }
+}
+
+// ── UI Action Detection ─────────────────────────────────────────────
+// Parses user intent to return navigation/activation commands
+// The frontend can use these to open tools, navigate pages, start recordings
+
+interface UIAction {
+  type: "navigate" | "activate" | "show" | "highlight";
+  target: string;
+  label: string;
+}
+
+const ACTION_PATTERNS: Array<{ patterns: RegExp[]; action: UIAction }> = [
+  // Navigation: pull up / show / open pages
+  { patterns: [/pull up.*(intake|clinical intake)/i, /show.*(intake)/i, /open.*(intake)/i], action: { type: "navigate", target: "/dashboard/intake", label: "Clinical Intake" } },
+  { patterns: [/pull up.*(scribe|recorder|recording)/i, /start.*(scribe|recording|consult)/i, /open.*(scribe)/i], action: { type: "navigate", target: "/dashboard/scribe", label: "AI Medical Scribe" } },
+  { patterns: [/pull up.*(claims|claim.?valid)/i, /show.*(claims|validation)/i, /open.*(claims)/i], action: { type: "navigate", target: "/dashboard/claims", label: "Claims Analyzer" } },
+  { patterns: [/pull up.*(copilot|claims.?chat)/i, /show.*(copilot)/i, /ask.*about.*(icd|code|claim)/i], action: { type: "navigate", target: "/dashboard/claims-copilot", label: "Claims Copilot" } },
+  { patterns: [/pull up.*(bridge|careon|hl7|fhir)/i, /show.*(bridge|careon)/i], action: { type: "navigate", target: "/dashboard/bridge", label: "CareOn Bridge" } },
+  { patterns: [/pull up.*(switch|edifact|routing)/i, /show.*(switch)/i], action: { type: "navigate", target: "/dashboard/switching", label: "Switching Engine" } },
+  { patterns: [/pull up.*(patient|patient.?list)/i, /show.*(patient)/i, /find.*patient/i], action: { type: "navigate", target: "/dashboard/patients", label: "Patient Records" } },
+  { patterns: [/pull up.*(booking|calendar|schedule)/i, /show.*(booking|calendar)/i], action: { type: "navigate", target: "/dashboard/bookings", label: "Bookings" } },
+  { patterns: [/pull up.*(checkin|check.?in|queue|waiting)/i, /show.*(queue|waiting)/i, /who.?s next/i], action: { type: "navigate", target: "/dashboard/checkin", label: "Check-in Queue" } },
+  { patterns: [/pull up.*(billing|invoice)/i, /show.*(invoice|billing)/i], action: { type: "navigate", target: "/dashboard/billing", label: "Billing & Invoicing" } },
+  { patterns: [/pull up.*(recall|follow.?up|remind)/i, /show.*(recall|overdue)/i], action: { type: "navigate", target: "/dashboard/recall", label: "Patient Recall" } },
+  { patterns: [/pull up.*(daily|task|checklist|morning)/i, /show.*(daily|task)/i], action: { type: "navigate", target: "/dashboard/daily", label: "Daily Tasks" } },
+  { patterns: [/pull up.*(document|referral|prescription|sick.?note)/i, /generate.*(document|letter|prescription)/i], action: { type: "navigate", target: "/dashboard/documents", label: "Document Generator" } },
+  { patterns: [/pull up.*(notification|alert)/i, /show.*(notification)/i], action: { type: "navigate", target: "/dashboard/notifications", label: "Notifications" } },
+  { patterns: [/pull up.*(referral)/i, /show.*(referral)/i], action: { type: "navigate", target: "/dashboard/referrals", label: "Referrals" } },
+  { patterns: [/pull up.*(network|clinic|medicross)/i, /show.*(network|all.?clinic)/i], action: { type: "navigate", target: "/dashboard/network", label: "Network Command" } },
+  { patterns: [/pull up.*(executive|sara|revenue|recovery)/i, /show.*(executive|dashboard)/i], action: { type: "navigate", target: "/dashboard/executive", label: "Executive Dashboard" } },
+  { patterns: [/pull up.*(architecture|tech.?stack|api)/i, /show.*(architecture|tech)/i], action: { type: "navigate", target: "/dashboard/architecture", label: "Architecture" } },
+  { patterns: [/pull up.*(governance|compliance|certif|king.?v|popia|sahpra)/i, /show.*(governance|compliance)/i], action: { type: "navigate", target: "/dashboard/ai-governance", label: "AI Governance" } },
+  { patterns: [/pull up.*(resource|research|paper|document.?hub)/i, /show.*(resource|research)/i], action: { type: "navigate", target: "/dashboard/resources", label: "Resources & Research" } },
+  { patterns: [/pull up.*(integration|map|ecosystem)/i, /show.*(integration|map)/i], action: { type: "navigate", target: "/dashboard/integration-map", label: "Integration Map" } },
+  { patterns: [/pull up.*(pitch|presentation|deck)/i, /show.*(pitch|presentation)/i, /start.*(pitch|present)/i], action: { type: "navigate", target: "/dashboard/pitch", label: "Pitch Deck" } },
+  { patterns: [/pull up.*(whatsapp|patient.?engage)/i, /show.*(whatsapp)/i], action: { type: "navigate", target: "/dashboard/whatsapp", label: "WhatsApp Router" } },
+  { patterns: [/pull up.*(financial|fd|roi|ebitda)/i, /show.*(financial|roi)/i], action: { type: "navigate", target: "/dashboard/financial-director", label: "Financial Director View" } },
+  { patterns: [/pull up.*(cio|travis|digital.?dividend)/i, /show.*(cio|digital)/i], action: { type: "navigate", target: "/dashboard/cio", label: "CIO Dashboard" } },
+  { patterns: [/pull up.*(healthbridge|claims.?engine)/i, /show.*(healthbridge)/i], action: { type: "navigate", target: "/dashboard/healthbridge", label: "Healthbridge Claims" } },
+  { patterns: [/pull up.*(assistant|help|agent)/i], action: { type: "navigate", target: "/dashboard/assistant", label: "AI Assistant" } },
+  // Activation: start tools
+  { patterns: [/start.*(consult|recording|scribe|listen)/i, /begin.*(consult|session)/i], action: { type: "activate", target: "scribe", label: "Start Recording" } },
+  { patterns: [/start.*(validation|validat)/i, /run.*(validation|check)/i], action: { type: "activate", target: "claims-validate", label: "Run Claims Validation" } },
+  // Show: highlight sections
+  { patterns: [/show.*(chain|13.?step|full.?flow)/i, /how.*claim.*flow/i], action: { type: "navigate", target: "/dashboard/integration-map", label: "13-Step Claims Chain" } },
+  { patterns: [/show.*(agent|all.?agent)/i], action: { type: "navigate", target: "/dashboard/integration-map", label: "AI Agents" } },
+  { patterns: [/show.*(benchmark|result|accuracy|test)/i], action: { type: "navigate", target: "/dashboard/resources", label: "Benchmarks & Results" } },
+];
+
+function detectUIActions(userMessage: string, _aiResponse: string, _toolsUsed: string[]): UIAction[] {
+  const actions: UIAction[] = [];
+
+  for (const { patterns, action } of ACTION_PATTERNS) {
+    for (const pattern of patterns) {
+      if (pattern.test(userMessage)) {
+        // Don't add duplicates
+        if (!actions.find(a => a.target === action.target)) {
+          actions.push(action);
+        }
+        break;
+      }
+    }
+  }
+
+  return actions;
 }

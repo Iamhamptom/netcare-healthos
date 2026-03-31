@@ -83,14 +83,27 @@ export default function AssistantPage() {
       });
       
       const d = await r.json();
-      
-      setMsgs(p => [...p, { 
-        id: (Date.now()+1).toString(), 
-        role: "assistant", 
-        content: d.reply || d.response || d.error || "I could not formulate a response based on the constraints.", 
-        toolsUsed: d.toolsUsed, 
-        timestamp: new Date() 
+
+      setMsgs(p => [...p, {
+        id: (Date.now()+1).toString(),
+        role: "assistant",
+        content: d.reply || d.response || d.error || "I could not formulate a response based on the constraints.",
+        toolsUsed: d.toolsUsed,
+        timestamp: new Date()
       }]);
+
+      // Handle UI actions — navigate to tools/pages the agent pulls up
+      if (d.actions && Array.isArray(d.actions) && d.actions.length > 0) {
+        for (const action of d.actions) {
+          if (action.type === "navigate" && action.target) {
+            // Small delay so user sees the response first
+            setTimeout(() => {
+              window.location.href = action.target;
+            }, 1500);
+            break; // Only navigate to first action
+          }
+        }
+      }
       
       if (voice && d.reply) { 
         try { 
