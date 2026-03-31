@@ -112,6 +112,28 @@ export const demoUsers: Record<string, { id: string; name: string; email: string
     role: "admin",
     practice: demoPractice,
   },
+  // === Additional stakeholders (follow-up meeting April 1, 2026) ===
+  "travis.dewing@netcare.co.za": {
+    id: "demo-user-travis",
+    name: "Travis Dewing",
+    email: "travis.dewing@netcare.co.za",
+    role: "platform_admin",
+    practice: demoPractice,
+  },
+  "gurshen@netcare.co.za": {
+    id: "demo-user-gurshen",
+    name: "Gurshen",
+    email: "gurshen@netcare.co.za",
+    role: "admin",
+    practice: demoPractice,
+  },
+  "matsie.mpshane@netcare.co.za": {
+    id: "demo-user-matsie",
+    name: "Matsie Mpshane",
+    email: "matsie.mpshane@netcare.co.za",
+    role: "platform_admin",
+    practice: demoPractice,
+  },
 };
 
 export const demoPlatformAdmin = {

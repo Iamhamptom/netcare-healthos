@@ -30,8 +30,24 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      // Route based on role — replace so back button doesn't return to login
-      if (data.user?.role === "investor") {
+      // Per-stakeholder routing — each person lands on their world
+      const stakeholderRoutes: Record<string, string> = {
+        "sara.nayager@netcare.co.za": "/dashboard/executive",
+        "drrahul.gathiram@medicross.co.za": "/dashboard/executive",
+        "cathelijn.zeijlemaker@netcare.co.za": "/dashboard/suite/dr-cathelijn",
+        "muhammad_simjee@a2d24.com": "/dashboard/architecture",
+        "thirushen.pillay@netcare.co.za": "/dashboard/financial-director",
+        "chris.mathew@netcare.co.za": "/dashboard/business-development",
+        "travis.dewing@netcare.co.za": "/dashboard/cio",
+        "gurshen@netcare.co.za": "/dashboard/ai-governance",
+        "matsie.mpshane@netcare.co.za": "/dashboard/financial-director",
+      };
+      const userEmail = (data.user?.email || "").toLowerCase();
+      const personalRoute = stakeholderRoutes[userEmail];
+
+      if (personalRoute) {
+        router.replace(personalRoute);
+      } else if (data.user?.role === "investor") {
         router.replace("/investor");
       } else if (data.user?.role === "platform_admin") {
         router.replace("/admin");

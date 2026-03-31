@@ -106,6 +106,9 @@ export async function POST(request: Request) {
         { email: "drrahul.gathiram@medicross.co.za" },
         { email: "cathelijn.zeijlemaker@netcare.co.za" },
         { email: "muhammad_simjee@a2d24.com" },
+        { email: "travis.dewing@netcare.co.za" },
+        { email: "gurshen@netcare.co.za" },
+        { email: "matsie.mpshane@netcare.co.za" },
       ];
       // Accept any "demo@*" email with a valid demo password (for white-label brands)
       const isDemoEmail = email.toLowerCase().startsWith("demo@");
