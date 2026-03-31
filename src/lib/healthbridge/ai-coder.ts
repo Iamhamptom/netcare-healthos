@@ -54,69 +54,92 @@ Respond in JSON format ONLY:
   "warnings": ["Any coding warnings or considerations"]
 }`;
 
-/** Suggest ICD-10 and CPT codes from clinical notes using Gemini AI */
-export async function suggestCodes(clinicalNotes: string): Promise<CodingSuggestion> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return fallbackSuggestion(clinicalNotes);
-  }
-
+/** Parse AI response JSON from either Claude or Gemini */
+function parseAIResponse(text: string): {
+  icd10Codes?: { code: string; description: string; confidence?: string; reasoning?: string }[];
+  cptCodes?: { code: string; description: string; estimatedTariff?: number; reasoning?: string }[];
+  clinicalSummary?: string;
+  warnings?: string[];
+} | null {
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) return null;
   try {
-    const { GoogleGenAI } = await import("@google/genai");
-    const ai = new GoogleGenAI({ apiKey });
-
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: `${SYSTEM_PROMPT}\n\nClinical Notes:\n${clinicalNotes}`,
-      config: {
-        temperature: 0.2,
-        maxOutputTokens: 2000,
-      },
-    });
-
-    const text = response.text || "";
-    // Extract JSON from response (handle markdown code blocks)
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      return fallbackSuggestion(clinicalNotes);
-    }
-
-    const parsed = JSON.parse(jsonMatch[0]) as {
-      icd10Codes?: { code: string; description: string; confidence?: string; reasoning?: string }[];
-      cptCodes?: { code: string; description: string; estimatedTariff?: number; reasoning?: string }[];
-      clinicalSummary?: string;
-      warnings?: string[];
-    };
-
-    // Enrich with PMB/CDL data
-    const icd10Codes: ICD10Suggestion[] = (parsed.icd10Codes || []).map((c) => {
-      const cdl = isCDLCondition(c.code);
-      return {
-        code: c.code,
-        description: c.description,
-        confidence: (c.confidence as "high" | "medium" | "low") || "medium",
-        isPMB: isPMBCondition(c.code),
-        isCDL: cdl.found,
-        cdlCondition: cdl.condition,
-        reasoning: c.reasoning || "",
-      };
-    });
-
-    return {
-      icd10Codes,
-      cptCodes: (parsed.cptCodes || []).map((c) => ({
-        code: c.code,
-        description: c.description,
-        estimatedTariff: c.estimatedTariff || 0,
-        reasoning: c.reasoning || "",
-      })),
-      clinicalSummary: parsed.clinicalSummary || "",
-      warnings: parsed.warnings || [],
-    };
-  } catch (err) {
-    console.error("AI coding error:", err);
-    return fallbackSuggestion(clinicalNotes);
+    return JSON.parse(jsonMatch[0]);
+  } catch {
+    return null;
   }
+}
+
+/** Enrich raw AI suggestions with PMB/CDL data */
+function enrichSuggestions(parsed: NonNullable<ReturnType<typeof parseAIResponse>>): CodingSuggestion {
+  const icd10Codes: ICD10Suggestion[] = (parsed.icd10Codes || []).map((c) => {
+    const cdl = isCDLCondition(c.code);
+    return {
+      code: c.code,
+      description: c.description,
+      confidence: (c.confidence as "high" | "medium" | "low") || "medium",
+      isPMB: isPMBCondition(c.code),
+      isCDL: cdl.found,
+      cdlCondition: cdl.condition,
+      reasoning: c.reasoning || "",
+    };
+  });
+  return {
+    icd10Codes,
+    cptCodes: (parsed.cptCodes || []).map((c) => ({
+      code: c.code,
+      description: c.description,
+      estimatedTariff: c.estimatedTariff || 0,
+      reasoning: c.reasoning || "",
+    })),
+    clinicalSummary: parsed.clinicalSummary || "",
+    warnings: parsed.warnings || [],
+  };
+}
+
+/** Suggest ICD-10 and CPT codes — Claude primary, Gemini fallback, keyword last resort */
+export async function suggestCodes(clinicalNotes: string): Promise<CodingSuggestion> {
+  // 1. Try Claude (primary — most accurate for medical reasoning)
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  if (anthropicKey && anthropicKey !== "your-anthropic-api-key-here") {
+    try {
+      const Anthropic = (await import("@anthropic-ai/sdk")).default;
+      const client = new Anthropic({ apiKey: anthropicKey });
+      const response = await client.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 2000,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: "user", content: `Clinical Notes:\n${clinicalNotes}` }],
+      });
+      const text = response.content.find((b) => b.type === "text")?.text || "";
+      const parsed = parseAIResponse(text);
+      if (parsed) return enrichSuggestions(parsed);
+    } catch (err) {
+      console.error("Claude coding error, falling back to Gemini:", (err as Error).message);
+    }
+  }
+
+  // 2. Try Gemini (fallback)
+  const geminiKey = process.env.GEMINI_API_KEY;
+  if (geminiKey) {
+    try {
+      const { GoogleGenAI } = await import("@google/genai");
+      const ai = new GoogleGenAI({ apiKey: geminiKey });
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: `${SYSTEM_PROMPT}\n\nClinical Notes:\n${clinicalNotes}`,
+        config: { temperature: 0.2, maxOutputTokens: 2000 },
+      });
+      const text = response.text || "";
+      const parsed = parseAIResponse(text);
+      if (parsed) return enrichSuggestions(parsed);
+    } catch (err) {
+      console.error("Gemini coding error, falling back to keywords:", (err as Error).message);
+    }
+  }
+
+  // 3. Keyword fallback (last resort)
+  return fallbackSuggestion(clinicalNotes);
 }
 
 /** Keyword-based fallback when Gemini is unavailable */

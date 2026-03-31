@@ -389,24 +389,42 @@ export async function runIntelligence(options: RunOptions): Promise<Intelligence
     options.toolExecutor ||
     ((name: string, args: Record<string, unknown>) => executeTool(name, args, { practiceId, isDemoMode }));
 
-  // 6. Run with Gemini primary, Claude fallback
-  const hasGemini = !!getGemini();
+  // 6. Run with Claude primary (most accurate medical reasoning), Gemini fallback
   const hasClaude = !!getAnthropic();
-
-  if (hasGemini) {
-    try {
-      return await runGeminiAgent(systemPrompt, messages, geminiTools, toolExecutor, maxSteps);
-    } catch (err) {
-      console.error(`[intelligence] Gemini failed for ${persona.name}:`, (err as Error).message);
-      // Fall through to Claude
-    }
-  }
+  const hasGemini = !!getGemini();
 
   if (hasClaude) {
     try {
-      return await runClaudeAgent(systemPrompt, messages, anthropicToolDefs, toolExecutor, maxSteps);
+      const result = await runClaudeAgent(systemPrompt, messages, anthropicToolDefs, toolExecutor, maxSteps);
+      logAIDecision({
+        agent: persona.name, provider: "claude", model: "claude-sonnet-4",
+        confidence: 0.9, toolsUsed: result.toolsUsed, verdict: "success",
+        piiStripped: piiResult.piiFound, injectionChecked: true,
+        injectionDetected: injectionResult.isInjection, overrideAttempts: 0,
+        overridesBlocked: 0, practiceId, durationMs: Date.now() - startTime,
+        timestamp: new Date().toISOString(),
+      });
+      return result;
     } catch (err) {
       console.error(`[intelligence] Claude failed for ${persona.name}:`, (err as Error).message);
+      // Fall through to Gemini
+    }
+  }
+
+  if (hasGemini) {
+    try {
+      const result = await runGeminiAgent(systemPrompt, messages, geminiTools, toolExecutor, maxSteps);
+      logAIDecision({
+        agent: persona.name, provider: "gemini", model: "gemini-2.5-flash",
+        confidence: 0.8, toolsUsed: result.toolsUsed, verdict: "success",
+        piiStripped: piiResult.piiFound, injectionChecked: true,
+        injectionDetected: injectionResult.isInjection, overrideAttempts: 0,
+        overridesBlocked: 0, practiceId, durationMs: Date.now() - startTime,
+        timestamp: new Date().toISOString(),
+      });
+      return result;
+    } catch (err) {
+      console.error(`[intelligence] Gemini failed for ${persona.name}:`, (err as Error).message);
     }
   }
 

@@ -25,7 +25,7 @@ export async function POST(request: Request) {
   return NextResponse.json({
     suggestion,
     meta: {
-      model: process.env.GEMINI_API_KEY ? "gemini-2.5-flash" : "keyword-fallback",
+      model: process.env.ANTHROPIC_API_KEY ? "claude-sonnet-4" : process.env.GEMINI_API_KEY ? "gemini-2.5-flash" : "keyword-fallback",
       notesLength: notes.length,
     },
   });
