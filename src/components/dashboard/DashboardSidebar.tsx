@@ -287,9 +287,18 @@ function buildDefaults(pathname: string): Record<string, boolean> {
   return state;
 }
 
+const SIDEBAR_VERSION = "v3"; // Bump to invalidate old cached state
+
 function loadSections(pathname: string): Record<string, boolean> {
   if (typeof window === "undefined") return buildDefaults(pathname);
   try {
+    const version = localStorage.getItem(STORAGE_KEY + "-version");
+    // Clear stale cache from old versions — force all sections open
+    if (version !== SIDEBAR_VERSION) {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.setItem(STORAGE_KEY + "-version", SIDEBAR_VERSION);
+      return buildDefaults(pathname);
+    }
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const saved = JSON.parse(raw) as Record<string, boolean>;
