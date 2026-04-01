@@ -65,10 +65,20 @@ export async function POST(request: Request) {
   try {
     const corrections = buildCorrectionContext("command-assistant");
     const memoryContext = await loadMemoryContext(practiceId);
+    // Load platform knowledge for the agent
+    let platformKnowledge = "";
+    try {
+      const fs = await import("fs");
+      const path = await import("path");
+      const kbPath = path.join(process.cwd(), "docs/PLATFORM_KNOWLEDGE.md");
+      platformKnowledge = fs.readFileSync(kbPath, "utf-8").slice(0, 8000); // Cap at 8K chars
+    } catch {}
+
     const userContext = [
       "You are talking to " + userName + " (" + userRole + ") at " + practiceName + " (" + practiceType + " practice).",
       corrections,
       memoryContext,
+      platformKnowledge ? "\n--- PLATFORM KNOWLEDGE ---\n" + platformKnowledge : "",
     ].filter(Boolean).join("\n");
 
     let message: string;
