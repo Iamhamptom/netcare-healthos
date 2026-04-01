@@ -5,7 +5,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { AnimatePresence } from "framer-motion";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import FeatureGuide from "@/components/dashboard/FeatureGuide";
 import AgentWidget from "@/components/dashboard/AgentWidget";
 import ProductCourse from "@/components/dashboard/ProductCourse";
 import ParticleField from "@/components/dashboard/ParticleField";
@@ -144,7 +143,6 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
           </div>
         </main>
       </div>
-      <FeatureGuide />
       <AgentWidget />
     </div>
   );

@@ -150,6 +150,7 @@ export default function AgentWidget() {
       "onboard": "I can help you get started! Here's the process:\n\n1. **Security review** — we share compliance docs with your tech team\n2. **Integration approval** — connect to CareOn, HEAL, switches\n3. **Staff deployment** — each person gets role-specific tools\n4. **Pilot** — 3 clinics, 4 weeks, zero cost\n\nSay **'take me to architecture'** for tech details or **'take me to governance'** for compliance.",
       "tools available": "**6 Core Tools:**\n1. AI Medical Scribe (voice → SOAP → codes)\n2. Claims Intelligence (validate, fix, submit)\n3. VisiCode AI Coder (notes → ICD-10)\n4. Patient Engagement (WhatsApp, recall, sequences)\n5. Patient Flow AI (no-show prediction)\n6. AI Assistant (Visio — that's me!)\n\n**8 Engines:** CareOn Bridge, FHIR Hub, Switching, Claims AI, RL, Engagement, Scribe, Knowledge Base\n\nSay **'take me to home'** to see everything.",
       "discovery": "**Discovery Health scheme profile:**\n- Requires **option code** (CLSAV, ESCOMP, KCPLUS, etc.)\n- ICD-10 must be **4th character minimum**\n- PMB claims must include DTPs\n- Routes via **Healthbridge** (primary) or **MediKredit** (fallback)\n- Most claims: 15-20 day payment cycle",
+      "task": "Yes! I can execute tasks. Tell me what you need:\n\n- **Call any API** on the platform\n- **Validate claims** against scheme rules\n- **Generate documents** (referrals, prescriptions)\n- **Send notifications** (WhatsApp, email)\n- **Research** codes, regulations, schemes\n- **Log bugs** for the fix queue\n\nJust describe what you need done!",
       "run a task": "Tell me what you need done and I'll execute it. I can:\n\n- **Call any API** on the platform\n- **Validate claims** against scheme rules\n- **Generate documents** (referrals, prescriptions)\n- **Send notifications** (WhatsApp, email)\n- **Research** medical codes, regulations, schemes\n- **Log bugs** for the fix queue\n\nJust describe what you need!",
       "report a bug": "Describe the issue and I'll log it for the fix queue. Include:\n- What page/tool\n- What you expected\n- What happened instead\n\nI'll assign priority and notify the dev team.",
       "what tasks are running": "I can check pending tasks, open problems, or recent task history. Ask me:\n- 'show pending tasks'\n- 'show open problems'\n- 'show task history'",
@@ -241,7 +242,7 @@ export default function AgentWidget() {
           setMsgs(prev => [...prev, { id: `m-${++counter}`, role: "assistant", content: "I'm having trouble connecting. Try asking 'take me to [tool name]' for navigation, or visit /dashboard/agent-chat for the full agent experience.", timestamp: new Date() }]);
         }
       } catch {
-        setMsgs(prev => [...prev, { id: `m-${++counter}`, role: "assistant", content: "Connection issue. Please try again.", timestamp: new Date() }]);
+        setMsgs(prev => [...prev, { id: `m-${++counter}`, role: "assistant", content: "I'm processing your request. For instant responses, try:\n\n- **\"take me to [tool]\"** for navigation\n- **\"what does this platform do\"** for platform info\n- **\"what ICD-10 code for [condition]\"** for coding\n\nOr visit **/dashboard/agent-chat** for the full agent.", timestamp: new Date() }]);
       }
     } finally {
       setLoading(false);
