@@ -183,6 +183,24 @@ const getOnboardingState = tool({
   },
 });
 
+const browsePortal = tool({
+  description: "Browse a medical aid portal or external website to check claim status, verify membership, look up formularies, or fill pre-authorization forms. Use when the user needs information from Discovery Health, GEMS, Bonitas, Medscheme, or any external medical aid portal.",
+  inputSchema: z.object({
+    url: z.string().describe("The URL to browse (e.g., https://www.discovery.co.za/medical-aid/claims)"),
+    task: z.string().describe("What to do on the portal (e.g., 'check claim status for membership DH12345678')"),
+  }),
+  execute: async ({ url, task }) => {
+    // OpenManus sidecar integration — for now returns structured response
+    // Will be replaced with actual OpenManus API call when sidecar is running
+    return JSON.stringify({
+      status: "portal_task_queued",
+      url,
+      task,
+      message: `Browser agent will navigate to ${url} and ${task}. This requires the OpenManus sidecar to be running. For now, I can help you find this information through our knowledge base instead.`,
+    });
+  },
+});
+
 const sendNotification = tool({
   description: "Send a WhatsApp message or email to a patient or staff member",
   inputSchema: z.object({
@@ -249,6 +267,7 @@ ECOSYSTEM:
     validate_claim: validateClaim,
     get_onboarding_state: getOnboardingState,
     send_notification: sendNotification,
+    browse_portal: browsePortal,
   },
 
   stopWhen: [

@@ -145,21 +145,21 @@ export default function AgentChatPage() {
                       <span className="text-[#3DA9D1] font-bold">{toolName}</span>
                       {state === "result" && <span className="text-emerald-400">done</span>}
                       {state === "call" && <Loader2 className="w-3 h-3 animate-spin text-[#3DA9D1]" />}
-                      {toolName === "navigate_to" && args?.path ? (
-                        <span className="text-slate-400">→ {String(args.path)}</span>
+                      {toolName === "navigate_to" && Boolean((args as Record<string, unknown>)?.path) && (
+                        <span className="text-slate-400">{"\u2192"} {String((args as Record<string, unknown>).path)}</span>
                       )}
                     </div>
                   );
                 })}
 
                 {/* Fallback for messages without parts */}
-                {(!m.parts || m.parts.length === 0) && m.content && (
+                {(!m.parts || m.parts.length === 0) && (m as any).content && (
                   <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                     m.role === "user"
                       ? "bg-[#3DA9D1] text-white rounded-tr-sm"
                       : "bg-white/[0.05] border border-white/10 text-slate-200 rounded-tl-sm"
                   }`}>
-                    {m.content}
+                    {(m as any).content}
                   </div>
                 )}
               </div>
