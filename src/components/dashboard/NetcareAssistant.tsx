@@ -341,7 +341,37 @@ function NetcareAssistantInner() {
       });
 
       if (!res.ok) {
-        // Fallback to keyword matching if API fails
+        // API failed — try the SDK agent endpoint instead
+        try {
+          const agentRes = await fetch("/api/agent", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ messages: [{ role: "user", content: query }] }),
+          });
+          if (agentRes.ok) {
+            // Read streaming response
+            const reader = agentRes.body?.getReader();
+            const decoder = new TextDecoder();
+            let fullText = "";
+            if (reader) {
+              while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                fullText += decoder.decode(value, { stream: true });
+              }
+            }
+            // Extract text from streaming response
+            const textMatch = fullText.match(/0:"([^"]*)"/g);
+            const agentReply = textMatch ? textMatch.map(m => m.slice(3, -1)).join("") : fullText.slice(0, 500);
+            if (agentReply && agentReply.length > 5) {
+              setMessages(prev => [...prev, { id: `msg-${++msgCounter}`, role: "assistant", content: agentReply, timestamp: new Date() }]);
+              setTyping(false);
+              return;
+            }
+          }
+        } catch {}
+        // Final fallback
         const fallback = getResponse(query);
         setMessages(prev => [...prev, { id: `msg-${++msgCounter}`, role: "assistant", content: fallback, timestamp: new Date() }]);
         setTyping(false);
