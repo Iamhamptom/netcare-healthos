@@ -17,6 +17,7 @@
 import { ToolLoopAgent, tool, stepCountIs } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { z } from "zod";
+import { createTask, executeTask, logProblem, getPendingTasks, getOpenProblems, getTaskHistory } from "./task-executor";
 
 // ── Platform Knowledge (injected into instructions) ─────────────────
 
@@ -183,6 +184,51 @@ const getOnboardingState = tool({
   },
 });
 
+const runTask = tool({
+  description: "Create and execute a task. Use this to call APIs, validate claims, generate documents, send notifications, or do research. The task runs immediately and returns results.",
+  inputSchema: z.object({
+    type: z.enum(["api_call", "data_fetch", "document_gen", "notification", "validation", "research"]).describe("Type of task"),
+    title: z.string().describe("Short title for the task"),
+    description: z.string().describe("What the task should do"),
+    input: z.record(z.string(), z.unknown()).describe("Task input data (e.g., {url: '/api/patients?search=Smith'} for api_call)"),
+    priority: z.enum(["low", "medium", "high", "critical"]).optional(),
+  }),
+  execute: async ({ type, title, description, input, priority }) => {
+    const task = createTask({ type, title, description, input: input as Record<string, unknown>, priority: priority || "medium", createdBy: "visio-agent" });
+    const result = await executeTask(task);
+    return JSON.stringify({ taskId: result.id, status: result.status, output: result.output, error: result.error });
+  },
+});
+
+const reportProblem = tool({
+  description: "Log a bug, error, or issue for the fix queue. Use when something is broken, slow, or not working correctly. Steinberg and the dev team will be notified.",
+  inputSchema: z.object({
+    type: z.enum(["bug", "error", "performance", "data_issue", "integration_failure"]),
+    severity: z.enum(["low", "medium", "high", "critical"]),
+    title: z.string(),
+    description: z.string(),
+    context: z.record(z.string(), z.unknown()).optional(),
+  }),
+  execute: async ({ type, severity, title, description, context }) => {
+    const problem = logProblem({ type, severity, title, description, context: context as Record<string, unknown> || {}, reproducible: true });
+    return JSON.stringify({ problemId: problem.id, status: "logged", message: "Problem logged for the fix queue. Steinberg will be notified." });
+  },
+});
+
+const getTaskStatus = tool({
+  description: "Check pending tasks, open problems, or task history",
+  inputSchema: z.object({
+    what: z.enum(["pending_tasks", "open_problems", "task_history"]),
+  }),
+  execute: async ({ what }) => {
+    switch (what) {
+      case "pending_tasks": return JSON.stringify({ tasks: getPendingTasks() });
+      case "open_problems": return JSON.stringify({ problems: getOpenProblems() });
+      case "task_history": return JSON.stringify({ history: getTaskHistory(10) });
+    }
+  },
+});
+
 const browsePortal = tool({
   description: "Browse a medical aid portal or external website to check claim status, verify membership, look up formularies, or fill pre-authorization forms. Use when the user needs information from Discovery Health, GEMS, Bonitas, Medscheme, or any external medical aid portal.",
   inputSchema: z.object({
@@ -277,6 +323,9 @@ ECOSYSTEM:
     validate_claim: validateClaim,
     get_onboarding_state: getOnboardingState,
     send_notification: sendNotification,
+    run_task: runTask,
+    report_problem: reportProblem,
+    get_task_status: getTaskStatus,
     browse_portal: browsePortal,
   },
 
