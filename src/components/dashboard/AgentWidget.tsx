@@ -223,7 +223,7 @@ export default function AgentWidget() {
           initial={{ scale: 0 }} animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 260, damping: 20 }}
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 z-[9990] w-14 h-14 rounded-2xl bg-gradient-to-br from-[#1D3443] to-[#3DA9D1] text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all flex items-center justify-center"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9990] w-14 h-14 rounded-2xl bg-gradient-to-br from-[#1D3443] to-[#3DA9D1] text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all flex items-center justify-center"
         >
           <Activity className="w-6 h-6" />
           <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-400 animate-pulse" />
@@ -238,7 +238,7 @@ export default function AgentWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className={`fixed bottom-6 right-6 z-[9990] ${widgetSize} bg-[#0f1721] border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300`}
+            className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[9990] ${widgetSize} bg-[#0f1721] border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300`}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0">
@@ -247,7 +247,7 @@ export default function AgentWidget() {
                   <Activity className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-white">Health OS Agent</div>
+                  <div className="text-sm font-bold text-white">Visio</div>
                   <div className="text-[9px] text-emerald-400 font-bold flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Online • 10 tools
                   </div>
@@ -272,7 +272,7 @@ export default function AgentWidget() {
                 <div className="text-center py-8">
                   <Sparkles className="w-8 h-8 text-[#3DA9D1] mx-auto mb-3" />
                   <p className="text-sm text-white font-bold mb-1">
-                    {userName ? `Hey ${userName}!` : "Health OS Agent"}
+                    {userName ? `Hey ${userName}!` : "Visio"}
                   </p>
                   <p className="text-xs text-slate-500 mb-4">Navigate, search, validate, generate — just ask.</p>
                   <div className="space-y-2">
