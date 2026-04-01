@@ -138,6 +138,20 @@ export async function POST(request: Request) {
       }));
     }
 
+    // FAST PATH: navigation requests — respond instantly, don't wait for AI
+    const fastNavActions = detectUIActions(message, "", []);
+    if (fastNavActions.length > 0) {
+      const nav = fastNavActions[0];
+      return NextResponse.json({
+        reply: `Taking you to **${nav.label}**...`,
+        threadId: threadId || "nav-" + Date.now(),
+        toolsUsed: ["navigate_to"],
+        provider: "system",
+        stepsUsed: 0,
+        actions: fastNavActions,
+      });
+    }
+
     const result = await runIntelligence({
       persona: COMMAND_ASSISTANT,
       message,
@@ -385,7 +399,9 @@ const ACTION_PATTERNS: Array<{ patterns: RegExp[]; action: UIAction }> = [
   { patterns: [/(pull up|show|open|take me|go to|navigate|bring up).*(resource|research|paper|document.?hub)/i, /(pull up|show|open|take me|go to|navigate|bring up).*(resource|research)/i], action: { type: "navigate", target: "/dashboard/resources", label: "Resources & Research" } },
   { patterns: [/(pull up|show|open|take me|go to|navigate|bring up).*(integration|map|ecosystem)/i, /(pull up|show|open|take me|go to|navigate|bring up).*(integration|map)/i], action: { type: "navigate", target: "/dashboard/integration-map", label: "Integration Map" } },
   { patterns: [/(pull up|show|open|take me|go to|navigate|bring up).*(pitch|presentation|deck)/i, /(pull up|show|open|take me|go to|navigate|bring up).*(pitch|presentation)/i, /start.*(pitch|present)/i], action: { type: "navigate", target: "/dashboard/pitch", label: "Pitch Deck" } },
-  { patterns: [/(pull up|show|open|take me|go to|navigate|bring up).*(whatsapp|patient.?engage)/i, /(pull up|show|open|take me|go to|navigate|bring up).*(whatsapp)/i], action: { type: "navigate", target: "/dashboard/whatsapp", label: "WhatsApp Router" } },
+  { patterns: [/(pull up|show|open|take me|go to|navigate|bring up).*(engagement|whatsapp|patient.?engage)/i], action: { type: "navigate", target: "/dashboard/engagement", label: "Engagement Hub" } },
+  { patterns: [/(pull up|show|open|take me|go to|navigate|bring up).*(home|main.?menu|all.?tools)/i], action: { type: "navigate", target: "/dashboard/home", label: "Home" } },
+  { patterns: [/(pull up|show|open|take me|go to|navigate|bring up).*(product.?map|value.?chain)/i], action: { type: "navigate", target: "/dashboard/product-map", label: "Product Map" } },
   { patterns: [/(pull up|show|open|take me|go to|navigate|bring up).*(financial|fd|roi|ebitda)/i, /(pull up|show|open|take me|go to|navigate|bring up).*(financial|roi)/i], action: { type: "navigate", target: "/dashboard/financial-director", label: "Financial Director View" } },
   { patterns: [/(pull up|show|open|take me|go to|navigate|bring up).*(cio|travis|digital.?dividend)/i, /(pull up|show|open|take me|go to|navigate|bring up).*(cio|digital)/i], action: { type: "navigate", target: "/dashboard/cio", label: "CIO Dashboard" } },
   { patterns: [/(pull up|show|open|take me|go to|navigate|bring up).*(healthbridge|claims.?engine)/i, /(pull up|show|open|take me|go to|navigate|bring up).*(healthbridge)/i], action: { type: "navigate", target: "/dashboard/healthbridge", label: "Healthbridge Claims" } },
