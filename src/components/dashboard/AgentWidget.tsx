@@ -72,6 +72,30 @@ const NAV_MAP: Record<string, { path: string; label: string }> = {
   "flow": { path: "https://patient-flow-ai.vercel.app", label: "Patient Flow AI" },
 };
 
+
+function VisioSphere({ size = 32, className = "" }: { size?: number; className?: string }) {
+  const dotCount = size > 24 ? 30 : 16;
+  return (
+    <div className={`relative ${className}`} style={{ width: size, height: size }}>
+      <div className="absolute inset-0 rounded-full animate-spin" style={{ animationDuration: "15s" }}>
+        {Array.from({ length: dotCount }).map((_, i) => {
+          const phi = Math.acos(-1 + (2 * i) / dotCount);
+          const theta = Math.sqrt(dotCount * Math.PI) * phi;
+          const x = 50 + 42 * Math.cos(theta) * Math.sin(phi);
+          const y = 50 + 42 * Math.sin(theta) * Math.sin(phi);
+          const s = 1 + Math.random() * 1.2;
+          const o = 0.3 + Math.random() * 0.7;
+          return <div key={i} className="absolute rounded-full bg-[#3DA9D1]" style={{ left: `${x}%`, top: `${y}%`, width: s, height: s, opacity: o, transform: "translate(-50%,-50%)" }} />;
+        })}
+      </div>
+      <div className="absolute inset-1 rounded-full bg-[radial-gradient(circle,rgba(61,169,209,0.12)_0%,transparent_70%)]" />
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+      </div>
+    </div>
+  );
+}
+
 export default function AgentWidget() {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -318,9 +342,7 @@ export default function AgentWidget() {
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#3DA9D1] to-[#1D3443] flex items-center justify-center">
-                  <Activity className="w-4 h-4 text-white" />
-                </div>
+                <VisioSphere size={32} />
                 <div>
                   <div className="text-sm font-bold text-white">Visio</div>
                   <div className="text-[9px] text-emerald-400 font-bold flex items-center gap-1">
@@ -345,7 +367,7 @@ export default function AgentWidget() {
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
               {msgs.length === 0 && (
                 <div className="text-center py-8">
-                  <Sparkles className="w-8 h-8 text-[#3DA9D1] mx-auto mb-3" />
+                  <VisioSphere size={48} className="mx-auto mb-3" />
                   <p className="text-sm text-white font-bold mb-1">
                     {userName ? `Hey ${userName}!` : "Visio"}
                   </p>
@@ -391,9 +413,7 @@ export default function AgentWidget() {
 
               {loading && (
                 <div className="flex gap-2">
-                  <div className="w-6 h-6 rounded-md bg-[#3DA9D1]/20 flex items-center justify-center shrink-0">
-                    <Activity className="w-3 h-3 text-[#3DA9D1] animate-pulse" />
-                  </div>
+                  <VisioSphere size={24} className="shrink-0" />
                   <div className="px-3 py-2 rounded-xl bg-white/[0.05] border border-white/10">
                     <div className="flex gap-1">
                       <div className="w-1.5 h-1.5 bg-[#3DA9D1] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
