@@ -92,13 +92,36 @@ const TOOLS: Tool[] = [
   },
 ];
 
-const MODES = [
-  { name: "Practice Manager", desc: "Morning checklist, team, branding, recall, compliance, end-of-day", icon: Building2, color: "#3DA9D1", href: "/dashboard/modules/practice-manager" },
-  { name: "Front Desk", desc: "Check-in, bookings, patients, eligibility, engagement", icon: Users, color: "#10B981", href: "/dashboard/front-desk" },
-  { name: "Doctor Mode", desc: "Scribe, intake, coding, referrals, prescriptions", icon: Stethoscope, color: "#8B5CF6", href: "/dashboard/scribe" },
-  { name: "Claims & Billing", desc: "Validation, submission, invoicing, reconciliation, switching", icon: Receipt, color: "#F59E0B", href: "/dashboard/claims" },
-  { name: "Executive", desc: "Revenue, KPIs, financial director, CIO, board pack", icon: Target, color: "#EF4444", href: "/dashboard/executive" },
-  { name: "IT / Governance", desc: "Architecture, integrations, AI governance, security, resources", icon: Lock, color: "#64748B", href: "/dashboard/ai-governance" },
+interface Mode {
+  id: string;
+  name: string;
+  desc: string;
+  icon: typeof Mic;
+  color: string;
+  href: string;
+  description: string;
+  features: string[];
+}
+
+const MODES: Mode[] = [
+  { id: "doctor", name: "Doctor OS", desc: "Consultation to claim — end to end", icon: Stethoscope, color: "#8B5CF6", href: "/dashboard/scribe",
+    description: "Drive into the hospital, see who's next, get a briefing. Say 'starting consultation' — the scribe activates, records everything, builds SOAP notes live, suggests ICD-10 codes. Approve by voice, and it generates referral letters, prescriptions, sick notes. The claim draft is ready before the patient leaves.",
+    features: ["AI Medical Scribe (ambient recording)", "Live SOAP + ICD-10 coding", "VisiCode clinical coding (max specificity)", "Document generation (referrals, scripts, sick notes)", "Motivation letter auto-generation", "Patient record auto-save", "Claim draft creation", "CareOn Bridge data (hospital patients)"] },
+  { id: "frontdesk", name: "Front Desk", desc: "Check-in to checkout — reception workflow", icon: Users, color: "#10B981", href: "/dashboard/front-desk",
+    description: "Patients arrive, check in via the Kanban queue. See today's bookings auto-populated. Verify medical aid eligibility in real-time. WhatsApp confirmations sent automatically. Track wait times. When the doctor is ready, move the patient to 'with doctor'. After — trigger the engagement sequence.",
+    features: ["Patient check-in (Kanban queue)", "Booking management + calendar", "Medical aid eligibility check", "WhatsApp confirmations + reminders", "Patient record lookup", "Wait time tracking", "Engagement sequence enrollment", "Recall management"] },
+  { id: "billing", name: "Claims & Billing", desc: "Validate, fix, submit, reconcile", icon: Receipt, color: "#F59E0B", href: "/dashboard/claims",
+    description: "Upload a CSV of claims — 13 rules validate every line in under 2 seconds. Auto-fix suggestions for coding errors. PMB/CDL detected automatically. Human approves, EDIFACT is generated, routed to the correct switch (Healthbridge/SwitchOn/MediKredit). eRA reconciliation matches payments. Rejections analyzed and auto-resubmitted.",
+    features: ["13-rule claims validation", "6 scheme profiles (Discovery, GEMS, etc.)", "Auto-fix suggestions with reasoning", "PMB/CDL auto-detection", "EDIFACT generation", "Multi-switch routing + circuit breaker", "eRA reconciliation", "Rejection analysis + auto-resubmission", "Revenue recovery dashboard"] },
+  { id: "practice", name: "Practice Manager", desc: "Daily operations — open to close", icon: Building2, color: "#3DA9D1", href: "/dashboard/modules/practice-manager",
+    description: "Morning checklist to end-of-day close. Manage staff, practice branding, recall campaigns, patient engagement sequences, reviews, POPIA compliance, and audit logs. Everything a practice manager needs to run the clinic efficiently.",
+    features: ["Morning + end-of-day checklists", "Team management", "Practice branding (white-label)", "Recall management + auto-send", "WhatsApp campaigns", "Engagement sequences", "Patient reviews", "POPIA compliance dashboard", "Audit log"] },
+  { id: "executive", name: "Executive", desc: "Revenue, KPIs, compliance, board pack", icon: Target, color: "#EF4444", href: "/dashboard/executive",
+    description: "R662M division revenue. R54.2M recoverable. Clinic-by-clinic P&L. 3-year ROI projection. Quarterly velocity matrix. Board-ready analytics. Financial director view with EBITDA impact model. CIO dashboard with R449M digital dividend story.",
+    features: ["Executive dashboard (R54.2M story)", "Financial Director view (EBITDA model)", "CIO dashboard (digital dividend)", "Clinic performance comparison", "Revenue recovery tracking", "Board pack generator", "3-year transformation ROI"] },
+  { id: "governance", name: "IT / Governance", desc: "Architecture, security, compliance, research", icon: Lock, color: "#64748B", href: "/dashboard/ai-governance",
+    description: "Full technical architecture. 5-tier AI governance framework. 10 certifications (POPIA, HPCSA Booklet 20, King V, SAHPRA, CareConnect). Security headers, PII stripping, prompt injection detection. Integration map across 7 adapters. 25 research and compliance documents.",
+    features: ["Architecture overview (tech stack, APIs, adapters)", "5-tier AI governance framework", "10 certifications + benchmarks", "SAHPRA classification (Not SaMD)", "POPIA health data compliance", "King V Principle 10 alignment", "Resources & research library (25 docs)", "Integration map (7 adapters)"] },
 ];
 
 function useCurrentUser() {
@@ -113,9 +136,11 @@ function useCurrentUser() {
 
 export default function HomePage() {
   const [selected, setSelected] = useState<string | null>(null);
+  const [selectedMode, setSelectedMode] = useState<string | null>(null);
   const router = useRouter();
   const user = useCurrentUser();
   const tool = TOOLS.find(t => t.id === selected);
+  const mode = MODES.find(m => m.id === selectedMode);
 
   return (
     <div className="min-h-screen bg-[#0a0f1a] text-white relative overflow-hidden">
@@ -166,7 +191,8 @@ export default function HomePage() {
             {MODES.map((m, i) => {
               const Icon = m.icon;
               return (
-                <button key={i} onClick={() => router.push(m.href)} className="p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/20 hover:bg-white/[0.04] flex items-center gap-3 text-left transition-all">
+                <motion.button key={i} onClick={() => setSelectedMode(m.id)} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}
+                  className="p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/20 hover:bg-white/[0.04] flex items-center gap-3 text-left transition-all">
                   <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${m.color}10`, color: m.color }}>
                     <Icon className="w-4 h-4" />
                   </div>
@@ -174,22 +200,25 @@ export default function HomePage() {
                     <div className="text-sm font-bold text-white">{m.name}</div>
                     <div className="text-[10px] text-slate-500">{m.desc}</div>
                   </div>
-                </button>
+                </motion.button>
               );
             })}
           </div>
         </div>
 
         {/* Quick links */}
-        <div className="flex justify-center gap-3 text-[11px]">
+        <div className="flex flex-wrap justify-center gap-3 text-[11px]">
           {[
+            { label: "Full Dashboard", href: "/dashboard" },
             { label: "Resources & Research", href: "/dashboard/resources" },
             { label: "Product Map", href: "/dashboard/product-map" },
             { label: "Integration Map", href: "/dashboard/integration-map" },
             { label: "AI Governance", href: "/dashboard/ai-governance" },
             { label: "Pitch Deck", href: "/dashboard/pitch" },
           ].map((link, i) => (
-            <button key={i} onClick={() => router.push(link.href)} className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:border-white/20 transition-all">
+            <button key={i} onClick={() => router.push(link.href)} className={`px-3 py-1.5 rounded-full border transition-all ${
+              link.label === "Full Dashboard" ? "bg-white/10 border-white/20 text-white font-bold" : "bg-white/5 border-white/10 text-slate-400 hover:text-white hover:border-white/20"
+            }`}>
               {link.label}
             </button>
           ))}
@@ -256,6 +285,60 @@ export default function HomePage() {
                 style={{ backgroundColor: tool.color }}
               >
                 Open {tool.name} <ArrowRight className="w-4 h-4" />
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {/* Mode Detail Modal */}
+      <AnimatePresence>
+        {mode && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-6"
+            onClick={() => setSelectedMode(null)}
+          >
+            <motion.div
+              initial={{ y: 20, opacity: 0, scale: 0.95 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 20, opacity: 0, scale: 0.95 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="bg-[#111827] border border-white/10 rounded-3xl p-8 max-w-lg w-full shadow-2xl relative"
+              onClick={e => e.stopPropagation()}
+            >
+              <button onClick={() => setSelectedMode(null)} className="absolute top-4 right-4 p-2 rounded-xl hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${mode.color}15`, color: mode.color }}>
+                  <mode.icon className="w-7 h-7" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-black text-white">{mode.name}</h2>
+                  <p className="text-xs text-slate-400">{mode.desc}</p>
+                </div>
+              </div>
+
+              <p className="text-sm text-slate-300 leading-relaxed mb-6">{mode.description}</p>
+
+              <div className="space-y-2 mb-6">
+                {mode.features.map((f, i) => (
+                  <div key={i} className="flex items-center gap-2 text-sm text-slate-300">
+                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" style={{ color: mode.color }} />
+                    {f}
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => { setSelectedMode(null); router.push(mode.href); }}
+                className="w-full py-3 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 transition-all hover:brightness-110"
+                style={{ backgroundColor: mode.color }}
+              >
+                Open {mode.name} <ArrowRight className="w-4 h-4" />
               </button>
             </motion.div>
           </motion.div>
