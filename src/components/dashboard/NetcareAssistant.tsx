@@ -208,17 +208,52 @@ export default function NetcareAssistant() {
 function NetcareAssistantInner() {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "welcome",
-      role: "assistant",
-      content: "Hello! I am your AI assistant. I can answer any question about the platform, how it solves your operational challenges, integrations with your existing systems, or the pilot process. What would you like to know?",
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
+  const [userName, setUserName] = useState("there");
+  const [userRole, setUserRole] = useState("admin");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const initDone = useRef(false);
+
+  // On mount: fetch user and generate proactive greeting
+  useEffect(() => {
+    if (initDone.current) return;
+    initDone.current = true;
+
+    fetch("/api/auth/me", { credentials: "include" })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        const name = data?.user?.name || data?.name || "there";
+        const role = data?.user?.role || data?.role || "admin";
+        setUserName(name);
+        setUserRole(role);
+
+        const firstName = name.split(" ")[0];
+        const hour = new Date().getHours();
+        const timeGreet = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+
+        let greeting = "";
+        if (role === "doctor" || name.toLowerCase().includes("dr")) {
+          greeting = `${timeGreet}, Dr. ${firstName}! I'm your Health OS assistant. I can open the **scribe** for consultations, look up **ICD-10 codes**, generate **documents**, or pull up any tool. What do you need?`;
+        } else if (role === "platform_admin" || role === "investor") {
+          greeting = `${timeGreet}, ${firstName}. Executive view ready — I can show you the **revenue dashboard**, **clinic performance**, **compliance reports**, or take you to any tool. What would you like?`;
+        } else if (role === "receptionist" || role === "nurse") {
+          greeting = `${timeGreet}, ${firstName}! Today's bookings are loaded. I can open the **check-in queue**, manage **bookings**, check **patient records**, or send **reminders**. Where do we start?`;
+        } else {
+          greeting = `${timeGreet}, ${firstName}! I'm your Health OS assistant with **30+ tools**. I can navigate you anywhere, look up codes, validate claims, generate documents, or answer questions about the platform. Try: "take me to claims" or "what ICD-10 code for diabetes?"`;
+        }
+
+        setMessages([{ id: "welcome", role: "assistant", content: greeting, timestamp: new Date() }]);
+      })
+      .catch(() => {
+        setMessages([{
+          id: "welcome", role: "assistant",
+          content: "Hello! I'm your Health OS assistant. I can take you to any tool, answer questions, look up codes, and help you get set up. Try: **\"take me to claims\"** or **\"what tools do we have?\"**",
+          timestamp: new Date(),
+        }]);
+      });
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
