@@ -122,6 +122,23 @@ export default function AgentWidget() {
     setFiles([]);
     setLoading(true);
 
+    // Fast answers for common questions (no API call needed)
+    const FAST_ANSWERS: Record<string, string> = {
+      "what does this platform do": "Health OS is an **AI intelligence layer** that connects to your existing systems (CareOn, HEAL, Healthbridge, SwitchOn) and adds:\n\n- **AI clinical coding** (notes to ICD-10 codes instantly)\n- **Claims validation** (catch errors before submission, recover R54.2M/yr)\n- **HL7v2 to FHIR R4** translation (CareOn Bridge)\n- **Patient engagement** (WhatsApp follow-ups, recall automation)\n- **Predictive analytics** (no-show prediction, flow optimization)\n\nWe don't replace anything. We optimize revenue and fast-track workflows using AI.",
+      "what can you do": "I'm **Visio** — your AI assistant. I can:\n\n- **Navigate** you to any tool (say 'take me to claims')\n- **Look up** ICD-10 codes, NAPPI medicines, scheme rules\n- **Validate** claims against 6 SA medical aid schemes\n- **Generate** referral letters, prescriptions, sick notes\n- **Search** our 300MB SA healthcare knowledge base\n- **Upload** and process files (CSV, PDF, images)\n\nJust ask!",
+      "who are you": "I'm **Visio** — the AI brain behind Health OS by Visio Research Labs. I have 10 tools, access to 41K ICD-10 codes, 487K NAPPI records, and 189K searchable knowledge chunks. I can navigate the platform, validate claims, generate documents, and answer any SA healthcare question.",
+      "help": "Here's what I can do:\n\n- **'Take me to [tool]'** — opens any page\n- **'What ICD-10 code for [condition]?'** — medical coding\n- **'Validate claim for [scheme]'** — claims check\n- **'Generate referral for [patient]'** — documents\n- **'What does [feature] do?'** — platform questions\n\nOr visit **/dashboard/agent-chat** for the full agent experience.",
+    };
+
+    const lowerQ = query.toLowerCase();
+    for (const [trigger, answer] of Object.entries(FAST_ANSWERS)) {
+      if (lowerQ.includes(trigger) || trigger.split(" ").every(w => lowerQ.includes(w))) {
+        setMsgs(prev => [...prev, { id: "m-" + (++counter), role: "assistant", content: answer, timestamp: new Date() }]);
+        setLoading(false);
+        return;
+      }
+    }
+
     // Fast nav check
     if (query && handleNav(query)) {
       setLoading(false);
