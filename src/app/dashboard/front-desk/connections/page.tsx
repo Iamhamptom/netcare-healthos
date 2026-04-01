@@ -1,246 +1,219 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import {
-  PlugZap, Database, MessageSquare, Mail, Calendar,
-  Building2, Shield, Bot, CheckCircle2, XCircle, Clock,
-  ArrowLeft, ExternalLink, TestTube2, Loader2, Send,
-} from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-
-// ── Types ────────────────────────────────────────────────────────────────
+import {
+  PlugZap, CheckCircle2, AlertCircle, Clock, XCircle,
+  Database, MessageSquare, Mail, Calendar, Building2,
+  Shield, Brain, Loader2, ChevronDown, ExternalLink,
+} from "lucide-react";
 
 interface Integration {
   id: string;
   name: string;
   description: string;
   category: string;
-  status: "connected" | "disconnected" | "pending";
+  status: "connected" | "pending" | "disconnected";
   powers: string[];
   breaksWithout: string;
-  configurable: boolean;
+  configurable?: boolean;
   lastSync?: string;
 }
 
-// ── Icon mapping ─────────────────────────────────────────────────────────
-
-const categoryIcons: Record<string, typeof Database> = {
-  core: Database,
-  communication: MessageSquare,
-  calendar: Calendar,
-  clinical: Shield,
-  ai: Bot,
-};
-
-const integrationIcons: Record<string, typeof Database> = {
+const ICON_MAP: Record<string, typeof Database> = {
   supabase: Database,
   whatsapp: MessageSquare,
-  email: Mail,
-  google_calendar: Calendar,
+  resend: Mail,
+  "google-calendar": Calendar,
   heal: Building2,
   healthbridge: Shield,
-  ai_models: Bot,
+  "ai-model": Brain,
 };
 
-// ── Page ─────────────────────────────────────────────────────────────────
+const STATUS_MAP = {
+  connected: { label: "connected", icon: CheckCircle2, classes: "bg-emerald-500/10 text-emerald-400" },
+  pending: { label: "pending", icon: Clock, classes: "bg-amber-500/10 text-amber-400" },
+  disconnected: { label: "disconnected", icon: XCircle, classes: "bg-neutral-500/10 text-neutral-500" },
+} as const;
 
-export default function ConnectionsPage() {
-  const [integrations, setIntegrations] = useState<Integration[]>([]);
+export default function FrontDeskConnectionsPage() {
   const [loading, setLoading] = useState(true);
-  const [testingEmail, setTestingEmail] = useState(false);
-  const [configuring, setConfiguring] = useState<string | null>(null);
-  const [healEndpoint, setHealEndpoint] = useState("");
-  const [healApiKey, setHealApiKey] = useState("");
+  const [integrations, setIntegrations] = useState<Integration[]>([]);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetch("/api/front-desk/connections")
-      .then(r => r.json())
-      .then(d => setIntegrations(d.integrations || []))
-      .finally(() => setLoading(false));
+  // HEAL config state
+  const [healEndpoint, setHealEndpoint] = useState("");
+  const [healKey, setHealKey] = useState("");
+
+  const fetchData = useCallback(async () => {
+    try {
+      const res = await fetch("/api/front-desk/connections");
+      const data = await res.json();
+      setIntegrations(data.integrations || []);
+    } catch (err) {
+      console.error("Failed to load connections:", err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const connected = integrations.filter(i => i.status === "connected").length;
-  const total = integrations.length;
-
-  async function testEmail() {
-    setTestingEmail(true);
-    try {
-      await fetch("/api/notifications", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ channel: "email", recipient: "test@example.com", subject: "HealthOS Test", message: "This is a test email from your Front Desk module." }),
-      });
-    } finally {
-      setTestingEmail(false);
-    }
-  }
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   async function saveHealConfig() {
-    if (!healEndpoint.trim()) return;
     await fetch("/api/front-desk/connections", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ integrationId: "heal", config: { endpoint: healEndpoint, apiKey: healApiKey, connected: true, lastSync: new Date().toISOString() } }),
+      body: JSON.stringify({ integrationId: "heal", config: { endpoint: healEndpoint, apiKey: healKey } }),
     });
-    setConfiguring(null);
-    // Refresh
-    const res = await fetch("/api/front-desk/connections");
-    const d = await res.json();
-    setIntegrations(d.integrations || []);
+    fetchData();
   }
+
+  async function testIntegration(id: string) {
+    // Trigger a test ping for the integration
+    try {
+      const res = await fetch("/api/front-desk/connections", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ integrationId: id, action: "test" }),
+      });
+      await res.json();
+      fetchData();
+    } catch {
+      // silent
+    }
+  }
+
+  const connected = integrations.filter(i => i.status === "connected").length;
+  const total = integrations.length || 7;
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin" style={{ color: "rgba(253,252,240,0.3)" }} />
+        <Loader2 className="w-5 h-5 animate-spin text-neutral-500" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      {/* Header */}
-      <div>
-        <Link href="/dashboard/front-desk" className="text-xs flex items-center gap-1 mb-3" style={{ color: "rgba(253,252,240,0.4)" }}>
-          <ArrowLeft className="w-3 h-3" /> Back to Front Desk
-        </Link>
-        <h1 className="text-2xl font-bold" style={{ color: "rgba(253,252,240,0.95)" }}>
-          <PlugZap className="inline w-6 h-6 mr-2 -mt-1" style={{ color: "#2DD4BF" }} />
-          Front Desk Connections
-        </h1>
-        <p className="text-sm mt-1" style={{ color: "rgba(253,252,240,0.4)" }}>
-          {connected} of {total} integrations connected — these power your front desk operations
-        </p>
+    <div className="max-w-4xl mx-auto px-4 lg:px-6 py-6 text-neutral-200">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-[11px] font-mono text-neutral-500 mb-4">
+        <Link href="/dashboard/front-desk" className="hover:text-neutral-300 transition-colors">front-desk</Link>
+        <span>/</span>
+        <span className="text-neutral-400">connections</span>
       </div>
 
-      {/* Summary bar */}
-      <div className="flex items-center gap-2 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-        <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.05)" }}>
-          <div className="h-full rounded-full transition-all" style={{ width: `${(connected / total) * 100}%`, background: "linear-gradient(90deg, #2DD4BF, #818CF8)" }} />
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-lg font-semibold text-neutral-100">Connections</h1>
+          <p className="text-[11px] font-mono text-neutral-500 mt-0.5">
+            Services powering the front desk module
+          </p>
         </div>
-        <span className="text-xs font-medium" style={{ color: "rgba(253,252,240,0.6)" }}>{connected}/{total}</span>
+        <div className="flex items-center gap-3">
+          <span className="text-[13px] font-mono text-neutral-300">{connected}/{total}</span>
+          {/* Progress bar */}
+          <div className="w-20 h-1.5 bg-neutral-800 rounded-full overflow-hidden">
+            <div
+              className={"h-full rounded-full transition-all " + (connected === total ? "bg-emerald-400" : "bg-amber-400")}
+              style={{ width: (connected / total * 100) + "%" }}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Integration Cards */}
-      <div className="space-y-3">
-        {integrations.map((int, i) => {
-          const Icon = integrationIcons[int.id] || Database;
-          const statusColor = int.status === "connected" ? "#2DD4BF" : int.status === "pending" ? "#E8C84A" : "rgba(253,252,240,0.2)";
-          const statusLabel = int.status === "connected" ? "Connected" : int.status === "pending" ? "Pending Setup" : "Disconnected";
+      <div className="space-y-2">
+        {integrations.map(int => {
+          const Icon = ICON_MAP[int.id] || PlugZap;
+          const statusCfg = STATUS_MAP[int.status] || STATUS_MAP.disconnected;
+          const StatusIcon = statusCfg.icon;
+          const isExpanded = expandedId === int.id;
 
           return (
-            <motion.div
-              key={int.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="rounded-xl p-5"
-              style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${int.status === "connected" ? "rgba(45,212,191,0.1)" : "rgba(255,255,255,0.06)"}` }}
-            >
-              <div className="flex items-start gap-4">
-                {/* Icon */}
-                <div className="p-2.5 rounded-xl" style={{ background: `${statusColor}10` }}>
-                  <Icon className="w-5 h-5" style={{ color: statusColor }} />
-                </div>
-
-                {/* Content */}
+            <div key={int.id} className="border border-neutral-800 rounded-lg overflow-hidden">
+              <button
+                onClick={() => setExpandedId(isExpanded ? null : int.id)}
+                className="w-full flex items-center px-4 py-3 hover:bg-neutral-800/30 transition-colors text-left"
+              >
+                <Icon className="w-4 h-4 text-neutral-400 shrink-0 mr-3" />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-sm font-semibold" style={{ color: "rgba(253,252,240,0.9)" }}>{int.name}</h3>
-                    <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 rounded-full" style={{ background: statusColor }} />
-                      <span className="text-[10px] font-medium" style={{ color: statusColor }}>{statusLabel}</span>
-                    </div>
-                  </div>
-                  <p className="text-xs mb-3" style={{ color: "rgba(253,252,240,0.4)" }}>{int.description}</p>
-
-                  {/* What it powers */}
-                  <div className="mb-3">
-                    <p className="text-[10px] uppercase tracking-wider mb-1.5" style={{ color: "rgba(253,252,240,0.3)" }}>Powers</p>
-                    <div className="flex flex-wrap gap-1">
-                      {int.powers.map(p => (
-                        <span key={p} className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.05)", color: "rgba(253,252,240,0.5)" }}>
-                          {p}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* What breaks */}
-                  {int.status !== "connected" && (
-                    <div className="p-2 rounded-lg mb-3" style={{ background: "rgba(248,113,113,0.05)", border: "1px solid rgba(248,113,113,0.1)" }}>
-                      <p className="text-[10px] font-medium" style={{ color: "#F87171" }}>Without this:</p>
-                      <p className="text-xs" style={{ color: "rgba(253,252,240,0.5)" }}>{int.breaksWithout}</p>
-                    </div>
-                  )}
-
-                  {/* Last sync */}
-                  {int.lastSync && (
-                    <p className="text-[10px]" style={{ color: "rgba(253,252,240,0.3)" }}>
-                      <Clock className="inline w-3 h-3 mr-1 -mt-0.5" />
-                      Last synced: {new Date(int.lastSync).toLocaleString("en-ZA")}
-                    </p>
-                  )}
+                  <div className="text-[13px] font-medium text-neutral-200">{int.name}</div>
+                  <div className="text-[11px] text-neutral-500 truncate">{int.description}</div>
                 </div>
-
-                {/* Action buttons */}
-                <div className="flex flex-col gap-1.5">
-                  {int.id === "email" && int.status === "connected" && (
-                    <button onClick={testEmail} disabled={testingEmail} className="text-[10px] px-3 py-1.5 rounded-lg font-medium transition-colors" style={{ background: "rgba(45,212,191,0.1)", color: "#2DD4BF" }}>
-                      {testingEmail ? <Loader2 className="w-3 h-3 animate-spin" /> : <><TestTube2 className="inline w-3 h-3 mr-1" />Test</>}
-                    </button>
-                  )}
-                  {int.id === "heal" && int.status === "disconnected" && (
-                    <button onClick={() => setConfiguring("heal")} className="text-[10px] px-3 py-1.5 rounded-lg font-medium" style={{ background: "rgba(129,140,248,0.1)", color: "#818CF8" }}>
-                      Configure
-                    </button>
-                  )}
-                  {int.id === "whatsapp" && int.status === "disconnected" && (
-                    <div className="text-[10px] px-3 py-1.5 rounded-lg text-center" style={{ background: "rgba(232,200,74,0.1)", color: "#E8C84A" }}>
-                      Needs Twilio
-                    </div>
-                  )}
-                  {int.id === "healthbridge" && int.status === "disconnected" && (
-                    <div className="text-[10px] px-3 py-1.5 rounded-lg text-center" style={{ background: "rgba(232,200,74,0.1)", color: "#E8C84A" }}>
-                      Needs Credentials
-                    </div>
-                  )}
-                  {int.id === "google_calendar" && int.status === "disconnected" && (
-                    <div className="text-[10px] px-3 py-1.5 rounded-lg text-center" style={{ background: "rgba(232,200,74,0.1)", color: "#E8C84A" }}>
-                      Needs OAuth
-                    </div>
-                  )}
-                  {int.status === "connected" && (
-                    <CheckCircle2 className="w-5 h-5" style={{ color: "#2DD4BF" }} />
-                  )}
+                <div className={"flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono mr-2 " + statusCfg.classes}>
+                  <StatusIcon className="w-3 h-3" />
+                  {statusCfg.label}
                 </div>
-              </div>
+                <ChevronDown className={"w-3.5 h-3.5 text-neutral-600 transition-transform " + (isExpanded ? "rotate-180" : "")} />
+              </button>
 
-              {/* HEAL Config Form (inline) */}
-              {configuring === "heal" && int.id === "heal" && (
-                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} className="mt-4 p-3 rounded-lg" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                  <p className="text-xs font-medium mb-2" style={{ color: "rgba(253,252,240,0.7)" }}>HEAL A2D24 Connection</p>
-                  <div className="space-y-2">
-                    <input value={healEndpoint} onChange={e => setHealEndpoint(e.target.value)} placeholder="HEAL API Endpoint (e.g. https://api.a2d24.com/v1)" className="w-full px-3 py-2 rounded-lg text-xs outline-none" style={{ background: "rgba(255,255,255,0.05)", color: "rgba(253,252,240,0.9)", border: "1px solid rgba(255,255,255,0.08)" }} />
-                    <input value={healApiKey} onChange={e => setHealApiKey(e.target.value)} placeholder="API Key" type="password" className="w-full px-3 py-2 rounded-lg text-xs outline-none" style={{ background: "rgba(255,255,255,0.05)", color: "rgba(253,252,240,0.9)", border: "1px solid rgba(255,255,255,0.08)" }} />
-                    <div className="flex gap-2 justify-end">
-                      <button onClick={() => setConfiguring(null)} className="text-xs px-3 py-1.5 rounded-lg" style={{ color: "rgba(253,252,240,0.5)" }}>Cancel</button>
-                      <button onClick={saveHealConfig} className="text-xs px-3 py-1.5 rounded-lg font-medium" style={{ background: "rgba(129,140,248,0.15)", color: "#818CF8" }}>Save & Connect</button>
+              {isExpanded && (
+                <div className="px-4 pb-4 border-t border-neutral-800 bg-neutral-900/50">
+                  <div className="pt-3 space-y-2">
+                    {/* Powers */}
+                    <div className="flex gap-2">
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-600 w-20 shrink-0 pt-0.5">Powers</span>
+                      <div className="flex flex-wrap gap-1">
+                        {int.powers.map(p => (
+                          <span key={p} className="text-[10px] font-mono bg-neutral-800 text-neutral-400 px-1.5 py-0.5 rounded">{p}</span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Impact */}
+                    <div className="flex gap-2">
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-600 w-20 shrink-0 pt-0.5">Impact</span>
+                      <span className="text-[11px] text-neutral-400">{int.breaksWithout}</span>
+                    </div>
+
+                    {/* Last sync */}
+                    {int.lastSync && (
+                      <div className="flex gap-2">
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-600 w-20 shrink-0 pt-0.5">Last sync</span>
+                        <span className="text-[11px] font-mono text-neutral-500">{int.lastSync}</span>
+                      </div>
+                    )}
+
+                    {/* Actions */}
+                    <div className="flex gap-2 pt-2">
+                      {int.status === "connected" && (
+                        <button
+                          onClick={() => testIntegration(int.id)}
+                          className="text-[11px] font-mono text-neutral-400 hover:text-neutral-200 px-2 py-1 rounded border border-neutral-700 hover:bg-neutral-800 transition-colors"
+                        >
+                          test connection
+                        </button>
+                      )}
+                      {int.id === "heal" && int.configurable && (
+                        <div className="w-full space-y-2 mt-2">
+                          <input
+                            value={healEndpoint} onChange={e => setHealEndpoint(e.target.value)} placeholder="HEAL API endpoint"
+                            className="w-full h-7 px-2.5 rounded bg-neutral-800 border border-neutral-700 text-[12px] text-neutral-200 placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600"
+                          />
+                          <input
+                            type="password" value={healKey} onChange={e => setHealKey(e.target.value)} placeholder="API key"
+                            className="w-full h-7 px-2.5 rounded bg-neutral-800 border border-neutral-700 text-[12px] text-neutral-200 placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600"
+                          />
+                          <button onClick={saveHealConfig} className="text-[11px] font-mono text-neutral-900 bg-neutral-100 px-3 py-1 rounded hover:bg-neutral-200 transition-colors">
+                            save & connect
+                          </button>
+                        </div>
+                      )}
+                      {int.status === "disconnected" && int.id !== "heal" && (
+                        <div className="flex items-center gap-1 text-[11px] font-mono text-neutral-500">
+                          <AlertCircle className="w-3 h-3" />
+                          Setup required — contact admin
+                        </div>
+                      )}
                     </div>
                   </div>
-                </motion.div>
+                </div>
               )}
-            </motion.div>
+            </div>
           );
         })}
-      </div>
-
-      {/* Help text */}
-      <div className="p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
-        <p className="text-xs" style={{ color: "rgba(253,252,240,0.4)" }}>
-          <strong style={{ color: "rgba(253,252,240,0.6)" }}>Need help connecting?</strong> Environment variables (Twilio, Resend, Healthbridge, AI keys) are configured in your Vercel dashboard or .env.local file. Practice-specific configs (HEAL, Google Calendar) are saved per-practice in the database.
-        </p>
       </div>
     </div>
   );

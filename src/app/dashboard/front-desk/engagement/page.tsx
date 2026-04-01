@@ -1,273 +1,201 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  HeartPulse, ArrowLeft, Loader2, AlertTriangle, CheckCircle2,
-  Clock, Pill, RotateCcw, Activity, FlaskConical, CalendarCheck,
-  ClipboardList, ChevronDown, ChevronUp, User, Send,
-} from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import {
+  HeartPulse, ChevronLeft, Loader2, CheckCircle2, Clock,
+  AlertTriangle, Pause, ChevronDown, Activity,
+} from "lucide-react";
 
-// ── Types ────────────────────────────────────────────────────────────────
-
-interface StepDef {
-  order: number;
-  label: string;
+interface Step {
+  id: string;
+  name: string;
   timing: string;
-  icon: string;
+  description: string;
 }
 
 interface Enrollment {
   id: string;
   patientName: string;
-  patientId: string;
   sequenceName: string;
   currentStep: number;
   totalSteps: number;
   status: string;
   nextStepAt: string | null;
-  startedAt: string;
-  lastResponse: string | null;
   escalated: boolean;
-  steps: StepDef[];
+  lastResponse: string | null;
+  startedAt: string;
 }
 
-// ── Icon mapping ─────────────────────────────────────────────────────────
-
-const stepIcons: Record<string, typeof Clock> = {
-  clipboard: ClipboardList,
-  pill: Pill,
-  "alert-triangle": AlertTriangle,
-  repeat: RotateCcw,
-  "heart-pulse": Activity,
-  flask: FlaskConical,
-  "calendar-check": CalendarCheck,
-};
-
-const statusStyles: Record<string, { bg: string; border: string; dot: string; label: string }> = {
-  active: { bg: "rgba(45,212,191,0.05)", border: "rgba(45,212,191,0.1)", dot: "#2DD4BF", label: "Active" },
-  escalated: { bg: "rgba(248,113,113,0.05)", border: "rgba(248,113,113,0.15)", dot: "#F87171", label: "Escalated" },
-  paused: { bg: "rgba(232,200,74,0.05)", border: "rgba(232,200,74,0.1)", dot: "#E8C84A", label: "Paused" },
-  completed: { bg: "rgba(255,255,255,0.02)", border: "rgba(255,255,255,0.06)", dot: "rgba(253,252,240,0.3)", label: "Completed" },
-};
-
-function timeUntil(dateStr: string) {
-  const mins = Math.floor((new Date(dateStr).getTime() - Date.now()) / 60000);
-  if (mins < 0) return "Overdue";
-  if (mins < 60) return `in ${mins}m`;
-  if (mins < 1440) return `in ${Math.floor(mins / 60)}h`;
-  return `in ${Math.floor(mins / 1440)}d`;
-}
-
-// ── Page ─────────────────────────────────────────────────────────────────
-
-export default function EngagementPage() {
-  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
-  const [steps, setSteps] = useState<StepDef[]>([]);
+export default function FrontDeskEngagementPage() {
   const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState<string | null>(null);
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [steps, setSteps] = useState<Step[]>([]);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetch("/api/front-desk/engagement")
-      .then(r => r.json())
-      .then(d => {
-        setEnrollments(d.enrollments || []);
-        setSteps(d.steps || []);
-      })
-      .finally(() => setLoading(false));
+  const fetchData = useCallback(async () => {
+    try {
+      const res = await fetch("/api/front-desk/engagement");
+      const data = await res.json();
+      setEnrollments(data.enrollments || []);
+      setSteps(data.steps || []);
+    } catch (err) {
+      console.error("Failed to load engagement data:", err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  useEffect(() => { fetchData(); }, [fetchData]);
+
   const active = enrollments.filter(e => e.status === "active").length;
-  const escalatedCount = enrollments.filter(e => e.escalated).length;
+  const escalated = enrollments.filter(e => e.escalated).length;
+  const completed = enrollments.filter(e => e.status === "completed").length;
+  const total = enrollments.length;
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin" style={{ color: "rgba(253,252,240,0.3)" }} />
+        <Loader2 className="w-5 h-5 animate-spin text-neutral-500" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      {/* Header */}
-      <div>
-        <Link href="/dashboard/front-desk" className="text-xs flex items-center gap-1 mb-3" style={{ color: "rgba(253,252,240,0.4)" }}>
-          <ArrowLeft className="w-3 h-3" /> Back to Front Desk
-        </Link>
-        <h1 className="text-2xl font-bold" style={{ color: "rgba(253,252,240,0.95)" }}>
-          <HeartPulse className="inline w-6 h-6 mr-2 -mt-1" style={{ color: "#818CF8" }} />
-          Patient Care Sequences
-        </h1>
-        <p className="text-sm mt-1" style={{ color: "rgba(253,252,240,0.4)" }}>
-          7-tier automated engagement — from visit summary to annual screening
-        </p>
+    <div className="max-w-4xl mx-auto px-4 lg:px-6 py-6 text-neutral-200">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-[11px] font-mono text-neutral-500 mb-4">
+        <Link href="/dashboard/front-desk" className="hover:text-neutral-300 transition-colors">front-desk</Link>
+        <span>/</span>
+        <span className="text-neutral-400">engagement</span>
       </div>
 
-      {/* Stats row */}
-      <div className="grid grid-cols-3 gap-3">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-lg font-semibold text-neutral-100">Patient Care Sequences</h1>
+          <p className="text-[11px] font-mono text-neutral-500 mt-0.5">
+            Automated post-visit engagement — 7 steps from visit summary to annual screening
+          </p>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-4 gap-px bg-neutral-800 rounded-lg overflow-hidden mb-6">
         {[
-          { label: "Active Journeys", value: active, color: "#2DD4BF" },
-          { label: "Escalated", value: escalatedCount, color: escalatedCount > 0 ? "#F87171" : "#2DD4BF" },
-          { label: "Total Tracked", value: enrollments.length, color: "#818CF8" },
-        ].map(stat => (
-          <div key={stat.label} className="p-4 rounded-xl text-center" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-            <p className="text-2xl font-bold" style={{ color: stat.color }}>{stat.value}</p>
-            <p className="text-xs mt-1" style={{ color: "rgba(253,252,240,0.4)" }}>{stat.label}</p>
+          { label: "ACTIVE", value: active },
+          { label: "ESCALATED", value: escalated },
+          { label: "COMPLETED", value: completed },
+          { label: "TOTAL", value: total },
+        ].map(s => (
+          <div key={s.label} className="bg-neutral-900 p-3">
+            <div className="text-[9px] font-mono uppercase tracking-widest text-neutral-500 mb-1">{s.label}</div>
+            <div className="text-xl font-semibold font-mono text-neutral-100">{s.value}</div>
           </div>
         ))}
       </div>
 
-      {/* 7-Step Timeline Legend */}
-      <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-        <p className="text-xs font-medium mb-3" style={{ color: "rgba(253,252,240,0.6)" }}>Post-Visit Care Timeline</p>
-        <div className="flex items-center gap-1">
-          {steps.map((step, i) => {
-            const Icon = stepIcons[step.icon] || Clock;
-            return (
-              <div key={step.order} className="flex items-center flex-1">
-                <div className="flex flex-col items-center flex-1">
-                  <div className="p-1.5 rounded-lg mb-1" style={{ background: "rgba(129,140,248,0.1)" }}>
-                    <Icon className="w-3 h-3" style={{ color: "#818CF8" }} />
-                  </div>
-                  <p className="text-[9px] text-center font-medium" style={{ color: "rgba(253,252,240,0.6)" }}>{step.label}</p>
-                  <p className="text-[8px]" style={{ color: "rgba(253,252,240,0.3)" }}>{step.timing}</p>
-                </div>
-                {i < steps.length - 1 && (
-                  <div className="w-4 h-px mx-0.5 flex-shrink-0" style={{ background: "rgba(255,255,255,0.1)" }} />
-                )}
-              </div>
-            );
-          })}
+      {/* 7-Step Timeline Reference */}
+      <div className="border border-neutral-800 rounded-lg mb-6">
+        <div className="px-3 py-2 border-b border-neutral-800">
+          <span className="text-[13px] font-semibold text-neutral-200">Sequence Steps</span>
+        </div>
+        <div className="divide-y divide-neutral-800">
+          {(steps.length > 0 ? steps : [
+            { id: "1", name: "Visit Summary", timing: "Immediately", description: "Discharge summary + care plan sent" },
+            { id: "2", name: "Pharmacy Reminder", timing: "Day 1", description: "Medication collection reminder" },
+            { id: "3", name: "Side Effects Check", timing: "Day 7", description: "How are you feeling? Any issues?" },
+            { id: "4", name: "Refill Prompt", timing: "Day 25", description: "Chronic medication refill reminder" },
+            { id: "5", name: "Chronic Vitals", timing: "Monthly", description: "Blood pressure, glucose, weight check-in" },
+            { id: "6", name: "Lab Test Due", timing: "Quarterly", description: "HbA1c, cholesterol, kidney function" },
+            { id: "7", name: "Annual Screening", timing: "Annual", description: "Full wellness check-up reminder" },
+          ]).map((step, i) => (
+            <div key={step.id} className="flex items-center px-3 py-2">
+              <span className="text-[11px] font-mono text-neutral-600 w-6 shrink-0">{i + 1}</span>
+              <span className="text-[13px] text-neutral-200 flex-1">{step.name}</span>
+              <span className="text-[11px] font-mono text-neutral-500 mx-3">{step.timing}</span>
+              <span className="text-[11px] text-neutral-500">{step.description}</span>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Enrollments */}
-      {enrollments.length === 0 ? (
-        <div className="text-center py-12 rounded-xl" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
-          <HeartPulse className="w-10 h-10 mx-auto mb-3" style={{ color: "rgba(253,252,240,0.1)" }} />
-          <p className="text-sm" style={{ color: "rgba(253,252,240,0.4)" }}>No active patient care sequences</p>
-          <p className="text-xs mt-1" style={{ color: "rgba(253,252,240,0.3)" }}>Patients are automatically enrolled when appointments are completed</p>
+      {/* Active Enrollments */}
+      <div className="border border-neutral-800 rounded-lg">
+        <div className="px-3 py-2 border-b border-neutral-800">
+          <span className="text-[13px] font-semibold text-neutral-200">Active Enrollments</span>
         </div>
-      ) : (
-        <div className="space-y-2">
-          {enrollments.map((en, i) => {
-            const style = statusStyles[en.status] || statusStyles.active;
-            const isExpanded = expanded === en.id;
-
-            return (
-              <motion.div
-                key={en.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.03 }}
-                className="rounded-xl overflow-hidden"
-                style={{ background: style.bg, border: `1px solid ${style.border}` }}
-              >
-                {/* Main row */}
-                <div
-                  className="flex items-center gap-4 p-4 cursor-pointer"
-                  onClick={() => setExpanded(isExpanded ? null : en.id)}
-                >
-                  <div className="p-2 rounded-lg" style={{ background: `${style.dot}15` }}>
-                    <User className="w-4 h-4" style={{ color: style.dot }} />
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium truncate" style={{ color: "rgba(253,252,240,0.9)" }}>{en.patientName}</p>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: `${style.dot}15`, color: style.dot }}>
-                        {style.label}
-                      </span>
+        {enrollments.length === 0 ? (
+          <p className="text-[11px] font-mono text-neutral-600 text-center py-8">No patients enrolled in care sequences yet</p>
+        ) : (
+          <div className="divide-y divide-neutral-800">
+            {enrollments.map(e => {
+              const isExpanded = expandedId === e.id;
+              return (
+                <div key={e.id}>
+                  <button
+                    onClick={() => setExpandedId(isExpanded ? null : e.id)}
+                    className="w-full flex items-center px-3 py-2.5 hover:bg-neutral-800/30 transition-colors text-left"
+                  >
+                    {e.escalated ? (
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mr-2" />
+                    ) : e.status === "completed" ? (
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mr-2" />
+                    ) : e.status === "paused" ? (
+                      <Pause className="w-3.5 h-3.5 text-neutral-500 shrink-0 mr-2" />
+                    ) : (
+                      <Activity className="w-3.5 h-3.5 text-neutral-400 shrink-0 mr-2" />
+                    )}
+                    <span className="text-[13px] text-neutral-200 flex-1">{e.patientName}</span>
+                    {/* Progress dots */}
+                    <div className="flex items-center gap-0.5 mx-3">
+                      {Array.from({ length: e.totalSteps }).map((_, i) => (
+                        <div key={i} className={"w-1.5 h-1.5 rounded-full " + (i < e.currentStep ? "bg-emerald-400" : "bg-neutral-700")} />
+                      ))}
                     </div>
-                    <p className="text-xs mt-0.5" style={{ color: "rgba(253,252,240,0.4)" }}>
-                      Step {en.currentStep} of {en.totalSteps}: {steps[en.currentStep - 1]?.label || "Unknown"}
-                      {en.nextStepAt && ` · Next ${timeUntil(en.nextStepAt)}`}
-                    </p>
-                  </div>
-
-                  {/* Progress dots */}
-                  <div className="flex gap-1 mr-2">
-                    {Array.from({ length: en.totalSteps }).map((_, idx) => (
-                      <div key={idx} className="w-2 h-2 rounded-full transition-all" style={{
-                        background: idx < en.currentStep
-                          ? "#2DD4BF"
-                          : idx === en.currentStep - 1 && en.escalated
-                            ? "#F87171"
-                            : "rgba(255,255,255,0.1)",
-                      }} />
-                    ))}
-                  </div>
-
-                  {isExpanded ? <ChevronUp className="w-4 h-4" style={{ color: "rgba(253,252,240,0.3)" }} /> : <ChevronDown className="w-4 h-4" style={{ color: "rgba(253,252,240,0.3)" }} />}
-                </div>
-
-                {/* Expanded detail */}
-                <AnimatePresence>
+                    <span className="text-[10px] font-mono text-neutral-500 mr-2">
+                      {e.currentStep}/{e.totalSteps}
+                    </span>
+                    <span className={"text-[10px] font-mono px-1.5 py-0.5 rounded " + (
+                      e.status === "active" ? "bg-emerald-500/10 text-emerald-400" :
+                      e.status === "paused" ? "bg-neutral-500/10 text-neutral-400" :
+                      e.status === "escalated" || e.escalated ? "bg-amber-500/10 text-amber-400" :
+                      "bg-neutral-500/10 text-neutral-400"
+                    )}>{e.status}</span>
+                    <ChevronDown className={"w-3 h-3 text-neutral-600 ml-2 transition-transform " + (isExpanded ? "rotate-180" : "")} />
+                  </button>
                   {isExpanded && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="px-4 pb-4"
-                    >
-                      <div className="pt-3" style={{ borderTop: `1px solid ${style.border}` }}>
-                        {/* Step-by-step timeline */}
-                        <div className="space-y-2">
-                          {steps.map((step) => {
-                            const Icon = stepIcons[step.icon] || Clock;
-                            const completed = step.order < en.currentStep;
-                            const current = step.order === en.currentStep;
-                            const isCurrent = current && en.escalated;
-
-                            return (
-                              <div key={step.order} className="flex items-center gap-3">
-                                <div className="p-1.5 rounded-lg" style={{
-                                  background: completed ? "rgba(45,212,191,0.15)" : current ? `${style.dot}15` : "rgba(255,255,255,0.03)",
-                                }}>
-                                  {completed ? (
-                                    <CheckCircle2 className="w-3.5 h-3.5" style={{ color: "#2DD4BF" }} />
-                                  ) : (
-                                    <Icon className="w-3.5 h-3.5" style={{ color: isCurrent ? "#F87171" : current ? style.dot : "rgba(253,252,240,0.2)" }} />
-                                  )}
-                                </div>
-                                <div className="flex-1">
-                                  <p className="text-xs font-medium" style={{ color: completed || current ? "rgba(253,252,240,0.7)" : "rgba(253,252,240,0.3)" }}>
-                                    {step.label}
-                                  </p>
-                                </div>
-                                <span className="text-[10px]" style={{ color: "rgba(253,252,240,0.3)" }}>{step.timing}</span>
-                              </div>
-                            );
-                          })}
+                    <div className="px-3 pb-3 pt-1 bg-neutral-800/20">
+                      <div className="grid grid-cols-2 gap-2 text-[11px]">
+                        <div>
+                          <span className="font-mono text-neutral-500">Sequence:</span>
+                          <span className="text-neutral-300 ml-1">{e.sequenceName || "Post-Visit Care"}</span>
                         </div>
-
-                        {/* Escalation alert */}
-                        {en.escalated && en.lastResponse && (
-                          <div className="mt-3 p-3 rounded-lg" style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.15)" }}>
-                            <p className="text-xs font-medium" style={{ color: "#F87171" }}>
-                              <AlertTriangle className="inline w-3 h-3 mr-1 -mt-0.5" />
-                              Patient Response (Escalated)
-                            </p>
-                            <p className="text-xs mt-1" style={{ color: "rgba(253,252,240,0.6)" }}>&quot;{en.lastResponse}&quot;</p>
+                        <div>
+                          <span className="font-mono text-neutral-500">Started:</span>
+                          <span className="text-neutral-300 ml-1">{new Date(e.startedAt).toLocaleDateString("en-ZA")}</span>
+                        </div>
+                        {e.nextStepAt && (
+                          <div>
+                            <span className="font-mono text-neutral-500">Next step:</span>
+                            <span className="text-neutral-300 ml-1">{new Date(e.nextStepAt).toLocaleDateString("en-ZA")}</span>
                           </div>
                         )}
-
-                        {/* Metadata */}
-                        <div className="mt-3 flex gap-4 text-[10px]" style={{ color: "rgba(253,252,240,0.3)" }}>
-                          <span>Started: {new Date(en.startedAt).toLocaleDateString("en-ZA")}</span>
-                          {en.nextStepAt && <span>Next step: {new Date(en.nextStepAt).toLocaleDateString("en-ZA")}</span>}
-                        </div>
+                        {e.lastResponse && (
+                          <div className="col-span-2">
+                            <span className="font-mono text-neutral-500">Last response:</span>
+                            <span className="text-neutral-300 ml-1">{e.lastResponse}</span>
+                          </div>
+                        )}
                       </div>
-                    </motion.div>
+                    </div>
                   )}
-                </AnimatePresence>
-              </motion.div>
-            );
-          })}
-        </div>
-      )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
