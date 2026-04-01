@@ -549,16 +549,211 @@ const exportToExcel = tool({
   },
 });
 
+// ── Hospital / Practice Management Tools ─────────────────────────────────
+
+const setupHospital = tool({
+  description: "Onboard a new hospital or practice into the Netcare Health OS network. Creates the practice record with contact info, integrations config, branding, and services. Use this to set up each Medicross/Netcare clinic.",
+  inputSchema: z.object({
+    name: z.string().describe("Practice name, e.g. 'Medicross Sandton'"),
+    type: z.string().optional().describe("Practice type: gp | dental | specialist | hospital | clinic"),
+    address: z.string().optional(),
+    phone: z.string().optional().describe("Practice phone number"),
+    email: z.string().optional().describe("Practice admin email"),
+    plan: z.string().optional().describe("Subscription plan: starter | core | professional | enterprise"),
+    careonEndpoint: z.string().optional().describe("CareOn Bridge API endpoint for this hospital"),
+    whatsappNumber: z.string().optional().describe("Twilio WhatsApp number for this practice"),
+    services: z.array(z.object({ name: z.string(), duration: z.number(), price: z.number() })).optional(),
+  }),
+  execute: async ({ name, type, address, phone, email, plan, careonEndpoint, whatsappNumber, services }) => {
+    const { prisma } = await import("@/lib/prisma");
+    const integrations: Record<string, unknown> = {};
+    if (careonEndpoint) integrations.careonBridge = { enabled: true, endpoint: careonEndpoint, connectedAt: new Date().toISOString() };
+    if (whatsappNumber) integrations.whatsappNumber = whatsappNumber;
+
+    const practice = await prisma.practice.create({
+      data: {
+        name,
+        type: type || "clinic",
+        address: address || "",
+        phone: phone || "",
+        plan: plan || "professional",
+        integrations: JSON.stringify(integrations),
+        bookingServices: services ? JSON.stringify(services) : "[]",
+      },
+    });
+
+    // Create admin user if email provided
+    if (email) {
+      const { hash } = await import("bcryptjs");
+      const tempPassword = `HealthOS-${Date.now().toString(36)}`;
+      await prisma.user.create({
+        data: { email, passwordHash: await hash(tempPassword, 10), name: `Admin — ${name}`, role: "admin", practiceId: practice.id },
+      });
+      return { practiceId: practice.id, name, adminEmail: email, tempPassword, integrations, message: "Hospital onboarded successfully" };
+    }
+
+    return { practiceId: practice.id, name, integrations, message: "Hospital created — no admin user (no email provided)" };
+  },
+});
+
+const listHospitals = tool({
+  description: "List all hospitals/practices in the Netcare Health OS network with their connection status, patient counts, and integration health.",
+  inputSchema: z.object({}),
+  execute: async () => {
+    const { prisma } = await import("@/lib/prisma");
+    const practices = await prisma.practice.findMany({
+      select: { id: true, name: true, type: true, address: true, phone: true, plan: true, integrations: true, _count: { select: { patients: true, bookings: true, users: true } } },
+      orderBy: { name: "asc" },
+    });
+    return practices.map((p) => {
+      const integ = JSON.parse(p.integrations || "{}");
+      return {
+        id: p.id, name: p.name, type: p.type, address: p.address, phone: p.phone, plan: p.plan,
+        patients: p._count.patients, bookings: p._count.bookings, staff: p._count.users,
+        connections: {
+          careonBridge: !!integ.careonBridge?.enabled,
+          microsoft365: !!integ.microsoftAccessToken,
+          gmail: !!integ.gmailAccessToken,
+          whatsapp: !!integ.whatsappNumber || !!process.env.TWILIO_ACCOUNT_SID,
+        },
+      };
+    });
+  },
+});
+
+const getHospitalDetails = tool({
+  description: "Get full details for a specific hospital/practice including integration endpoints, contact info, patient stats, and active sequences.",
+  inputSchema: z.object({
+    practiceId: z.string(),
+  }),
+  execute: async ({ practiceId }) => {
+    const { prisma } = await import("@/lib/prisma");
+    const practice = await prisma.practice.findUnique({
+      where: { id: practiceId },
+      include: { _count: { select: { patients: true, bookings: true, users: true, notifications: true, conversations: true } } },
+    });
+    if (!practice) return { error: "Practice not found" };
+    const integ = JSON.parse(practice.integrations || "{}");
+    const [activeSequences, activeCampaigns] = await Promise.all([
+      prisma.sequenceEnrollment.count({ where: { practiceId, status: "active" } }),
+      prisma.patientCampaign.count({ where: { practiceId, status: { in: ["sending", "scheduled"] } } }),
+    ]);
+    return {
+      id: practice.id, name: practice.name, type: practice.type, address: practice.address,
+      phone: practice.phone, plan: practice.plan, planStatus: practice.planStatus,
+      stats: { patients: practice._count.patients, bookings: practice._count.bookings, staff: practice._count.users, notifications: practice._count.notifications, conversations: practice._count.conversations, activeSequences, activeCampaigns },
+      integrations: {
+        careonBridge: integ.careonBridge || null,
+        microsoft: integ.microsoftEmail ? { email: integ.microsoftEmail, connected: integ.microsoftConnectedAt } : null,
+        gmail: integ.gmailEmail ? { email: integ.gmailEmail, connected: integ.gmailConnectedAt } : null,
+        whatsappNumber: integ.whatsappNumber || null,
+      },
+    };
+  },
+});
+
+const updateHospitalConfig = tool({
+  description: "Update a hospital's configuration — CareOn endpoint, WhatsApp number, contact details, plan, or integration settings.",
+  inputSchema: z.object({
+    practiceId: z.string(),
+    updates: z.object({
+      name: z.string().optional(),
+      phone: z.string().optional(),
+      address: z.string().optional(),
+      plan: z.string().optional(),
+      careonEndpoint: z.string().optional(),
+      whatsappNumber: z.string().optional(),
+    }),
+  }),
+  execute: async ({ practiceId, updates }) => {
+    const { prisma } = await import("@/lib/prisma");
+    const practice = await prisma.practice.findUnique({ where: { id: practiceId }, select: { integrations: true } });
+    if (!practice) return { error: "Practice not found" };
+
+    const integ = JSON.parse(practice.integrations || "{}");
+    if (updates.careonEndpoint) integ.careonBridge = { ...integ.careonBridge, enabled: true, endpoint: updates.careonEndpoint, updatedAt: new Date().toISOString() };
+    if (updates.whatsappNumber) integ.whatsappNumber = updates.whatsappNumber;
+
+    const data: Record<string, unknown> = { integrations: JSON.stringify(integ) };
+    if (updates.name) data.name = updates.name;
+    if (updates.phone) data.phone = updates.phone;
+    if (updates.address) data.address = updates.address;
+    if (updates.plan) data.plan = updates.plan;
+
+    await prisma.practice.update({ where: { id: practiceId }, data });
+    return { updated: true, practiceId };
+  },
+});
+
+const getPatientChats = tool({
+  description: "Get WhatsApp/portal conversation threads for a practice. Shows patient chats with message history, AI suggestions, and approval status.",
+  inputSchema: z.object({
+    practiceId: z.string(),
+    limit: z.number().optional(),
+  }),
+  execute: async ({ practiceId, limit }) => {
+    const { prisma } = await import("@/lib/prisma");
+    const conversations = await prisma.conversation.findMany({
+      where: { practiceId },
+      include: {
+        patient: { select: { name: true, phone: true, email: true } },
+        messages: { orderBy: { createdAt: "desc" }, take: 5 },
+      },
+      orderBy: { updatedAt: "desc" },
+      take: limit || 20,
+    });
+    return {
+      count: conversations.length,
+      chats: conversations.map((c) => ({
+        id: c.id, channel: c.channel, status: c.status,
+        patient: c.patient.name, phone: c.patient.phone,
+        lastMessage: c.messages[0]?.content?.slice(0, 100) || "",
+        lastMessageAt: c.messages[0]?.createdAt || c.updatedAt,
+        messageCount: c.messages.length,
+        hasUnapproved: c.messages.some((m) => m.role === "ai_suggestion" && !m.approved),
+      })),
+    };
+  },
+});
+
+const getNetworkAnalytics = tool({
+  description: "Get network-wide analytics across ALL hospitals/practices — total patients, bookings, engagement rates, channel volumes. Use this for the Netcare-level view.",
+  inputSchema: z.object({}),
+  execute: async () => {
+    const { prisma } = await import("@/lib/prisma");
+    const [practices, totalPatients, totalBookings, totalNotifications, activeEnrollments, totalCampaigns, conversationCount] = await Promise.all([
+      prisma.practice.count(),
+      prisma.patient.count(),
+      prisma.booking.count(),
+      prisma.notification.count(),
+      prisma.sequenceEnrollment.count({ where: { status: "active" } }),
+      prisma.patientCampaign.count(),
+      prisma.conversation.count(),
+    ]);
+    return {
+      network: { practices, totalPatients, totalBookings, totalNotifications, activeEnrollments, totalCampaigns, totalConversations: conversationCount },
+    };
+  },
+});
+
 // ── The Agent ────────────────────────────────────────────────────────────
 
 export const engagementAgent = new ToolLoopAgent({
   model: google("gemini-2.5-flash"),
 
-  instructions: `You are the Patient Engagement Agent for a South African healthcare practice, powered by Netcare Health OS.
+  instructions: `You are the Patient Engagement Agent for Netcare Health OS — a multi-hospital healthcare platform in South Africa.
 
-YOUR ROLE: Orchestrate all patient engagement — automated sequences, health campaigns, chronic care management, email triage, document handling, and communication across WhatsApp/email/SMS.
+YOUR ROLE: Orchestrate patient engagement across the ENTIRE hospital network — set up new hospitals, manage integrations, run sequences, campaigns, chronic care, email triage, and communication.
 
-CAPABILITIES:
+MULTI-HOSPITAL CAPABILITIES:
+- Set up new hospitals/practices with setupHospital (CareOn endpoint, WhatsApp number, services, admin account)
+- List all hospitals in the network with listHospitals
+- Get detailed stats per hospital with getHospitalDetails
+- Update hospital config (CareOn endpoint, WhatsApp, plan) with updateHospitalConfig
+- View patient chats across hospitals with getPatientChats
+- Network-wide analytics with getNetworkAnalytics
+
+ENGAGEMENT CAPABILITIES:
 - Enroll patients in automated care sequences (post-visit follow-up, chronic disease management, medication adherence, screening reminders)
 - Create and execute health campaigns targeting patients by age, condition, medical aid, gender
 - Identify chronic care gaps (diabetics overdue for HbA1c, hypertensives missing BP checks, lapsed screening patients)

@@ -232,10 +232,76 @@ function NetcareAssistantInner() {
     setInput("");
     setTyping(true);
 
+    // FAST NAV: Check for navigation intent BEFORE calling API
+    const navMap: Record<string, { path: string; label: string }> = {
+      "intake": { path: "/dashboard/intake", label: "Clinical Intake" },
+      "scribe": { path: "/dashboard/scribe", label: "AI Scribe" },
+      "claim": { path: "/dashboard/claims", label: "Claims Analyzer" },
+      "copilot": { path: "/dashboard/claims-copilot", label: "Claims Copilot" },
+      "bridge": { path: "/dashboard/bridge", label: "CareOn Bridge" },
+      "careon": { path: "/dashboard/bridge", label: "CareOn Bridge" },
+      "switch": { path: "/dashboard/switching", label: "Switching Engine" },
+      "fhir": { path: "/dashboard/fhir-hub", label: "FHIR Hub" },
+      "patient": { path: "/dashboard/patients", label: "Patients" },
+      "booking": { path: "/dashboard/bookings", label: "Bookings" },
+      "checkin": { path: "/dashboard/checkin", label: "Check-in" },
+      "check-in": { path: "/dashboard/checkin", label: "Check-in" },
+      "billing": { path: "/dashboard/billing", label: "Billing" },
+      "invoice": { path: "/dashboard/billing", label: "Billing" },
+      "recall": { path: "/dashboard/recall", label: "Recall" },
+      "daily": { path: "/dashboard/daily", label: "Daily Tasks" },
+      "document": { path: "/dashboard/documents", label: "Documents" },
+      "referral": { path: "/dashboard/documents", label: "Documents" },
+      "prescription": { path: "/dashboard/documents", label: "Documents" },
+      "assistant": { path: "/dashboard/assistant", label: "AI Assistant" },
+      "engagement": { path: "/dashboard/engagement", label: "Engagement Hub" },
+      "notification": { path: "/dashboard/notifications", label: "Notifications" },
+      "executive": { path: "/dashboard/executive", label: "Executive Dashboard" },
+      "financial": { path: "/dashboard/financial-director", label: "Financial Director" },
+      "governance": { path: "/dashboard/ai-governance", label: "AI Governance" },
+      "architecture": { path: "/dashboard/architecture", label: "Architecture" },
+      "resource": { path: "/dashboard/resources", label: "Resources" },
+      "research": { path: "/dashboard/resources", label: "Resources" },
+      "pitch": { path: "/dashboard/pitch", label: "Pitch Deck" },
+      "product map": { path: "/dashboard/product-map", label: "Product Map" },
+      "integration map": { path: "/dashboard/integration-map", label: "Integration Map" },
+      "cio": { path: "/dashboard/cio", label: "CIO Dashboard" },
+      "healthbridge": { path: "/dashboard/healthbridge", label: "Healthbridge" },
+      "coder": { path: "/dashboard/healthbridge/ai-coder", label: "AI Coder" },
+      "whatsapp": { path: "/dashboard/whatsapp", label: "WhatsApp" },
+      "home": { path: "/dashboard/home", label: "Home" },
+      "network": { path: "/dashboard/network", label: "Network Command" },
+      "agent": { path: "/dashboard/agents", label: "AI Agents" },
+      "setting": { path: "/dashboard/settings", label: "Settings" },
+      "doctor": { path: "https://doctor-os.vercel.app", label: "Doctor OS" },
+      "visiocode": { path: "https://visiocode.vercel.app", label: "VisioCode" },
+      "flow": { path: "https://patient-flow-ai.vercel.app", label: "Patient Flow AI" },
+    };
+
+    const lowerQuery = query.toLowerCase();
+    const isNavRequest = /(take me|go to|open|show|navigate|bring up|pull up)/.test(lowerQuery);
+    if (isNavRequest) {
+      for (const [keyword, nav] of Object.entries(navMap)) {
+        if (lowerQuery.includes(keyword)) {
+          setMessages(prev => [...prev, { id: `msg-${++msgCounter}`, role: "assistant", content: `Taking you to **${nav.label}**...`, timestamp: new Date() }]);
+          setTyping(false);
+          setTimeout(() => {
+            if (nav.path.startsWith("http")) {
+              window.open(nav.path, "_blank");
+            } else {
+              window.location.href = nav.path;
+            }
+          }, 1000);
+          return;
+        }
+      }
+    }
+
     try {
       const res = await fetch("/api/assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ message: query }),
       });
 
