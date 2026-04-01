@@ -303,6 +303,7 @@ export async function POST(request: Request) {
       include: { messages: { orderBy: { createdAt: "asc" } } },
     });
 
+    const isFirstContact = !conversation;
     if (!conversation) {
       conversation = await prisma.conversation.create({
         data: {
@@ -312,6 +313,30 @@ export async function POST(request: Request) {
         },
         include: { messages: { orderBy: { createdAt: "asc" } } },
       });
+
+      // Send welcome menu on first contact
+      if (detected.intent === "general") {
+        const { sendWhatsAppMenu } = await import("@/lib/twilio");
+        try {
+          await sendWhatsAppMenu(
+            phone,
+            `Welcome to ${practice.name}`,
+            `Hi ${patient.name}! I'm your AI health assistant. How can I help you today?`,
+            [
+              { id: "book", title: "Book Appointment", description: "Find a time that works" },
+              { id: "clinic", title: "Find Nearest Clinic", description: "Clinics near you" },
+              { id: "results", title: "Check Results", description: "Lab results & records" },
+              { id: "prescription", title: "Repeat Prescription", description: "Request a refill" },
+              { id: "emergency", title: "Emergency", description: "082 911 or nearest ER" },
+            ],
+          );
+          await prisma.message.create({
+            data: { conversationId: conversation.id, role: "practice" as string, content: `Welcome menu sent to ${patient.name}`, approved: true },
+          });
+        } catch {
+          // Welcome menu failed — continue with normal flow
+        }
+      }
     }
 
     // 4. Add patient message to conversation

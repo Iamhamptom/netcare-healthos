@@ -42,6 +42,48 @@ export async function sendWhatsApp(to: string, body: string) {
   return { sid: data.sid, status: data.status };
 }
 
+/** Send WhatsApp with interactive buttons (Twilio Content API) */
+export async function sendWhatsAppWithButtons(
+  to: string,
+  body: string,
+  buttons: { id: string; title: string }[],
+) {
+  // Twilio uses ContentSid for interactive templates, but for quick replies
+  // we append button hints as numbered options in the message body
+  const buttonText = buttons.map((b, i) => `${i + 1}. ${b.title}`).join("\n");
+  const fullMessage = `${body}\n\n${buttonText}\n\nReply with a number or keyword.`;
+  return sendWhatsApp(to, fullMessage);
+}
+
+/** Send WhatsApp with a list menu */
+export async function sendWhatsAppMenu(
+  to: string,
+  header: string,
+  body: string,
+  options: { id: string; title: string; description?: string }[],
+) {
+  const optionText = options.map((o, i) => `${i + 1}. *${o.title}*${o.description ? ` — ${o.description}` : ""}`).join("\n");
+  const fullMessage = `*${header}*\n\n${body}\n\n${optionText}\n\nReply with a number to select.`;
+  return sendWhatsApp(to, fullMessage);
+}
+
+/** Send WhatsApp with SMS fallback — tries WhatsApp first, falls back to SMS if it fails */
+export async function sendWithFallback(to: string, body: string): Promise<{ channel: "whatsapp" | "sms"; sid: string; status: string }> {
+  // Try WhatsApp first
+  try {
+    const result = await sendWhatsApp(to, body);
+    return { channel: "whatsapp", ...result };
+  } catch {
+    // WhatsApp failed — fall back to SMS
+    try {
+      const smsResult = await sendSMS(to, body.slice(0, 1600)); // SMS has 1600 char limit with concatenation
+      return { channel: "sms", ...smsResult };
+    } catch (smsErr) {
+      throw new Error(`Both WhatsApp and SMS failed: ${smsErr}`);
+    }
+  }
+}
+
 /** Broadcast WhatsApp message to multiple recipients */
 export async function broadcastWhatsApp(recipients: string[], body: string) {
   const results: { to: string; sid?: string; error?: string }[] = [];

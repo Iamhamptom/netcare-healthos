@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isDemoMode } from "@/lib/is-demo";
-import { sendDueReminders, sendCheckinDetails, sendFollowups, sendReviewRequests } from "@/lib/booking-engine";
+import { send3DayReminders, sendDueReminders, sendCheckinDetails, sendFollowups, sendReviewRequests } from "@/lib/booking-engine";
 
 /** POST /api/reminders/run — Cron endpoint to trigger all reminder jobs
  *  Call this every hour via Vercel Cron or external scheduler.
@@ -28,8 +28,9 @@ export async function POST(request: Request) {
     });
   }
 
-  // Run all notification jobs
-  const [reminders, _checkins, _followups, _reviews] = await Promise.allSettled([
+  // Run all notification jobs (3-day + 24h + 2h + follow-up + review)
+  const [day3, reminders, _checkins, _followups, _reviews] = await Promise.allSettled([
+    send3DayReminders(),
     sendDueReminders(),
     sendCheckinDetails(),
     sendFollowups(),
@@ -37,6 +38,7 @@ export async function POST(request: Request) {
   ]);
 
   return NextResponse.json({
+    day3Reminders: day3.status === "fulfilled" ? { sent: day3.value.length } : { error: String(day3.reason) },
     reminders: reminders.status === "fulfilled" ? { sent: reminders.value.length } : { error: String(reminders.reason) },
     checkins: _checkins.status === "fulfilled" ? { sent: "ok" } : { error: String(_checkins.reason) },
     followups: _followups.status === "fulfilled" ? { sent: "ok" } : { error: String(_followups.reason) },
@@ -63,7 +65,8 @@ export async function GET(request: Request) {
     return NextResponse.json({ status: "ok", message: "Demo mode — no reminders sent" });
   }
 
-  const [reminders, _checkins, _followups, _reviews] = await Promise.allSettled([
+  const [day3, reminders, _checkins, _followups, _reviews] = await Promise.allSettled([
+    send3DayReminders(),
     sendDueReminders(),
     sendCheckinDetails(),
     sendFollowups(),
@@ -71,6 +74,7 @@ export async function GET(request: Request) {
   ]);
 
   return NextResponse.json({
+    day3Reminders: day3.status === "fulfilled" ? { sent: day3.value.length } : { error: String(day3.reason) },
     reminders: reminders.status === "fulfilled" ? { sent: reminders.value.length } : { error: String(reminders.reason) },
     reviews: _reviews.status === "fulfilled" ? _reviews.value : { error: String(_reviews.reason) },
     message: "Cron job completed",

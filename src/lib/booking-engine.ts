@@ -211,6 +211,63 @@ async function sendBookingConfirmation(
   }
 }
 
+/** Send 3-day advance reminder with CONFIRM/RESCHEDULE buttons */
+export async function send3DayReminders() {
+  const now = new Date();
+  const in72h = new Date(now.getTime() + 72 * 60 * 60 * 1000);
+  const in73h = new Date(now.getTime() + 73 * 60 * 60 * 1000);
+
+  const bookings = await prisma.booking.findMany({
+    where: {
+      status: "confirmed",
+      scheduledAt: { gte: in72h, lte: in73h },
+      reminderSentAt: null, // Only send if 24h reminder hasn't fired yet (acts as 3-day)
+    },
+    include: { practice: true },
+  });
+
+  const results: { bookingId: string; sent: boolean; error?: string }[] = [];
+
+  for (const booking of bookings) {
+    try {
+      const dateStr = formatDate(booking.scheduledAt);
+      const timeStr = formatTime(booking.scheduledAt);
+
+      if (booking.patientPhone) {
+        const { sendWhatsAppWithButtons } = await import("@/lib/twilio");
+        await sendWhatsAppWithButtons(
+          booking.patientPhone,
+          `Hi ${booking.patientName}, your appointment at ${booking.practice.name} is in 3 days.\n\n` +
+          `Service: ${booking.service}\n` +
+          `Date: ${dateStr}\n` +
+          `Time: ${timeStr}\n` +
+          `Address: ${booking.practice.address}`,
+          [
+            { id: "confirm", title: "Confirm" },
+            { id: "reschedule", title: "Reschedule" },
+            { id: "cancel", title: "Cancel" },
+          ],
+        );
+      }
+
+      // Log notification
+      await prisma.notification.create({
+        data: {
+          type: "whatsapp", recipient: booking.patientPhone || "", patientName: booking.patientName,
+          subject: "3-Day Reminder", message: `3-day reminder sent for ${booking.service} on ${dateStr}`,
+          status: "sent", template: "reminder_72h", practiceId: booking.practiceId,
+        },
+      });
+
+      results.push({ bookingId: booking.id, sent: true });
+    } catch (err) {
+      results.push({ bookingId: booking.id, sent: false, error: String(err) });
+    }
+  }
+
+  return results;
+}
+
 /** Send 24h reminder for upcoming confirmed bookings */
 export async function sendDueReminders() {
   const now = new Date();
@@ -444,10 +501,12 @@ function reviewRequestEmailTemplate(opts: {
 
 async function trySendWhatsApp(to: string, message: string, practiceId: string, patientName: string) {
   try {
-    await sendWhatsApp(to, message);
+    // Try WhatsApp first, fall back to SMS if it fails
+    const { sendWithFallback } = await import("@/lib/twilio");
+    const result = await sendWithFallback(to, message);
     await prisma.notification.create({
       data: {
-        type: "whatsapp",
+        type: result.channel,
         recipient: to,
         patientName,
         message,
@@ -457,8 +516,7 @@ async function trySendWhatsApp(to: string, message: string, practiceId: string, 
       },
     });
   } catch (err) {
-    console.error("WhatsApp send error:", err);
-    // Still log the attempt
+    console.error("WhatsApp + SMS fallback error:", err);
     await prisma.notification.create({
       data: {
         type: "whatsapp",
