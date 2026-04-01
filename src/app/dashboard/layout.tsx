@@ -6,7 +6,7 @@ import { AnimatePresence } from "framer-motion";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import FeatureGuide from "@/components/dashboard/FeatureGuide";
-import NetcareAssistant from "@/components/dashboard/NetcareAssistant";
+import AgentWidget from "@/components/dashboard/AgentWidget";
 import ProductCourse from "@/components/dashboard/ProductCourse";
 import ParticleField from "@/components/dashboard/ParticleField";
 import CursorGlow from "@/components/dashboard/CursorGlow";
@@ -145,7 +145,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         </main>
       </div>
       <FeatureGuide />
-      <NetcareAssistant />
+      <AgentWidget />
     </div>
   );
 }
