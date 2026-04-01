@@ -93,12 +93,12 @@ const TOOLS: Tool[] = [
 ];
 
 const MODES = [
-  { name: "Doctor Mode", desc: "Scribe, intake, coding, referrals, prescriptions", icon: Stethoscope, color: "#3DA9D1" },
-  { name: "Front Desk", desc: "Check-in, bookings, calendar, patients, recalls", icon: Users, color: "#10B981" },
-  { name: "Billing Clerk", desc: "Claims validation, submission, invoicing, reconciliation", icon: Receipt, color: "#F59E0B" },
-  { name: "Practice Manager", desc: "Analytics, reports, engagement, team management", icon: Building2, color: "#8B5CF6" },
-  { name: "Executive", desc: "Revenue dashboard, KPIs, compliance, board pack", icon: Target, color: "#EF4444" },
-  { name: "IT / Governance", desc: "Architecture, integrations, AI governance, security", icon: Lock, color: "#64748B" },
+  { name: "Practice Manager", desc: "Morning checklist, team, branding, recall, compliance, end-of-day", icon: Building2, color: "#3DA9D1", href: "/dashboard/modules/practice-manager" },
+  { name: "Front Desk", desc: "Check-in, bookings, patients, eligibility, engagement", icon: Users, color: "#10B981", href: "/dashboard/front-desk" },
+  { name: "Doctor Mode", desc: "Scribe, intake, coding, referrals, prescriptions", icon: Stethoscope, color: "#8B5CF6", href: "/dashboard/scribe" },
+  { name: "Claims & Billing", desc: "Validation, submission, invoicing, reconciliation, switching", icon: Receipt, color: "#F59E0B", href: "/dashboard/claims" },
+  { name: "Executive", desc: "Revenue, KPIs, financial director, CIO, board pack", icon: Target, color: "#EF4444", href: "/dashboard/executive" },
+  { name: "IT / Governance", desc: "Architecture, integrations, AI governance, security, resources", icon: Lock, color: "#64748B", href: "/dashboard/ai-governance" },
 ];
 
 function useCurrentUser() {
@@ -166,7 +166,7 @@ export default function HomePage() {
             {MODES.map((m, i) => {
               const Icon = m.icon;
               return (
-                <div key={i} className="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-3">
+                <button key={i} onClick={() => router.push(m.href)} className="p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/20 hover:bg-white/[0.04] flex items-center gap-3 text-left transition-all">
                   <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${m.color}10`, color: m.color }}>
                     <Icon className="w-4 h-4" />
                   </div>
@@ -174,7 +174,7 @@ export default function HomePage() {
                     <div className="text-sm font-bold text-white">{m.name}</div>
                     <div className="text-[10px] text-slate-500">{m.desc}</div>
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>
