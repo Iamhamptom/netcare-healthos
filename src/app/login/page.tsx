@@ -52,7 +52,7 @@ export default function LoginPage() {
       } else if (data.user?.role === "platform_admin") {
         router.replace("/admin");
       } else {
-        router.replace("/dashboard?course=1");
+        router.replace("/dashboard/home");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
