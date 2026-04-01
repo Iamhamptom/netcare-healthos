@@ -206,19 +206,24 @@ export default function HomePage() {
           </div>
         </div>
 
+        {/* Enter Dashboard — BIG BUTTON */}
+        <div className="flex justify-center mb-6">
+          <button onClick={() => router.push("/dashboard")}
+            className="px-8 py-3 rounded-xl bg-[#3DA9D1] hover:bg-[#3DA9D1]/80 text-white font-bold text-sm flex items-center gap-2 transition-all shadow-lg shadow-[#3DA9D1]/20">
+            <Layers className="w-5 h-5" /> Enter Full Dashboard <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+
         {/* Quick links */}
         <div className="flex flex-wrap justify-center gap-3 text-[11px]">
           {[
-            { label: "Full Dashboard", href: "/dashboard" },
             { label: "Resources & Research", href: "/dashboard/resources" },
             { label: "Product Map", href: "/dashboard/product-map" },
             { label: "Integration Map", href: "/dashboard/integration-map" },
             { label: "AI Governance", href: "/dashboard/ai-governance" },
             { label: "Pitch Deck", href: "/dashboard/pitch" },
           ].map((link, i) => (
-            <button key={i} onClick={() => router.push(link.href)} className={`px-3 py-1.5 rounded-full border transition-all ${
-              link.label === "Full Dashboard" ? "bg-white/10 border-white/20 text-white font-bold" : "bg-white/5 border-white/10 text-slate-400 hover:text-white hover:border-white/20"
-            }`}>
+            <button key={i} onClick={() => router.push(link.href)} className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:border-white/20 transition-all">
               {link.label}
             </button>
           ))}
