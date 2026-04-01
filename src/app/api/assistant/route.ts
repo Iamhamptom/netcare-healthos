@@ -174,8 +174,16 @@ export async function POST(request: Request) {
       }
     }
 
-    // Detect UI actions from the message (navigation, tool activation)
+    // Detect UI actions — from regex patterns AND from navigate_to tool calls
     const actions = detectUIActions(message, result.response, result.toolsUsed);
+
+    // If the AI called navigate_to, extract the path from the response
+    if (result.toolsUsed.includes("navigate_to") && result.response) {
+      const pathMatch = result.response.match(/\/dashboard\/[\w\-\/]+/);
+      if (pathMatch && !actions.find(a => a.target === pathMatch[0])) {
+        actions.push({ type: "navigate", target: pathMatch[0], label: "AI Navigation" });
+      }
+    }
 
     return NextResponse.json({
       reply: result.response,
@@ -354,10 +362,10 @@ interface UIAction {
 }
 
 const ACTION_PATTERNS: Array<{ patterns: RegExp[]; action: UIAction }> = [
-  // Navigation: pull up / show / open pages
-  { patterns: [/pull up.*(intake|clinical intake)/i, /show.*(intake)/i, /open.*(intake)/i], action: { type: "navigate", target: "/dashboard/intake", label: "Clinical Intake" } },
-  { patterns: [/pull up.*(scribe|recorder|recording)/i, /start.*(scribe|recording|consult)/i, /open.*(scribe)/i], action: { type: "navigate", target: "/dashboard/scribe", label: "AI Medical Scribe" } },
-  { patterns: [/pull up.*(claims|claim.?valid)/i, /show.*(claims|validation)/i, /open.*(claims)/i], action: { type: "navigate", target: "/dashboard/claims", label: "Claims Analyzer" } },
+  // Navigation: pull up / show / open / take me to / go to / navigate to / bring up
+  { patterns: [/(pull up|show|open|take me|go to|navigate|bring up).*(intake|clinical intake)/i], action: { type: "navigate", target: "/dashboard/intake", label: "Clinical Intake" } },
+  { patterns: [/(pull up|show|open|take me|go to|navigate|bring up).*(scribe|recorder|recording)/i, /start.*(scribe|recording|consult)/i], action: { type: "navigate", target: "/dashboard/scribe", label: "AI Medical Scribe" } },
+  { patterns: [/(pull up|show|open|take me|go to|navigate|bring up).*(claims|claim.?valid|claim.?analy)/i], action: { type: "navigate", target: "/dashboard/claims", label: "Claims Analyzer" } },
   { patterns: [/pull up.*(copilot|claims.?chat)/i, /show.*(copilot)/i, /ask.*about.*(icd|code|claim)/i], action: { type: "navigate", target: "/dashboard/claims-copilot", label: "Claims Copilot" } },
   { patterns: [/pull up.*(bridge|careon|hl7|fhir)/i, /show.*(bridge|careon)/i], action: { type: "navigate", target: "/dashboard/bridge", label: "CareOn Bridge" } },
   { patterns: [/pull up.*(switch|edifact|routing)/i, /show.*(switch)/i], action: { type: "navigate", target: "/dashboard/switching", label: "Switching Engine" } },

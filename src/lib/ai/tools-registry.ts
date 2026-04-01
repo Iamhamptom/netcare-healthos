@@ -37,6 +37,66 @@ function registerTool(tool: ToolDef) {
   tools.set(tool.name, tool);
 }
 
+// ── Navigation Tool ─────────────────────────────────────────────────────
+// Allows the AI to navigate the user to any page on the platform
+
+registerTool({
+  name: "navigate_to",
+  description: `Navigate the user to a page on the Health OS platform. Use this when the user asks to go somewhere, see something, or open a tool. Available pages:
+- /dashboard/home — Main home screen with all tools
+- /dashboard/claims — Claims Analyzer (upload CSV, validate, auto-fix)
+- /dashboard/claims-copilot — Claims Copilot (ask about ICD-10 codes, schemes)
+- /dashboard/healthbridge/ai-coder — AI ICD-10 + CPT Coder (paste notes, get codes)
+- /dashboard/scribe — AI Medical Scribe (voice recording, SOAP notes)
+- /dashboard/intake — Clinical Intake (text/photo/voice to SOAP)
+- /dashboard/bridge — CareOn Bridge (HL7v2 to FHIR R4)
+- /dashboard/switching — Claims Switching Engine
+- /dashboard/fhir-hub — FHIR R4 Integration Hub
+- /dashboard/healthbridge — Healthbridge Claims Dashboard
+- /dashboard/patients — Patient Records
+- /dashboard/bookings — Bookings
+- /dashboard/checkin — Check-in Queue (Kanban)
+- /dashboard/billing — Billing & Invoicing
+- /dashboard/recall — Patient Recall
+- /dashboard/daily — Daily Tasks
+- /dashboard/documents — Document Generator (referrals, prescriptions, sick notes)
+- /dashboard/assistant — Full AI Assistant
+- /dashboard/engagement — Patient Engagement Hub
+- /dashboard/notifications — Notifications
+- /dashboard/executive — Executive Dashboard (Sara's view)
+- /dashboard/financial-director — Financial Director View
+- /dashboard/architecture — Technical Architecture
+- /dashboard/ai-governance — AI Governance & Compliance
+- /dashboard/resources — Resources & Research Library
+- /dashboard/product-map — Product Map & Value Chain
+- /dashboard/integration-map — Integration Map
+- /dashboard/pitch — Pitch Deck
+- /dashboard/cio — CIO Dashboard
+- /dashboard/business-development — Business Development
+- /dashboard/clinical-quality — Clinical Quality
+- /dashboard/whatsapp — WhatsApp Router
+- /dashboard/agents — AI Agents
+- /dashboard/network — Network Command Centre
+- /dashboard/settings — Settings`,
+  parameters: {
+    type: "object",
+    properties: {
+      path: { type: "string", description: "The dashboard path to navigate to (e.g., /dashboard/claims)" },
+      reason: { type: "string", description: "Brief explanation of why navigating there" },
+    },
+    required: ["path"],
+  },
+  tags: ["all", "practice", "claims", "medical", "billing", "engagement"],
+  execute: async (args) => {
+    return JSON.stringify({
+      action: "navigate",
+      path: args.path,
+      reason: args.reason || "User requested navigation",
+      success: true,
+    });
+  },
+});
+
 // ── Practice Management Tools ───────────────────────────────────────────
 
 registerTool({
