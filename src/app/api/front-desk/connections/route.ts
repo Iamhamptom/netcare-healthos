@@ -77,11 +77,38 @@ const INTEGRATION_DEFS: Omit<IntegrationStatus, "status" | "lastSync">[] = [
     configurable: true,
   },
   {
+    id: "microsoft365",
+    name: "Microsoft 365 (Outlook + OneDrive + Teams)",
+    description: "Connect Outlook email, OneDrive documents, Teams notifications, and calendar sync",
+    category: "communication",
+    powers: ["Outlook email inbox with AI triage", "OneDrive document sync", "Teams notifications for critical alerts", "Calendar sync via Outlook", "Excel export to OneDrive"],
+    breaksWithout: "No Microsoft integration. Email falls back to Resend. No document sync or Teams alerts.",
+    configurable: true,
+  },
+  {
+    id: "gmail",
+    name: "Gmail / Google Workspace",
+    description: "Connect Gmail inbox for patient email management with AI triage and patient matching",
+    category: "communication",
+    powers: ["Gmail inbox with AI triage", "Patient email matching", "Send emails via practice Gmail", "Google Calendar sync"],
+    breaksWithout: "No Gmail integration. Emails handled via Resend only. No inbox triage.",
+    configurable: true,
+  },
+  {
+    id: "careon_bridge",
+    name: "CareOn Bridge (Hospital Integration)",
+    description: "Receive patient data from CareOn hospital systems via HL7v2/FHIR — discharge summaries, lab results, clinical advisories",
+    category: "clinical",
+    powers: ["Hospital discharge auto-import", "Lab results translated to plain language", "AI clinical advisories", "Automatic post-discharge engagement sequences", "FHIR R4 interoperability"],
+    breaksWithout: "No hospital data flows in. Practices must manually capture discharge info. Post-discharge follow-up is manual.",
+    configurable: true,
+  },
+  {
     id: "ai_models",
     name: "AI Models (Claude / Gemini)",
     description: "Powers the Front Desk Agent, patient chatbot, triage, and engagement AI responses",
     category: "ai",
-    powers: ["Front Desk Agent", "Patient chatbot", "Side effects triage (Day 7)", "Intake questionnaire"],
+    powers: ["Front Desk Agent", "Engagement Agent (18 tools)", "Patient chatbot", "Side effects triage (Day 7)", "Email AI triage", "Claims review"],
     breaksWithout: "AI features go offline. Reception answers questions manually. Engagement sequences still send but without AI triage.",
     configurable: false,
   },
@@ -115,6 +142,24 @@ function checkIntegrationStatus(id: string, practiceIntegrations?: Record<string
       return process.env.HEALTHBRIDGE_API_KEY || process.env.HEALTHBRIDGE_URL
         ? { status: "connected" }
         : { status: "disconnected" };
+    case "microsoft365": {
+      const ms = practiceIntegrations?.microsoftAccessToken;
+      return ms
+        ? { status: "connected", lastSync: practiceIntegrations?.microsoftConnectedAt as string | undefined }
+        : { status: "disconnected" };
+    }
+    case "gmail": {
+      const gm = practiceIntegrations?.gmailAccessToken;
+      return gm
+        ? { status: "connected", lastSync: practiceIntegrations?.gmailConnectedAt as string | undefined }
+        : { status: "disconnected" };
+    }
+    case "careon_bridge": {
+      const cb = practiceIntegrations?.careonBridge as Record<string, unknown> | undefined;
+      return cb?.enabled
+        ? { status: "connected", lastSync: cb.lastSync as string | undefined }
+        : { status: "disconnected" };
+    }
     case "ai_models":
       return process.env.AI_GATEWAY_API_KEY || process.env.GOOGLE_GEMINI_API_KEY || process.env.ANTHROPIC_API_KEY
         ? { status: "connected" }
@@ -162,7 +207,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "integrationId and config are required" }, { status: 400 });
   }
 
-  const allowed = ["google_calendar", "heal", "healthbridge"];
+  const allowed = ["google_calendar", "heal", "healthbridge", "microsoft365", "gmail", "careon_bridge"];
   if (!allowed.includes(integrationId)) {
     return NextResponse.json({ error: "This integration is not configurable here" }, { status: 400 });
   }

@@ -6,6 +6,7 @@ import {
   PlugZap, CheckCircle2, AlertCircle, Clock, XCircle,
   Database, MessageSquare, Mail, Calendar, Building2,
   Shield, Brain, Loader2, ChevronDown, ExternalLink,
+  Cloud, Inbox, HeartPulse,
 } from "lucide-react";
 
 interface Integration {
@@ -23,11 +24,23 @@ interface Integration {
 const ICON_MAP: Record<string, typeof Database> = {
   supabase: Database,
   whatsapp: MessageSquare,
+  email: Mail,
   resend: Mail,
+  google_calendar: Calendar,
   "google-calendar": Calendar,
   heal: Building2,
   healthbridge: Shield,
+  ai_models: Brain,
   "ai-model": Brain,
+  microsoft365: Cloud,
+  gmail: Inbox,
+  careon_bridge: HeartPulse,
+};
+
+// OAuth integrations that need a "Connect" button instead of config form
+const OAUTH_INTEGRATIONS: Record<string, { connectUrl: string; label: string }> = {
+  microsoft365: { connectUrl: "/api/microsoft/connect", label: "Connect Microsoft 365" },
+  gmail: { connectUrl: "/api/gmail/connect", label: "Connect Gmail" },
 };
 
 const STATUS_MAP = {
@@ -201,7 +214,40 @@ export default function FrontDeskConnectionsPage() {
                           </button>
                         </div>
                       )}
-                      {int.status === "disconnected" && int.id !== "heal" && (
+                      {/* OAuth connect buttons (Microsoft 365, Gmail) */}
+                      {int.status === "disconnected" && OAUTH_INTEGRATIONS[int.id] && (
+                        <a
+                          href={OAUTH_INTEGRATIONS[int.id].connectUrl}
+                          className="text-[11px] font-mono text-neutral-900 bg-neutral-100 px-3 py-1 rounded hover:bg-neutral-200 transition-colors inline-flex items-center gap-1"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          {OAUTH_INTEGRATIONS[int.id].label}
+                        </a>
+                      )}
+                      {/* CareOn Bridge config */}
+                      {int.id === "careon_bridge" && int.status === "disconnected" && (
+                        <button
+                          onClick={async () => {
+                            await fetch("/api/front-desk/connections", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ integrationId: "careon_bridge", config: { enabled: true, connectedAt: new Date().toISOString() } }),
+                            });
+                            fetchData();
+                          }}
+                          className="text-[11px] font-mono text-neutral-900 bg-neutral-100 px-3 py-1 rounded hover:bg-neutral-200 transition-colors"
+                        >
+                          enable CareOn Bridge
+                        </button>
+                      )}
+                      {/* Disconnect button for connected OAuth */}
+                      {int.status === "connected" && OAUTH_INTEGRATIONS[int.id] && (
+                        <button className="text-[11px] font-mono text-red-400 hover:text-red-300 px-2 py-1 rounded border border-neutral-700 hover:bg-neutral-800 transition-colors">
+                          disconnect
+                        </button>
+                      )}
+                      {/* Generic fallback */}
+                      {int.status === "disconnected" && !OAUTH_INTEGRATIONS[int.id] && int.id !== "heal" && int.id !== "careon_bridge" && (
                         <div className="flex items-center gap-1 text-[11px] font-mono text-neutral-500">
                           <AlertCircle className="w-3 h-3" />
                           Setup required — contact admin
