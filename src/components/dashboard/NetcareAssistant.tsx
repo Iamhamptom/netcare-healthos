@@ -224,18 +224,49 @@ function NetcareAssistantInner() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim()) return;
     const userMsg: Message = { id: `msg-${++msgCounter}`, role: "user", content: input.trim(), timestamp: new Date() };
     setMessages(prev => [...prev, userMsg]);
+    const query = input.trim();
     setInput("");
     setTyping(true);
 
-    setTimeout(() => {
-      const response = getResponse(userMsg.content);
-      setMessages(prev => [...prev, { id: `msg-${++msgCounter}`, role: "assistant", content: response, timestamp: new Date() }]);
+    try {
+      const res = await fetch("/api/assistant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: query }),
+      });
+
+      if (!res.ok) {
+        // Fallback to keyword matching if API fails
+        const fallback = getResponse(query);
+        setMessages(prev => [...prev, { id: `msg-${++msgCounter}`, role: "assistant", content: fallback, timestamp: new Date() }]);
+        setTyping(false);
+        return;
+      }
+
+      const data = await res.json();
+      const reply = data.reply || data.response || "I couldn't process that request. Please try again.";
+      setMessages(prev => [...prev, { id: `msg-${++msgCounter}`, role: "assistant", content: reply, timestamp: new Date() }]);
+
+      // Handle navigation actions
+      if (data.actions && Array.isArray(data.actions)) {
+        for (const action of data.actions) {
+          if (action.type === "navigate" && action.target) {
+            setTimeout(() => { window.location.href = action.target; }, 1500);
+            break;
+          }
+        }
+      }
+    } catch {
+      // Fallback to keyword matching on network error
+      const fallback = getResponse(query);
+      setMessages(prev => [...prev, { id: `msg-${++msgCounter}`, role: "assistant", content: fallback, timestamp: new Date() }]);
+    } finally {
       setTyping(false);
-    }, 600 + Math.random() * 400);
+    }
   };
 
   return (
