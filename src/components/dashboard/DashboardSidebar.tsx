@@ -61,6 +61,9 @@ import {
   TestTube,
   Workflow,
   Cloud,
+  Landmark,
+  PlugZap,
+  HeartPulse,
 } from "lucide-react";
 
 /* ─── Types ─── */
@@ -127,6 +130,16 @@ const navSections: NavSection[] = [
       { href: "/dashboard/agents", icon: Bot, label: "AI Agents", roles: ["admin", "doctor"] },
       { href: "/dashboard/practitioners", icon: Users, label: "Practitioners", roles: ["admin", "platform_admin"] },
       { href: "/dashboard/conversations", icon: MessageSquare, label: "Conversations", roles: ["admin", "receptionist"] },
+    ],
+  },
+  {
+    label: "FRONT DESK",
+    badge: "NEW",
+    badgeColor: "emerald",
+    items: [
+      { href: "/dashboard/front-desk", icon: Landmark, label: "Front Desk Hub", roles: ["admin", "receptionist", "nurse"] },
+      { href: "/dashboard/front-desk/connections", icon: PlugZap, label: "Connections", roles: ["admin", "receptionist"] },
+      { href: "/dashboard/front-desk/engagement", icon: HeartPulse, label: "Patient Care", roles: ["admin", "receptionist", "nurse"] },
     ],
   },
   {

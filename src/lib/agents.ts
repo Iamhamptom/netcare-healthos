@@ -10,11 +10,11 @@
  */
 
 import { runIntelligence, getPersona } from "@/lib/ai";
-import { TRIAGE_AGENT, BILLING_AGENT, INTAKE_ANALYZER, FOLLOWUP_AGENT, SCHEDULER_AGENT } from "@/lib/ai/personas";
+import { TRIAGE_AGENT, BILLING_AGENT, INTAKE_ANALYZER, FOLLOWUP_AGENT, SCHEDULER_AGENT, FRONTDESK_AGENT } from "@/lib/ai/personas";
 import type { AgentPersona } from "@/lib/ai/types";
 import { scrubContextForLLM, escapeForPrompt } from "@/lib/ai/security";
 
-export type AgentType = "triage" | "followup" | "intake" | "billing" | "scheduler";
+export type AgentType = "triage" | "followup" | "intake" | "billing" | "scheduler" | "frontdesk";
 
 interface AgentResult {
   agent: AgentType;
@@ -37,6 +37,7 @@ const AGENT_PERSONAS: Record<AgentType, AgentPersona> = {
   intake: INTAKE_ANALYZER,
   billing: BILLING_AGENT,
   scheduler: SCHEDULER_AGENT,
+  frontdesk: FRONTDESK_AGENT,
 };
 
 export async function runAgent(
@@ -117,6 +118,26 @@ export async function runAgent(
     }
     if (result.toolsUsed.includes("cancel_booking")) {
       actions.push({ type: "schedule_followup", data: {} });
+    }
+  }
+
+  // Frontdesk: detect all reception actions
+  if (agentType === "frontdesk") {
+    if (result.toolsUsed.includes("create_booking")) {
+      actions.push({ type: "create_booking", data: {} });
+    }
+    if (result.toolsUsed.includes("checkin_patient") || result.toolsUsed.includes("update_checkin_status")) {
+      actions.push({ type: "update_record", data: { type: "checkin" } });
+    }
+    if (result.toolsUsed.includes("send_whatsapp") || result.toolsUsed.includes("send_email") || result.toolsUsed.includes("send_notification")) {
+      actions.push({ type: "send_reminder", data: {} });
+    }
+    if (result.toolsUsed.includes("verify_medical_aid")) {
+      actions.push({ type: "update_record", data: { type: "eligibility_check" } });
+    }
+    if (lowerResponse.includes("emergency") || lowerResponse.includes("10177")) {
+      actions.push({ type: "flag_urgent", data: { urgency: "EMERGENCY" } });
+      escalate = true;
     }
   }
 
