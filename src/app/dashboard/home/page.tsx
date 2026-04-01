@@ -206,6 +206,56 @@ export default function HomePage() {
           </div>
         </div>
 
+        {/* Engines — Infrastructure Products */}
+        <div className="mb-8">
+          <h2 className="text-xs font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">Infrastructure Engines</h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {[
+              { name: "CareOn Bridge", desc: "HL7v2 → FHIR R4 translation", href: "/dashboard/bridge", color: "#10B981", icon: Router },
+              { name: "FHIR R4 Hub", desc: "12 resource types, CareConnect HIE", href: "/dashboard/fhir-hub", color: "#3DA9D1", icon: Globe },
+              { name: "Switching Engine", desc: "EDIFACT, 3 switches, 30+ schemes", href: "/dashboard/switching", color: "#F59E0B", icon: Network },
+              { name: "Claims AI Engine", desc: "20+ rules, PMB/CDL, auto-fix", href: "/dashboard/healthbridge", color: "#8B5CF6", icon: Shield },
+              { name: "RL Engine", desc: "Self-improving — gets smarter daily", href: "/dashboard/agents", color: "#EF4444", icon: RefreshCcw },
+              { name: "Engagement Engine", desc: "Sequences, campaigns, recall", href: "/dashboard/engagement", color: "#10B981", icon: Heart },
+              { name: "Scribe Engine", desc: "Voice → SOAP → codes → record", href: "/dashboard/scribe", color: "#3DA9D1", icon: Mic },
+              { name: "Knowledge Base", desc: "41K ICD-10, 487K NAPPI, 189K RAG", href: "/dashboard/claims-copilot", color: "#64748B", icon: BookOpen },
+            ].map((e, i) => {
+              const Icon = e.icon;
+              return (
+                <button key={i} onClick={() => router.push(e.href)}
+                  className="p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/15 text-left transition-all flex items-center gap-3 group">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${e.color}10`, color: e.color }}>
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-white">{e.name}</div>
+                    <div className="text-[9px] text-slate-500">{e.desc}</div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Standalone Products */}
+        <div className="mb-8">
+          <h2 className="text-xs font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">Standalone Products</h2>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { name: "VisioCode", desc: "AI Clinical Coding Platform", url: "https://visiocode.vercel.app", color: "#8B5CF6" },
+              { name: "Patient Flow AI", desc: "No-show prediction + scheduling", url: "https://patient-flow-ai.vercel.app", color: "#10B981" },
+              { name: "Doctor OS", desc: "Doctor consultation workflow", url: "https://doctor-os.vercel.app", color: "#3DA9D1" },
+            ].map((p, i) => (
+              <a key={i} href={p.url} target="_blank" rel="noopener noreferrer"
+                className="p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/20 text-left transition-all block group">
+                <div className="text-sm font-bold text-white group-hover:text-[#3DA9D1] transition-colors">{p.name}</div>
+                <div className="text-[10px] text-slate-500 mt-1">{p.desc}</div>
+                <div className="text-[9px] mt-2 font-mono truncate" style={{ color: p.color }}>{p.url.replace('https://', '')}</div>
+              </a>
+            ))}
+          </div>
+        </div>
+
         {/* Enter Dashboard — BIG BUTTON */}
         <div className="flex justify-center mb-6">
           <button onClick={() => router.push("/dashboard")}
