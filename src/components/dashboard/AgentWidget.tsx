@@ -261,16 +261,47 @@ export default function AgentWidget() {
       <input ref={fileRef} type="file" className="hidden" multiple accept=".csv,.pdf,.jpg,.png,.txt,.doc,.docx"
         onChange={e => { if (e.target.files) setFiles(Array.from(e.target.files)); }} />
 
-      {/* Floating trigger */}
+      {/* Floating trigger — 3D particle sphere */}
       {!open && (
         <motion.button
-          initial={{ scale: 0 }} animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 260, damping: 20 }}
+          initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 200, damping: 20 }}
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9990] w-14 h-14 rounded-2xl bg-gradient-to-br from-[#1D3443] to-[#3DA9D1] text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all flex items-center justify-center"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9990] group"
         >
-          <Activity className="w-6 h-6" />
-          <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-400 animate-pulse" />
+          <div className="relative flex flex-col items-center gap-2">
+            <span className="text-[10px] font-bold text-white/60 uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-opacity">Chat with Visio</span>
+            <div className="relative w-16 h-16">
+              {/* Rotating particle sphere via CSS */}
+              <div className="absolute inset-0 rounded-full animate-spin" style={{ animationDuration: "20s" }}>
+                {Array.from({ length: 40 }).map((_, i) => {
+                  const phi = Math.acos(-1 + (2 * i) / 40);
+                  const theta = Math.sqrt(40 * Math.PI) * phi;
+                  const x = 50 + 45 * Math.cos(theta) * Math.sin(phi);
+                  const y = 50 + 45 * Math.sin(theta) * Math.sin(phi);
+                  const size = 1.5 + Math.random() * 1.5;
+                  const opacity = 0.3 + Math.random() * 0.7;
+                  return (
+                    <div key={i} className="absolute rounded-full bg-[#3DA9D1]"
+                      style={{ left: `${x}%`, top: `${y}%`, width: `${size}px`, height: `${size}px`, opacity, transform: "translate(-50%,-50%)" }} />
+                  );
+                })}
+              </div>
+              {/* Inner glow */}
+              <div className="absolute inset-2 rounded-full bg-[radial-gradient(circle,rgba(61,169,209,0.15)_0%,transparent_70%)]" />
+              {/* Outer ring */}
+              <div className="absolute inset-0 rounded-full border border-[#3DA9D1]/20 group-hover:border-[#3DA9D1]/40 transition-colors" />
+              {/* Pulse ring */}
+              <div className="absolute inset-0 rounded-full border border-[#3DA9D1]/10 animate-ping" style={{ animationDuration: "3s" }} />
+              {/* Center dot */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              </div>
+            </div>
+            <span className="text-[9px] text-emerald-400 font-bold flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Online
+            </span>
+          </div>
         </motion.button>
       )}
 
