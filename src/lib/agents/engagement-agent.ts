@@ -803,6 +803,13 @@ When reporting back, structure your response with:
     getUpcomingRecalls,
     syncOneDriveFiles,
     exportToExcel,
+    // Hospital management
+    setupHospital,
+    listHospitals,
+    getHospitalDetails,
+    updateHospitalConfig,
+    getPatientChats,
+    getNetworkAnalytics,
   },
 
   stopWhen: stepCountIs(25),
