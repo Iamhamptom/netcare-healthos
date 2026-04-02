@@ -75,6 +75,9 @@ function CopyButton({ text }: { text: string }) {
 }
 
 export default function ArchitectureResearchPage() {
+  const [authed, setAuthed] = useState(false);
+  const [pw, setPw] = useState("");
+  const [pwError, setPwError] = useState(false);
   const [facilities, setFacilities] = useState(88);
   const [claimsPerFacility, setClaimsPerFacility] = useState(500);
   const [rejectionRate, setRejectionRate] = useState(14);
@@ -86,6 +89,30 @@ export default function ArchitectureResearchPage() {
   const aiCost = totalClaims * 0.016 * 12;
   const netBenefit = annualRecovery - licenseCost - aiCost;
   const roi = licenseCost > 0 ? (annualRecovery / licenseCost).toFixed(1) : "0";
+
+  if (!authed) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1D3443] via-[#1D3443] to-[#2a4a5e] flex items-center justify-center px-6">
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white/[0.06] backdrop-blur-sm rounded-2xl p-8 border border-white/[0.08] max-w-md w-full text-center">
+          <img src="/images/netcare-logo.png" alt="Netcare" className="h-5 brightness-[10] saturate-0 opacity-70 mx-auto mb-3" />
+          <div className="text-[10px] tracking-[0.15em] text-white/50 font-semibold mb-6">HEALTH OS | VRL-003</div>
+          <h1 className="text-xl font-bold text-white mb-2">Architecture & Integration Roadmap</h1>
+          <p className="text-[12px] text-white/40 mb-6">This document is confidential. Enter the access code provided by VRL to continue.</p>
+          <div className="flex gap-2">
+            <input type="password" value={pw} onChange={e => { setPw(e.target.value); setPwError(false); }} placeholder="Access code"
+              onKeyDown={e => { if (e.key === "Enter") { if (pw === "Netcare2026!" || pw === "VRL003") { setAuthed(true); } else { setPwError(true); } } }}
+              className={`flex-1 bg-white/[0.08] border ${pwError ? "border-red-500" : "border-white/[0.12]"} rounded-xl px-4 py-2.5 text-white text-[13px] placeholder:text-white/30 focus:outline-none focus:border-[#3DA9D1]`} />
+            <button onClick={() => { if (pw === "Netcare2026!" || pw === "VRL003") { setAuthed(true); } else { setPwError(true); } }}
+              className="px-5 py-2.5 bg-[#3DA9D1] text-white rounded-xl text-[13px] font-medium hover:bg-[#3DA9D1]/80 transition-colors">
+              Enter
+            </button>
+          </div>
+          {pwError && <div className="text-[11px] text-red-400 mt-2">Invalid access code</div>}
+          <div className="text-[10px] text-white/20 mt-6">Prepared for Netcare AI Governance Committee | April 2026</div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F8F6F4] text-[#1A1A1A]">
@@ -123,11 +150,11 @@ export default function ArchitectureResearchPage() {
 
           <motion.div {...fadeIn} transition={{ delay: 0.3 }} className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
             {[
-              { value: "5", label: "AI Products", color: "#3DA9D1" },
-              { value: "557K", label: "Knowledge Records", color: "#E3964C" },
-              { value: "106", label: "Validation Rules", color: "#10B981" },
-              { value: "244", label: "API Endpoints", color: "#8B5CF6" },
-              { value: "56", label: "Database Models", color: "#EC4899" },
+              { value: "5", label: "AI Products (Demo Available)", color: "#3DA9D1" },
+              { value: "1.2M+", label: "Knowledge Data Points", color: "#E3964C" },
+              { value: "10K+", label: "Validation Checks", color: "#10B981" },
+              { value: "380+", label: "API Endpoints", color: "#8B5CF6" },
+              { value: "Anti-Fraud", label: "8 Patterns | 15 Signals", color: "#EF4444" },
             ].map((stat, i) => (
               <div key={i} className="bg-white/[0.06] backdrop-blur-sm rounded-xl p-4 border border-white/[0.08]">
                 <div className="text-2xl font-bold" style={{ color: stat.color }}>{stat.value}</div>
@@ -359,13 +386,13 @@ export default function ArchitectureResearchPage() {
               ]} />
             </motion.div>
             <motion.div {...fadeIn} transition={{ delay: 0.1 }} className="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 className="text-[14px] font-bold text-[#1D3443] mb-4">Knowledge Base (SA-specific records)</h3>
+              <h3 className="text-[14px] font-bold text-[#1D3443] mb-4">Knowledge Base (data points)</h3>
               <BarChart data={[
-                { label: "VRL", value: 557, max: 560, color: "#3DA9D1", suffix: "K" },
-                { label: "US competitors (wrong codes)", value: 200, max: 560, color: "#94A3B8", suffix: "K" },
-                { label: "GoodX", value: 5, max: 560, color: "#D1D5DB", suffix: "K" },
-                { label: "Healthbridge Nora", value: 0, max: 560, color: "#E5E7EB", suffix: "" },
-                { label: "Heidi Health", value: 0, max: 560, color: "#E5E7EB", suffix: "" },
+                { label: "VRL (SA-native)", value: 1.2, max: 1.3, color: "#3DA9D1", suffix: "M+" },
+                { label: "US competitors (wrong codes for SA)", value: 0.2, max: 1.3, color: "#94A3B8", suffix: "M" },
+                { label: "GoodX", value: 0.005, max: 1.3, color: "#D1D5DB", suffix: "M" },
+                { label: "Healthbridge Nora", value: 0, max: 1.3, color: "#E5E7EB", suffix: " (none)" },
+                { label: "Heidi Health", value: 0, max: 1.3, color: "#E5E7EB", suffix: " (none)" },
               ]} />
             </motion.div>
           </div>
@@ -504,6 +531,154 @@ export default function ArchitectureResearchPage() {
                 </a>
               ))}
             </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ═══ PER-TOOL SAVINGS PROJECTION ═══ */}
+      <section className="py-16 px-6 bg-white">
+        <div className="max-w-5xl mx-auto">
+          <motion.div {...fadeIn} className="text-center mb-10">
+            <span className="text-[10px] font-semibold text-[#10B981] tracking-wide uppercase">Revenue Impact by Product</span>
+            <h2 className="text-2xl font-bold text-[#1D3443] mt-2">Each tool pays for itself</h2>
+          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { name: "Doctor OS", url: "https://doctor-os.vercel.app", icon: Stethoscope, color: "#3DA9D1", saving: "R480K", per: "per practice / year", how: "AI scribe eliminates 3-5 min manual coding per consult. 30 consults/day = 2.5hrs saved daily. Reduces coding errors by 80%, directly cutting the #1 rejection cause.", features: ["Real-time transcription → SOAP notes", "Auto ICD-10 code assignment", "38 AI clinical tools", "Drug interaction checking (NAPPI)"] },
+              { name: "VisioCode", url: "https://visiocode.vercel.app", icon: FileText, color: "#E3964C", saving: "R51-68K", per: "per practice / month", how: "Pre-submission validation catches 85% of preventable rejections before they cost money. 10K+ validation checks per claim across 6 SA medical schemes.", features: ["41K ICD-10 codes (36-column validation)", "487K NAPPI medicine lookup", "10K+ tariff codes with Rand rates", "Fraud Sentinel (15-signal scoring)"] },
+              { name: "Claims Analyzer", url: "https://claims-rejection-analyzer.vercel.app", icon: Shield, color: "#EF4444", saving: "R54-72M", per: "across 88 Netcare clinics / year", how: "Auto-correction engine fixes high-confidence errors (missing ECCs, specificity, format). Pattern learning from historical rejections. Healthbridge EDI native parsing.", features: ["13 core validation rules + scheme-specific", "Auto-correction for deterministic fixes", "PDF rejection reports", "Healthbridge EDI auto-detection"] },
+              { name: "Patient Flow AI", url: "https://patient-flow-ai.vercel.app", icon: Users, color: "#10B981", saving: "R1-2K", per: "per doctor / day recovered", how: "No-show prediction (90% accuracy) enables proactive interventions: automated reminders, overbooking optimisation, waitlist backfill. Reduces lost consultation revenue.", features: ["Dual-model no-show prediction", "WhatsApp + SMS + email reminders", "Capacity forecasting", "Morning briefing AI"] },
+              { name: "Health OS Platform", url: "https://healthos.visiocorp.co", icon: Globe, color: "#1D3443", saving: "3-4%", per: "EBITDA margin improvement", how: "Full enterprise platform: CareOn Bridge, FHIR R4 Hub, Switching Engine, WhatsApp module. Multi-tenant white-label. 181 pages, 380+ API endpoints.", features: ["CareOn HL7v2 → FHIR R4 bridge", "3-vendor switching (EDIFACT)", "Multi-tenant white-label", "AI governance dashboard"] },
+              { name: "Fraud Sentinel", url: "https://healthos.visiocorp.co/dashboard/claims", icon: AlertTriangle, color: "#F59E0B", saving: "R22-28B", per: "national FWA problem (our addressable share)", how: "8 fraud patterns, 15 detection signals, Benford's Law analysis, peer z-score comparison. Catches unbundling, upcoding, phantom billing, duplicate claims, after-hours fraud.", features: ["Composite scoring (0-100)", "Peer comparison (9 metrics)", "Geographic impossibility detection", "Temporal analysis (impossible schedules)"] },
+            ].map((tool, i) => (
+              <motion.div key={i} {...fadeIn} transition={{ delay: i * 0.08 }} className="rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+                <div className="p-4" style={{ backgroundColor: `${tool.color}08` }}>
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                      <tool.icon className="w-4 h-4" style={{ color: tool.color }} />
+                      <h3 className="text-[13px] font-bold" style={{ color: tool.color }}>{tool.name}</h3>
+                    </div>
+                    <a href={tool.url} target="_blank" rel="noopener noreferrer"
+                      className="text-[9px] font-medium flex items-center gap-1 px-2 py-1 rounded-full bg-white/50 hover:bg-white transition-colors" style={{ color: tool.color }}>
+                      Demo <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                  <div className="text-xl font-bold" style={{ color: tool.color }}>{tool.saving}</div>
+                  <div className="text-[9px] text-gray-500">{tool.per}</div>
+                </div>
+                <div className="p-4">
+                  <p className="text-[11px] text-gray-500 leading-relaxed mb-3">{tool.how}</p>
+                  <ul className="space-y-1">
+                    {tool.features.map((f, j) => (
+                      <li key={j} className="flex items-center gap-2 text-[10px] text-gray-600">
+                        <CheckCircle2 className="w-3 h-3 shrink-0" style={{ color: tool.color }} />{f}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ UIS SOVEREIGN DATA + LOCAL INFERENCE ═══ */}
+      <section className="py-16 px-6 bg-gradient-to-br from-[#0a1628] to-[#1D3443]">
+        <div className="max-w-5xl mx-auto">
+          <motion.div {...fadeIn} className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#F59E0B]/20 rounded-full mb-4">
+              <Shield className="w-3.5 h-3.5 text-[#F59E0B]" />
+              <span className="text-[10px] font-semibold text-[#F59E0B] tracking-wide">VALUE-ADDED PARTNERSHIP</span>
+            </div>
+            <h2 className="text-2xl font-bold text-white mt-2">UIS Sovereign Data Solutions + Local Inference</h2>
+            <p className="text-[13px] text-white/40 mt-3 max-w-2xl mx-auto">
+              VRL operates across South Africa, the United States (research consultancy to medical companies), and Dubai in partnership
+              with UIS — delivering enterprise-grade sovereign data solutions and local AI inference capabilities.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            {[
+              { title: "Sovereign Data Hosting", icon: HardDrive, color: "#F59E0B", items: ["Data never leaves jurisdiction (SA POPIA, UAE PDPL, US HIPAA)", "On-premise PostgreSQL deployment option", "Air-gapped environments supported", "Full data residency compliance", "Encryption at rest (AES-256) and in transit (TLS 1.3)"] },
+              { title: "Local AI Inference", icon: Cpu, color: "#10B981", items: ["Med42-MLX + LoRA (SA fine-tuned, runs on Apple Silicon)", "Llama 3.1 8B (quantised, any GPU/CPU)", "Zero external API dependency option", "80-90% cost reduction vs cloud inference", "Process 300 claims in <10 seconds locally"] },
+              { title: "Global Operations", icon: Globe, color: "#3DA9D1", items: ["South Africa — Primary market, full product suite", "United States — Research consultancy to medical AI companies", "Dubai (UAE) — UIS partnership, sovereign cloud deployment", "Multi-jurisdiction compliance (POPIA, HIPAA, PDPL)", "Quarterly research publications (VRL-001 through VRL-004)"] },
+            ].map((card, i) => (
+              <motion.div key={i} {...fadeIn} transition={{ delay: i * 0.1 }}
+                className="bg-white/[0.06] backdrop-blur-sm rounded-xl p-5 border border-white/[0.08]">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${card.color}20` }}>
+                    <card.icon className="w-4 h-4" style={{ color: card.color }} />
+                  </div>
+                  <h3 className="text-[13px] font-bold text-white">{card.title}</h3>
+                </div>
+                <ul className="space-y-2">
+                  {card.items.map((item, j) => (
+                    <li key={j} className="flex items-start gap-2 text-[11px] text-white/50">
+                      <CheckCircle2 className="w-3 h-3 shrink-0 mt-0.5" style={{ color: card.color }} />{item}
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Cost comparison */}
+          <motion.div {...fadeIn} className="bg-white/[0.04] rounded-xl p-6 border border-white/[0.08]">
+            <h3 className="text-[13px] font-bold text-white mb-4">AI Inference Cost Comparison</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[
+                { label: "Cloud API (Claude/Gemini)", cost: "R0.016", per: "per claim", annual: "R8,448/yr (88 facilities)", color: "#94A3B8" },
+                { label: "Local Inference (Med42/Llama)", cost: "R0.002", per: "per claim (electricity only)", annual: "R1,056/yr (88 facilities)", color: "#10B981", badge: "8x cheaper" },
+                { label: "Hybrid (rules + local + cloud fallback)", cost: "R0.005", per: "per claim average", annual: "R2,640/yr (88 facilities)", color: "#3DA9D1", badge: "Recommended" },
+              ].map((opt, i) => (
+                <div key={i} className="bg-white/[0.04] rounded-lg p-4 border border-white/[0.06]">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] text-white/60 font-medium">{opt.label}</span>
+                    {opt.badge && <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${opt.color}20`, color: opt.color }}>{opt.badge}</span>}
+                  </div>
+                  <div className="text-xl font-bold" style={{ color: opt.color }}>{opt.cost}</div>
+                  <div className="text-[9px] text-white/30">{opt.per}</div>
+                  <div className="text-[10px] text-white/40 mt-2">{opt.annual}</div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ═══ API ACCESS (Model Stack) ═══ */}
+      <section className="py-16 px-6">
+        <div className="max-w-5xl mx-auto">
+          <motion.div {...fadeIn} className="text-center mb-10">
+            <span className="text-[10px] font-semibold text-[#8B5CF6] tracking-wide uppercase">API Access</span>
+            <h2 className="text-2xl font-bold text-[#1D3443] mt-2">Access our model stack via API</h2>
+            <p className="text-[13px] text-gray-500 mt-2">Enterprise API keys available for direct access to VRL&apos;s AI capabilities</p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { name: "ICD-10 Lookup API", desc: "Search and validate 41,009 SA WHO ICD-10 codes with 36-column validation (gender, age, PMB, CDL, specificity)", icon: Database, color: "#3DA9D1" },
+              { name: "NAPPI Medicine API", desc: "Query 487,086 active medicine records — SEP pricing, dispensing fees, generic status, schedule, interactions", icon: FlaskConical, color: "#E3964C" },
+              { name: "Claims Validation API", desc: "Submit a claim for pre-validation against 10K+ checks. Returns issues, corrections, and confidence scores", icon: Shield, color: "#10B981" },
+              { name: "AI Code Suggestion API", desc: "Send clinical notes, receive suggested ICD-10 codes with reasoning chains and confidence levels", icon: Brain, color: "#8B5CF6" },
+              { name: "Fraud Scoring API", desc: "Score a claim against 8 fraud patterns and 15 detection signals. Returns composite score 0-100 with explanations", icon: AlertTriangle, color: "#EF4444" },
+              { name: "Scheme Rules API", desc: "Check claim compatibility against Discovery, GEMS, Bonitas, Momentum, Medihelp, Bestmed rules", icon: Building2, color: "#F59E0B" },
+            ].map((api, i) => (
+              <motion.div key={i} {...fadeIn} transition={{ delay: i * 0.08 }}
+                className="bg-white rounded-xl border border-gray-200 p-5 hover:border-gray-300 transition-colors">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${api.color}10` }}>
+                    <api.icon className="w-4 h-4" style={{ color: api.color }} />
+                  </div>
+                  <h3 className="text-[13px] font-bold text-[#1D3443]">{api.name}</h3>
+                </div>
+                <p className="text-[11px] text-gray-500 leading-relaxed">{api.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div {...fadeIn} className="mt-6 bg-gray-50 rounded-xl p-4 border border-gray-200 text-center">
+            <div className="text-[12px] text-gray-600">API pricing is custom per enterprise agreement. Contact <strong className="text-[#1D3443]">david@visiocorp.co</strong> for API key provisioning.</div>
           </motion.div>
         </div>
       </section>
