@@ -130,25 +130,36 @@ export default function ArchitectureResearchPage() {
         </div>
       </nav>
 
-      {/* ═══ HERO — Addressed to Netcare ═══ */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#1D3443] via-[#1D3443] to-[#2a4a5e] text-white py-20 px-6">
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff'%3E%3Ccircle cx='1' cy='1' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")" }} />
-        <div className="max-w-5xl mx-auto relative">
-          <motion.div {...fadeIn} className="flex items-center gap-2 mb-6 flex-wrap">
-            <div className="px-3 py-1 bg-[#3DA9D1]/20 rounded-full text-[10px] font-semibold text-[#3DA9D1] tracking-wide">VISIO RESEARCH LABS</div>
-            <div className="px-3 py-1 bg-[#E3964C]/20 rounded-full text-[10px] font-semibold text-[#E3964C] tracking-wide">VRL-003 | APRIL 2026</div>
-            <div className="px-3 py-1 bg-white/10 rounded-full text-[10px] font-semibold text-white/70 tracking-wide">PREPARED FOR NETCARE AI COMMITTEE</div>
+      {/* ═══ HERO — VRL-001 academic style ═══ */}
+      <section className="relative overflow-hidden bg-[#0C1620] text-white pt-32 pb-20 px-6">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0C1620] via-[#0f1e2b] to-[#0C1620]" />
+        <div className="max-w-4xl mx-auto relative text-center">
+          <motion.div {...fadeIn} className="flex items-center justify-center gap-3 mb-8">
+            <span className="font-mono text-[11px] tracking-[0.15em] text-[#3DA9D1] border border-[#3DA9D1]/30 rounded px-3 py-1">VRL-003</span>
+            <span className="font-mono text-[11px] tracking-[0.15em] text-white/40">APRIL 2026</span>
           </motion.div>
 
-          <motion.h1 {...fadeIn} transition={{ delay: 0.1 }} className="text-3xl md:text-5xl font-bold leading-tight mb-4">
-            Architecture, Compatibility &<br />Integration Roadmap
+          <motion.h1 {...fadeIn} transition={{ delay: 0.1 }} className="text-3xl md:text-[42px] font-extralight leading-tight mb-6 tracking-tight">
+            Architecture, Compatibility &{" "}
+            <span className="text-[#3DA9D1]">Integration Roadmap</span>{" "}
+            for Netcare Primary Healthcare
           </motion.h1>
-          <motion.p {...fadeIn} transition={{ delay: 0.2 }} className="text-lg text-white/60 max-w-2xl mb-8 leading-relaxed">
-            Prepared for Netcare&apos;s AI Governance Committee. This document details how VRL&apos;s
-            AI claims intelligence integrates with CareOn, HEAL, Healthbridge, and SwitchOn.
-          </motion.p>
 
-          <motion.div {...fadeIn} transition={{ delay: 0.3 }} className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+          <motion.div {...fadeIn} transition={{ delay: 0.15 }} className="font-mono text-[12px] tracking-[0.1em] text-white/40 mb-8">
+            Netcare Technology&nbsp;&nbsp;·&nbsp;&nbsp;Netcare Health OS&nbsp;&nbsp;·&nbsp;&nbsp;VisioCorp
+          </motion.div>
+
+          <motion.div {...fadeIn} transition={{ delay: 0.2 }} className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6 max-w-3xl mx-auto mb-10">
+            <div className="font-mono text-[10px] tracking-[0.2em] text-[#3DA9D1]/60 uppercase mb-3">Abstract</div>
+            <p className="text-[14px] text-white/60 leading-relaxed">
+              This document presents VRL&apos;s enterprise AI architecture for healthcare claims intelligence,
+              demonstrating integration pathways with Netcare&apos;s CareOn (iMedOne), HEAL (AWS), and switching
+              infrastructure. Built on 1.2M+ healthcare data points, 10K+ validation checks, and 12K+ anti-fraud
+              variables — deployed across South Africa, the United States, and Dubai.
+            </p>
+          </motion.div>
+
+          <motion.div {...fadeIn} transition={{ delay: 0.3 }} className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10">
             {[
               { value: "5", label: "AI Products (Demo Available)", color: "#3DA9D1" },
               { value: "1.2M+", label: "Knowledge Data Points", color: "#E3964C" },
@@ -156,24 +167,44 @@ export default function ArchitectureResearchPage() {
               { value: "380+", label: "API Endpoints", color: "#8B5CF6" },
               { value: "Anti-Fraud", label: "12K+ Variables & Patterns", color: "#EF4444" },
             ].map((stat, i) => (
-              <div key={i} className="bg-white/[0.06] backdrop-blur-sm rounded-xl p-4 border border-white/[0.08]">
-                <div className="text-2xl font-bold" style={{ color: stat.color }}>{stat.value}</div>
-                <div className="text-[11px] text-white/60 mt-1">{stat.label}</div>
+              <div key={i} className="bg-white/[0.04] rounded-lg p-4 border border-white/[0.06]">
+                <div className="text-xl font-light" style={{ color: stat.color }}>{stat.value}</div>
+                <div className="text-[10px] font-mono text-white/40 mt-1 tracking-wide">{stat.label}</div>
               </div>
             ))}
           </motion.div>
+        </div>
 
-          {/* Download PDFs */}
-          <motion.div {...fadeIn} transition={{ delay: 0.4 }} className="flex items-center gap-3 flex-wrap">
-            <a href="/docs/VRL-003-Architecture-Compatibility.pdf" download
-              className="px-5 py-2.5 bg-white text-[#1D3443] rounded-xl text-[12px] font-semibold hover:bg-white/90 transition-colors flex items-center gap-2">
-              <Download className="w-4 h-4" /> Architecture PDF
-            </a>
-            <a href="/docs/VRL-Technical-Documentation-Pack.pdf" download
-              className="px-5 py-2.5 bg-white/10 text-white rounded-xl text-[12px] font-medium hover:bg-white/20 transition-colors flex items-center gap-2">
-              <Download className="w-4 h-4" /> Technical Documentation PDF
-            </a>
-          </motion.div>
+        {/* Metadata bar like VRL-001 */}
+        <div className="max-w-4xl mx-auto border-t border-white/[0.06] pt-6 mt-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+            {[
+              { label: "PUBLISHED", value: "April 2026" },
+              { label: "CLASSIFICATION", value: "Confidential" },
+              { label: "CATEGORIES", value: "Architecture, AI, Healthcare" },
+              { label: "DOI", value: "VRL/2026/003" },
+              { label: "STATUS", value: "Production-Ready" },
+            ].map((m, i) => (
+              <div key={i}>
+                <div className="font-mono text-[9px] tracking-[0.15em] text-white/30 uppercase">{m.label}</div>
+                <div className="font-mono text-[12px] text-[#3DA9D1] mt-1">{m.value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Download bar */}
+      <section className="bg-[#0a1118] py-4 px-6 border-b border-white/[0.06]">
+        <div className="max-w-4xl mx-auto flex items-center justify-center gap-4">
+          <a href="/docs/VRL-003-Architecture-Compatibility.pdf" download
+            className="px-4 py-2 bg-[#3DA9D1]/10 border border-[#3DA9D1]/20 text-[#3DA9D1] rounded-lg text-[11px] font-mono tracking-wide hover:bg-[#3DA9D1]/20 transition-colors flex items-center gap-2">
+            <Download className="w-3.5 h-3.5" /> Architecture PDF
+          </a>
+          <a href="/docs/VRL-Technical-Documentation-Pack.pdf" download
+            className="px-4 py-2 bg-white/[0.04] border border-white/[0.08] text-white/60 rounded-lg text-[11px] font-mono tracking-wide hover:bg-white/[0.08] transition-colors flex items-center gap-2">
+            <Download className="w-3.5 h-3.5" /> Technical Documentation PDF
+          </a>
         </div>
       </section>
 
@@ -226,8 +257,8 @@ export default function ArchitectureResearchPage() {
       <section className="py-16 px-6">
         <div className="max-w-5xl mx-auto">
           <motion.div {...fadeIn} className="text-center mb-10">
-            <span className="text-[10px] font-semibold text-[#3DA9D1] tracking-wide uppercase">System Architecture</span>
-            <h2 className="text-2xl font-bold text-[#1D3443] mt-2">Expandable architecture map</h2>
+            <span className="text-[10px] font-mono text-[#3DA9D1] tracking-[0.2em] uppercase">System Architecture</span>
+            <h2 className="text-2xl font-extralight text-[#1D3443] tracking-tight mt-2">Expandable architecture map</h2>
             <p className="text-[13px] text-gray-500 mt-2">Click any node to expand and explore the full system tree</p>
           </motion.div>
 
@@ -324,8 +355,8 @@ export default function ArchitectureResearchPage() {
       <section className="py-16 px-6 bg-[#E8E6E1]">
         <div className="max-w-5xl mx-auto">
           <motion.div {...fadeIn} className="text-center mb-10">
-            <span className="text-[10px] font-semibold text-[#E3964C] tracking-wide uppercase">Product Suite</span>
-            <h2 className="text-2xl font-bold text-[#1D3443] mt-2">5 live products — click to explore</h2>
+            <span className="text-[10px] font-mono text-[#E3964C] tracking-[0.2em] uppercase">Product Suite</span>
+            <h2 className="text-2xl font-extralight text-[#1D3443] tracking-tight mt-2">5 live products — click to explore</h2>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -369,8 +400,8 @@ export default function ArchitectureResearchPage() {
       <section className="py-16 px-6">
         <div className="max-w-5xl mx-auto">
           <motion.div {...fadeIn} className="text-center mb-10">
-            <span className="text-[10px] font-semibold text-[#E3964C] tracking-wide uppercase">Performance Benchmarks</span>
-            <h2 className="text-2xl font-bold text-[#1D3443] mt-2">Validated accuracy across every task</h2>
+            <span className="text-[10px] font-mono text-[#E3964C] tracking-[0.2em] uppercase">Performance Benchmarks</span>
+            <h2 className="text-2xl font-extralight text-[#1D3443] tracking-tight mt-2">Validated accuracy across every task</h2>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -403,8 +434,8 @@ export default function ArchitectureResearchPage() {
       <section className="py-16 px-6 bg-[#E8E6E1]">
         <div className="max-w-5xl mx-auto">
           <motion.div {...fadeIn} className="text-center mb-10">
-            <span className="text-[10px] font-semibold text-[#10B981] tracking-wide uppercase">Financial Impact</span>
-            <h2 className="text-2xl font-bold text-[#1D3443] mt-2">ROI calculator — Netcare Primary Care</h2>
+            <span className="text-[10px] font-mono text-[#10B981] tracking-[0.2em] uppercase">Financial Impact</span>
+            <h2 className="text-2xl font-extralight text-[#1D3443] tracking-tight mt-2">ROI calculator — Netcare Primary Care</h2>
           </motion.div>
 
           <motion.div {...fadeIn} className="bg-[#E8E6E1] rounded-2xl border border-[#D8D5CE] p-8">
@@ -452,8 +483,8 @@ export default function ArchitectureResearchPage() {
       <section className="py-16 px-6">
         <div className="max-w-5xl mx-auto">
           <motion.div {...fadeIn} className="text-center mb-10">
-            <span className="text-[10px] font-semibold text-[#8B5CF6] tracking-wide uppercase">Intelligence & Research</span>
-            <h2 className="text-2xl font-bold text-[#1D3443] mt-2">300MB of SA healthcare intelligence</h2>
+            <span className="text-[10px] font-mono text-[#8B5CF6] tracking-[0.2em] uppercase">Intelligence & Research</span>
+            <h2 className="text-2xl font-extralight text-[#1D3443] tracking-tight mt-2">300MB of SA healthcare intelligence</h2>
           </motion.div>
 
           {/* Intelligence map */}
@@ -539,8 +570,8 @@ export default function ArchitectureResearchPage() {
       <section className="py-16 px-6 bg-[#E8E6E1]">
         <div className="max-w-5xl mx-auto">
           <motion.div {...fadeIn} className="text-center mb-10">
-            <span className="text-[10px] font-semibold text-[#10B981] tracking-wide uppercase">Revenue Impact by Product</span>
-            <h2 className="text-2xl font-bold text-[#1D3443] mt-2">Each tool pays for itself</h2>
+            <span className="text-[10px] font-mono text-[#10B981] tracking-[0.2em] uppercase">Revenue Impact by Product</span>
+            <h2 className="text-2xl font-extralight text-[#1D3443] tracking-tight mt-2">Each tool pays for itself</h2>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
@@ -590,7 +621,7 @@ export default function ArchitectureResearchPage() {
               <Shield className="w-3.5 h-3.5 text-[#F59E0B]" />
               <span className="text-[10px] font-semibold text-[#F59E0B] tracking-wide">VALUE-ADDED PARTNERSHIP</span>
             </div>
-            <h2 className="text-2xl font-bold text-white mt-2">UIS Sovereign Data Solutions + Local Inference</h2>
+            <h2 className="text-2xl font-extralight text-white tracking-tight mt-2">UIS Sovereign Data Solutions + Local Inference</h2>
             <p className="text-[13px] text-white/40 mt-3 max-w-2xl mx-auto">
               VRL operates across South Africa, the United States (research consultancy to medical companies), and Dubai in partnership
               with UIS — delivering enterprise-grade sovereign data solutions and local AI inference capabilities.
@@ -650,8 +681,8 @@ export default function ArchitectureResearchPage() {
       <section className="py-16 px-6">
         <div className="max-w-5xl mx-auto">
           <motion.div {...fadeIn} className="text-center mb-10">
-            <span className="text-[10px] font-semibold text-[#8B5CF6] tracking-wide uppercase">API Access</span>
-            <h2 className="text-2xl font-bold text-[#1D3443] mt-2">Access our model stack via API</h2>
+            <span className="text-[10px] font-mono text-[#8B5CF6] tracking-[0.2em] uppercase">API Access</span>
+            <h2 className="text-2xl font-extralight text-[#1D3443] tracking-tight mt-2">Access our model stack via API</h2>
             <p className="text-[13px] text-gray-500 mt-2">Enterprise API keys available for direct access to VRL&apos;s AI capabilities</p>
           </motion.div>
 
@@ -678,7 +709,7 @@ export default function ArchitectureResearchPage() {
           </div>
 
           <motion.div {...fadeIn} className="mt-6 bg-[#E8E6E1] rounded-xl p-4 border border-[#D8D5CE] text-center">
-            <div className="text-[12px] text-gray-600">API pricing is custom per enterprise agreement. Contact <strong className="text-[#1D3443]">david@visiocorp.co</strong> for API key provisioning.</div>
+            <div className="text-[12px] text-gray-600">Because VRL trains local processors to run inference, our cost per query at scale is significantly lower than any cloud-only competitor. API access and enterprise licensing available on request.</div>
           </motion.div>
         </div>
       </section>
