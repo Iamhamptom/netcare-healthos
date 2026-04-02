@@ -74,10 +74,45 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
+const NDA_TEXT = `CONFIDENTIALITY & INTELLECTUAL PROPERTY AGREEMENT
+
+By accessing this document, you acknowledge and agree to the following:
+
+1. CONFIDENTIAL INFORMATION — All materials, architecture diagrams, technical specifications, knowledge base details, validation rules, AI model configurations, benchmark data, and proprietary methodologies contained in this document ("Confidential Information") are the exclusive intellectual property of Vision Research Labs (Pty) Ltd ("VRL"), trading as VisioCorp.
+
+2. NON-DISCLOSURE — You agree not to disclose, distribute, reproduce, or share any Confidential Information with any third party without the prior written consent of VRL. This includes but is not limited to: screenshots, copies, summaries, or derivative works based on the Confidential Information.
+
+3. PERMITTED USE — You may review and evaluate the Confidential Information solely for the purpose of assessing a potential business relationship between your organisation and VRL. No other use is permitted.
+
+4. NO LICENSE GRANTED — Nothing in this document grants you any license, right, or interest in VRL's intellectual property, patents (pending or granted), trade secrets, or proprietary technology.
+
+5. RETURN OR DESTRUCTION — Upon request by VRL, you agree to return or destroy all copies of the Confidential Information in your possession.
+
+6. GOVERNING LAW — This agreement is governed by the laws of the Republic of South Africa. Any disputes shall be subject to the jurisdiction of the High Court of South Africa, Gauteng Division.
+
+7. DURATION — This confidentiality obligation survives for a period of 3 (three) years from the date of access.
+
+8. TRACKING — VRL logs all access to this document including email address, timestamp, and IP address for audit and security purposes.
+
+Vision Research Labs (Pty) Ltd | Registration: [Pending] | david@visiocorp.co`;
+
+function logAccess(email: string, action: string) {
+  fetch("/api/audit/research-access", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, action, document: "VRL-003", timestamp: new Date().toISOString(), userAgent: navigator.userAgent }),
+  }).catch(() => {});
+}
+
 export default function ArchitectureResearchPage() {
   const [authed, setAuthed] = useState(false);
+  const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [pwError, setPwError] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [showDownloadGate, setShowDownloadGate] = useState<string | null>(null);
+  const [downloadEmail, setDownloadEmail] = useState("");
+  const [downloadAccepted, setDownloadAccepted] = useState(false);
   const [facilities, setFacilities] = useState(88);
   const [claimsPerFacility, setClaimsPerFacility] = useState(500);
   const [rejectionRate, setRejectionRate] = useState(14);
@@ -97,18 +132,29 @@ export default function ArchitectureResearchPage() {
           <img src="/images/netcare-logo.png" alt="Netcare" className="h-5 brightness-[10] saturate-0 opacity-70 mx-auto mb-3" />
           <div className="text-[10px] tracking-[0.15em] text-white/50 font-semibold mb-6">HEALTH OS | VRL-003</div>
           <h1 className="text-xl font-bold text-white mb-2">Architecture & Integration Roadmap</h1>
-          <p className="text-[12px] text-white/40 mb-6">This document is confidential. Enter the access code provided by VRL to continue.</p>
-          <div className="flex gap-2">
+          <p className="text-[12px] text-white/40 mb-6">This document is confidential. Enter your email and the access code provided by VRL.</p>
+          <div className="space-y-3">
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Your work email"
+              className="w-full bg-white/[0.08] border border-white/[0.12] rounded-xl px-4 py-2.5 text-white text-[13px] placeholder:text-white/30 focus:outline-none focus:border-[#3DA9D1]" />
             <input type="password" value={pw} onChange={e => { setPw(e.target.value); setPwError(false); }} placeholder="Access code"
-              onKeyDown={e => { if (e.key === "Enter") { if (pw === "Netcare2026!" || pw === "VRL003") { setAuthed(true); } else { setPwError(true); } } }}
-              className={`flex-1 bg-white/[0.08] border ${pwError ? "border-red-500" : "border-white/[0.12]"} rounded-xl px-4 py-2.5 text-white text-[13px] placeholder:text-white/30 focus:outline-none focus:border-[#3DA9D1]`} />
-            <button onClick={() => { if (pw === "Netcare2026!" || pw === "VRL003") { setAuthed(true); } else { setPwError(true); } }}
-              className="px-5 py-2.5 bg-[#3DA9D1] text-white rounded-xl text-[13px] font-medium hover:bg-[#3DA9D1]/80 transition-colors">
-              Enter
+              onKeyDown={e => { if (e.key === "Enter" && acceptedTerms && email) { if (pw === "Netcare2026!" || pw === "VRL003") { logAccess(email, "page_view"); setAuthed(true); setDownloadEmail(email); } else { setPwError(true); } } }}
+              className={`w-full bg-white/[0.08] border ${pwError ? "border-red-500" : "border-white/[0.12]"} rounded-xl px-4 py-2.5 text-white text-[13px] placeholder:text-white/30 focus:outline-none focus:border-[#3DA9D1]`} />
+            <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 max-h-32 overflow-y-auto text-left">
+              <div className="text-[9px] font-mono text-white/30 whitespace-pre-wrap leading-relaxed">{NDA_TEXT}</div>
+            </div>
+            <label className="flex items-start gap-2 cursor-pointer text-left">
+              <input type="checkbox" checked={acceptedTerms} onChange={e => setAcceptedTerms(e.target.checked)}
+                className="mt-0.5 accent-[#3DA9D1]" />
+              <span className="text-[11px] text-white/60">I have read and agree to the Confidentiality & Intellectual Property Agreement. I understand that my access is logged.</span>
+            </label>
+            <button onClick={() => { if (!email || !acceptedTerms) return; if (pw === "Netcare2026!" || pw === "VRL003") { logAccess(email, "page_view"); setAuthed(true); setDownloadEmail(email); } else { setPwError(true); } }}
+              disabled={!acceptedTerms || !email}
+              className={`w-full py-2.5 rounded-xl text-[13px] font-medium transition-colors ${acceptedTerms && email ? "bg-[#3DA9D1] text-white hover:bg-[#3DA9D1]/80 cursor-pointer" : "bg-white/[0.06] text-white/30 cursor-not-allowed"}`}>
+              Access Document
             </button>
           </div>
           {pwError && <div className="text-[11px] text-red-400 mt-2">Invalid access code</div>}
-          <div className="text-[10px] text-white/20 mt-6">Prepared for Netcare AI Governance Committee | April 2026</div>
+          <div className="text-[10px] text-white/20 mt-4">Prepared for Netcare AI Governance Committee | April 2026</div>
         </motion.div>
       </div>
     );
@@ -200,14 +246,14 @@ export default function ArchitectureResearchPage() {
       {/* Download bar */}
       <section className="bg-[#0a1118] py-4 px-6 border-b border-white/[0.06]">
         <div className="max-w-4xl mx-auto flex items-center justify-center gap-4">
-          <a href="/docs/VRL-003-Architecture-Compatibility.pdf" download
+          <button onClick={() => setShowDownloadGate("/docs/VRL-003-Architecture-Compatibility.pdf")}
             className="px-4 py-2 bg-[#3DA9D1]/10 border border-[#3DA9D1]/20 text-[#3DA9D1] rounded-lg text-[11px] font-mono tracking-wide hover:bg-[#3DA9D1]/20 transition-colors flex items-center gap-2">
             <Download className="w-3.5 h-3.5" /> Architecture PDF
-          </a>
-          <a href="/docs/VRL-Technical-Documentation-Pack.pdf" download
+          </button>
+          <button onClick={() => setShowDownloadGate("/docs/VRL-Technical-Documentation-Pack.pdf")}
             className="px-4 py-2 bg-white/[0.04] border border-white/[0.08] text-white/60 rounded-lg text-[11px] font-mono tracking-wide hover:bg-white/[0.08] transition-colors flex items-center gap-2">
             <Download className="w-3.5 h-3.5" /> Technical Documentation PDF
-          </a>
+          </button>
         </div>
       </section>
 
@@ -554,15 +600,15 @@ export default function ArchitectureResearchPage() {
                 { name: "Architecture & Compatibility Analysis", file: "/docs/VRL-003-Architecture-Compatibility.pdf", size: "627 KB", desc: "12 sections: tech stack, integration, fraud detection, cost projections, governance, benchmarks" },
                 { name: "Technical Documentation Pack", file: "/docs/VRL-Technical-Documentation-Pack.pdf", size: "483 KB", desc: "Product specs: all 5 products, API surface, data models, deployment infrastructure" },
               ].map((dl, i) => (
-                <a key={i} href={dl.file} download
-                  className="bg-white/[0.06] hover:bg-white/[0.12] rounded-lg p-4 transition-colors border border-white/[0.08] group">
+                <button key={i} onClick={() => setShowDownloadGate(dl.file)}
+                  className="bg-white/[0.06] hover:bg-white/[0.12] rounded-lg p-4 transition-colors border border-white/[0.08] group text-left">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[12px] font-semibold">{dl.name}</span>
                     <Download className="w-4 h-4 text-white/40 group-hover:text-white/80" />
                   </div>
                   <div className="text-[10px] text-white/40">{dl.desc}</div>
                   <div className="text-[9px] text-white/30 mt-2">PDF | {dl.size}</div>
-                </a>
+                </button>
               ))}
             </div>
           </motion.div>
@@ -716,6 +762,67 @@ export default function ArchitectureResearchPage() {
           </motion.div>
         </div>
       </section>
+
+      {/* ═══ DOWNLOAD GATE MODAL ═══ */}
+      <AnimatePresence>
+        {showDownloadGate && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+            onClick={() => setShowDownloadGate(null)}>
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#0C1620] border border-white/[0.08] rounded-2xl p-6 max-w-lg w-full"
+              onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-[#E3964C]" />
+                  <span className="text-[13px] font-semibold text-white">Confidential Document Download</span>
+                </div>
+                <button onClick={() => setShowDownloadGate(null)} className="text-white/30 hover:text-white/60 text-lg">&times;</button>
+              </div>
+
+              <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 max-h-40 overflow-y-auto mb-4">
+                <div className="text-[9px] font-mono text-white/30 whitespace-pre-wrap leading-relaxed">{NDA_TEXT}</div>
+              </div>
+
+              <div className="space-y-3">
+                <input type="email" value={downloadEmail} onChange={e => setDownloadEmail(e.target.value)}
+                  placeholder="Your work email (required for audit trail)"
+                  className="w-full bg-white/[0.08] border border-white/[0.12] rounded-xl px-4 py-2.5 text-white text-[13px] placeholder:text-white/30 focus:outline-none focus:border-[#3DA9D1]" />
+
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input type="checkbox" checked={downloadAccepted} onChange={e => setDownloadAccepted(e.target.checked)}
+                    className="mt-0.5 accent-[#3DA9D1]" />
+                  <span className="text-[11px] text-white/60">I accept the Confidentiality & IP Agreement. I understand this download is logged and traceable to my email.</span>
+                </label>
+
+                <button
+                  onClick={() => {
+                    if (downloadEmail && downloadAccepted && showDownloadGate) {
+                      logAccess(downloadEmail, `download:${showDownloadGate}`);
+                      const a = document.createElement("a");
+                      a.href = showDownloadGate;
+                      a.download = "";
+                      a.click();
+                      setShowDownloadGate(null);
+                    }
+                  }}
+                  disabled={!downloadEmail || !downloadAccepted}
+                  className={`w-full py-2.5 rounded-xl text-[13px] font-medium transition-colors flex items-center justify-center gap-2 ${
+                    downloadEmail && downloadAccepted
+                      ? "bg-[#3DA9D1] text-white hover:bg-[#3DA9D1]/80 cursor-pointer"
+                      : "bg-white/[0.06] text-white/30 cursor-not-allowed"
+                  }`}>
+                  <Download className="w-4 h-4" /> Download PDF
+                </button>
+              </div>
+
+              <div className="text-[9px] text-white/20 mt-3 text-center">
+                Your email, IP address, and timestamp are recorded. VRL reserves all intellectual property rights.
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ═══ FOOTER ═══ */}
       <footer className="py-8 px-6 bg-[#1D3443]">
