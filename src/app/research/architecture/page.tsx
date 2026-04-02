@@ -24,7 +24,7 @@ function TreeNode({ label, icon: Icon, color, children, defaultOpen, badge }: {
   return (
     <div>
       <button onClick={() => hasChildren && setOpen(!open)}
-        className={`w-full flex items-center gap-2 py-2 px-3 rounded-lg text-left transition-colors ${hasChildren ? "hover:bg-gray-50 cursor-pointer" : "cursor-default"}`}>
+        className={`w-full flex items-center gap-2 py-2 px-3 rounded-lg text-left transition-colors ${hasChildren ? "hover:bg-[#EEECE7] cursor-pointer" : "cursor-default"}`}>
         {hasChildren ? (open ? <ChevronDown className="w-3.5 h-3.5 text-gray-400 shrink-0" /> : <ChevronRight className="w-3.5 h-3.5 text-gray-400 shrink-0" />) : <div className="w-3.5" />}
         <div className="w-6 h-6 rounded flex items-center justify-center shrink-0" style={{ backgroundColor: `${color}15` }}>
           <Icon className="w-3.5 h-3.5" style={{ color }} />
@@ -35,7 +35,7 @@ function TreeNode({ label, icon: Icon, color, children, defaultOpen, badge }: {
       <AnimatePresence>
         {open && children && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }} className="ml-6 pl-4 border-l border-gray-200 overflow-hidden">
+            transition={{ duration: 0.2 }} className="ml-6 pl-4 border-l border-[#D8D5CE] overflow-hidden">
             {children}
           </motion.div>
         )}
@@ -53,7 +53,7 @@ function BarChart({ data }: { data: { label: string; value: number; max: number;
             <span className="text-[11px] text-gray-600 font-medium">{d.label}</span>
             <span className="text-[12px] font-bold" style={{ color: d.color }}>{d.value}{d.suffix || "%"}</span>
           </div>
-          <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-2.5 bg-[#D8D5CE] rounded-full overflow-hidden">
             <motion.div initial={{ width: 0 }} whileInView={{ width: `${(d.value / d.max) * 100}%` }}
               viewport={{ once: true }} transition={{ duration: 1, delay: i * 0.1 }}
               className="h-full rounded-full" style={{ backgroundColor: d.color }} />
@@ -115,7 +115,7 @@ export default function ArchitectureResearchPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F6F4] text-[#1A1A1A]">
+    <div className="min-h-screen bg-[#F0EFEB] text-[#1A1A1A]">
       {/* ═══ NAV ═══ */}
       <nav className="bg-[#1D3443] text-white py-3 px-6 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-3">
@@ -231,7 +231,7 @@ export default function ArchitectureResearchPage() {
             <p className="text-[13px] text-gray-500 mt-2">Click any node to expand and explore the full system tree</p>
           </motion.div>
 
-          <motion.div {...fadeIn} className="bg-white rounded-2xl border border-gray-200 p-6">
+          <motion.div {...fadeIn} className="bg-[#F8F7F3] rounded-2xl border border-[#D8D5CE] p-6">
             <TreeNode label="VRL Advanced AI Systems" icon={Globe} color="#1D3443" defaultOpen>
               <TreeNode label="Netcare Integration Layer" icon={Network} color="#3DA9D1" defaultOpen>
                 <TreeNode label="CareOn Bridge (Hospital EMR)" icon={MonitorSmartphone} color="#3DA9D1" badge="HL7v2 → FHIR R4">
@@ -321,7 +321,7 @@ export default function ArchitectureResearchPage() {
       </section>
 
       {/* ═══ PRODUCT SITE MAP ═══ */}
-      <section className="py-16 px-6 bg-white">
+      <section className="py-16 px-6 bg-[#E8E6E1]">
         <div className="max-w-5xl mx-auto">
           <motion.div {...fadeIn} className="text-center mb-10">
             <span className="text-[10px] font-semibold text-[#E3964C] tracking-wide uppercase">Product Suite</span>
@@ -337,7 +337,7 @@ export default function ArchitectureResearchPage() {
               { name: "Patient Flow AI", url: "https://patient-flow-ai.vercel.app", color: "#10B981", pages: "13 pages", apis: "45 FlowBot tools", models: "19 DB tables", features: ["No-show prediction (90%)", "Kanban patient flow", "WhatsApp + SMS + email", "Capacity forecasting", "Engagement sequences", "Morning briefing AI"] },
             ].map((p, i) => (
               <motion.div key={i} {...fadeIn} transition={{ delay: i * 0.1 }}
-                className="rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+                className="rounded-xl border border-[#D8D5CE] overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="p-4" style={{ backgroundColor: `${p.color}08` }}>
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-[14px] font-bold" style={{ color: p.color }}>{p.name}</h3>
@@ -374,7 +374,7 @@ export default function ArchitectureResearchPage() {
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <motion.div {...fadeIn} className="bg-white rounded-xl border border-gray-200 p-6">
+            <motion.div {...fadeIn} className="bg-[#F8F7F3] rounded-xl border border-[#D8D5CE] p-6">
               <h3 className="text-[14px] font-bold text-[#1D3443] mb-4">Accuracy by Task Type</h3>
               <BarChart data={[
                 { label: "Gender/age cross-check", value: 99.9, max: 100, color: "#10B981" },
@@ -385,7 +385,7 @@ export default function ArchitectureResearchPage() {
                 { label: "Rejection prediction", value: 89.7, max: 100, color: "#F59E0B" },
               ]} />
             </motion.div>
-            <motion.div {...fadeIn} transition={{ delay: 0.1 }} className="bg-white rounded-xl border border-gray-200 p-6">
+            <motion.div {...fadeIn} transition={{ delay: 0.1 }} className="bg-[#F8F7F3] rounded-xl border border-[#D8D5CE] p-6">
               <h3 className="text-[14px] font-bold text-[#1D3443] mb-4">Knowledge Base (data points)</h3>
               <BarChart data={[
                 { label: "VRL (SA-native)", value: 1.2, max: 1.3, color: "#3DA9D1", suffix: "M+" },
@@ -400,14 +400,14 @@ export default function ArchitectureResearchPage() {
       </section>
 
       {/* ═══ FINANCIAL CALCULATOR ═══ */}
-      <section className="py-16 px-6 bg-white">
+      <section className="py-16 px-6 bg-[#E8E6E1]">
         <div className="max-w-5xl mx-auto">
           <motion.div {...fadeIn} className="text-center mb-10">
             <span className="text-[10px] font-semibold text-[#10B981] tracking-wide uppercase">Financial Impact</span>
             <h2 className="text-2xl font-bold text-[#1D3443] mt-2">ROI calculator — Netcare Primary Care</h2>
           </motion.div>
 
-          <motion.div {...fadeIn} className="bg-gray-50 rounded-2xl border border-gray-200 p-8">
+          <motion.div {...fadeIn} className="bg-[#E8E6E1] rounded-2xl border border-[#D8D5CE] p-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div>
                 <label className="text-[11px] font-medium text-gray-500 mb-2 block">Facilities</label>
@@ -427,15 +427,15 @@ export default function ArchitectureResearchPage() {
             </div>
             <div className="h-px bg-gray-200 mb-8" />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white rounded-xl p-4 text-center border border-gray-200">
+              <div className="bg-white rounded-xl p-4 text-center border border-[#D8D5CE]">
                 <div className="text-[10px] text-gray-500 mb-1">Annual leakage</div>
                 <div className="text-xl font-bold text-red-500">R{(rejectValue * 12 / 1000000).toFixed(1)}M</div>
               </div>
-              <div className="bg-white rounded-xl p-4 text-center border border-gray-200">
+              <div className="bg-white rounded-xl p-4 text-center border border-[#D8D5CE]">
                 <div className="text-[10px] text-gray-500 mb-1">Annual recovery</div>
                 <div className="text-xl font-bold text-green-500">R{(annualRecovery / 1000000).toFixed(1)}M</div>
               </div>
-              <div className="bg-white rounded-xl p-4 text-center border border-gray-200">
+              <div className="bg-white rounded-xl p-4 text-center border border-[#D8D5CE]">
                 <div className="text-[10px] text-gray-500 mb-1">License cost / year</div>
                 <div className="text-xl font-bold text-gray-600">R{(licenseCost / 1000000).toFixed(1)}M</div>
               </div>
@@ -457,7 +457,7 @@ export default function ArchitectureResearchPage() {
           </motion.div>
 
           {/* Intelligence map */}
-          <motion.div {...fadeIn} className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
+          <motion.div {...fadeIn} className="bg-[#F8F7F3] rounded-xl border border-[#D8D5CE] p-6 mb-8">
             <h3 className="text-[14px] font-bold text-[#1D3443] mb-4 flex items-center gap-2">
               <Map className="w-4 h-4 text-[#8B5CF6]" /> Intelligence Map — Knowledge Domains
             </h3>
@@ -476,7 +476,7 @@ export default function ArchitectureResearchPage() {
                 { domain: "Competitor Analysis", files: "Nora, GoodX, Heidi, US players", color: "#8B5CF6" },
                 { domain: "Enterprise Benchmarks", files: "CMS data, scheme rates, rejection %", color: "#EC4899" },
               ].map((d, i) => (
-                <div key={i} className="rounded-lg p-3 border border-gray-100 hover:border-gray-300 transition-colors">
+                <div key={i} className="rounded-lg p-3 border border-[#D8D5CE]/60 hover:border-[#B8B5AE] transition-colors">
                   <div className="w-2 h-2 rounded-full mb-2" style={{ backgroundColor: d.color }} />
                   <div className="text-[11px] font-semibold text-[#1D3443]">{d.domain}</div>
                   <div className="text-[9px] text-gray-400 mt-1">{d.files}</div>
@@ -486,7 +486,7 @@ export default function ArchitectureResearchPage() {
           </motion.div>
 
           {/* Quarterly research publications */}
-          <motion.div {...fadeIn} className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
+          <motion.div {...fadeIn} className="bg-[#F8F7F3] rounded-xl border border-[#D8D5CE] p-6 mb-8">
             <h3 className="text-[14px] font-bold text-[#1D3443] mb-4 flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-[#E3964C]" /> Quarterly Research Publications
             </h3>
@@ -498,7 +498,7 @@ export default function ArchitectureResearchPage() {
                 { code: "VRL-004", title: "Global Claims Analysis & ICD Coding AI Research (ETH Zurich, MedCodER)", date: "Q2 2026", url: "/research/vrl-002", color: "#10B981" },
               ].map((pub, i) => (
                 <Link key={i} href={pub.url}
-                  className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors group">
+                  className="flex items-center gap-4 p-3 rounded-lg hover:bg-[#EEECE7] transition-colors group">
                   <span className="text-[10px] font-bold px-2 py-1 rounded" style={{ backgroundColor: `${pub.color}15`, color: pub.color }}>{pub.code}</span>
                   <div className="flex-1">
                     <div className="text-[12px] font-medium text-[#1D3443] group-hover:text-[#3DA9D1] transition-colors">{pub.title}</div>
@@ -536,7 +536,7 @@ export default function ArchitectureResearchPage() {
       </section>
 
       {/* ═══ PER-TOOL SAVINGS PROJECTION ═══ */}
-      <section className="py-16 px-6 bg-white">
+      <section className="py-16 px-6 bg-[#E8E6E1]">
         <div className="max-w-5xl mx-auto">
           <motion.div {...fadeIn} className="text-center mb-10">
             <span className="text-[10px] font-semibold text-[#10B981] tracking-wide uppercase">Revenue Impact by Product</span>
@@ -551,7 +551,7 @@ export default function ArchitectureResearchPage() {
               { name: "Health OS Platform", url: "https://healthos.visiocorp.co", icon: Globe, color: "#1D3443", saving: "3-4%", per: "EBITDA margin improvement", how: "Full enterprise platform: CareOn Bridge, FHIR R4 Hub, Switching Engine, WhatsApp module. Multi-tenant white-label. 181 pages, 380+ API endpoints.", features: ["CareOn HL7v2 → FHIR R4 bridge", "3-vendor switching (EDIFACT)", "Multi-tenant white-label", "AI governance dashboard"] },
               { name: "Fraud Sentinel", url: "https://healthos.visiocorp.co/dashboard/claims", icon: AlertTriangle, color: "#F59E0B", saving: "R22-28B", per: "national FWA problem (our addressable share)", how: "8 fraud patterns, 15 detection signals, Benford's Law analysis, peer z-score comparison. Catches unbundling, upcoding, phantom billing, duplicate claims, after-hours fraud.", features: ["Composite scoring (0-100)", "Peer comparison (9 metrics)", "Geographic impossibility detection", "Temporal analysis (impossible schedules)"] },
             ].map((tool, i) => (
-              <motion.div key={i} {...fadeIn} transition={{ delay: i * 0.08 }} className="rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+              <motion.div key={i} {...fadeIn} transition={{ delay: i * 0.08 }} className="rounded-xl border border-[#D8D5CE] overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="p-4" style={{ backgroundColor: `${tool.color}08` }}>
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
@@ -665,7 +665,7 @@ export default function ArchitectureResearchPage() {
               { name: "Scheme Rules API", desc: "Check claim compatibility against Discovery, GEMS, Bonitas, Momentum, Medihelp, Bestmed rules", icon: Building2, color: "#F59E0B" },
             ].map((api, i) => (
               <motion.div key={i} {...fadeIn} transition={{ delay: i * 0.08 }}
-                className="bg-white rounded-xl border border-gray-200 p-5 hover:border-gray-300 transition-colors">
+                className="bg-[#F8F7F3] rounded-xl border border-[#D8D5CE] p-5 hover:border-[#B8B5AE] transition-colors">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${api.color}10` }}>
                     <api.icon className="w-4 h-4" style={{ color: api.color }} />
@@ -677,7 +677,7 @@ export default function ArchitectureResearchPage() {
             ))}
           </div>
 
-          <motion.div {...fadeIn} className="mt-6 bg-gray-50 rounded-xl p-4 border border-gray-200 text-center">
+          <motion.div {...fadeIn} className="mt-6 bg-[#E8E6E1] rounded-xl p-4 border border-[#D8D5CE] text-center">
             <div className="text-[12px] text-gray-600">API pricing is custom per enterprise agreement. Contact <strong className="text-[#1D3443]">david@visiocorp.co</strong> for API key provisioning.</div>
           </motion.div>
         </div>
