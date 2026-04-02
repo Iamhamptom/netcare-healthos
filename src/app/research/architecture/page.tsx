@@ -153,9 +153,12 @@ export default function ArchitectureResearchPage() {
             <div className="font-mono text-[10px] tracking-[0.2em] text-[#3DA9D1]/60 uppercase mb-3">Abstract</div>
             <p className="text-[14px] text-white/60 leading-relaxed">
               This document presents VRL&apos;s enterprise AI architecture for healthcare claims intelligence,
-              demonstrating integration pathways with Netcare&apos;s CareOn (iMedOne), HEAL (AWS), and switching
-              infrastructure. Built on 1.2M+ healthcare data points, 10K+ validation checks, and 12K+ anti-fraud
-              variables — deployed across South Africa, the United States, and Dubai.
+              clinical operations, and patient smart-routing at large scale — demonstrating integration
+              pathways with Netcare&apos;s CareOn (iMedOne), HEAL (AWS), and switching infrastructure.
+              The system spans claims pre-validation and rejection recovery, AI-powered clinical coding
+              and documentation, anti-fraud detection across 12K+ variables, and intelligent patient flow
+              management with predictive no-show modelling. Built on 1.2M+ healthcare data points and
+              deployed across South Africa, the United States, and Dubai.
             </p>
           </motion.div>
 
