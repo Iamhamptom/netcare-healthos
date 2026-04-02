@@ -154,7 +154,7 @@ export default function ArchitectureResearchPage() {
               { value: "1.2M+", label: "Knowledge Data Points", color: "#E3964C" },
               { value: "10K+", label: "Validation Checks", color: "#10B981" },
               { value: "380+", label: "API Endpoints", color: "#8B5CF6" },
-              { value: "Anti-Fraud", label: "8 Patterns | 15 Signals", color: "#EF4444" },
+              { value: "Anti-Fraud", label: "12K+ Variables & Patterns", color: "#EF4444" },
             ].map((stat, i) => (
               <div key={i} className="bg-white/[0.06] backdrop-blur-sm rounded-xl p-4 border border-white/[0.08]">
                 <div className="text-2xl font-bold" style={{ color: stat.color }}>{stat.value}</div>
