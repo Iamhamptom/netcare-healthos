@@ -2,7 +2,7 @@
   "redirects": [
     {
       "source": "/",
-      "destination": "https://healthops-platform.vercel.app",
+      "destination": "https://healthops-platform.vercel.app/demo",
       "permanent": false
     }
   ],
