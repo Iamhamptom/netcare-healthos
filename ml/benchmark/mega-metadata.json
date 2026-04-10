@@ -1,0 +1,59 @@
+{
+  "total_cases": 50385,
+  "generated_at": "2026-04-09T21:18:04.724489Z",
+  "seed": 42,
+  "original_benchmark_included": 500,
+  "categories": {
+    "age_restriction": 234,
+    "asterisk_dagger": 900,
+    "cdl_medication": 81,
+    "cdl_pmb": 50,
+    "clinical_reasoning": 60,
+    "clinical_vignette": 3000,
+    "code_pair_violation": 500,
+    "cross_domain": 50,
+    "external_cause": 2840,
+    "gender_restriction": 1880,
+    "icd10_validation": 100,
+    "legal_regulatory": 50,
+    "modifier": 200,
+    "pharmaceutical": 60,
+    "pmb_coding": 90,
+    "primary_validity": 4000,
+    "random_negative": 35000,
+    "scheme_rejection": 730,
+    "tariff_validation": 60,
+    "unbundling": 500
+  },
+  "difficulty_distribution": {
+    "easy": 38550,
+    "hard": 6118,
+    "medium": 5717
+  },
+  "validity_distribution": {
+    "valid": 40414,
+    "invalid": 9971
+  },
+  "generators": [
+    "gen_code_pair_violations",
+    "gen_gender_restrictions",
+    "gen_age_restrictions",
+    "gen_asterisk_dagger",
+    "gen_external_cause",
+    "gen_primary_validity",
+    "gen_pmb_coding",
+    "gen_cdl_medication",
+    "gen_scheme_rejections",
+    "gen_unbundling",
+    "gen_modifier_scenarios",
+    "gen_random_negatives",
+    "gen_clinical_vignettes"
+  ],
+  "data_sources": {
+    "code_pairs_ts": "/Users/hga/visiocode/lib/engine/code-pairs.ts",
+    "icd10_csv": "/Users/hga/netcare-healthos/docs/knowledge/databases/ICD-10_MIT_2021.csv",
+    "gems_tariff_csv": "/Users/hga/netcare-healthos/docs/knowledge/databases/GEMS_tariffs_2026.csv",
+    "cdl_csv": "/Users/hga/netcare-healthos/docs/knowledge/databases/cdl_conditions.csv",
+    "original_benchmark": "/Users/hga/netcare-healthos/ml/benchmark/medqa-sa.jsonl"
+  }
+}

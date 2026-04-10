@@ -19,6 +19,23 @@ import time
 from typing import Optional
 from datetime import datetime
 
+# Add project root to path so we can import ml.lib
+NETCARE_ROOT = os.path.join(os.path.expanduser("~"), "netcare-healthos")
+if NETCARE_ROOT not in sys.path:
+    sys.path.insert(0, NETCARE_ROOT)
+
+from ml.lib.metrics import (
+    CodingPrediction,
+    extract_code_set,
+    compute_micro_f1,
+    compute_macro_f1,
+    compute_per_code_f1,
+    compute_per_category_f1,
+    compute_legacy_accuracy,
+    compute_all_metrics,
+    format_report,
+)
+
 HOME = os.path.expanduser("~")
 NETCARE_DIR = os.path.join(HOME, "netcare-healthos")
 BENCHMARK_PATH = os.path.join(NETCARE_DIR, "ml/benchmark/medqa-sa.jsonl")
@@ -233,6 +250,39 @@ def run_benchmark():
     # Calculate final metrics
     overall_accuracy = (total_correct / total_asked * 100) if total_asked > 0 else 0
 
+    # ---------------------------------------------------------------
+    # F1 Metrics (new — additive to existing accuracy reporting)
+    # ---------------------------------------------------------------
+    # Build CodingPrediction objects from the results.
+    # For single-answer questions, wrap in single-element sets.
+    coding_predictions = []
+    for r in results:
+        # Extract codes from model response (handles multi-code outputs)
+        pred_codes = extract_code_set(r["model_response"])
+        # For single-answer benchmarks: if no ICD-10 codes extracted from
+        # the response, use the is_correct flag to determine the predicted set.
+        # If the answer was correct, predicted = gold. Otherwise, predicted
+        # is whatever we extracted (possibly empty or wrong).
+        gold_codes = {r["correct_answer"]}
+
+        if not pred_codes:
+            # Fall back: if the existing check_answer said correct, count it
+            if r["is_correct"]:
+                pred_codes = gold_codes.copy()
+            # else pred_codes stays empty -> FN
+
+        coding_predictions.append(CodingPrediction(
+            case_id=r["id"],
+            predicted_codes=pred_codes,
+            gold_codes=gold_codes,
+            category=r["category"],
+            difficulty=r["difficulty"],
+            metadata={"answer_type": r["answer_type"]},
+        ))
+
+    # Compute all F1 metrics
+    f1_metrics = compute_all_metrics(coding_predictions)
+
     category_results = {}
     for cat, stats in sorted(category_stats.items()):
         acc = (stats["correct"] / stats["total"] * 100) if stats["total"] > 0 else 0
@@ -267,6 +317,9 @@ def run_benchmark():
     for diff, r in sorted(difficulty_results.items()):
         print(f"  {diff:10s} {r['accuracy']:5.1f}% ({r['correct']}/{r['total']})")
 
+    # F1 metrics report
+    print("\n" + format_report(f1_metrics))
+
     # Save results
     output = {
         "model": "healthos-med-v3",
@@ -278,6 +331,15 @@ def run_benchmark():
         "errors": errors,
         "category_results": category_results,
         "difficulty_results": difficulty_results,
+        "micro_f1": f1_metrics["micro_f1"],
+        "macro_f1": f1_metrics["macro_f1"],
+        "per_code_f1": f1_metrics["per_code_f1"],
+        "per_category_f1": {
+            k: v for k, v in f1_metrics["per_category_f1"].items()
+        },
+        "per_difficulty_f1": {
+            k: v for k, v in f1_metrics["per_difficulty_f1"].items()
+        },
         "detailed_results": results,
     }
 
