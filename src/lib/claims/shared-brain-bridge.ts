@@ -48,9 +48,9 @@ export async function brainLookupICD10(query: string, limit = 20): Promise<Code[
       description: e.description,
       chapter: e.chapter || 0,
       pmb: e.isPMB || false,
-      cdl: e.isCDL || false,
+      cdl: false,
       gender: (e.genderRestriction as "M" | "F" | null) || null,
-      valid_primary: e.validAsPrimary !== false,
+      valid_primary: e.isValid !== false,
     }));
 
   cache.set(key, { data: results, expires: Date.now() + TTL });
